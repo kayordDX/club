@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Online.Data;
+using Online.Entities;
 
 namespace Online.Common.Extensions;
 
@@ -7,6 +9,16 @@ public static class DataExtensions
 {
     public static IServiceCollection ConfigureEF(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
     {
+        services.AddIdentity<User, IdentityRole<Guid>>(opt =>
+        {
+            opt.Password.RequireDigit = true;
+            opt.Password.RequireLowercase = true;
+            opt.Password.RequireNonAlphanumeric = true;
+            opt.Password.RequireUppercase = true;
+            opt.Password.RequiredLength = 8;
+            opt.User.RequireUniqueEmail = true;
+        }).AddEntityFrameworkStores<AppDbContext>();
+
         services.AddDbContext<AppDbContext>(options =>
         {
             options.UseSnakeCaseNamingConvention();
@@ -20,5 +32,12 @@ public static class DataExtensions
             }
         });
         return services;
+    }
+
+    public static void ApplyMigrations(this IServiceProvider serviceProvider)
+    {
+        using var scope = serviceProvider.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.Database.Migrate();
     }
 }
