@@ -27,7 +27,6 @@ services:
     #       memory: 256M
 
   redis:
-    container_name: redis
     image: docker.io/bitnami/redis
     restart: unless-stopped
     environment:
