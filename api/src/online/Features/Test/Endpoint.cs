@@ -1,12 +1,17 @@
 
+using Microsoft.EntityFrameworkCore;
+using Online.Data;
+
 namespace Online.Features.Test;
 
-public class Endpoint : EndpointWithoutRequest<bool>
+public class Endpoint : EndpointWithoutRequest<List<Guid>>
 {
     private readonly ILogger<Endpoint> _logger;
-    public Endpoint(ILogger<Endpoint> logger)
+    private readonly AppDbContext _dbContext;
+    public Endpoint(ILogger<Endpoint> logger, AppDbContext dbContext)
     {
         _logger = logger;
+        _dbContext = dbContext;
     }
 
     public override void Configure()
@@ -17,6 +22,7 @@ public class Endpoint : EndpointWithoutRequest<bool>
     public override async Task HandleAsync(CancellationToken ct)
     {
         _logger.LogInformation("Test endpoint hit");
-        await Send.OkAsync(true);
+        var result = await _dbContext.Users.Select(x => x.Id).ToListAsync(ct);
+        await Send.OkAsync(result);
     }
 }
