@@ -17,6 +17,7 @@ public class Endpoint : EndpointWithoutRequest<List<int>>
     public override void Configure()
     {
         Get("/test");
+        Description(x => x.WithName("Test"));
     }
 
     public override async Task HandleAsync(CancellationToken ct)

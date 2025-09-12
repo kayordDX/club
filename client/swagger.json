@@ -16,14 +16,14 @@
         "tags": [
           "Test"
         ],
-        "operationId": "OnlineFeaturesTestEndpoint",
+        "operationId": "Test",
         "responses": {
           "500": {
             "description": "Server Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/FastEndpointsInternalErrorResponse"
+                  "$ref": "#/components/schemas/InternalErrorResponse"
                 }
               }
             }
@@ -45,12 +45,7 @@
           "401": {
             "description": "Unauthorized"
           }
-        },
-        "security": [
-          {
-            "JWTBearerAuth": []
-          }
-        ]
+        }
       }
     },
     "/account/register": {
@@ -58,7 +53,7 @@
         "tags": [
           "Account"
         ],
-        "operationId": "OnlineFeaturesAccountRegisterEndpoint",
+        "operationId": "Register",
         "parameters": [
           {
             "name": "firstName",
@@ -99,7 +94,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/FastEndpointsInternalErrorResponse"
+                  "$ref": "#/components/schemas/InternalErrorResponse"
                 }
               }
             }
@@ -115,14 +110,14 @@
         "tags": [
           "Account"
         ],
-        "operationId": "OnlineFeaturesAccountRefreshEndpoint",
+        "operationId": "Refresh",
         "responses": {
           "500": {
             "description": "Server Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/FastEndpointsInternalErrorResponse"
+                  "$ref": "#/components/schemas/InternalErrorResponse"
                 }
               }
             }
@@ -145,7 +140,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/MicrosoftAspNetCoreIdentityDataLoginRequest"
+                "$ref": "#/components/schemas/LoginRequest"
               }
             }
           },
@@ -158,7 +153,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/FastEndpointsInternalErrorResponse"
+                  "$ref": "#/components/schemas/InternalErrorResponse"
                 }
               }
             }
@@ -191,7 +186,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/FastEndpointsInternalErrorResponse"
+                  "$ref": "#/components/schemas/InternalErrorResponse"
                 }
               }
             }
@@ -224,7 +219,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/FastEndpointsInternalErrorResponse"
+                  "$ref": "#/components/schemas/InternalErrorResponse"
                 }
               }
             }
@@ -238,7 +233,7 @@
   },
   "components": {
     "schemas": {
-      "FastEndpointsInternalErrorResponse": {
+      "InternalErrorResponse": {
         "type": "object",
         "description": "the dto used to send an error response to the client when an unhandled exception occurs on the server",
         "additionalProperties": false,
@@ -272,11 +267,7 @@
           }
         }
       },
-      "OnlineFeaturesAccountRegisterUserRegisterRequest": {
-        "type": "object",
-        "additionalProperties": false
-      },
-      "MicrosoftAspNetCoreIdentityDataLoginRequest": {
+      "LoginRequest": {
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -299,22 +290,6 @@
             "nullable": true
           }
         }
-      },
-      "OnlineFeaturesAccountLoginGoogleRequest": {
-        "type": "object",
-        "additionalProperties": false
-      },
-      "OnlineFeaturesAccountLoginGoogleCallbackRequest": {
-        "type": "object",
-        "additionalProperties": false
-      }
-    },
-    "securitySchemes": {
-      "JWTBearerAuth": {
-        "type": "http",
-        "description": "Enter a JWT token to authorize the requests...",
-        "scheme": "Bearer",
-        "bearerFormat": "JWT"
       }
     }
   }

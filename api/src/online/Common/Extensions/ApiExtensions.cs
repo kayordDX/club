@@ -17,6 +17,9 @@ public static class ApiExtensions
 
         services.SwaggerDocument(o =>
         {
+            o.ShortSchemaNames = true;
+            o.RemoveEmptyRequestSchema = true;
+            o.EnableJWTBearerAuth = false;
             o.DocumentSettings = s =>
             {
                 s.Title = AppDomain.CurrentDomain.FriendlyName;

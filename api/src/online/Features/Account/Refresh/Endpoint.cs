@@ -16,6 +16,7 @@ public class Endpoint : EndpointWithoutRequest
     {
         Post("/account/refresh");
         AllowAnonymous();
+        Description(x => x.WithName("Refresh"));
     }
 
     public override async Task HandleAsync(CancellationToken ct)

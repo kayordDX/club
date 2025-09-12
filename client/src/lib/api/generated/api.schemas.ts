@@ -7,7 +7,7 @@
 /**
  * the dto used to send an error response to the client when an unhandled exception occurs on the server
  */
-export interface FastEndpointsInternalErrorResponse {
+export interface InternalErrorResponse {
 	/** error status */
 	status: string;
 	/** http status code of the error response */
@@ -18,11 +18,7 @@ export interface FastEndpointsInternalErrorResponse {
 	note: string;
 }
 
-export interface OnlineFeaturesAccountRegisterUserRegisterRequest {
-	[key: string]: unknown;
-}
-
-export interface MicrosoftAspNetCoreIdentityDataLoginRequest {
+export interface LoginRequest {
 	email: string;
 	password: string;
 	/** @nullable */
@@ -31,15 +27,7 @@ export interface MicrosoftAspNetCoreIdentityDataLoginRequest {
 	twoFactorRecoveryCode?: string | null;
 }
 
-export interface OnlineFeaturesAccountLoginGoogleRequest {
-	[key: string]: unknown;
-}
-
-export interface OnlineFeaturesAccountLoginGoogleCallbackRequest {
-	[key: string]: unknown;
-}
-
-export type OnlineFeaturesAccountRegisterEndpointParams = {
+export type RegisterParams = {
 	firstName: string;
 	lastName: string;
 	email: string;

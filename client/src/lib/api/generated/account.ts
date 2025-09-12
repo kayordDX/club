@@ -10,86 +10,71 @@ import type {
 	CreateMutationResult,
 	CreateQueryOptions,
 	CreateQueryResult,
+	DataTag,
 	MutationFunction,
+	QueryClient,
 	QueryFunction,
 	QueryKey,
 } from "@tanstack/svelte-query";
 
 import type {
-	FastEndpointsInternalErrorResponse,
 	GoogleLoginCallbackParams,
-	MicrosoftAspNetCoreIdentityDataLoginRequest,
+	InternalErrorResponse,
+	LoginRequest,
 	OnlineFeaturesAccountLoginGoogleEndpointParams,
-	OnlineFeaturesAccountRegisterEndpointParams,
+	RegisterParams,
 } from "./api.schemas";
 
 import { customInstance } from "../mutator/customInstance.svelte";
 import type { ErrorType, BodyType } from "../mutator/customInstance.svelte";
 
-export const onlineFeaturesAccountRegisterEndpoint = (
-	params: OnlineFeaturesAccountRegisterEndpointParams
-) => {
+export const register = (params: RegisterParams) => {
 	return customInstance<null>({ url: `/account/register`, method: "GET", params });
 };
 
-export const getOnlineFeaturesAccountRegisterEndpointQueryKey = (
-	params?: OnlineFeaturesAccountRegisterEndpointParams
-) => {
+export const getRegisterQueryKey = (params?: RegisterParams) => {
 	return [`/account/register`, ...(params ? [params] : [])] as const;
 };
 
-export const getOnlineFeaturesAccountRegisterEndpointQueryOptions = <
-	TData = Awaited<ReturnType<typeof onlineFeaturesAccountRegisterEndpoint>>,
-	TError = ErrorType<FastEndpointsInternalErrorResponse>,
+export const getRegisterQueryOptions = <
+	TData = Awaited<ReturnType<typeof register>>,
+	TError = ErrorType<InternalErrorResponse>,
 >(
-	params: OnlineFeaturesAccountRegisterEndpointParams,
+	params: RegisterParams,
 	options?: {
-		query?: CreateQueryOptions<
-			Awaited<ReturnType<typeof onlineFeaturesAccountRegisterEndpoint>>,
-			TError,
-			TData
-		>;
+		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof register>>, TError, TData>>;
 	}
 ) => {
 	const { query: queryOptions } = options ?? {};
 
-	const queryKey =
-		queryOptions?.queryKey ?? getOnlineFeaturesAccountRegisterEndpointQueryKey(params);
+	const queryKey = queryOptions?.queryKey ?? getRegisterQueryKey(params);
 
-	const queryFn: QueryFunction<
-		Awaited<ReturnType<typeof onlineFeaturesAccountRegisterEndpoint>>
-	> = () => onlineFeaturesAccountRegisterEndpoint(params);
+	const queryFn: QueryFunction<Awaited<ReturnType<typeof register>>> = () => register(params);
 
 	return { queryKey, queryFn, ...queryOptions } as CreateQueryOptions<
-		Awaited<ReturnType<typeof onlineFeaturesAccountRegisterEndpoint>>,
+		Awaited<ReturnType<typeof register>>,
 		TError,
 		TData
-	> & { queryKey: QueryKey };
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
-export type OnlineFeaturesAccountRegisterEndpointQueryResult = NonNullable<
-	Awaited<ReturnType<typeof onlineFeaturesAccountRegisterEndpoint>>
->;
-export type OnlineFeaturesAccountRegisterEndpointQueryError =
-	ErrorType<FastEndpointsInternalErrorResponse>;
+export type RegisterQueryResult = NonNullable<Awaited<ReturnType<typeof register>>>;
+export type RegisterQueryError = ErrorType<InternalErrorResponse>;
 
-export function createOnlineFeaturesAccountRegisterEndpoint<
-	TData = Awaited<ReturnType<typeof onlineFeaturesAccountRegisterEndpoint>>,
-	TError = ErrorType<FastEndpointsInternalErrorResponse>,
+export function createRegister<
+	TData = Awaited<ReturnType<typeof register>>,
+	TError = ErrorType<InternalErrorResponse>,
 >(
-	params: OnlineFeaturesAccountRegisterEndpointParams,
+	params: RegisterParams,
 	options?: {
-		query?: CreateQueryOptions<
-			Awaited<ReturnType<typeof onlineFeaturesAccountRegisterEndpoint>>,
-			TError,
-			TData
-		>;
-	}
-): CreateQueryResult<TData, TError> & { queryKey: QueryKey } {
-	const queryOptions = getOnlineFeaturesAccountRegisterEndpointQueryOptions(params, options);
+		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof register>>, TError, TData>>;
+	},
+	queryClient?: QueryClient
+): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+	const queryOptions = getRegisterQueryOptions(params, options);
 
-	const query = createQuery(queryOptions) as CreateQueryResult<TData, TError> & {
-		queryKey: QueryKey;
+	const query = createQuery(queryOptions, queryClient) as CreateQueryResult<TData, TError> & {
+		queryKey: DataTag<QueryKey, TData, TError>;
 	};
 
 	query.queryKey = queryOptions.queryKey;
@@ -97,95 +82,67 @@ export function createOnlineFeaturesAccountRegisterEndpoint<
 	return query;
 }
 
-export const onlineFeaturesAccountRefreshEndpoint = () => {
+export const refresh = () => {
 	return customInstance<null>({ url: `/account/refresh`, method: "POST" });
 };
 
-export const getOnlineFeaturesAccountRefreshEndpointMutationOptions = <
-	TError = ErrorType<FastEndpointsInternalErrorResponse>,
+export const getRefreshMutationOptions = <
+	TError = ErrorType<InternalErrorResponse>,
 	TContext = unknown,
 >(options?: {
-	mutation?: CreateMutationOptions<
-		Awaited<ReturnType<typeof onlineFeaturesAccountRefreshEndpoint>>,
-		TError,
-		void,
-		TContext
-	>;
-}): CreateMutationOptions<
-	Awaited<ReturnType<typeof onlineFeaturesAccountRefreshEndpoint>>,
-	TError,
-	void,
-	TContext
-> => {
-	const mutationKey = ["onlineFeaturesAccountRefreshEndpoint"];
+	mutation?: CreateMutationOptions<Awaited<ReturnType<typeof refresh>>, TError, void, TContext>;
+}): CreateMutationOptions<Awaited<ReturnType<typeof refresh>>, TError, void, TContext> => {
+	const mutationKey = ["refresh"];
 	const { mutation: mutationOptions } = options
 		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
 			? options
 			: { ...options, mutation: { ...options.mutation, mutationKey } }
 		: { mutation: { mutationKey } };
 
-	const mutationFn: MutationFunction<
-		Awaited<ReturnType<typeof onlineFeaturesAccountRefreshEndpoint>>,
-		void
-	> = () => {
-		return onlineFeaturesAccountRefreshEndpoint();
+	const mutationFn: MutationFunction<Awaited<ReturnType<typeof refresh>>, void> = () => {
+		return refresh();
 	};
 
 	return { mutationFn, ...mutationOptions };
 };
 
-export type OnlineFeaturesAccountRefreshEndpointMutationResult = NonNullable<
-	Awaited<ReturnType<typeof onlineFeaturesAccountRefreshEndpoint>>
->;
+export type RefreshMutationResult = NonNullable<Awaited<ReturnType<typeof refresh>>>;
 
-export type OnlineFeaturesAccountRefreshEndpointMutationError =
-	ErrorType<FastEndpointsInternalErrorResponse>;
+export type RefreshMutationError = ErrorType<InternalErrorResponse>;
 
-export const createOnlineFeaturesAccountRefreshEndpoint = <
-	TError = ErrorType<FastEndpointsInternalErrorResponse>,
-	TContext = unknown,
->(options?: {
-	mutation?: CreateMutationOptions<
-		Awaited<ReturnType<typeof onlineFeaturesAccountRefreshEndpoint>>,
-		TError,
-		void,
-		TContext
-	>;
-}): CreateMutationResult<
-	Awaited<ReturnType<typeof onlineFeaturesAccountRefreshEndpoint>>,
-	TError,
-	void,
-	TContext
-> => {
-	const mutationOptions = getOnlineFeaturesAccountRefreshEndpointMutationOptions(options);
+export const createRefresh = <TError = ErrorType<InternalErrorResponse>, TContext = unknown>(
+	options?: {
+		mutation?: CreateMutationOptions<Awaited<ReturnType<typeof refresh>>, TError, void, TContext>;
+	},
+	queryClient?: QueryClient
+): CreateMutationResult<Awaited<ReturnType<typeof refresh>>, TError, void, TContext> => {
+	const mutationOptions = getRefreshMutationOptions(options);
 
-	return createMutation(mutationOptions);
+	return createMutation(mutationOptions, queryClient);
 };
-export const onlineFeaturesAccountLoginEndpoint = (
-	microsoftAspNetCoreIdentityDataLoginRequest: BodyType<MicrosoftAspNetCoreIdentityDataLoginRequest>
-) => {
+export const onlineFeaturesAccountLoginEndpoint = (loginRequest: BodyType<LoginRequest>) => {
 	return customInstance<null>({
 		url: `/account/login`,
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
-		data: microsoftAspNetCoreIdentityDataLoginRequest,
+		data: loginRequest,
 	});
 };
 
 export const getOnlineFeaturesAccountLoginEndpointMutationOptions = <
-	TError = ErrorType<FastEndpointsInternalErrorResponse>,
+	TError = ErrorType<InternalErrorResponse>,
 	TContext = unknown,
 >(options?: {
 	mutation?: CreateMutationOptions<
 		Awaited<ReturnType<typeof onlineFeaturesAccountLoginEndpoint>>,
 		TError,
-		{ data: BodyType<MicrosoftAspNetCoreIdentityDataLoginRequest> },
+		{ data: BodyType<LoginRequest> },
 		TContext
 	>;
 }): CreateMutationOptions<
 	Awaited<ReturnType<typeof onlineFeaturesAccountLoginEndpoint>>,
 	TError,
-	{ data: BodyType<MicrosoftAspNetCoreIdentityDataLoginRequest> },
+	{ data: BodyType<LoginRequest> },
 	TContext
 > => {
 	const mutationKey = ["onlineFeaturesAccountLoginEndpoint"];
@@ -197,7 +154,7 @@ export const getOnlineFeaturesAccountLoginEndpointMutationOptions = <
 
 	const mutationFn: MutationFunction<
 		Awaited<ReturnType<typeof onlineFeaturesAccountLoginEndpoint>>,
-		{ data: BodyType<MicrosoftAspNetCoreIdentityDataLoginRequest> }
+		{ data: BodyType<LoginRequest> }
 	> = (props) => {
 		const { data } = props ?? {};
 
@@ -210,30 +167,31 @@ export const getOnlineFeaturesAccountLoginEndpointMutationOptions = <
 export type OnlineFeaturesAccountLoginEndpointMutationResult = NonNullable<
 	Awaited<ReturnType<typeof onlineFeaturesAccountLoginEndpoint>>
 >;
-export type OnlineFeaturesAccountLoginEndpointMutationBody =
-	BodyType<MicrosoftAspNetCoreIdentityDataLoginRequest>;
-export type OnlineFeaturesAccountLoginEndpointMutationError =
-	ErrorType<FastEndpointsInternalErrorResponse>;
+export type OnlineFeaturesAccountLoginEndpointMutationBody = BodyType<LoginRequest>;
+export type OnlineFeaturesAccountLoginEndpointMutationError = ErrorType<InternalErrorResponse>;
 
 export const createOnlineFeaturesAccountLoginEndpoint = <
-	TError = ErrorType<FastEndpointsInternalErrorResponse>,
+	TError = ErrorType<InternalErrorResponse>,
 	TContext = unknown,
->(options?: {
-	mutation?: CreateMutationOptions<
-		Awaited<ReturnType<typeof onlineFeaturesAccountLoginEndpoint>>,
-		TError,
-		{ data: BodyType<MicrosoftAspNetCoreIdentityDataLoginRequest> },
-		TContext
-	>;
-}): CreateMutationResult<
+>(
+	options?: {
+		mutation?: CreateMutationOptions<
+			Awaited<ReturnType<typeof onlineFeaturesAccountLoginEndpoint>>,
+			TError,
+			{ data: BodyType<LoginRequest> },
+			TContext
+		>;
+	},
+	queryClient?: QueryClient
+): CreateMutationResult<
 	Awaited<ReturnType<typeof onlineFeaturesAccountLoginEndpoint>>,
 	TError,
-	{ data: BodyType<MicrosoftAspNetCoreIdentityDataLoginRequest> },
+	{ data: BodyType<LoginRequest> },
 	TContext
 > => {
 	const mutationOptions = getOnlineFeaturesAccountLoginEndpointMutationOptions(options);
 
-	return createMutation(mutationOptions);
+	return createMutation(mutationOptions, queryClient);
 };
 export const onlineFeaturesAccountLoginGoogleEndpoint = (
 	params: OnlineFeaturesAccountLoginGoogleEndpointParams
@@ -249,14 +207,16 @@ export const getOnlineFeaturesAccountLoginGoogleEndpointQueryKey = (
 
 export const getOnlineFeaturesAccountLoginGoogleEndpointQueryOptions = <
 	TData = Awaited<ReturnType<typeof onlineFeaturesAccountLoginGoogleEndpoint>>,
-	TError = ErrorType<FastEndpointsInternalErrorResponse>,
+	TError = ErrorType<InternalErrorResponse>,
 >(
 	params: OnlineFeaturesAccountLoginGoogleEndpointParams,
 	options?: {
-		query?: CreateQueryOptions<
-			Awaited<ReturnType<typeof onlineFeaturesAccountLoginGoogleEndpoint>>,
-			TError,
-			TData
+		query?: Partial<
+			CreateQueryOptions<
+				Awaited<ReturnType<typeof onlineFeaturesAccountLoginGoogleEndpoint>>,
+				TError,
+				TData
+			>
 		>;
 	}
 ) => {
@@ -273,32 +233,34 @@ export const getOnlineFeaturesAccountLoginGoogleEndpointQueryOptions = <
 		Awaited<ReturnType<typeof onlineFeaturesAccountLoginGoogleEndpoint>>,
 		TError,
 		TData
-	> & { queryKey: QueryKey };
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
 export type OnlineFeaturesAccountLoginGoogleEndpointQueryResult = NonNullable<
 	Awaited<ReturnType<typeof onlineFeaturesAccountLoginGoogleEndpoint>>
 >;
-export type OnlineFeaturesAccountLoginGoogleEndpointQueryError =
-	ErrorType<FastEndpointsInternalErrorResponse>;
+export type OnlineFeaturesAccountLoginGoogleEndpointQueryError = ErrorType<InternalErrorResponse>;
 
 export function createOnlineFeaturesAccountLoginGoogleEndpoint<
 	TData = Awaited<ReturnType<typeof onlineFeaturesAccountLoginGoogleEndpoint>>,
-	TError = ErrorType<FastEndpointsInternalErrorResponse>,
+	TError = ErrorType<InternalErrorResponse>,
 >(
 	params: OnlineFeaturesAccountLoginGoogleEndpointParams,
 	options?: {
-		query?: CreateQueryOptions<
-			Awaited<ReturnType<typeof onlineFeaturesAccountLoginGoogleEndpoint>>,
-			TError,
-			TData
+		query?: Partial<
+			CreateQueryOptions<
+				Awaited<ReturnType<typeof onlineFeaturesAccountLoginGoogleEndpoint>>,
+				TError,
+				TData
+			>
 		>;
-	}
-): CreateQueryResult<TData, TError> & { queryKey: QueryKey } {
+	},
+	queryClient?: QueryClient
+): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 	const queryOptions = getOnlineFeaturesAccountLoginGoogleEndpointQueryOptions(params, options);
 
-	const query = createQuery(queryOptions) as CreateQueryResult<TData, TError> & {
-		queryKey: QueryKey;
+	const query = createQuery(queryOptions, queryClient) as CreateQueryResult<TData, TError> & {
+		queryKey: DataTag<QueryKey, TData, TError>;
 	};
 
 	query.queryKey = queryOptions.queryKey;
@@ -316,11 +278,13 @@ export const getGoogleLoginCallbackQueryKey = (params?: GoogleLoginCallbackParam
 
 export const getGoogleLoginCallbackQueryOptions = <
 	TData = Awaited<ReturnType<typeof googleLoginCallback>>,
-	TError = ErrorType<FastEndpointsInternalErrorResponse>,
+	TError = ErrorType<InternalErrorResponse>,
 >(
 	params: GoogleLoginCallbackParams,
 	options?: {
-		query?: CreateQueryOptions<Awaited<ReturnType<typeof googleLoginCallback>>, TError, TData>;
+		query?: Partial<
+			CreateQueryOptions<Awaited<ReturnType<typeof googleLoginCallback>>, TError, TData>
+		>;
 	}
 ) => {
 	const { query: queryOptions } = options ?? {};
@@ -334,27 +298,30 @@ export const getGoogleLoginCallbackQueryOptions = <
 		Awaited<ReturnType<typeof googleLoginCallback>>,
 		TError,
 		TData
-	> & { queryKey: QueryKey };
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
 export type GoogleLoginCallbackQueryResult = NonNullable<
 	Awaited<ReturnType<typeof googleLoginCallback>>
 >;
-export type GoogleLoginCallbackQueryError = ErrorType<FastEndpointsInternalErrorResponse>;
+export type GoogleLoginCallbackQueryError = ErrorType<InternalErrorResponse>;
 
 export function createGoogleLoginCallback<
 	TData = Awaited<ReturnType<typeof googleLoginCallback>>,
-	TError = ErrorType<FastEndpointsInternalErrorResponse>,
+	TError = ErrorType<InternalErrorResponse>,
 >(
 	params: GoogleLoginCallbackParams,
 	options?: {
-		query?: CreateQueryOptions<Awaited<ReturnType<typeof googleLoginCallback>>, TError, TData>;
-	}
-): CreateQueryResult<TData, TError> & { queryKey: QueryKey } {
+		query?: Partial<
+			CreateQueryOptions<Awaited<ReturnType<typeof googleLoginCallback>>, TError, TData>
+		>;
+	},
+	queryClient?: QueryClient
+): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 	const queryOptions = getGoogleLoginCallbackQueryOptions(params, options);
 
-	const query = createQuery(queryOptions) as CreateQueryResult<TData, TError> & {
-		queryKey: QueryKey;
+	const query = createQuery(queryOptions, queryClient) as CreateQueryResult<TData, TError> & {
+		queryKey: DataTag<QueryKey, TData, TError>;
 	};
 
 	query.queryKey = queryOptions.queryKey;

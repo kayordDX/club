@@ -8,59 +8,60 @@ import { createQuery } from "@tanstack/svelte-query";
 import type {
 	CreateQueryOptions,
 	CreateQueryResult,
+	DataTag,
+	QueryClient,
 	QueryFunction,
 	QueryKey,
 } from "@tanstack/svelte-query";
 
-import type { FastEndpointsInternalErrorResponse } from "./api.schemas";
+import type { InternalErrorResponse } from "./api.schemas";
 
 import { customInstance } from "../mutator/customInstance.svelte";
 import type { ErrorType } from "../mutator/customInstance.svelte";
 
-export const onlineFeaturesTestEndpoint = () => {
+export const test = () => {
 	return customInstance<number[]>({ url: `/test`, method: "GET" });
 };
 
-export const getOnlineFeaturesTestEndpointQueryKey = () => {
+export const getTestQueryKey = () => {
 	return [`/test`] as const;
 };
 
-export const getOnlineFeaturesTestEndpointQueryOptions = <
-	TData = Awaited<ReturnType<typeof onlineFeaturesTestEndpoint>>,
-	TError = ErrorType<null | FastEndpointsInternalErrorResponse>,
+export const getTestQueryOptions = <
+	TData = Awaited<ReturnType<typeof test>>,
+	TError = ErrorType<null | InternalErrorResponse>,
 >(options?: {
-	query?: CreateQueryOptions<Awaited<ReturnType<typeof onlineFeaturesTestEndpoint>>, TError, TData>;
+	query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof test>>, TError, TData>>;
 }) => {
 	const { query: queryOptions } = options ?? {};
 
-	const queryKey = queryOptions?.queryKey ?? getOnlineFeaturesTestEndpointQueryKey();
+	const queryKey = queryOptions?.queryKey ?? getTestQueryKey();
 
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof onlineFeaturesTestEndpoint>>> = () =>
-		onlineFeaturesTestEndpoint();
+	const queryFn: QueryFunction<Awaited<ReturnType<typeof test>>> = () => test();
 
 	return { queryKey, queryFn, ...queryOptions } as CreateQueryOptions<
-		Awaited<ReturnType<typeof onlineFeaturesTestEndpoint>>,
+		Awaited<ReturnType<typeof test>>,
 		TError,
 		TData
-	> & { queryKey: QueryKey };
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
-export type OnlineFeaturesTestEndpointQueryResult = NonNullable<
-	Awaited<ReturnType<typeof onlineFeaturesTestEndpoint>>
->;
-export type OnlineFeaturesTestEndpointQueryError =
-	ErrorType<null | FastEndpointsInternalErrorResponse>;
+export type TestQueryResult = NonNullable<Awaited<ReturnType<typeof test>>>;
+export type TestQueryError = ErrorType<null | InternalErrorResponse>;
 
-export function createOnlineFeaturesTestEndpoint<
-	TData = Awaited<ReturnType<typeof onlineFeaturesTestEndpoint>>,
-	TError = ErrorType<null | FastEndpointsInternalErrorResponse>,
->(options?: {
-	query?: CreateQueryOptions<Awaited<ReturnType<typeof onlineFeaturesTestEndpoint>>, TError, TData>;
-}): CreateQueryResult<TData, TError> & { queryKey: QueryKey } {
-	const queryOptions = getOnlineFeaturesTestEndpointQueryOptions(options);
+export function createTest<
+	TData = Awaited<ReturnType<typeof test>>,
+	TError = ErrorType<null | InternalErrorResponse>,
+>(
+	options?: {
+		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof test>>, TError, TData>>;
+	},
+	queryClient?: QueryClient
+): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+	const queryOptions = getTestQueryOptions(options);
 
-	const query = createQuery(queryOptions) as CreateQueryResult<TData, TError> & {
-		queryKey: QueryKey;
+	const query = createQuery(queryOptions, queryClient) as CreateQueryResult<TData, TError> & {
+		queryKey: DataTag<QueryKey, TData, TError>;
 	};
 
 	query.queryKey = queryOptions.queryKey;
