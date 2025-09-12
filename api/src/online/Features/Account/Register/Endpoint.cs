@@ -21,6 +21,6 @@ public class Endpoint : Endpoint<UserRegisterRequest>
     public override async Task HandleAsync(UserRegisterRequest r, CancellationToken ct)
     {
         await accountService.RegisterAsync(r);
-        await Send.OkAsync();
+        await Send.CreatedAtAsync("user");
     }
 }

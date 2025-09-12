@@ -1,4 +1,5 @@
 using System.Text;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Online.Common.Config;
@@ -14,7 +15,15 @@ public static class AuthExtensions
             o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             o.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
-        }).AddJwtBearer(options =>
+        })
+        .AddCookie()
+        .AddGoogle(options =>
+        {
+            options.ClientId = configuration["Authentication:Google:ClientId"] ?? throw new ArgumentException("Google ClientId is not configured");
+            options.ClientSecret = configuration["Authentication:Google:ClientSecret"] ?? throw new ArgumentException("Google ClientSecret is not configured");
+            options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
         {
             var jwtOptions = configuration.GetSection(JwtOptions.JwtOptionsKey)
                 .Get<JwtOptions>() ?? throw new ArgumentException(nameof(JwtOptions));

@@ -1,0 +1,47 @@
+{
+  "svelte": {
+    "prefix": "svelte",
+    "body": [
+      "<script lang=\"ts\">",
+      "</script>",
+      "",
+      "<div>${1:$TM_FILENAME_BASE}</div>",
+      ""
+    ],
+    "description": "svelte"
+  },
+  "svelte-data-table": {
+    "prefix": "svelte-dt",
+    "body": [
+      "<script lang=\"ts\">",
+      "\timport { createGetAll, type GetAllType } from \"\\$lib/api\";",
+      "\timport { DataTable, createShadTable } from \"@kayord/ui\";",
+      "\timport { type ColumnDef } from \"@tanstack/table-core\";",
+      "",
+      "\tconst query = createGetAll();",
+      "",
+      "\tconst columns: ColumnDef<GetAllType>[] = [",
+      "\t\t{",
+      "\t\t\theader: \"Name\",",
+      "\t\t\taccessorKey: \"name\",",
+      "\t\t},",
+      "\t];",
+      "",
+      "\tlet data = \\$derived(\\$query.data ?? []);",
+      "",
+      "\tconst table = createShadTable({",
+      "\t\tcolumns,",
+      "\t\tget data() {",
+      "\t\t\treturn data;",
+      "\t\t},",
+      "\t\tenableRowSelection: false,",
+      "\t});",
+      "</script>",
+      "",
+      "<div class=\"m-2\">",
+      "\t<h2>Title</h2>",
+      "\t<DataTable headerClass=\"pb-2\" {table} isLoading={\\$query.isPending} noDataMessage=\"No data\" />",
+      "</div>"
+    ]
+  }
+}

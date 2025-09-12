@@ -9,7 +9,7 @@ public static class DataExtensions
 {
     public static IServiceCollection ConfigureEF(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
     {
-        services.AddIdentity<User, IdentityRole<Guid>>(opt =>
+        services.AddIdentity<User, IdentityRole>(opt =>
         {
             opt.Password.RequireDigit = true;
             opt.Password.RequireLowercase = true;
@@ -30,6 +30,12 @@ public static class DataExtensions
             {
                 options.EnableSensitiveDataLogging();
             }
+        });
+
+        services.Configure<IdentityOptions>(options =>
+        {
+            options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+            options.Lockout.MaxFailedAccessAttempts = 5;
         });
         return services;
     }
