@@ -17,7 +17,7 @@ public class Endpoint : Endpoint<Request>
     public override void Configure()
     {
         Get("/account/login/google/callback");
-        Description(x => x.WithName("GoogleLoginCallback"));
+        Description(x => x.WithName("GoogleLoginCallback").ExcludeFromDescription());
         AllowAnonymous();
     }
 

@@ -14,7 +14,7 @@ public class Endpoint : Endpoint<UserRegisterRequest>
 
     public override void Configure()
     {
-        Get("/account/register");
+        Post("/account/register");
         Description(x => x.WithName("Register"));
         AllowAnonymous();
     }

@@ -22,66 +22,80 @@ import type {
 	InternalErrorResponse,
 	LoginRequest,
 	OnlineFeaturesAccountLoginGoogleEndpointParams,
-	RegisterParams,
+	UserRegisterRequest,
 } from "./api.schemas";
 
 import { customInstance } from "../mutator/customInstance.svelte";
 import type { ErrorType, BodyType } from "../mutator/customInstance.svelte";
 
-export const register = (params: RegisterParams) => {
-	return customInstance<null>({ url: `/account/register`, method: "GET", params });
+export const register = (userRegisterRequest: BodyType<UserRegisterRequest>) => {
+	return customInstance<null>({
+		url: `/account/register`,
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		data: userRegisterRequest,
+	});
 };
 
-export const getRegisterQueryKey = (params?: RegisterParams) => {
-	return [`/account/register`, ...(params ? [params] : [])] as const;
-};
-
-export const getRegisterQueryOptions = <
-	TData = Awaited<ReturnType<typeof register>>,
+export const getRegisterMutationOptions = <
 	TError = ErrorType<InternalErrorResponse>,
->(
-	params: RegisterParams,
-	options?: {
-		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof register>>, TError, TData>>;
-	}
-) => {
-	const { query: queryOptions } = options ?? {};
-
-	const queryKey = queryOptions?.queryKey ?? getRegisterQueryKey(params);
-
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof register>>> = () => register(params);
-
-	return { queryKey, queryFn, ...queryOptions } as CreateQueryOptions<
+	TContext = unknown,
+>(options?: {
+	mutation?: CreateMutationOptions<
 		Awaited<ReturnType<typeof register>>,
 		TError,
-		TData
-	> & { queryKey: DataTag<QueryKey, TData, TError> };
-};
+		{ data: BodyType<UserRegisterRequest> },
+		TContext
+	>;
+}): CreateMutationOptions<
+	Awaited<ReturnType<typeof register>>,
+	TError,
+	{ data: BodyType<UserRegisterRequest> },
+	TContext
+> => {
+	const mutationKey = ["register"];
+	const { mutation: mutationOptions } = options
+		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+			? options
+			: { ...options, mutation: { ...options.mutation, mutationKey } }
+		: { mutation: { mutationKey } };
 
-export type RegisterQueryResult = NonNullable<Awaited<ReturnType<typeof register>>>;
-export type RegisterQueryError = ErrorType<InternalErrorResponse>;
+	const mutationFn: MutationFunction<
+		Awaited<ReturnType<typeof register>>,
+		{ data: BodyType<UserRegisterRequest> }
+	> = (props) => {
+		const { data } = props ?? {};
 
-export function createRegister<
-	TData = Awaited<ReturnType<typeof register>>,
-	TError = ErrorType<InternalErrorResponse>,
->(
-	params: RegisterParams,
-	options?: {
-		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof register>>, TError, TData>>;
-	},
-	queryClient?: QueryClient
-): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-	const queryOptions = getRegisterQueryOptions(params, options);
-
-	const query = createQuery(queryOptions, queryClient) as CreateQueryResult<TData, TError> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
+		return register(data);
 	};
 
-	query.queryKey = queryOptions.queryKey;
+	return { mutationFn, ...mutationOptions };
+};
 
-	return query;
-}
+export type RegisterMutationResult = NonNullable<Awaited<ReturnType<typeof register>>>;
+export type RegisterMutationBody = BodyType<UserRegisterRequest>;
+export type RegisterMutationError = ErrorType<InternalErrorResponse>;
 
+export const createRegister = <TError = ErrorType<InternalErrorResponse>, TContext = unknown>(
+	options?: {
+		mutation?: CreateMutationOptions<
+			Awaited<ReturnType<typeof register>>,
+			TError,
+			{ data: BodyType<UserRegisterRequest> },
+			TContext
+		>;
+	},
+	queryClient?: QueryClient
+): CreateMutationResult<
+	Awaited<ReturnType<typeof register>>,
+	TError,
+	{ data: BodyType<UserRegisterRequest> },
+	TContext
+> => {
+	const mutationOptions = getRegisterMutationOptions(options);
+
+	return createMutation(mutationOptions, queryClient);
+};
 export const refresh = () => {
 	return customInstance<null>({ url: `/account/refresh`, method: "POST" });
 };

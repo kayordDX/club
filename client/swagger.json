@@ -49,45 +49,24 @@
       }
     },
     "/account/register": {
-      "get": {
+      "post": {
         "tags": [
           "Account"
         ],
         "operationId": "Register",
-        "parameters": [
-          {
-            "name": "firstName",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
+        "requestBody": {
+          "x-name": "UserRegisterRequest",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRegisterRequest"
+              }
             }
           },
-          {
-            "name": "lastName",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "email",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "password",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
+          "required": true,
+          "x-position": 1
+        },
         "responses": {
           "500": {
             "description": "Server Error",
@@ -264,6 +243,30 @@
             "type": "string",
             "description": "additional information or instructions",
             "default": "See application log for stack trace."
+          }
+        }
+      },
+      "UserRegisterRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "firstName",
+          "lastName",
+          "email",
+          "password"
+        ],
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
           }
         }
       },

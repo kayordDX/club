@@ -18,6 +18,13 @@ export interface InternalErrorResponse {
 	note: string;
 }
 
+export interface UserRegisterRequest {
+	firstName: string;
+	lastName: string;
+	email: string;
+	password: string;
+}
+
 export interface LoginRequest {
 	email: string;
 	password: string;
@@ -26,13 +33,6 @@ export interface LoginRequest {
 	/** @nullable */
 	twoFactorRecoveryCode?: string | null;
 }
-
-export type RegisterParams = {
-	firstName: string;
-	lastName: string;
-	email: string;
-	password: string;
-};
 
 export type OnlineFeaturesAccountLoginGoogleEndpointParams = {
 	returnUrl: string;
