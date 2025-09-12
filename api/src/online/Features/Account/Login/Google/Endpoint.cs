@@ -17,6 +17,8 @@ public class Endpoint : Endpoint<Request>
         {
             RedirectUri = $"/account/login/google/callback?returnUrl={r.ReturnUrl}"
         };
+        // If we need to force account selection each time, we can add this parameter
+        // props.SetString("prompt", "select_account");
         await Send.ResultAsync(Results.Challenge(props, ["Google"]));
     }
 }
