@@ -4,7 +4,7 @@ using Online.Data;
 
 namespace Online.Features.Test;
 
-public class Endpoint : EndpointWithoutRequest<List<string>>
+public class Endpoint : EndpointWithoutRequest<List<int>>
 {
     private readonly ILogger<Endpoint> _logger;
     private readonly AppDbContext _dbContext;

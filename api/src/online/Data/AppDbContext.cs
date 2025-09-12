@@ -5,7 +5,7 @@ using Online.Entities;
 
 namespace Online.Data;
 
-public class AppDbContext : IdentityDbContext<User>
+public class AppDbContext : IdentityDbContext<User, IdentityRole<int>, int>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -13,11 +13,11 @@ public class AppDbContext : IdentityDbContext<User>
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.Entity<User>().ToTable("user");
-        modelBuilder.Entity<IdentityRole>().ToTable("role");
-        modelBuilder.Entity<IdentityUserClaim<string>>().ToTable("claim");
-        modelBuilder.Entity<IdentityUserRole<string>>().ToTable("user_role");
-        modelBuilder.Entity<IdentityUserLogin<string>>().ToTable("user_login");
-        modelBuilder.Entity<IdentityRoleClaim<string>>().ToTable("role_claim");
-        modelBuilder.Entity<IdentityUserToken<string>>().ToTable("user_token");
+        modelBuilder.Entity<IdentityRole<int>>().ToTable("role");
+        modelBuilder.Entity<IdentityUserClaim<int>>().ToTable("claim");
+        modelBuilder.Entity<IdentityUserRole<int>>().ToTable("user_role");
+        modelBuilder.Entity<IdentityUserLogin<int>>().ToTable("user_login");
+        modelBuilder.Entity<IdentityRoleClaim<int>>().ToTable("role_claim");
+        modelBuilder.Entity<IdentityUserToken<int>>().ToTable("user_token");
     }
 }
