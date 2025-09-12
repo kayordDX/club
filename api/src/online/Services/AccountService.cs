@@ -135,18 +135,18 @@ public class AccountService
             }
 
             user = newUser;
-        }
 
-        var info = new UserLoginInfo("Google",
-            claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty,
-            "Google");
+            var info = new UserLoginInfo("Google",
+                claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty,
+                "Google");
 
-        var loginResult = await _userManager.AddLoginAsync(user, info);
+            var loginResult = await _userManager.AddLoginAsync(user, info);
 
-        if (!loginResult.Succeeded)
-        {
-            throw new Exception($"External login provider: Google error occurred: Unable to login user {string.Join(", ",
-                loginResult.Errors.Select(x => x.Description))}");
+            if (!loginResult.Succeeded)
+            {
+                throw new Exception($"External login provider: Google error occurred: Unable to login user {string.Join(", ",
+                    loginResult.Errors.Select(x => x.Description))}");
+            }
         }
 
         var (jwtToken, expirationDateInUtc) = _authTokenProcessor.GenerateJwtToken(user);

@@ -1,4 +1,8 @@
-﻿using Online.Common.Extensions;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.Data;
+using Online.Common.Extensions;
+using Online.Entities;
+using Online.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +27,7 @@ app.Services.ApplyMigrations();
 app.UseCorsKayord();
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.UseApi();
 app.UseHealth();
 app.Run();
