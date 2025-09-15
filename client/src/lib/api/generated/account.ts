@@ -18,7 +18,6 @@ import type {
 } from "@tanstack/svelte-query";
 
 import type {
-	GoogleLoginCallbackParams,
 	InternalErrorResponse,
 	LoginRequest,
 	OnlineFeaturesAccountLoginGoogleEndpointParams,
@@ -272,67 +271,6 @@ export function createOnlineFeaturesAccountLoginGoogleEndpoint<
 	queryClient?: QueryClient
 ): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 	const queryOptions = getOnlineFeaturesAccountLoginGoogleEndpointQueryOptions(params, options);
-
-	const query = createQuery(queryOptions, queryClient) as CreateQueryResult<TData, TError> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
-
-	query.queryKey = queryOptions.queryKey;
-
-	return query;
-}
-
-export const googleLoginCallback = (params: GoogleLoginCallbackParams) => {
-	return customInstance<null>({ url: `/account/login/google/callback`, method: "GET", params });
-};
-
-export const getGoogleLoginCallbackQueryKey = (params?: GoogleLoginCallbackParams) => {
-	return [`/account/login/google/callback`, ...(params ? [params] : [])] as const;
-};
-
-export const getGoogleLoginCallbackQueryOptions = <
-	TData = Awaited<ReturnType<typeof googleLoginCallback>>,
-	TError = ErrorType<InternalErrorResponse>,
->(
-	params: GoogleLoginCallbackParams,
-	options?: {
-		query?: Partial<
-			CreateQueryOptions<Awaited<ReturnType<typeof googleLoginCallback>>, TError, TData>
-		>;
-	}
-) => {
-	const { query: queryOptions } = options ?? {};
-
-	const queryKey = queryOptions?.queryKey ?? getGoogleLoginCallbackQueryKey(params);
-
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof googleLoginCallback>>> = () =>
-		googleLoginCallback(params);
-
-	return { queryKey, queryFn, ...queryOptions } as CreateQueryOptions<
-		Awaited<ReturnType<typeof googleLoginCallback>>,
-		TError,
-		TData
-	> & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export type GoogleLoginCallbackQueryResult = NonNullable<
-	Awaited<ReturnType<typeof googleLoginCallback>>
->;
-export type GoogleLoginCallbackQueryError = ErrorType<InternalErrorResponse>;
-
-export function createGoogleLoginCallback<
-	TData = Awaited<ReturnType<typeof googleLoginCallback>>,
-	TError = ErrorType<InternalErrorResponse>,
->(
-	params: GoogleLoginCallbackParams,
-	options?: {
-		query?: Partial<
-			CreateQueryOptions<Awaited<ReturnType<typeof googleLoginCallback>>, TError, TData>
-		>;
-	},
-	queryClient?: QueryClient
-): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-	const queryOptions = getGoogleLoginCallbackQueryOptions(params, options);
 
 	const query = createQuery(queryOptions, queryClient) as CreateQueryResult<TData, TError> & {
 		queryKey: DataTag<QueryKey, TData, TError>;

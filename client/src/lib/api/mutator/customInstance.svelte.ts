@@ -9,6 +9,7 @@ export const customInstance = async <T>({
 	params,
 	headers,
 	data,
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	responseType,
 }: {
 	url: string;

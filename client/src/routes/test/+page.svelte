@@ -1,10 +1,16 @@
 <script lang="ts">
 	import { Button, ThemeSelector } from "@kayord/ui";
-	import { createTest, createRefresh, createRegister, createGoogleLoginCallback } from "$lib/api";
+	import { PUBLIC_API_URL } from "$env/static/public";
+	import {
+		createTest,
+		createRefresh,
+		createRegister,
+		createUserList,
+		createUsersList,
+	} from "$lib/api";
 
 	const handleLoginWithGoogle = () => {
-		window.location.href =
-			"http://localhost:5017/account/login/google?returnUrl=http://localhost:5173";
+		window.location.href = `${PUBLIC_API_URL}/account/login/google?returnUrl=http://localhost:5173`;
 	};
 
 	const testMutation = createRegister();

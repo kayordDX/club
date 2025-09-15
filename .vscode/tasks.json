@@ -2,6 +2,18 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "API",
+            "type": "shell",
+            "command": "dotnet",
+            "args": [
+                "run",
+                "--project",
+                "api/src/online/online.csproj",
+                "--no-restore"
+            ],
+            "problemMatcher": "$msCompile",
+        },
+        {
             "label": "EF Migration Add",
             "type": "shell",
             "command": "dotnet",

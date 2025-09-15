@@ -18,6 +18,72 @@ export interface InternalErrorResponse {
 	note: string;
 }
 
+export interface User {
+	/** Gets or sets the primary key for this user. */
+	id: number;
+	/**
+	 * Gets or sets the user name for this user.
+	 * @nullable
+	 */
+	userName?: string | null;
+	/**
+	 * Gets or sets the normalized user name for this user.
+	 * @nullable
+	 */
+	normalizedUserName?: string | null;
+	/**
+	 * Gets or sets the email address for this user.
+	 * @nullable
+	 */
+	email?: string | null;
+	/**
+	 * Gets or sets the normalized email address for this user.
+	 * @nullable
+	 */
+	normalizedEmail?: string | null;
+	/** Gets or sets a flag indicating if a user has confirmed their email address. */
+	emailConfirmed: boolean;
+	/**
+	 * Gets or sets a salted and hashed representation of the password for this user.
+	 * @nullable
+	 */
+	passwordHash?: string | null;
+	/**
+	 * A random value that must change whenever a users credentials change (password changed, login removed)
+	 * @nullable
+	 */
+	securityStamp?: string | null;
+	/**
+	 * A random value that must change whenever a user is persisted to the store
+	 * @nullable
+	 */
+	concurrencyStamp?: string | null;
+	/**
+	 * Gets or sets a telephone number for the user.
+	 * @nullable
+	 */
+	phoneNumber?: string | null;
+	/** Gets or sets a flag indicating if a user has confirmed their telephone address. */
+	phoneNumberConfirmed: boolean;
+	/** Gets or sets a flag indicating if two factor authentication is enabled for this user. */
+	twoFactorEnabled: boolean;
+	/**
+	 * Gets or sets the date and time, in UTC, when any user lockout ends.
+	 * @nullable
+	 */
+	lockoutEnd?: string | null;
+	/** Gets or sets a flag indicating if the user could be locked out. */
+	lockoutEnabled: boolean;
+	/** Gets or sets the number of failed login attempts for the current user. */
+	accessFailedCount: number;
+	firstName: string;
+	lastName: string;
+	/** @nullable */
+	refreshToken?: string | null;
+	/** @nullable */
+	refreshTokenExpiresAtUtc?: string | null;
+}
+
 export interface UserRegisterRequest {
 	firstName: string;
 	lastName: string;
@@ -34,10 +100,44 @@ export interface LoginRequest {
 	twoFactorRecoveryCode?: string | null;
 }
 
-export type OnlineFeaturesAccountLoginGoogleEndpointParams = {
-	returnUrl: string;
+export type UsersListParams = {
+	/**
+	 * @nullable
+	 */
+	sorts?: string | null;
+	/**
+	 * @nullable
+	 */
+	filters?: string | null;
+	/**
+	 * @nullable
+	 */
+	page?: number | null;
+	/**
+	 * @nullable
+	 */
+	pageSize?: number | null;
 };
 
-export type GoogleLoginCallbackParams = {
+export type UserListParams = {
+	/**
+	 * @nullable
+	 */
+	sorts?: string | null;
+	/**
+	 * @nullable
+	 */
+	filters?: string | null;
+	/**
+	 * @nullable
+	 */
+	page?: number | null;
+	/**
+	 * @nullable
+	 */
+	pageSize?: number | null;
+};
+
+export type OnlineFeaturesAccountLoginGoogleEndpointParams = {
 	returnUrl: string;
 };
