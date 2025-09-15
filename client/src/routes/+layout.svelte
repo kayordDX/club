@@ -5,6 +5,8 @@
 	import { QueryClient, QueryClientProvider } from "@tanstack/svelte-query";
 	import { browser } from "$app/environment";
 	import { Toaster } from "@kayord/ui";
+	import AuthCheck from "$lib/components/check/AuthCheck.svelte";
+	import Header from "$lib/components/Header/Header.svelte";
 
 	const queryClient = new QueryClient({
 		defaultOptions: {
@@ -24,5 +26,8 @@
 <ModeWatcher defaultMode="dark" />
 <Toaster />
 <QueryClientProvider client={queryClient}>
-	{@render children?.()}
+	<AuthCheck>
+		<Header />
+		{@render children?.()}
+	</AuthCheck>
 </QueryClientProvider>

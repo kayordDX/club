@@ -1,11 +1,10 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Online.Common;
 using Online.Data;
 
 namespace Online.Features.Account.Me;
 
-public class Endpoint : EndpointWithoutRequest<List<Response>>
+public class Endpoint : EndpointWithoutRequest<Response?>
 {
     private readonly AppDbContext _dbContext;
 
@@ -24,14 +23,14 @@ public class Endpoint : EndpointWithoutRequest<List<Response>>
     {
         var userId = Helpers.GetCurrentUserId(HttpContext);
 
-        var users = await _dbContext.Users
+        var user = await _dbContext.Users
             .Where(x => x.Id == userId)
             .Select(x => new Response()
             {
                 Email = x.Email ?? string.Empty,
                 FirstName = x.FirstName,
                 LastName = x.LastName
-            }).ToListAsync(ct);
-        await Send.OkAsync(users);
+            }).FirstOrDefaultAsync(ct);
+        await Send.OkAsync(user);
     }
 }

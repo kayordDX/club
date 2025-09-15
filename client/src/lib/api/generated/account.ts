@@ -21,6 +21,7 @@ import type {
 	InternalErrorResponse,
 	LoginRequest,
 	OnlineFeaturesAccountLoginGoogleEndpointParams,
+	Response,
 	UserRegisterRequest,
 } from "./api.schemas";
 
@@ -133,7 +134,95 @@ export const createRefresh = <TError = ErrorType<InternalErrorResponse>, TContex
 
 	return createMutation(mutationOptions, queryClient);
 };
-export const onlineFeaturesAccountLoginEndpoint = (loginRequest: BodyType<LoginRequest>) => {
+export const accountMe = () => {
+	return customInstance<Response>({ url: `/account/me`, method: "GET" });
+};
+
+export const getAccountMeQueryKey = () => {
+	return [`/account/me`] as const;
+};
+
+export const getAccountMeQueryOptions = <
+	TData = Awaited<ReturnType<typeof accountMe>>,
+	TError = ErrorType<null | InternalErrorResponse>,
+>(options?: {
+	query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof accountMe>>, TError, TData>>;
+}) => {
+	const { query: queryOptions } = options ?? {};
+
+	const queryKey = queryOptions?.queryKey ?? getAccountMeQueryKey();
+
+	const queryFn: QueryFunction<Awaited<ReturnType<typeof accountMe>>> = () => accountMe();
+
+	return { queryKey, queryFn, ...queryOptions } as CreateQueryOptions<
+		Awaited<ReturnType<typeof accountMe>>,
+		TError,
+		TData
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AccountMeQueryResult = NonNullable<Awaited<ReturnType<typeof accountMe>>>;
+export type AccountMeQueryError = ErrorType<null | InternalErrorResponse>;
+
+export function createAccountMe<
+	TData = Awaited<ReturnType<typeof accountMe>>,
+	TError = ErrorType<null | InternalErrorResponse>,
+>(
+	options?: {
+		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof accountMe>>, TError, TData>>;
+	},
+	queryClient?: QueryClient
+): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+	const queryOptions = getAccountMeQueryOptions(options);
+
+	const query = createQuery(queryOptions, queryClient) as CreateQueryResult<TData, TError> & {
+		queryKey: DataTag<QueryKey, TData, TError>;
+	};
+
+	query.queryKey = queryOptions.queryKey;
+
+	return query;
+}
+
+export const logout = () => {
+	return customInstance<boolean>({ url: `/account/logout`, method: "POST" });
+};
+
+export const getLogoutMutationOptions = <
+	TError = ErrorType<InternalErrorResponse>,
+	TContext = unknown,
+>(options?: {
+	mutation?: CreateMutationOptions<Awaited<ReturnType<typeof logout>>, TError, void, TContext>;
+}): CreateMutationOptions<Awaited<ReturnType<typeof logout>>, TError, void, TContext> => {
+	const mutationKey = ["logout"];
+	const { mutation: mutationOptions } = options
+		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+			? options
+			: { ...options, mutation: { ...options.mutation, mutationKey } }
+		: { mutation: { mutationKey } };
+
+	const mutationFn: MutationFunction<Awaited<ReturnType<typeof logout>>, void> = () => {
+		return logout();
+	};
+
+	return { mutationFn, ...mutationOptions };
+};
+
+export type LogoutMutationResult = NonNullable<Awaited<ReturnType<typeof logout>>>;
+
+export type LogoutMutationError = ErrorType<InternalErrorResponse>;
+
+export const createLogout = <TError = ErrorType<InternalErrorResponse>, TContext = unknown>(
+	options?: {
+		mutation?: CreateMutationOptions<Awaited<ReturnType<typeof logout>>, TError, void, TContext>;
+	},
+	queryClient?: QueryClient
+): CreateMutationResult<Awaited<ReturnType<typeof logout>>, TError, void, TContext> => {
+	const mutationOptions = getLogoutMutationOptions(options);
+
+	return createMutation(mutationOptions, queryClient);
+};
+export const login = (loginRequest: BodyType<LoginRequest>) => {
 	return customInstance<null>({
 		url: `/account/login`,
 		method: "POST",
@@ -142,23 +231,23 @@ export const onlineFeaturesAccountLoginEndpoint = (loginRequest: BodyType<LoginR
 	});
 };
 
-export const getOnlineFeaturesAccountLoginEndpointMutationOptions = <
+export const getLoginMutationOptions = <
 	TError = ErrorType<InternalErrorResponse>,
 	TContext = unknown,
 >(options?: {
 	mutation?: CreateMutationOptions<
-		Awaited<ReturnType<typeof onlineFeaturesAccountLoginEndpoint>>,
+		Awaited<ReturnType<typeof login>>,
 		TError,
 		{ data: BodyType<LoginRequest> },
 		TContext
 	>;
 }): CreateMutationOptions<
-	Awaited<ReturnType<typeof onlineFeaturesAccountLoginEndpoint>>,
+	Awaited<ReturnType<typeof login>>,
 	TError,
 	{ data: BodyType<LoginRequest> },
 	TContext
 > => {
-	const mutationKey = ["onlineFeaturesAccountLoginEndpoint"];
+	const mutationKey = ["login"];
 	const { mutation: mutationOptions } = options
 		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
 			? options
@@ -166,30 +255,25 @@ export const getOnlineFeaturesAccountLoginEndpointMutationOptions = <
 		: { mutation: { mutationKey } };
 
 	const mutationFn: MutationFunction<
-		Awaited<ReturnType<typeof onlineFeaturesAccountLoginEndpoint>>,
+		Awaited<ReturnType<typeof login>>,
 		{ data: BodyType<LoginRequest> }
 	> = (props) => {
 		const { data } = props ?? {};
 
-		return onlineFeaturesAccountLoginEndpoint(data);
+		return login(data);
 	};
 
 	return { mutationFn, ...mutationOptions };
 };
 
-export type OnlineFeaturesAccountLoginEndpointMutationResult = NonNullable<
-	Awaited<ReturnType<typeof onlineFeaturesAccountLoginEndpoint>>
->;
-export type OnlineFeaturesAccountLoginEndpointMutationBody = BodyType<LoginRequest>;
-export type OnlineFeaturesAccountLoginEndpointMutationError = ErrorType<InternalErrorResponse>;
+export type LoginMutationResult = NonNullable<Awaited<ReturnType<typeof login>>>;
+export type LoginMutationBody = BodyType<LoginRequest>;
+export type LoginMutationError = ErrorType<InternalErrorResponse>;
 
-export const createOnlineFeaturesAccountLoginEndpoint = <
-	TError = ErrorType<InternalErrorResponse>,
-	TContext = unknown,
->(
+export const createLogin = <TError = ErrorType<InternalErrorResponse>, TContext = unknown>(
 	options?: {
 		mutation?: CreateMutationOptions<
-			Awaited<ReturnType<typeof onlineFeaturesAccountLoginEndpoint>>,
+			Awaited<ReturnType<typeof login>>,
 			TError,
 			{ data: BodyType<LoginRequest> },
 			TContext
@@ -197,12 +281,12 @@ export const createOnlineFeaturesAccountLoginEndpoint = <
 	},
 	queryClient?: QueryClient
 ): CreateMutationResult<
-	Awaited<ReturnType<typeof onlineFeaturesAccountLoginEndpoint>>,
+	Awaited<ReturnType<typeof login>>,
 	TError,
 	{ data: BodyType<LoginRequest> },
 	TContext
 > => {
-	const mutationOptions = getOnlineFeaturesAccountLoginEndpointMutationOptions(options);
+	const mutationOptions = getLoginMutationOptions(options);
 
 	return createMutation(mutationOptions, queryClient);
 };

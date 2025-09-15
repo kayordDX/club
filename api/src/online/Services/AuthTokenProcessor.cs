@@ -66,4 +66,21 @@ public class AuthTokenProcessor
             SameSite = SameSiteMode.Strict
         });
     }
+
+    public void WriteAuthTokenAsClientCookie(string cookieName, string token, DateTime expiration)
+    {
+        _httpContextAccessor.HttpContext?.Response.Cookies.Append(cookieName, token, new CookieOptions
+        {
+            HttpOnly = false,
+            Expires = expiration,
+            IsEssential = true,
+            Secure = _environment.IsDevelopment() ? false : true,
+            SameSite = SameSiteMode.Strict
+        });
+    }
+
+    public void DeleteAuthCookie(string cookieName)
+    {
+        _httpContextAccessor.HttpContext?.Response.Cookies.Delete(cookieName);
+    }
 }

@@ -45,14 +45,8 @@ public class AccountService
         }
     }
 
-    public async Task LoginAsync(LoginRequest loginRequest)
+    private async Task LoginShared(User user)
     {
-        var user = await _userManager.FindByEmailAsync(loginRequest.Email);
-        if (user == null || !await _userManager.CheckPasswordAsync(user, loginRequest.Password))
-        {
-            throw new Exception($"Login Failed exception for {loginRequest.Email}");
-        }
-
         var (jwtToken, expirationDateInUtc) = _authTokenProcessor.GenerateJwtToken(user);
         var refreshTokenValue = _authTokenProcessor.GenerateRefreshToken();
 
@@ -65,6 +59,25 @@ public class AccountService
 
         _authTokenProcessor.WriteAuthTokenAsHttpOnlyCookie("ACCESS_TOKEN", jwtToken, expirationDateInUtc);
         _authTokenProcessor.WriteAuthTokenAsHttpOnlyCookie("REFRESH_TOKEN", user.RefreshToken, refreshTokenExpirationDateInUtc);
+        _authTokenProcessor.WriteAuthTokenAsClientCookie("HAS_TOKEN", expirationDateInUtc.ToString("o"), refreshTokenExpirationDateInUtc);
+    }
+
+    public void Logout()
+    {
+        _authTokenProcessor.DeleteAuthCookie("ACCESS_TOKEN");
+        _authTokenProcessor.DeleteAuthCookie("REFRESH_TOKEN");
+        _authTokenProcessor.DeleteAuthCookie("HAS_TOKEN");
+    }
+
+    public async Task LoginAsync(LoginRequest loginRequest)
+    {
+        var user = await _userManager.FindByEmailAsync(loginRequest.Email);
+        if (user == null || !await _userManager.CheckPasswordAsync(user, loginRequest.Password))
+        {
+            throw new Exception($"Login Failed exception for {loginRequest.Email}");
+        }
+
+        await LoginShared(user);
     }
 
     public async Task RefreshTokenAsync(string? refreshToken)
@@ -85,18 +98,7 @@ public class AccountService
             throw new Exception("Refresh token is expired");
         }
 
-        var (jwtToken, expirationDateInUtc) = _authTokenProcessor.GenerateJwtToken(user);
-        var refreshTokenValue = _authTokenProcessor.GenerateRefreshToken();
-
-        var refreshTokenExpirationDateInUtc = DateTime.UtcNow.AddDays(7);
-
-        user.RefreshToken = refreshTokenValue;
-        user.RefreshTokenExpiresAtUtc = refreshTokenExpirationDateInUtc;
-
-        await _userManager.UpdateAsync(user);
-
-        _authTokenProcessor.WriteAuthTokenAsHttpOnlyCookie("ACCESS_TOKEN", jwtToken, expirationDateInUtc);
-        _authTokenProcessor.WriteAuthTokenAsHttpOnlyCookie("REFRESH_TOKEN", user.RefreshToken, refreshTokenExpirationDateInUtc);
+        await LoginShared(user);
     }
 
     public async Task LoginWithGoogleAsync(ClaimsPrincipal? claimsPrincipal)
@@ -149,17 +151,6 @@ public class AccountService
             }
         }
 
-        var (jwtToken, expirationDateInUtc) = _authTokenProcessor.GenerateJwtToken(user);
-        var refreshTokenValue = _authTokenProcessor.GenerateRefreshToken();
-
-        var refreshTokenExpirationDateInUtc = DateTime.UtcNow.AddDays(7);
-
-        user.RefreshToken = refreshTokenValue;
-        user.RefreshTokenExpiresAtUtc = refreshTokenExpirationDateInUtc;
-
-        await _userManager.UpdateAsync(user);
-
-        _authTokenProcessor.WriteAuthTokenAsHttpOnlyCookie("ACCESS_TOKEN", jwtToken, expirationDateInUtc);
-        _authTokenProcessor.WriteAuthTokenAsHttpOnlyCookie("REFRESH_TOKEN", user.RefreshToken, refreshTokenExpirationDateInUtc);
+        await LoginShared(user);
     }
 }

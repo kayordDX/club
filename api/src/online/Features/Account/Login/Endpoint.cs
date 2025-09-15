@@ -17,6 +17,7 @@ public class Endpoint : Endpoint<LoginRequest>
     {
         Post("/account/login");
         AllowAnonymous();
+        Description(x => x.WithName("Login"));
     }
 
     public override async Task HandleAsync(LoginRequest r, CancellationToken ct)
