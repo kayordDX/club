@@ -39,17 +39,11 @@
 		<DropdownMenu.Label>{user.value?.firstName ?? "My Account"}</DropdownMenu.Label>
 		<DropdownMenu.Separator />
 		<DropdownMenu.Group>
-			<DropdownMenu.Item onclick={() => goto("/switch")}>
-				<ArrowRightLeft class="mr-2 h-4 w-4" />Switch Outlet
+			<DropdownMenu.Item onclick={() => goto("/test")}>
+				<ArrowRightLeft class="mr-2 h-4 w-4" />Test
 			</DropdownMenu.Item>
-			<DropdownMenu.Item onclick={() => goto("/setup")}>
-				<WrenchIcon class="mr-2 h-4 w-4" />Setup Device
-			</DropdownMenu.Item>
-			<DropdownMenu.Item onclick={() => goto("/link-account")}>
-				<ShieldUserIcon class="mr-2 h-4 w-4" />Link Account
-			</DropdownMenu.Item>
-			<DropdownMenu.Item onclick={() => goto("/network")}>
-				<NetworkIcon class="mr-2 h-4 w-4" />Network Information
+			<DropdownMenu.Item onclick={() => goto("/another")}>
+				<WrenchIcon class="mr-2 h-4 w-4" />Another
 			</DropdownMenu.Item>
 		</DropdownMenu.Group>
 		<DropdownMenu.Separator />

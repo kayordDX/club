@@ -1,6 +1,7 @@
 import { getError, isValidationError } from "$lib/types";
 import { PUBLIC_API_URL } from "$env/static/public";
 import qs from "qs";
+import { user } from "$lib/stores/user.svelte";
 // import { info } from "$lib/stores/info.svelte";
 
 export const customInstance = async <T>({
@@ -58,7 +59,7 @@ export const customInstance = async <T>({
 		return response.json();
 	} else {
 		if (response.status == 401) {
-			// TODO: Possibly refresh token from lib/firebase
+			await user.refresh();
 			throw new Error("Unauthorized", { cause: "401" });
 		}
 		if (response.status == 403) {

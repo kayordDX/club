@@ -1,4 +1,5 @@
 import { type AccountMeQueryResult } from "$lib/api";
+import { PUBLIC_API_URL } from "$env/static/public";
 
 class User {
 	value: AccountMeQueryResult | undefined = $state(undefined);
@@ -7,6 +8,25 @@ class User {
 
 	clear() {
 		this.value = undefined;
+	}
+
+	refresh() {
+		this.isLoading = true;
+		return fetch(`${PUBLIC_API_URL}/account/refresh`, {
+			method: "POST",
+			credentials: "include",
+		})
+			.then(async (response) => {
+				if (!response.ok) {
+					this.clear();
+				}
+			})
+			.catch(() => {
+				this.clear();
+			})
+			.finally(() => {
+				this.isLoading = false;
+			});
 	}
 }
 

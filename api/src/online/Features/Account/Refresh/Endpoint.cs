@@ -21,8 +21,17 @@ public class Endpoint : EndpointWithoutRequest
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var refreshToken = HttpContext.Request.Cookies["REFRESH_TOKEN"];
-        await accountService.RefreshTokenAsync(refreshToken);
+        try
+        {
+            var refreshToken = HttpContext.Request.Cookies["REFRESH_TOKEN"];
+            await accountService.RefreshTokenAsync(refreshToken);
+        }
+        catch (Exception)
+        {
+            accountService.Logout();
+            await Send.ForbiddenAsync();
+            return;
+        }
         await Send.OkAsync();
     }
 }
