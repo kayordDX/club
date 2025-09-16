@@ -11,12 +11,12 @@
 		NetworkIcon,
 		ArrowRightLeft,
 		ShieldUserIcon,
-		TvMinimalIcon,
 	} from "@lucide/svelte";
 
 	const logoutMutation = createLogout();
 	const logout = async () => {
 		await $logoutMutation.mutateAsync();
+		user.clear();
 		goto("/test");
 	};
 </script>

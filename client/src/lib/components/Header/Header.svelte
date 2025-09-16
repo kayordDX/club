@@ -3,6 +3,7 @@
 	import { cn } from "@kayord/ui/utils";
 	import type { Snippet } from "svelte";
 	import Menu from "./Menu.svelte";
+	import { user } from "$lib/stores/user.svelte";
 
 	interface Props {
 		children?: Snippet;
@@ -34,5 +35,7 @@
 		{/if}
 	</span>
 
-	<Menu />
+	{#if user.isLoggedIn}
+		<Menu />
+	{/if}
 </div>
