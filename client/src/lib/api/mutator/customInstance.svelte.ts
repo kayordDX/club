@@ -30,6 +30,8 @@ export const customInstance = async <T>({
 		}
 	}
 
+	// TODO: check cookie expiry and refresh if it expires soon
+
 	// const token = (await session.user?.getIdToken()) ?? "";
 	// if (headers == undefined) {
 	// 	if (session.user != undefined) {

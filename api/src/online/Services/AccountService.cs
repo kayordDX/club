@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.Extensions.Options;
+using Online.Common.Config;
 using Online.Entities;
 using Online.Features.Account.Register;
 
@@ -11,12 +13,14 @@ public class AccountService
     private readonly AuthTokenProcessor _authTokenProcessor;
     private readonly UserManager<User> _userManager;
     private readonly UserRepository _userRepository;
+    private readonly JwtOptions _jwtOptions;
 
-    public AccountService(UserManager<User> userManager, AuthTokenProcessor authTokenProcessor, UserRepository userRepository)
+    public AccountService(UserManager<User> userManager, AuthTokenProcessor authTokenProcessor, UserRepository userRepository, IOptions<JwtOptions> jwtOptions)
     {
         _userManager = userManager;
         _authTokenProcessor = authTokenProcessor;
         _userRepository = userRepository;
+        _jwtOptions = jwtOptions.Value;
     }
 
     public async Task RegisterAsync(UserRegisterRequest registerRequest)
@@ -50,7 +54,7 @@ public class AccountService
         var (jwtToken, expirationDateInUtc) = _authTokenProcessor.GenerateJwtToken(user);
         var refreshTokenValue = _authTokenProcessor.GenerateRefreshToken();
 
-        var refreshTokenExpirationDateInUtc = DateTime.UtcNow.AddDays(7);
+        var refreshTokenExpirationDateInUtc = DateTime.UtcNow.AddMinutes(_jwtOptions.RefreshTokenExpirationTimeInMinutes);
 
         user.RefreshToken = refreshTokenValue;
         user.RefreshTokenExpiresAtUtc = refreshTokenExpirationDateInUtc;
