@@ -12,6 +12,11 @@ const config = {
 			fallback: "index.html",
 		}),
 	},
+	vitePlugin: {
+		inspector: {
+			showToggleButton: "never",
+		},
+	},
 };
 
 export default config;
