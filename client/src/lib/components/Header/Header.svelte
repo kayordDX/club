@@ -4,6 +4,7 @@
 	import type { Snippet } from "svelte";
 	import Menu from "./Menu.svelte";
 	import { user } from "$lib/stores/user.svelte";
+	import { LightSwitch } from "@kayord/ui";
 
 	interface Props {
 		children?: Snippet;
@@ -16,7 +17,7 @@
 
 <div
 	class={cn(
-		"bg-secondary border-secondary flex h-14 items-center justify-between border-b-2 p-2",
+		"border-border bg-card/50 flex h-14 items-center justify-between border-b p-2 backdrop-blur-sm",
 		className
 	)}
 >
@@ -35,6 +36,7 @@
 		{/if}
 	</span>
 
+	<LightSwitch />
 	{#if user.isLoggedIn}
 		<Menu />
 	{/if}
