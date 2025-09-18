@@ -36,8 +36,10 @@
 		{/if}
 	</span>
 
-	<LightSwitch />
-	{#if user.isLoggedIn}
-		<Menu />
-	{/if}
+	<span>
+		<LightSwitch />
+		{#if user.isLoggedIn}
+			<Menu />
+		{/if}
+	</span>
 </div>

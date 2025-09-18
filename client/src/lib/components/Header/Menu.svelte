@@ -5,19 +5,13 @@
 	import { getInitials } from "$lib/util";
 	import { Avatar, DropdownMenu } from "@kayord/ui";
 	import { createLogout } from "$lib/api";
-	import {
-		LogOutIcon,
-		WrenchIcon,
-		NetworkIcon,
-		ArrowRightLeft,
-		ShieldUserIcon,
-	} from "@lucide/svelte";
+	import { LogOutIcon, WrenchIcon, ArrowRightLeft } from "@lucide/svelte";
 
 	const logoutMutation = createLogout();
 	const logout = async () => {
 		await $logoutMutation.mutateAsync();
 		user.clear();
-		goto("/test");
+		goto("/");
 	};
 </script>
 
@@ -39,8 +33,8 @@
 		<DropdownMenu.Label>{user.value?.firstName ?? "My Account"}</DropdownMenu.Label>
 		<DropdownMenu.Separator />
 		<DropdownMenu.Group>
-			<DropdownMenu.Item onclick={() => goto("/test")}>
-				<ArrowRightLeft class="mr-2 h-4 w-4" />Test
+			<DropdownMenu.Item onclick={() => goto("/login")}>
+				<ArrowRightLeft class="mr-2 h-4 w-4" />Login
 			</DropdownMenu.Item>
 			<DropdownMenu.Item onclick={() => goto("/another")}>
 				<WrenchIcon class="mr-2 h-4 w-4" />Another
