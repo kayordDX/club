@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from "$app/navigation";
 	import { Badge, Button, Card } from "@kayord/ui";
 	import { ClockIcon, MapPinIcon, StarIcon } from "@lucide/svelte";
 
@@ -66,60 +67,62 @@
 		<p class="text-muted-foreground">Select from our premium partner facilities</p>
 	</div>
 
-	<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-2">
-		{#each clubs as club (club.id)}
-			<Card.Root
-				class={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
-					selectedClub === club.id ? "ring-primary ring-2" : ""
-				}`}
-				onclick={() => handleClubSelect(club.id)}
-			>
-				<div class="relative aspect-video overflow-hidden rounded-t-lg">
-					<img
-						src={`https://picsum.photos/seed/${club.id}/200/300`}
-						alt={club.name}
-						class="h-full w-full object-cover"
-					/>
-				</div>
-
-				<Card.Header class="pb-3">
-					<div class="flex items-start justify-between">
-						<div>
-							<Card.Title class="text-lg">{club.name}</Card.Title>
-							<Card.Description class="mt-1 flex items-center">
-								<MapPinIcon class="mr-1 h-4 w-4" />
-								{club.location}
-							</Card.Description>
-						</div>
-						<div class="flex items-center space-x-1">
-							<StarIcon class="h-4 w-4 fill-yellow-400 text-yellow-400" />
-							<span class="text-sm font-medium">{club.rating}</span>
-						</div>
-					</div>
-				</Card.Header>
-
-				<Card.Content class="pt-0">
-					<p class="text-muted-foreground mb-3 text-pretty text-sm">{club.description}</p>
-
-					<div class="mb-4 flex flex-wrap gap-2">
-						{#each club.facilities as facility}
-							<Badge variant="secondary" class="text-xs">
-								{facility}
-							</Badge>
-						{/each}
+	<button class="flex w-full justify-center" onclick={() => goto("/club")}>
+		<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-2">
+			{#each clubs as club (club.id)}
+				<Card.Root
+					class={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
+						selectedClub === club.id ? "ring-primary ring-2" : ""
+					}`}
+					onclick={() => handleClubSelect(club.id)}
+				>
+					<div class="relative aspect-video overflow-hidden rounded-t-lg">
+						<img
+							src={`https://picsum.photos/seed/${club.id}/200/300`}
+							alt={club.name}
+							class="h-full w-full object-cover"
+						/>
 					</div>
 
-					<div class="flex items-center justify-between">
-						<div class="text-muted-foreground flex items-center text-sm">
-							<ClockIcon class="mr-1 h-4 w-4" />
-							{club.priceRange}
+					<Card.Header class="pb-3">
+						<div class="flex items-start justify-between">
+							<div>
+								<Card.Title class="text-lg">{club.name}</Card.Title>
+								<Card.Description class="mt-1 flex items-center">
+									<MapPinIcon class="mr-1 h-4 w-4" />
+									{club.location}
+								</Card.Description>
+							</div>
+							<div class="flex items-center space-x-1">
+								<StarIcon class="h-4 w-4 fill-yellow-400 text-yellow-400" />
+								<span class="text-sm font-medium">{club.rating}</span>
+							</div>
 						</div>
-						<Button size="sm" class={selectedClub === club.id ? "bg-primary" : ""}>
-							{selectedClub === club.id ? "Selected" : "Select Club"}
-						</Button>
-					</div>
-				</Card.Content>
-			</Card.Root>
-		{/each}
-	</div>
+					</Card.Header>
+
+					<Card.Content class="pt-0">
+						<p class="text-muted-foreground mb-3 text-pretty text-sm">{club.description}</p>
+
+						<div class="mb-4 flex flex-wrap gap-2">
+							{#each club.facilities as facility}
+								<Badge variant="secondary" class="text-xs">
+									{facility}
+								</Badge>
+							{/each}
+						</div>
+
+						<div class="flex items-center justify-between">
+							<div class="text-muted-foreground flex items-center text-sm">
+								<ClockIcon class="mr-1 h-4 w-4" />
+								{club.priceRange}
+							</div>
+							<Button size="sm" class={selectedClub === club.id ? "bg-primary" : ""}>
+								{selectedClub === club.id ? "Selected" : "Select Club"}
+							</Button>
+						</div>
+					</Card.Content>
+				</Card.Root>
+			{/each}
+		</div>
+	</button>
 </div>
