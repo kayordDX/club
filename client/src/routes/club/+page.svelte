@@ -11,6 +11,12 @@
 		Pagination,
 	} from "@kayord/ui";
 	import { CalendarDays, User, Clock, CheckCircle, XCircle } from "@lucide/svelte";
+	import { accountMeOptions } from "$lib/api";
+	import { createQuery } from "@tanstack/svelte-query";
+
+	const query = createQuery(() => accountMeOptions());
+
+	console.log("User Data:", query.data);
 
 	// Inlined club data
 	const club = {

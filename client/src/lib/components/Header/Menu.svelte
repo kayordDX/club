@@ -4,12 +4,13 @@
 	import { user } from "$lib/stores/user.svelte";
 	import { getInitials } from "$lib/util";
 	import { Avatar, DropdownMenu } from "@kayord/ui";
-	import { createLogout } from "$lib/api";
+	import { logoutMutation } from "$lib/api";
 	import { LogOutIcon, WrenchIcon, ArrowRightLeft } from "@lucide/svelte";
+	import { createMutation } from "@tanstack/svelte-query";
 
-	const logoutMutation = createLogout();
+	const logoutMut = createMutation(logoutMutation);
 	const logout = async () => {
-		await $logoutMutation.mutateAsync();
+		await logoutMut.mutateAsync({});
 		user.clear();
 		goto("/");
 	};

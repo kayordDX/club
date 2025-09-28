@@ -4,7 +4,7 @@ using Online.Entities;
 
 namespace Online.Features.Test;
 
-public class Endpoint : EndpointWithoutRequest<List<User>>
+public class Endpoint : Endpoint<Request, List<User>>
 {
     private readonly AppDbContext _dbContext;
 
@@ -19,7 +19,7 @@ public class Endpoint : EndpointWithoutRequest<List<User>>
         Description(x => x.WithName("Test"));
     }
 
-    public override async Task HandleAsync(CancellationToken ct)
+    public override async Task HandleAsync(Request req, CancellationToken ct)
     {
         var users = await _dbContext.Users.ToListAsync(ct);
         await Send.OkAsync(users);
