@@ -13,13 +13,14 @@
 	import { Loader } from "@kayord/ui";
 	import { createQuery } from "@tanstack/svelte-query";
 
+	const hasTokenCookie = getCookie("HAS_TOKEN") ? true : false;
+
 	const me = createQuery(() => ({
 		...accountMeOptions(),
 		enabled: hasTokenCookie,
 		refetchOnWindowFocus: false,
 	}));
 
-	const hasTokenCookie = getCookie("HAS_TOKEN") ? true : false;
 	// const me = createAccountMe({ query: { enabled: hasTokenCookie, refetchOnWindowFocus: false } });
 	const d = $derived(me.data);
 
