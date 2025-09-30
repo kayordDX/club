@@ -23,7 +23,6 @@
 	"devDependencies": {
 		"@eslint/compat": "^1.2.5",
 		"@eslint/js": "^9.18.0",
-		"@hey-api/openapi-ts": "0.84.0",
 		"@kayord/ui": "^1.1.14",
 		"@lucide/svelte": "^0.544.0",
 		"@playwright/test": "^1.49.1",
