@@ -11,10 +11,10 @@
 		Pagination,
 	} from "@kayord/ui";
 	import { CalendarDays, User, Clock, CheckCircle, XCircle } from "@lucide/svelte";
-	import { accountMeOptions } from "$lib/api";
+	import { getAccountMeQueryOptions } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
 
-	const query = createQuery(() => accountMeOptions());
+	const query = createQuery(() => getAccountMeQueryOptions());
 
 	console.log("User Data:", query.data);
 

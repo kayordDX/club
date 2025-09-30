@@ -1,8 +1,8 @@
-import { type AccountMeResponse } from "$lib/api";
+import { type AccountMeQueryResult } from "$lib/api";
 import { PUBLIC_API_URL } from "$env/static/public";
 
 class User {
-	value: AccountMeResponse | undefined = $state(undefined);
+	value: AccountMeQueryResult | undefined = $state(undefined);
 	isLoggedIn: boolean = $derived(this.value != undefined);
 	isLoading: boolean = $state(false);
 

@@ -7,7 +7,7 @@
 
 	let { children }: Props = $props();
 
-	import { accountMeOptions } from "$lib/api";
+	import { createAccountMe } from "$lib/api";
 	import { user } from "$lib/stores/user.svelte";
 	import { getCookie } from "$lib/util";
 	import { Loader } from "@kayord/ui";
@@ -15,11 +15,7 @@
 
 	const hasTokenCookie = getCookie("HAS_TOKEN") ? true : false;
 
-	const me = createQuery(() => ({
-		...accountMeOptions(),
-		enabled: hasTokenCookie,
-		refetchOnWindowFocus: false,
-	}));
+	const me = createAccountMe({ query: { enabled: hasTokenCookie, refetchOnWindowFocus: false } });
 
 	// const me = createAccountMe({ query: { enabled: hasTokenCookie, refetchOnWindowFocus: false } });
 	const d = $derived(me.data);

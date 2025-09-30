@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { testOptions } from "$lib/api";
-	import { createQuery } from "@tanstack/svelte-query";
-	const testQuery = createQuery(() => testOptions({ query: { name: "doink" } }));
+	import { createTest } from "$lib/api";
+
+	const testQuery = createTest({ name: "doink" });
 	const tests = $derived(testQuery.data);
 </script>
 
