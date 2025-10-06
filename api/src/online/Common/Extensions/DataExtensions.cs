@@ -40,10 +40,13 @@ public static class DataExtensions
         return services;
     }
 
-    public static void ApplyMigrations(this IServiceProvider serviceProvider)
+    public static async Task ApplyMigrations(this IServiceProvider serviceProvider, CancellationToken ct)
     {
         using var scope = serviceProvider.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        db.Database.Migrate();
+        if (db.Database.IsNpgsql())
+        {
+            await db.Database.MigrateAsync(ct);
+        }
     }
 }

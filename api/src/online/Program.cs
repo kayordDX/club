@@ -22,7 +22,7 @@ builder.Services.ConfigureTelemetry(builder.Configuration);
 
 var app = builder.Build();
 
-app.Services.ApplyMigrations();
+await app.Services.ApplyMigrations(app.Lifetime.ApplicationStopping);
 
 app.UseCorsKayord();
 app.UseAuthentication();
