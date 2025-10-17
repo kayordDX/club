@@ -131,3 +131,13 @@ export const enum LinkType {
 	Option,
 	Bulk,
 }
+
+export interface UserJWT {
+	sub: string;
+	jti: string;
+	email: string;
+	name: string;
+	exp: number;
+	iss: string;
+	aud: string;
+}

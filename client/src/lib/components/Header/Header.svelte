@@ -2,8 +2,7 @@
 	import { goto } from "$app/navigation";
 	import { cn } from "@kayord/ui/utils";
 	import type { Snippet } from "svelte";
-	import Menu from "./Menu.svelte";
-	import { user } from "$lib/stores/user.svelte";
+	import UserMenu from "./UserMenu.svelte";
 	import { LightSwitch } from "@kayord/ui";
 
 	interface Props {
@@ -38,8 +37,6 @@
 
 	<span>
 		<LightSwitch />
-		{#if user.isLoggedIn}
-			<Menu />
-		{/if}
+		<UserMenu />
 	</span>
 </div>

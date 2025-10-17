@@ -5,8 +5,8 @@
 
 <main class="container mx-auto px-4 py-8">
 	<div class="mb-12 text-center">
-		<h1 class="text-foreground mb-4 text-balance text-4xl font-bold">Book Your Perfect Game</h1>
-		<p class="text-muted-foreground mx-auto max-w-2xl text-pretty text-xl">
+		<h1 class="text-foreground mb-4 text-4xl font-bold text-balance">Book Your Perfect Game</h1>
+		<p class="text-muted-foreground mx-auto max-w-2xl text-xl text-pretty">
 			Reserve paddle courts and golf slots at premium clubs. Select your preferred club to view
 			available times and make your booking.
 		</p>

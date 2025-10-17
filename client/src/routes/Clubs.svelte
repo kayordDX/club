@@ -101,7 +101,7 @@
 					</Card.Header>
 
 					<Card.Content class="pt-0">
-						<p class="text-muted-foreground mb-3 text-pretty text-sm">{club.description}</p>
+						<p class="text-muted-foreground mb-3 text-sm text-pretty">{club.description}</p>
 
 						<div class="mb-4 flex flex-wrap gap-2">
 							{#each club.facilities as facility}
