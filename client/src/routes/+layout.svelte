@@ -5,7 +5,6 @@
 	import { QueryClient, QueryClientProvider } from "@tanstack/svelte-query";
 	import { browser } from "$app/environment";
 	import { Toaster } from "svelte-sonner";
-	import AuthCheck from "$lib/components/check/AuthCheck.svelte";
 	import Header from "$lib/components/Header/Header.svelte";
 
 	const queryClient = new QueryClient({

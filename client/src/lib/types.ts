@@ -140,4 +140,5 @@ export interface UserJWT {
 	exp: number;
 	iss: string;
 	aud: string;
+	picture?: string;
 }

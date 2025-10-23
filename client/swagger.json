@@ -395,6 +395,10 @@
             "type": "string",
             "format": "date-time",
             "nullable": true
+          },
+          "picture": {
+            "type": "string",
+            "nullable": true
           }
         }
       },

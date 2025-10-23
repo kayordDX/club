@@ -1,4 +1,5 @@
 using System.Text;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -22,6 +23,9 @@ public static class AuthExtensions
             options.ClientId = configuration["Authentication:Google:ClientId"] ?? throw new ArgumentException("Google ClientId is not configured");
             options.ClientSecret = configuration["Authentication:Google:ClientSecret"] ?? throw new ArgumentException("Google ClientSecret is not configured");
             options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            // Added below to get profile info like picture
+            options.Scope.Add("profile");
+            options.ClaimActions.MapJsonKey("picture", "picture", "url"); // Map the 'picture' claim
         })
         .AddJwtBearer(options =>
         {

@@ -5,14 +5,15 @@
 	import { Avatar, DropdownMenu } from "@kayord/ui";
 	import { createLogout } from "$lib/api";
 	import { LogOutIcon, WrenchIcon, ArrowRightLeft } from "@lucide/svelte";
-	import { getUserCookies } from "$lib/../routes/user.remote";
+	import { getUser } from "$lib/remote/auth.remote";
 
-	const user = await getUserCookies();
+	const userPromise = getUser();
+	const user = $derived(await userPromise);
 
 	const logoutMut = createLogout();
 	const logout = async () => {
 		await logoutMut.mutateAsync();
-		// user.clear();
+		getUser().refresh();
 		goto("/");
 	};
 </script>
@@ -22,7 +23,7 @@
 		<DropdownMenu.Trigger>
 			<div class="relative">
 				<Avatar.Root>
-					<Avatar.Image src={user.sub} alt="profile" />
+					<Avatar.Image src={user.picture} alt="profile" />
 					<Avatar.Fallback class="bg-primary text-primary-foreground">
 						{getInitials(`${user.name}`)}
 					</Avatar.Fallback>

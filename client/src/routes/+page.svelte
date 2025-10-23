@@ -11,6 +11,8 @@
 			available times and make your booking.
 		</p>
 	</div>
+	<a href="/test/server">Test Server</a>
+	<a href="/test/client">Test Client</a>
 	<Search />
 	<Clubs />
 </main>

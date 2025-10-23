@@ -113,6 +113,7 @@ public class AccountService
         }
 
         var email = claimsPrincipal.FindFirstValue(ClaimTypes.Email);
+        var picture = claimsPrincipal.FindFirstValue("picture");
 
         if (email == null)
         {
@@ -129,7 +130,8 @@ public class AccountService
                 Email = email,
                 FirstName = claimsPrincipal.FindFirstValue(ClaimTypes.GivenName) ?? string.Empty,
                 LastName = claimsPrincipal.FindFirstValue(ClaimTypes.Surname) ?? string.Empty,
-                EmailConfirmed = true
+                EmailConfirmed = true,
+                Picture = picture
             };
 
             var result = await _userManager.CreateAsync(newUser);
@@ -152,6 +154,15 @@ public class AccountService
             {
                 throw new Exception($"External login provider: Google error occurred: Unable to login user {string.Join(", ",
                     loginResult.Errors.Select(x => x.Description))}");
+            }
+        }
+        else
+        {
+            // Update picture if changed
+            if (user.Picture != picture)
+            {
+                user.Picture = picture;
+                await _userManager.UpdateAsync(user);
             }
         }
 

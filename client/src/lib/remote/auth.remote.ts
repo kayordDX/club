@@ -12,3 +12,9 @@ export const getUserCookies = query(async () => {
 	}
 	return undefined;
 });
+
+export const getUser = query(async () => {
+	console.log("getUser called", new Date().toISOString());
+	const { locals } = getRequestEvent();
+	return locals.user;
+});

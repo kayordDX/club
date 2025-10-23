@@ -30,7 +30,8 @@ public class AuthTokenProcessor
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email ?? ""),
-            new Claim(JwtRegisteredClaimNames.Name, user.ToString())
+            new Claim(JwtRegisteredClaimNames.Name, user.ToString()),
+            new Claim(JwtRegisteredClaimNames.Picture, user.Picture ?? "")
         };
 
         var expires = DateTime.UtcNow.AddMinutes(_jwtOptions.ExpirationTimeInMinutes);

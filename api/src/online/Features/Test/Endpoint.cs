@@ -21,6 +21,7 @@ public class Endpoint : Endpoint<Request, List<User>>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
+        await Task.Delay(2000, ct);
         var users = await _dbContext.Users.ToListAsync(ct);
         await Send.OkAsync(users);
     }
