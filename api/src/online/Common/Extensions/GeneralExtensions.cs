@@ -8,7 +8,8 @@ public static class GeneralExtensions
     {
         services.AddHttpContextAccessor();
         services.AddScoped<AuthTokenProcessor>();
-        services.AddScoped<UserRepository>();
+        services.AddDetection();
+        services.AddScoped<CurrentUserService>();
         services.AddScoped<AccountService>();
         return services;
     }

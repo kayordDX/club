@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Online.Entities;
 
@@ -12,6 +13,12 @@ public class CurrentUserService
     {
         _userManager = userManager;
         _httpContextAccessor = httpContextAccessor;
+    }
+
+    public int GetId()
+    {
+        var user = _httpContextAccessor.HttpContext?.User;
+        return user == null ? 0 : int.Parse(_userManager.GetUserId(user) ?? "0");
     }
 
     public async Task<User?> GetCurrentUserAsync()

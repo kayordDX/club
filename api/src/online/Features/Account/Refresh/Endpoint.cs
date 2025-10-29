@@ -29,7 +29,7 @@ public class Endpoint : EndpointWithoutRequest<UserModel>
         try
         {
             var refreshToken = HttpContext.Request.Cookies["REFRESH_TOKEN"];
-            await accountService.RefreshTokenAsync(refreshToken);
+            await accountService.RefreshTokenAsync(refreshToken, ct);
 
             var userId = Helpers.GetCurrentUserId(HttpContext);
             var user = await Me.Data.Get(userId, _dbContext, ct);

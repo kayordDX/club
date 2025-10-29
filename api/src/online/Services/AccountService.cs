@@ -1,10 +1,13 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Online.Common.Config;
+using Online.Data;
 using Online.Entities;
 using Online.Models;
+using Wangkanai.Detection.Services;
 
 namespace Online.Services;
 
@@ -12,15 +15,19 @@ public class AccountService
 {
     private readonly AuthTokenProcessor _authTokenProcessor;
     private readonly UserManager<User> _userManager;
-    private readonly UserRepository _userRepository;
+    private readonly AppDbContext _dbContext;
     private readonly JwtOptions _jwtOptions;
+    private readonly IDetectionService _detectionService;
+    private readonly CurrentUserService _currentUserService;
 
-    public AccountService(UserManager<User> userManager, AuthTokenProcessor authTokenProcessor, UserRepository userRepository, IOptions<JwtOptions> jwtOptions)
+    public AccountService(UserManager<User> userManager, AuthTokenProcessor authTokenProcessor, AppDbContext dbContext, IOptions<JwtOptions> jwtOptions, IDetectionService detectionService, CurrentUserService currentUserService)
     {
         _userManager = userManager;
         _authTokenProcessor = authTokenProcessor;
-        _userRepository = userRepository;
+        _dbContext = dbContext;
         _jwtOptions = jwtOptions.Value;
+        _detectionService = detectionService;
+        _currentUserService = currentUserService;
     }
 
     public async Task RegisterAsync(UserRegisterRequest registerRequest)
@@ -49,20 +56,48 @@ public class AccountService
         }
     }
 
-    private async Task LoginShared(User user)
+    private async Task LoginShared(User user, UserRefreshToken? tokenValue)
     {
         var (jwtToken, expirationDateInUtc) = _authTokenProcessor.GenerateJwtToken(user);
         var refreshTokenValue = _authTokenProcessor.GenerateRefreshToken();
 
         var refreshTokenExpirationDateInUtc = DateTime.UtcNow.AddMinutes(_jwtOptions.RefreshTokenExpirationTimeInMinutes);
 
-        user.RefreshToken = refreshTokenValue;
-        user.RefreshTokenExpiresAtUtc = refreshTokenExpirationDateInUtc;
+        string browser = _detectionService.Browser.Name.ToString();
+        string browserVersion = _detectionService.Browser.Version.ToString();
+        string device = _detectionService.Device.Type.ToString();
+        string platform = _detectionService.Platform.Name.ToString();
+        string platformProcessor = _detectionService.Platform.Processor.ToString();
 
-        await _userManager.UpdateAsync(user);
+        if (tokenValue != null)
+        {
+            tokenValue.Token = refreshTokenValue;
+            tokenValue.ExpiresAtUtc = refreshTokenExpirationDateInUtc;
+            tokenValue.Browser = browser;
+            tokenValue.BrowserVersion = browserVersion;
+            tokenValue.Device = device;
+            tokenValue.Platform = platform;
+            tokenValue.Processor = platformProcessor;
+        }
+        else
+        {
+            tokenValue = new UserRefreshToken
+            {
+                Token = refreshTokenValue,
+                UserId = user.Id,
+                ExpiresAtUtc = refreshTokenExpirationDateInUtc,
+                Browser = browser,
+                BrowserVersion = browserVersion,
+                Device = device,
+                Platform = platform,
+                Processor = platformProcessor
+            };
+            await _dbContext.UserRefreshToken.AddAsync(tokenValue);
+        }
+        await _dbContext.SaveChangesAsync();
 
         _authTokenProcessor.WriteAuthTokenAsHttpOnlyCookie("ACCESS_TOKEN", jwtToken, expirationDateInUtc);
-        _authTokenProcessor.WriteAuthTokenAsHttpOnlyCookie("REFRESH_TOKEN", user.RefreshToken, refreshTokenExpirationDateInUtc);
+        _authTokenProcessor.WriteAuthTokenAsHttpOnlyCookie("REFRESH_TOKEN", refreshTokenValue, refreshTokenExpirationDateInUtc);
         _authTokenProcessor.WriteAuthTokenAsClientCookie("HAS_TOKEN", expirationDateInUtc);
     }
 
@@ -81,29 +116,44 @@ public class AccountService
             throw new Exception($"Login Failed exception for {loginRequest.Email}");
         }
 
-        await LoginShared(user);
+        await LoginShared(user, null);
     }
 
-    public async Task RefreshTokenAsync(string? refreshToken)
+    public async Task RefreshTokenAsync(string? refreshToken, CancellationToken ct)
     {
         if (string.IsNullOrEmpty(refreshToken))
         {
             throw new Exception("Refresh token is missing");
         }
 
-        var user = await _userRepository.GetUserByRefreshTokenAsync(refreshToken);
-        if (user == null)
+        var tokenValue = await _dbContext.UserRefreshToken
+            .Where(x => x.Token == refreshToken)
+            .Include(x => x.User)
+            .FirstOrDefaultAsync(ct);
+
+        if (tokenValue == null || tokenValue.User == null)
         {
             throw new Exception("Unable to retrieve user for refresh token");
         }
 
-        if (user.RefreshTokenExpiresAtUtc < DateTime.UtcNow)
+        if (tokenValue.ExpiresAtUtc < DateTime.UtcNow)
         {
             throw new Exception("Refresh token is expired");
         }
 
-        await LoginShared(user);
+        await LoginShared(tokenValue.User, tokenValue);
     }
+
+    // TODO: Validate This
+    public async Task RevokeAll()
+    {
+        var userId = _currentUserService.GetId();
+        var refreshTokens = _dbContext.UserRefreshToken.Where(x => x.UserId == userId);
+        _dbContext.UserRefreshToken.RemoveRange(refreshTokens);
+        await _dbContext.SaveChangesAsync();
+    }
+
+    // TODO: Add Revoke to Revoke Specific Device
 
     public async Task LoginWithGoogleAsync(ClaimsPrincipal? claimsPrincipal)
     {
@@ -166,6 +216,6 @@ public class AccountService
             }
         }
 
-        await LoginShared(user);
+        await LoginShared(user, null);
     }
 }

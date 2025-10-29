@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Online.Data;
@@ -11,9 +12,11 @@ using Online.Data;
 namespace Online.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251029143651_RefreshToken")]
+    partial class RefreshToken
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -213,6 +216,40 @@ namespace Online.Data.Migrations
                     b.ToTable("facility", (string)null);
                 });
 
+            modelBuilder.Entity("Online.Entities.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("ExpiresAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at_utc");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("token");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_refresh_token");
+
+                    b.HasIndex("Token")
+                        .IsUnique()
+                        .HasDatabaseName("ix_refresh_token_token");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_refresh_token_user_id");
+
+                    b.ToTable("refresh_token", (string)null);
+                });
+
             modelBuilder.Entity("Online.Entities.Resource", b =>
                 {
                     b.Property<int>("Id")
@@ -357,65 +394,6 @@ namespace Online.Data.Migrations
                     b.ToTable("user", (string)null);
                 });
 
-            modelBuilder.Entity("Online.Entities.UserRefreshToken", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Browser")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("browser");
-
-                    b.Property<string>("BrowserVersion")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("browser_version");
-
-                    b.Property<string>("Device")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("device");
-
-                    b.Property<DateTime>("ExpiresAtUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("expires_at_utc");
-
-                    b.Property<string>("Platform")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("platform");
-
-                    b.Property<string>("Processor")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("processor");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("token");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_user_refresh_token");
-
-                    b.HasIndex("Token")
-                        .IsUnique()
-                        .HasDatabaseName("ix_user_refresh_token_token");
-
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("ix_user_refresh_token_user_id");
-
-                    b.ToTable("user_refresh_token", (string)null);
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<int>", null)
@@ -485,6 +463,18 @@ namespace Online.Data.Migrations
                     b.Navigation("Site");
                 });
 
+            modelBuilder.Entity("Online.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("Online.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_refresh_token_users_user_id");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Online.Entities.Resource", b =>
                 {
                     b.HasOne("Online.Entities.Facility", "Facility")
@@ -495,18 +485,6 @@ namespace Online.Data.Migrations
                         .HasConstraintName("fk_resource_facility_facility_id");
 
                     b.Navigation("Facility");
-                });
-
-            modelBuilder.Entity("Online.Entities.UserRefreshToken", b =>
-                {
-                    b.HasOne("Online.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_user_refresh_token_users_user_id");
-
-                    b.Navigation("User");
                 });
 #pragma warning restore 612, 618
         }

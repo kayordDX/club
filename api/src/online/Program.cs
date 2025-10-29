@@ -28,6 +28,8 @@ app.UseCorsKayord();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseDetection();
 app.UseApi();
 app.UseHealth();
+
 app.Run();

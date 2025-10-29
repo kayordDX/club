@@ -2,6 +2,10 @@
 
 The public site to book and login as member.
 
+## Todo
+
+- [ ] Refresh tokens as own table and not part of user table
+
 ## API (Backend)
 
 ```bash

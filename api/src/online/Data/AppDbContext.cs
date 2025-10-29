@@ -23,5 +23,6 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<int>, int>
         // modelBuilder.Entity<IdentityUserToken<int>>().ToTable("user_token");
     }
 
-    public DbSet<Resource> Resouce { get; set; }
+    public DbSet<Resource> Resource { get; set; }
+    public DbSet<UserRefreshToken> UserRefreshToken { get; set; }
 }
