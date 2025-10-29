@@ -17,7 +17,7 @@
 		"test:e2e": "playwright test",
 		"test:install": "pnpm exec playwright install chromium",
 		"api": "pnpm run api:swagger && npm run api:orval",
-		"api:swagger": "curl http://localhost:5017/openapi/v1.json > swagger.json",
+		"api:swagger": "curl http://localhost:5000/openapi/v1.json > swagger.json",
 		"api:orval": "orval",
 		"hey": "openapi-ts"
 	},

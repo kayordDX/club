@@ -1,6 +1,8 @@
 <script>
+	import { Button } from "@kayord/ui";
 	import Clubs from "./Clubs.svelte";
 	import Search from "./Search.svelte";
+	import { user } from "$lib/stores/user.svelte";
 </script>
 
 <main class="container mx-auto px-4 py-8">
@@ -10,6 +12,9 @@
 			Reserve paddle courts and golf slots at premium clubs. Select your preferred club to view
 			available times and make your booking.
 		</p>
+		{#if !user.isLoggedIn}
+			<Button class="mt-4" href="/login">Login</Button>
+		{/if}
 	</div>
 	<a href="/test/server">Test Server</a>
 	<a href="/test/client">Test Client</a>

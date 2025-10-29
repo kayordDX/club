@@ -31,23 +31,24 @@ export const customInstance = async <T>({
 	}
 
 	// TODO: check cookie expiry and refresh if it expires soon
-	$effect(() => {
-		if (!user.isLoading) {
-			const hasTokenCookie = getCookie("HAS_TOKEN");
-			if (hasTokenCookie) {
-				const expires = new SvelteDate(hasTokenCookie);
-				const now = new SvelteDate();
-				const diff = expires.getTime() - now.getTime();
-				const expireCheck = 2 * 60 * 1000;
+	$effect.root(() => {
+		$effect(() => {
+			if (!user.isLoading) {
+				const hasTokenCookie = getCookie("HAS_TOKEN");
+				if (hasTokenCookie) {
+					const expires = new SvelteDate(hasTokenCookie);
+					const now = new SvelteDate();
+					const diff = expires.getTime() - now.getTime();
+					const expireCheck = 2 * 60 * 1000;
 
-				// Token will expire in next 2 minutes
-				if (diff <= expireCheck) {
-					user.refresh();
+					// Token will expire in next 2 minutes
+					if (diff <= expireCheck) {
+						console.log("Refreshing token...");
+						user.refresh();
+					}
 				}
-
-				console.log("Expires:", expires, "14:38:53");
 			}
-		}
+		});
 	});
 
 	const response = await fetch(fullUrl, {
