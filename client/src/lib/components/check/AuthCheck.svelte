@@ -7,26 +7,15 @@
 
 	let { children }: Props = $props();
 
-	import { createAccountMe } from "$lib/api";
 	import { user } from "$lib/stores/user.svelte";
 	import { getCookie } from "$lib/util";
 	import { Loader } from "@kayord/ui";
-	import { createQuery } from "@tanstack/svelte-query";
 
 	const hasTokenCookie = getCookie("HAS_TOKEN") ? true : false;
 
-	const me = createAccountMe({ query: { enabled: hasTokenCookie, refetchOnWindowFocus: false } });
-
-	// const me = createAccountMe({ query: { enabled: hasTokenCookie, refetchOnWindowFocus: false } });
-	const d = $derived(me.data);
-
 	$effect(() => {
-		user.isLoading = me.isLoading;
-	});
-
-	$effect(() => {
-		if (d) {
-			user.value = d;
+		if (hasTokenCookie) {
+			user.update();
 		}
 	});
 </script>

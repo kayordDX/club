@@ -1,4 +1,5 @@
 
+using Online.Models;
 using Online.Services;
 
 namespace Online.Features.Account.Register;

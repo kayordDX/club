@@ -68,9 +68,9 @@ public class AuthTokenProcessor
         });
     }
 
-    public void WriteAuthTokenAsClientCookie(string cookieName, string token, DateTime expiration)
+    public void WriteAuthTokenAsClientCookie(string cookieName, DateTime expiration)
     {
-        _httpContextAccessor.HttpContext?.Response.Cookies.Append(cookieName, token, new CookieOptions
+        _httpContextAccessor.HttpContext?.Response.Cookies.Append(cookieName, expiration.ToString("o"), new CookieOptions
         {
             HttpOnly = false,
             Expires = expiration,

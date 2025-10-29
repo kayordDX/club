@@ -120,8 +120,15 @@
               }
             }
           },
-          "204": {
-            "description": "No Content"
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserModel"
+                }
+              }
+            }
           }
         }
       }
@@ -148,7 +155,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Response"
+                  "$ref": "#/components/schemas/UserModel"
                 }
               }
             }
@@ -459,14 +466,15 @@
           }
         }
       },
-      "Response": {
+      "UserModel": {
         "type": "object",
         "additionalProperties": false,
         "required": [
           "id",
           "email",
           "firstName",
-          "lastName"
+          "lastName",
+          "name"
         ],
         "properties": {
           "id": {
@@ -480,6 +488,13 @@
           },
           "lastName": {
             "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "picture": {
+            "type": "string",
+            "nullable": true
           }
         }
       },

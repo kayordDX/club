@@ -1,5 +1,5 @@
 import { getRequestEvent, query } from "$app/server";
-import { test as testApi, type User } from "$lib/api";
+import { type User } from "$lib/api";
 import { PUBLIC_API_URL } from "$env/static/public";
 
 export const test = query(async () => {
@@ -10,5 +10,4 @@ export const test = query(async () => {
 	}
 	const data: User[] = await result.json();
 	return data;
-	// return await testApi({ name: "test" });
 });

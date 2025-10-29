@@ -6,6 +6,7 @@
 	import { browser } from "$app/environment";
 	import { Toaster } from "svelte-sonner";
 	import Header from "$lib/components/Header/Header.svelte";
+	import AuthCheck from "$lib/components/check/AuthCheck.svelte";
 
 	const queryClient = new QueryClient({
 		defaultOptions: {
@@ -24,8 +25,8 @@
 <ModeWatcher defaultMode="dark" />
 <Toaster />
 <QueryClientProvider client={queryClient}>
-	<!-- <AuthCheck> -->
-	<Header />
-	{@render children?.()}
-	<!-- </AuthCheck> -->
+	<AuthCheck>
+		<Header />
+		{@render children?.()}
+	</AuthCheck>
 </QueryClientProvider>

@@ -21,7 +21,7 @@ import type {
 	InternalErrorResponse,
 	LoginRequest,
 	OnlineFeaturesAccountLoginGoogleEndpointParams,
-	Response,
+	UserModel,
 	UserRegisterRequest,
 } from "./api.schemas";
 
@@ -97,7 +97,7 @@ export const createRegister = <TError = ErrorType<InternalErrorResponse>, TConte
 	return createMutation(() => ({ ...mutationOptions, queryClient }));
 };
 export const refresh = () => {
-	return customInstance<void>({ url: `/account/refresh`, method: "POST" });
+	return customInstance<UserModel>({ url: `/account/refresh`, method: "POST" });
 };
 
 export const getRefreshMutationOptions = <
@@ -135,7 +135,7 @@ export const createRefresh = <TError = ErrorType<InternalErrorResponse>, TContex
 	return createMutation(() => ({ ...mutationOptions, queryClient }));
 };
 export const accountMe = () => {
-	return customInstance<Response>({ url: `/account/me`, method: "GET" });
+	return customInstance<UserModel>({ url: `/account/me`, method: "GET" });
 };
 
 export const getAccountMeQueryKey = () => {

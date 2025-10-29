@@ -22,4 +22,6 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<int>, int>
         // modelBuilder.Entity<IdentityRoleClaim<int>>().ToTable("role_claim");
         // modelBuilder.Entity<IdentityUserToken<int>>().ToTable("user_token");
     }
+
+    public DbSet<Resource> Resouce { get; set; }
 }

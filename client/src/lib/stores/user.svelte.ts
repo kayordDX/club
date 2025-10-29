@@ -1,5 +1,4 @@
-import { type AccountMeQueryResult } from "$lib/api";
-import { PUBLIC_API_URL } from "$env/static/public";
+import { accountMe, refresh, type AccountMeQueryResult } from "$lib/api";
 
 class User {
 	value: AccountMeQueryResult | undefined = $state(undefined);
@@ -10,23 +9,29 @@ class User {
 		this.value = undefined;
 	}
 
-	refresh() {
-		this.isLoading = true;
-		return fetch(`${PUBLIC_API_URL}/account/refresh`, {
-			method: "POST",
-			credentials: "include",
-		})
-			.then(async (response) => {
-				if (!response.ok) {
-					this.clear();
-				}
-			})
-			.catch(() => {
-				this.clear();
-			})
-			.finally(() => {
-				this.isLoading = false;
-			});
+	async update() {
+		try {
+			this.isLoading = true;
+			const user = await accountMe();
+			this.value = user;
+		} catch {
+			this.clear();
+		} finally {
+			this.isLoading = false;
+		}
+		return this.value;
+	}
+
+	async refresh() {
+		try {
+			this.isLoading = true;
+			const user = await refresh();
+			this.value = user;
+		} catch {
+			this.clear();
+		} finally {
+			this.isLoading = false;
+		}
 	}
 }
 

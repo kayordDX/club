@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.Extensions.Options;
 using Online.Common.Config;
 using Online.Entities;
-using Online.Features.Account.Register;
+using Online.Models;
 
 namespace Online.Services;
 
@@ -63,7 +63,7 @@ public class AccountService
 
         _authTokenProcessor.WriteAuthTokenAsHttpOnlyCookie("ACCESS_TOKEN", jwtToken, expirationDateInUtc);
         _authTokenProcessor.WriteAuthTokenAsHttpOnlyCookie("REFRESH_TOKEN", user.RefreshToken, refreshTokenExpirationDateInUtc);
-        _authTokenProcessor.WriteAuthTokenAsClientCookie("HAS_TOKEN", expirationDateInUtc.ToString("o"), refreshTokenExpirationDateInUtc);
+        _authTokenProcessor.WriteAuthTokenAsClientCookie("HAS_TOKEN", expirationDateInUtc);
     }
 
     public void Logout()

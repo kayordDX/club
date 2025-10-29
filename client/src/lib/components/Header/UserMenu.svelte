@@ -5,27 +5,24 @@
 	import { Avatar, DropdownMenu } from "@kayord/ui";
 	import { createLogout } from "$lib/api";
 	import { LogOutIcon, WrenchIcon, ArrowRightLeft } from "@lucide/svelte";
-	import { getUser } from "$lib/remote/auth.remote";
-
-	const userPromise = getUser();
-	const user = $derived(await userPromise);
+	import { user } from "$lib/stores/user.svelte";
 
 	const logoutMut = createLogout();
 	const logout = async () => {
 		await logoutMut.mutateAsync();
-		getUser().refresh();
+		user.clear();
 		goto("/");
 	};
 </script>
 
-{#if user}
+{#if user.value}
 	<DropdownMenu.Root>
 		<DropdownMenu.Trigger>
 			<div class="relative">
 				<Avatar.Root>
-					<Avatar.Image src={user.picture} alt="profile" />
+					<Avatar.Image src={user.value.picture} alt="profile" />
 					<Avatar.Fallback class="bg-primary text-primary-foreground">
-						{getInitials(`${user.name}`)}
+						{getInitials(`${user.value.name}`)}
 					</Avatar.Fallback>
 				</Avatar.Root>
 				<div
@@ -34,7 +31,7 @@
 			</div>
 		</DropdownMenu.Trigger>
 		<DropdownMenu.Content>
-			<DropdownMenu.Label>{user.name}</DropdownMenu.Label>
+			<DropdownMenu.Label>{user.value.name}</DropdownMenu.Label>
 			<DropdownMenu.Separator />
 			<DropdownMenu.Group>
 				<DropdownMenu.Item onclick={() => goto("/login")}>

@@ -1,4 +1,4 @@
-namespace Online.Features.Account.Register;
+namespace Online.Models;
 
 public class UserRegisterRequest
 {

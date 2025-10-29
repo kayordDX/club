@@ -110,11 +110,14 @@ export interface ErrorResponse {
 	errors: ErrorResponseErrors;
 }
 
-export interface Response {
+export interface UserModel {
 	id: string;
 	email: string;
 	firstName: string;
 	lastName: string;
+	name: string;
+	/** @nullable */
+	picture?: string | null;
 }
 
 export interface LoginRequest {

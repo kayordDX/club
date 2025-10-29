@@ -1,10 +1,10 @@
-using Microsoft.EntityFrameworkCore;
 using Online.Common;
 using Online.Data;
+using Online.Models;
 
 namespace Online.Features.Account.Me;
 
-public class Endpoint : EndpointWithoutRequest<Response?>
+public class Endpoint : EndpointWithoutRequest<UserModel?>
 {
     private readonly AppDbContext _dbContext;
 
@@ -23,14 +23,8 @@ public class Endpoint : EndpointWithoutRequest<Response?>
     {
         var userId = Helpers.GetCurrentUserId(HttpContext);
 
-        var user = await _dbContext.Users
-            .Where(x => x.Id == userId)
-            .Select(x => new Response()
-            {
-                Email = x.Email ?? string.Empty,
-                FirstName = x.FirstName,
-                LastName = x.LastName
-            }).FirstOrDefaultAsync(ct);
+        var user = await Data.Get(userId, _dbContext, ct);
+
         await Send.OkAsync(user);
     }
 }
