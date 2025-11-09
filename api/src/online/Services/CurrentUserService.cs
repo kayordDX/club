@@ -15,10 +15,10 @@ public class CurrentUserService
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public int GetId()
+    public Guid? GetId()
     {
         var user = _httpContextAccessor.HttpContext?.User;
-        return user == null ? 0 : int.Parse(_userManager.GetUserId(user) ?? "0");
+        return user == null ? null : Guid.Parse(_userManager.GetUserId(user) ?? Guid.Empty.ToString());
     }
 
     public async Task<User?> GetCurrentUserAsync()

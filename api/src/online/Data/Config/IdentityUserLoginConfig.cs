@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Online.Data.Config;
 
-public class IdentityUserLoginConfig : IEntityTypeConfiguration<IdentityUserLogin<int>>
+public class IdentityUserLoginConfig : IEntityTypeConfiguration<IdentityUserLogin<Guid>>
 {
-    public void Configure(EntityTypeBuilder<IdentityUserLogin<int>> builder)
+    public void Configure(EntityTypeBuilder<IdentityUserLogin<Guid>> builder)
     {
         builder.ToTable("user_login");
     }

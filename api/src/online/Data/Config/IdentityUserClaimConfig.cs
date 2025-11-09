@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Online.Data.Config;
 
-public class IdentityUserClaimConfig : IEntityTypeConfiguration<IdentityUserClaim<int>>
+public class IdentityUserClaimConfig : IEntityTypeConfiguration<IdentityUserClaim<Guid>>
 {
-    public void Configure(EntityTypeBuilder<IdentityUserClaim<int>> builder)
+    public void Configure(EntityTypeBuilder<IdentityUserClaim<Guid>> builder)
     {
         builder.ToTable("claim");
     }

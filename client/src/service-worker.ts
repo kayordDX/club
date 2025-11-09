@@ -34,7 +34,6 @@ self.addEventListener("install", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
-	console.log("acitvate boii");
 	// Remove previous cached data from disk
 	async function deleteOldCaches() {
 		for (const key of await caches.keys()) {
@@ -46,7 +45,6 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
-	console.log("fetch boii");
 	// ignore POST requests etc
 	if (event.request.method !== "GET") return;
 

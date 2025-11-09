@@ -9,7 +9,7 @@ public static class DataExtensions
 {
     public static IServiceCollection ConfigureEF(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
     {
-        services.AddIdentity<User, IdentityRole<int>>(opt =>
+        services.AddIdentity<User, IdentityRole<Guid>>(opt =>
         {
             opt.Password.RequireDigit = true;
             opt.Password.RequireLowercase = true;

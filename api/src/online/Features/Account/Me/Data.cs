@@ -6,7 +6,7 @@ namespace Online.Features.Account.Me;
 
 public static class Data
 {
-    public static async Task<UserModel?> Get(int? userId, AppDbContext _dbContext, CancellationToken ct)
+    public static async Task<UserModel?> Get(Guid? userId, AppDbContext _dbContext, CancellationToken ct)
     {
         var user = await _dbContext.Users
             .Where(x => x.Id == userId)

@@ -6,7 +6,7 @@ using Online.Entities;
 
 namespace Online.Data;
 
-public class AppDbContext : IdentityDbContext<User, IdentityRole<int>, int>
+public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -14,13 +14,6 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<int>, int>
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
-        // modelBuilder.Entity<User>().ToTable("user");
-        // modelBuilder.Entity<IdentityRole<int>>().ToTable("role");
-        // modelBuilder.Entity<IdentityUserClaim<int>>().ToTable("claim");
-        // modelBuilder.Entity<IdentityUserRole<int>>().ToTable("user_role");
-        // modelBuilder.Entity<IdentityUserLogin<int>>().ToTable("user_login");
-        // modelBuilder.Entity<IdentityRoleClaim<int>>().ToTable("role_claim");
-        // modelBuilder.Entity<IdentityUserToken<int>>().ToTable("user_token");
     }
 
     public DbSet<Resource> Resource { get; set; }

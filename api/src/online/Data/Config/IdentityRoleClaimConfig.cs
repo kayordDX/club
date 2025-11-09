@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Online.Data.Config;
 
-public class IdentityRoleClaimConfig : IEntityTypeConfiguration<IdentityRoleClaim<int>>
+public class IdentityRoleClaimConfig : IEntityTypeConfiguration<IdentityRoleClaim<Guid>>
 {
-    public void Configure(EntityTypeBuilder<IdentityRoleClaim<int>> builder)
+    public void Configure(EntityTypeBuilder<IdentityRoleClaim<Guid>> builder)
     {
         builder.ToTable("role_claim");
     }
