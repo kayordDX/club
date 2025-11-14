@@ -29,15 +29,15 @@
 			<form onsubmit={handleSearch} class="mb-6">
 				<div class="relative">
 					<SearchIcon
-						class="text-muted-foreground absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 transform"
+						class="text-muted-foreground absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 transform"
 					/>
 					<Input
 						type="text"
 						placeholder="Search clubs, locations, or sports..."
 						bind:value={searchQuery}
-						class="bg-background/50 border-border/50 focus:border-primary/50 py-6 pl-12 pr-4 text-lg"
+						class="bg-background/50 border-border/50 focus:border-primary/50 py-6 pr-4 pl-12 text-lg"
 					/>
-					<Button type="submit" class="absolute right-2 top-1/2 -translate-y-1/2 transform px-6">
+					<Button type="submit" class="absolute top-1/2 right-2 -translate-y-1/2 transform px-6">
 						Search
 					</Button>
 				</div>
