@@ -1,6 +1,3 @@
-[tools]
-dotnet = "latest"
-
 [tasks.api]
 description = "Run the API project"
 run = "dotnet run --project api/src/online/online.csproj --no-restore"

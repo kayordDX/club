@@ -26,6 +26,8 @@
                 "api/src/online/online.csproj",
                 "--startup-project",
                 "api/src/online/online.csproj",
+                "--context",
+                "AppDbContext",
                 "-o",
                 "Data/Migrations"
             ],
