@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Online.Data;
@@ -11,9 +12,11 @@ using Online.Data;
 namespace Online.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251217062208_PassKey")]
+    partial class PassKey
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -155,12 +158,12 @@ namespace Online.Data.Migrations
                         .HasColumnName("user_id");
 
                     b.HasKey("CredentialId")
-                        .HasName("pk_user_passkey");
+                        .HasName("pk_asp_net_user_passkeys");
 
                     b.HasIndex("UserId")
-                        .HasDatabaseName("ix_user_passkey_user_id");
+                        .HasDatabaseName("ix_asp_net_user_passkeys_user_id");
 
-                    b.ToTable("user_passkey", (string)null);
+                    b.ToTable("AspNetUserPasskeys", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
@@ -474,7 +477,7 @@ namespace Online.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_user_passkey_asp_net_users_user_id");
+                        .HasConstraintName("fk_asp_net_user_passkeys_asp_net_users_user_id");
 
                     b.OwnsOne("Microsoft.AspNetCore.Identity.IdentityPasskeyData", "Data", b1 =>
                         {
@@ -505,7 +508,7 @@ namespace Online.Data.Migrations
 
                             b1.HasKey("IdentityUserPasskeyCredentialId");
 
-                            b1.ToTable("user_passkey");
+                            b1.ToTable("AspNetUserPasskeys");
 
                             b1.ToJson("data");
 

@@ -35,6 +35,7 @@ public static class DataExtensions
 
         services.Configure<IdentityOptions>(options =>
         {
+            options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
             options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
             options.Lockout.MaxFailedAccessAttempts = 5;
         });
