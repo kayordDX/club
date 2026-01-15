@@ -5,6 +5,10 @@
     <UserSecretsId>24216ce2-a485-4a34-9bc6-40fe4d2c0cd0</UserSecretsId>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="AspNetCore.HealthChecks.NpgSql" />
     <PackageReference Include="AspNetCore.HealthChecks.System" />
