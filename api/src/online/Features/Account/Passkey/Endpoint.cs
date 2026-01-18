@@ -4,16 +4,10 @@ using Online.Entities;
 
 namespace Online.Features.Account.Passkey;
 
-public class Endpoint : Endpoint<Request, string>
+public class Endpoint(UserManager<User> userManager, SignInManager<User> signInManager) : Endpoint<Request, string>
 {
-    private readonly UserManager<User> _userManager;
-    private readonly SignInManager<User> _signInManager;
-
-    public Endpoint(UserManager<User> userManager, SignInManager<User> signInManager)
-    {
-        _userManager = userManager;
-        _signInManager = signInManager;
-    }
+    private readonly UserManager<User> _userManager = userManager;
+    private readonly SignInManager<User> _signInManager = signInManager;
 
     public override void Configure()
     {

@@ -4,14 +4,9 @@ using Online.Services;
 
 namespace Online.Features.Account.Login;
 
-public class Endpoint : Endpoint<LoginRequest>
+public class Endpoint(AccountService accountService) : Endpoint<LoginRequest, bool>
 {
-    private readonly AccountService accountService;
-
-    public Endpoint(AccountService accountService)
-    {
-        this.accountService = accountService;
-    }
+    private readonly AccountService accountService = accountService;
 
     public override void Configure()
     {
@@ -23,6 +18,6 @@ public class Endpoint : Endpoint<LoginRequest>
     public override async Task HandleAsync(LoginRequest r, CancellationToken ct)
     {
         await accountService.LoginAsync(r);
-        await Send.OkAsync();
+        await Send.OkAsync(true, ct);
     }
 }

@@ -2,14 +2,9 @@ using Online.Services;
 
 namespace Online.Features.Account.Logout;
 
-public class Endpoint : EndpointWithoutRequest<bool>
+public class Endpoint(AccountService accountService) : EndpointWithoutRequest<bool>
 {
-    private readonly AccountService _accountService;
-
-    public Endpoint(AccountService accountService)
-    {
-        _accountService = accountService;
-    }
+    private readonly AccountService _accountService = accountService;
 
     public override void Configure()
     {
@@ -21,6 +16,6 @@ public class Endpoint : EndpointWithoutRequest<bool>
     public override async Task HandleAsync(CancellationToken ct)
     {
         _accountService.Logout();
-        await Send.OkAsync(true);
+        await Send.OkAsync(true, ct);
     }
 }

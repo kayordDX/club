@@ -1,0 +1,19 @@
+[
+  {
+    "label": "Build",
+    "command": "dotnet build ./api",
+    "tags": ["run"],
+    "hide": "on_success",
+  },
+  {
+    "label": "Run",
+    "command": "dotnet run --project ./api/src/online/online.csproj",
+    "tags": ["test"],
+    "hide": "on_success",
+  },
+  {
+    "label": "Test",
+    "command": "dotnet test --filter $ZED_SYMBOL",
+    "tags": ["test"],
+  },
+]

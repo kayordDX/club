@@ -4,15 +4,8 @@ using Online.Entities;
 
 namespace Online.Features.Test;
 
-public class Endpoint : Endpoint<Request, List<User>>
+public class Endpoint(AppDbContext dbContext) : Endpoint<Request, List<User>>
 {
-    private readonly AppDbContext _dbContext;
-
-    public Endpoint(AppDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
-
     public override void Configure()
     {
         Get("/test");
@@ -22,7 +15,7 @@ public class Endpoint : Endpoint<Request, List<User>>
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
         await Task.Delay(2000, ct);
-        var users = await _dbContext.Users.ToListAsync(ct);
-        await Send.OkAsync(users);
+        var users = await dbContext.Users.ToListAsync(ct);
+        await Send.OkAsync(users, ct);
     }
 }
