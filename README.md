@@ -10,6 +10,11 @@ The public site to book and login as member.
 
 ```bash
 dotnet tool restore
+
+# List updates
+dotnet list package --outdated
+# Update packages
+dotnet package update
 ```
 
 ### Secrets
@@ -23,4 +28,9 @@ dotnet user-secrets list --project api/src/online
 
 ## Client (Front End)
 
-Client
+### Start
+
+```bash
+# cd client
+pnpm dev
+```
