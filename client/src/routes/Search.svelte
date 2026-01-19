@@ -38,6 +38,7 @@
 						class="bg-background/50 border-border/50 focus:border-primary/50 py-6 pr-4 pl-12 text-lg"
 					/>
 					<Button type="submit" class="absolute top-1/2 right-2 -translate-y-1/2 transform px-6">
+						<SearchIcon />
 						Search
 					</Button>
 				</div>
