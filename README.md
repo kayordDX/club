@@ -34,3 +34,19 @@ dotnet user-secrets list --project api/src/online
 # cd client
 pnpm dev
 ```
+
+### Todo Phase 1
+
+- [ ] Register - Google oauth
+- [ ] View Account - Profile Details
+- [ ] Log in - Google auth
+- [ ] View Timesheet
+- [ ] Book slots - booking per day
+- [ ] Cancel booking
+- [ ] View other players in slot
+- [ ] Book a guest
+- [ ] View Bookings
+- [ ] Book Extras
+- [ ] Extra Equipment Agreement
+- [ ] Notification Email/SMS
+- [ ] Payments - Account per club or 1 account managed by aviate - Create accounts. Link accounts to club or multiple clubs.
