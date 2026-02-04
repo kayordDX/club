@@ -12,17 +12,6 @@
 	let isLoading = $state(false);
 </script>
 
-<div class="m-4">
-	{#if user.isLoggedIn}
-		Logged in as {user.value?.firstName}
-	{:else}
-		<Button onclick={handleLoginWithGoogle} variant="outline">
-			{#if isLoading}
-				<Loader class="mr-2" />
-			{:else}
-				<GoogleSvg class="fill-white" />
-			{/if}
-			Google
-		</Button>
-	{/if}
-</div>
+{#if !user.isLoggedIn}
+	<Button onclick={handleLoginWithGoogle}>Login</Button>
+{/if}

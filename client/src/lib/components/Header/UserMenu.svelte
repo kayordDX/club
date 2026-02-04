@@ -6,6 +6,7 @@
 	import { createLogout } from "$lib/api";
 	import { LogOutIcon, WrenchIcon, ArrowRightLeft } from "@lucide/svelte";
 	import { user } from "$lib/stores/user.svelte";
+	import { LoginButton } from "../LoginButton";
 
 	const logoutMut = createLogout();
 	const logout = async () => {
@@ -48,4 +49,6 @@
 			</DropdownMenu.Item>
 		</DropdownMenu.Content>
 	</DropdownMenu.Root>
+{:else}
+	<LoginButton />
 {/if}

@@ -4,6 +4,7 @@
 	import type { Snippet } from "svelte";
 	import UserMenu from "./UserMenu.svelte";
 	import { LightSwitch } from "@kayord/ui";
+	import LogoButton from "../LogoButton.svelte";
 
 	interface Props {
 		children?: Snippet;
@@ -20,10 +21,7 @@
 		className
 	)}
 >
-	<button class="flex items-center" onclick={() => goto("/")}>
-		<img src={`/favicon.svg`} alt="logo" class="h-10" />
-		<span class="hidden text-lg font-bold md:block">Online</span>
-	</button>
+	<LogoButton />
 
 	{#if leftHeader}
 		{@render leftHeader()}

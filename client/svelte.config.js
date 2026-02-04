@@ -11,14 +11,6 @@ const config = {
 		adapter: adapter({
 			fallback: "index.html",
 		}),
-		experimental: {
-			remoteFunctions: true,
-		},
-	},
-	compilerOptions: {
-		experimental: {
-			async: true,
-		},
 	},
 	vitePlugin: {
 		inspector: {

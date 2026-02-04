@@ -16,8 +16,6 @@
 			<Button class="mt-4" href="/login">Login</Button>
 		{/if}
 	</div>
-	<a href="/test/server">Test Server</a>
-	<a href="/test/client">Test Client</a>
 	<Search />
 	<Clubs />
 </main>
