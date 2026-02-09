@@ -1,6 +1,7 @@
 import prettier from "eslint-config-prettier";
 import { includeIgnoreFile } from "@eslint/compat";
 import js from "@eslint/js";
+import ts from "typescript-eslint";
 import svelte from "eslint-plugin-svelte";
 import globals from "globals";
 import { fileURLToPath } from "node:url";
@@ -31,6 +32,7 @@ export default defineConfig(
 			parserOptions: {
 				projectService: true,
 				extraFileExtensions: [".svelte"],
+				parser: ts.parser,
 				svelteConfig,
 			},
 		},

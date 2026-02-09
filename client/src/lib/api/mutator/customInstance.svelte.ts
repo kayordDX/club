@@ -15,9 +15,7 @@ export const customInstance = async <T>({
 }: {
 	url: string;
 	method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	params?: Record<string, any>;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	headers?: Record<string, any>;
 	data?: BodyType<unknown>;
 	responseType?: string;

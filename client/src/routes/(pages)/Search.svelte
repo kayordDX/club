@@ -5,7 +5,7 @@
 	const handleSearch = () => console.log("searching");
 
 	let searchQuery = $state("");
-	const selectedFilters = $state<string[]>([]);
+	const selectedFilters = $state<Array<string>>([]);
 
 	const quickFilters = [
 		"Paddle Courts",
@@ -47,7 +47,7 @@
 			<div class="mb-6">
 				<h3 class="text-muted-foreground mb-3 text-sm font-medium">Quick Filters</h3>
 				<div class="flex flex-wrap gap-2">
-					{#each quickFilters as filter}
+					{#each quickFilters as filter (filter)}
 						<Badge
 							variant={selectedFilters.includes(filter) ? "default" : "secondary"}
 							class="hover:bg-primary/20 cursor-pointer transition-colors"
@@ -61,7 +61,7 @@
 			<div>
 				<h3 class="text-muted-foreground mb-3 text-sm font-medium">Popular Searches</h3>
 				<div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-					{#each popularSearches as search}
+					{#each popularSearches as search (search)}
 						{@const Icon = search.icon}
 
 						<button

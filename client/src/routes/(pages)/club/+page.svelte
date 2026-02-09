@@ -50,7 +50,7 @@
 	];
 
 	let selectedTab = $state("slots");
-	let selectedSlot: Slot | undefined = $state(undefined);
+	let selectedSlot = $state<Slot | undefined>(undefined);
 	let showAlert = $state(false);
 
 	type Slot = { id: number; type: string; time: string; available: boolean };
