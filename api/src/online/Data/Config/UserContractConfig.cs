@@ -4,10 +4,10 @@ using Online.Entities;
 
 namespace Online.Data.Config;
 
-public class UserConfig : IEntityTypeConfiguration<User>
+public class UserContractConfig : IEntityTypeConfiguration<UserContract>
 {
-    public void Configure(EntityTypeBuilder<User> builder)
+    public void Configure(EntityTypeBuilder<UserContract> builder)
     {
-        builder.ToTable("user");
+
     }
 }

@@ -1,12 +1,17 @@
 namespace Online.Entities;
 
-public class Slot
+public class Slot : AuditableEntity
 {
     public int Id { get; set; }
-    public DateTime Start { get; set; }
-    public DateTime End { get; set; }
-    public int ResourceId { get; set; }
-    public required Resource Resource { get; set; }
-    public int FacilityId { get; set; }
-    public required Facility Facility { get; set; }
+    public int? ResourceId { get; set; }
+    public Resource? Resource { get; set; }
+    public required DateTime StartDatetime { get; set; }
+    public required DateTime EndDatetime { get; set; }
+    public int SlotGroupId { get; set; }
+    public required SlotGroup SlotGroup { get; set; }
+
+    // Navigation properties
+    public ICollection<BookingSlot> BookingSlots { get; set; } = new List<BookingSlot>();
+    public ICollection<SlotContract> SlotContracts { get; set; } = new List<SlotContract>();
+    public ICollection<ExtraBooking> ExtraBookings { get; set; } = new List<ExtraBooking>();
 }

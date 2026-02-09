@@ -34,6 +34,12 @@ dotnet user-secrets list --project api/src/online
 # cd client
 pnpm dev
 ```
+### Other Todo
+
+- [ ] Test google auth flow
+- [ ] Refresh Tokens test
+- [ ] Test roles
+- [ ] Create entities and test endpoints
 
 ### Todo Phase 1
 

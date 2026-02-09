@@ -4,10 +4,9 @@ using Online.Entities;
 
 namespace Online.Data.Config;
 
-public class UserConfig : IEntityTypeConfiguration<User>
+public class SlotBookingConfig : IEntityTypeConfiguration<SlotBooking>
 {
-    public void Configure(EntityTypeBuilder<User> builder)
+    public void Configure(EntityTypeBuilder<SlotBooking> builder)
     {
-        builder.ToTable("user");
     }
 }
