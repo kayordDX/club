@@ -17,31 +17,14 @@ import type { InternalErrorResponse } from "./api.schemas";
 import { customInstance } from "../mutator/customInstance.svelte";
 import type { ErrorType, BodyType } from "../mutator/customInstance.svelte";
 
-export type whatResponse200 = {
-	data: string;
-	status: 200;
-};
-
-export type whatResponse500 = {
-	data: InternalErrorResponse;
-	status: 500;
-};
-
-export type whatResponseSuccess = whatResponse200 & {
-	headers: Headers;
-};
-export type whatResponseError = whatResponse500 & {
-	headers: Headers;
-};
-
-export type whatResponse = whatResponseSuccess | whatResponseError;
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 export const getWhatUrl = () => {
 	return `/what`;
 };
 
-export const what = async (whatBody: Blob, options?: RequestInit): Promise<whatResponse> => {
-	return customInstance<whatResponse>(getWhatUrl(), {
+export const what = async (whatBody: Blob, options?: RequestInit): Promise<string> => {
+	return customInstance<string>(getWhatUrl(), {
 		...options,
 		method: "POST",
 		headers: { "Content-Type": "*/*", ...options?.headers },
@@ -59,6 +42,7 @@ export const getWhatMutationOptions = <
 		{ data: BodyType<Blob> },
 		TContext
 	>;
+	request?: SecondParameter<typeof customInstance>;
 }): CreateMutationOptions<
 	Awaited<ReturnType<typeof what>>,
 	TError,
@@ -66,18 +50,18 @@ export const getWhatMutationOptions = <
 	TContext
 > => {
 	const mutationKey = ["what"];
-	const { mutation: mutationOptions } = options
+	const { mutation: mutationOptions, request: requestOptions } = options
 		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
 			? options
 			: { ...options, mutation: { ...options.mutation, mutationKey } }
-		: { mutation: { mutationKey } };
+		: { mutation: { mutationKey }, request: undefined };
 
 	const mutationFn: MutationFunction<Awaited<ReturnType<typeof what>>, { data: BodyType<Blob> }> = (
 		props
 	) => {
 		const { data } = props ?? {};
 
-		return what(data);
+		return what(data, requestOptions);
 	};
 
 	return { mutationFn, ...mutationOptions };
@@ -95,6 +79,7 @@ export const createWhat = <TError = ErrorType<InternalErrorResponse>, TContext =
 			{ data: BodyType<Blob> },
 			TContext
 		>;
+		request?: SecondParameter<typeof customInstance>;
 	},
 	queryClient?: () => QueryClient
 ): CreateMutationResult<

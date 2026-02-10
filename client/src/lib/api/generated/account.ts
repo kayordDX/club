@@ -29,24 +29,7 @@ import type {
 import { customInstance } from "../mutator/customInstance.svelte";
 import type { ErrorType, BodyType } from "../mutator/customInstance.svelte";
 
-export type registerResponse204 = {
-	data: void;
-	status: 204;
-};
-
-export type registerResponse500 = {
-	data: InternalErrorResponse;
-	status: 500;
-};
-
-export type registerResponseSuccess = registerResponse204 & {
-	headers: Headers;
-};
-export type registerResponseError = registerResponse500 & {
-	headers: Headers;
-};
-
-export type registerResponse = registerResponseSuccess | registerResponseError;
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 export const getRegisterUrl = () => {
 	return `/account/register`;
@@ -55,8 +38,8 @@ export const getRegisterUrl = () => {
 export const register = async (
 	userRegisterRequest: UserRegisterRequest,
 	options?: RequestInit
-): Promise<registerResponse> => {
-	return customInstance<registerResponse>(getRegisterUrl(), {
+): Promise<void> => {
+	return customInstance<void>(getRegisterUrl(), {
 		...options,
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...options?.headers },
@@ -74,6 +57,7 @@ export const getRegisterMutationOptions = <
 		{ data: BodyType<UserRegisterRequest> },
 		TContext
 	>;
+	request?: SecondParameter<typeof customInstance>;
 }): CreateMutationOptions<
 	Awaited<ReturnType<typeof register>>,
 	TError,
@@ -81,11 +65,11 @@ export const getRegisterMutationOptions = <
 	TContext
 > => {
 	const mutationKey = ["register"];
-	const { mutation: mutationOptions } = options
+	const { mutation: mutationOptions, request: requestOptions } = options
 		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
 			? options
 			: { ...options, mutation: { ...options.mutation, mutationKey } }
-		: { mutation: { mutationKey } };
+		: { mutation: { mutationKey }, request: undefined };
 
 	const mutationFn: MutationFunction<
 		Awaited<ReturnType<typeof register>>,
@@ -93,7 +77,7 @@ export const getRegisterMutationOptions = <
 	> = (props) => {
 		const { data } = props ?? {};
 
-		return register(data);
+		return register(data, requestOptions);
 	};
 
 	return { mutationFn, ...mutationOptions };
@@ -111,6 +95,7 @@ export const createRegister = <TError = ErrorType<InternalErrorResponse>, TConte
 			{ data: BodyType<UserRegisterRequest> },
 			TContext
 		>;
+		request?: SecondParameter<typeof customInstance>;
 	},
 	queryClient?: () => QueryClient
 ): CreateMutationResult<
@@ -121,31 +106,12 @@ export const createRegister = <TError = ErrorType<InternalErrorResponse>, TConte
 > => {
 	return createMutation(() => ({ ...getRegisterMutationOptions(options?.()) }), queryClient);
 };
-export type refreshResponse200 = {
-	data: UserModel;
-	status: 200;
-};
-
-export type refreshResponse500 = {
-	data: InternalErrorResponse;
-	status: 500;
-};
-
-export type refreshResponseSuccess = refreshResponse200 & {
-	headers: Headers;
-};
-export type refreshResponseError = refreshResponse500 & {
-	headers: Headers;
-};
-
-export type refreshResponse = refreshResponseSuccess | refreshResponseError;
-
 export const getRefreshUrl = () => {
 	return `/account/refresh`;
 };
 
-export const refresh = async (options?: RequestInit): Promise<refreshResponse> => {
-	return customInstance<refreshResponse>(getRefreshUrl(), {
+export const refresh = async (options?: RequestInit): Promise<UserModel> => {
+	return customInstance<UserModel>(getRefreshUrl(), {
 		...options,
 		method: "POST",
 	});
@@ -156,16 +122,17 @@ export const getRefreshMutationOptions = <
 	TContext = unknown,
 >(options?: {
 	mutation?: CreateMutationOptions<Awaited<ReturnType<typeof refresh>>, TError, void, TContext>;
+	request?: SecondParameter<typeof customInstance>;
 }): CreateMutationOptions<Awaited<ReturnType<typeof refresh>>, TError, void, TContext> => {
 	const mutationKey = ["refresh"];
-	const { mutation: mutationOptions } = options
+	const { mutation: mutationOptions, request: requestOptions } = options
 		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
 			? options
 			: { ...options, mutation: { ...options.mutation, mutationKey } }
-		: { mutation: { mutationKey } };
+		: { mutation: { mutationKey }, request: undefined };
 
 	const mutationFn: MutationFunction<Awaited<ReturnType<typeof refresh>>, void> = () => {
-		return refresh();
+		return refresh(requestOptions);
 	};
 
 	return { mutationFn, ...mutationOptions };
@@ -178,39 +145,18 @@ export type RefreshMutationError = ErrorType<InternalErrorResponse>;
 export const createRefresh = <TError = ErrorType<InternalErrorResponse>, TContext = unknown>(
 	options?: () => {
 		mutation?: CreateMutationOptions<Awaited<ReturnType<typeof refresh>>, TError, void, TContext>;
+		request?: SecondParameter<typeof customInstance>;
 	},
 	queryClient?: () => QueryClient
 ): CreateMutationResult<Awaited<ReturnType<typeof refresh>>, TError, void, TContext> => {
 	return createMutation(() => ({ ...getRefreshMutationOptions(options?.()) }), queryClient);
 };
-export type passkeyResponse200 = {
-	data: string;
-	status: 200;
-};
-
-export type passkeyResponse500 = {
-	data: InternalErrorResponse;
-	status: 500;
-};
-
-export type passkeyResponseSuccess = passkeyResponse200 & {
-	headers: Headers;
-};
-export type passkeyResponseError = passkeyResponse500 & {
-	headers: Headers;
-};
-
-export type passkeyResponse = passkeyResponseSuccess | passkeyResponseError;
-
 export const getPasskeyUrl = () => {
 	return `/account/passkey`;
 };
 
-export const passkey = async (
-	request: Request,
-	options?: RequestInit
-): Promise<passkeyResponse> => {
-	return customInstance<passkeyResponse>(getPasskeyUrl(), {
+export const passkey = async (request: Request, options?: RequestInit): Promise<string> => {
+	return customInstance<string>(getPasskeyUrl(), {
 		...options,
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...options?.headers },
@@ -228,6 +174,7 @@ export const getPasskeyMutationOptions = <
 		{ data: BodyType<Request> },
 		TContext
 	>;
+	request?: SecondParameter<typeof customInstance>;
 }): CreateMutationOptions<
 	Awaited<ReturnType<typeof passkey>>,
 	TError,
@@ -235,11 +182,11 @@ export const getPasskeyMutationOptions = <
 	TContext
 > => {
 	const mutationKey = ["passkey"];
-	const { mutation: mutationOptions } = options
+	const { mutation: mutationOptions, request: requestOptions } = options
 		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
 			? options
 			: { ...options, mutation: { ...options.mutation, mutationKey } }
-		: { mutation: { mutationKey } };
+		: { mutation: { mutationKey }, request: undefined };
 
 	const mutationFn: MutationFunction<
 		Awaited<ReturnType<typeof passkey>>,
@@ -247,7 +194,7 @@ export const getPasskeyMutationOptions = <
 	> = (props) => {
 		const { data } = props ?? {};
 
-		return passkey(data);
+		return passkey(data, requestOptions);
 	};
 
 	return { mutationFn, ...mutationOptions };
@@ -265,6 +212,7 @@ export const createPasskey = <TError = ErrorType<InternalErrorResponse>, TContex
 			{ data: BodyType<Request> },
 			TContext
 		>;
+		request?: SecondParameter<typeof customInstance>;
 	},
 	queryClient?: () => QueryClient
 ): CreateMutationResult<
@@ -275,36 +223,12 @@ export const createPasskey = <TError = ErrorType<InternalErrorResponse>, TContex
 > => {
 	return createMutation(() => ({ ...getPasskeyMutationOptions(options?.()) }), queryClient);
 };
-export type accountMeResponse200 = {
-	data: UserModel;
-	status: 200;
-};
-
-export type accountMeResponse401 = {
-	data: void;
-	status: 401;
-};
-
-export type accountMeResponse500 = {
-	data: InternalErrorResponse;
-	status: 500;
-};
-
-export type accountMeResponseSuccess = accountMeResponse200 & {
-	headers: Headers;
-};
-export type accountMeResponseError = (accountMeResponse401 | accountMeResponse500) & {
-	headers: Headers;
-};
-
-export type accountMeResponse = accountMeResponseSuccess | accountMeResponseError;
-
 export const getAccountMeUrl = () => {
 	return `/account/me`;
 };
 
-export const accountMe = async (options?: RequestInit): Promise<accountMeResponse> => {
-	return customInstance<accountMeResponse>(getAccountMeUrl(), {
+export const accountMe = async (options?: RequestInit): Promise<UserModel> => {
+	return customInstance<UserModel>(getAccountMeUrl(), {
 		...options,
 		method: "GET",
 	});
@@ -319,12 +243,14 @@ export const getAccountMeQueryOptions = <
 	TError = ErrorType<void | InternalErrorResponse>,
 >(options?: {
 	query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof accountMe>>, TError, TData>>;
+	request?: SecondParameter<typeof customInstance>;
 }) => {
-	const { query: queryOptions } = options ?? {};
+	const { query: queryOptions, request: requestOptions } = options ?? {};
 
 	const queryKey = queryOptions?.queryKey ?? getAccountMeQueryKey();
 
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof accountMe>>> = () => accountMe();
+	const queryFn: QueryFunction<Awaited<ReturnType<typeof accountMe>>> = () =>
+		accountMe(requestOptions);
 
 	return { queryKey, queryFn, ...queryOptions } as CreateQueryOptions<
 		Awaited<ReturnType<typeof accountMe>>,
@@ -342,6 +268,7 @@ export function createAccountMe<
 >(
 	options?: () => {
 		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof accountMe>>, TError, TData>>;
+		request?: SecondParameter<typeof customInstance>;
 	},
 	queryClient?: () => QueryClient
 ): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -353,31 +280,12 @@ export function createAccountMe<
 	return query;
 }
 
-export type logoutResponse200 = {
-	data: boolean;
-	status: 200;
-};
-
-export type logoutResponse500 = {
-	data: InternalErrorResponse;
-	status: 500;
-};
-
-export type logoutResponseSuccess = logoutResponse200 & {
-	headers: Headers;
-};
-export type logoutResponseError = logoutResponse500 & {
-	headers: Headers;
-};
-
-export type logoutResponse = logoutResponseSuccess | logoutResponseError;
-
 export const getLogoutUrl = () => {
 	return `/account/logout`;
 };
 
-export const logout = async (options?: RequestInit): Promise<logoutResponse> => {
-	return customInstance<logoutResponse>(getLogoutUrl(), {
+export const logout = async (options?: RequestInit): Promise<boolean> => {
+	return customInstance<boolean>(getLogoutUrl(), {
 		...options,
 		method: "POST",
 	});
@@ -388,16 +296,17 @@ export const getLogoutMutationOptions = <
 	TContext = unknown,
 >(options?: {
 	mutation?: CreateMutationOptions<Awaited<ReturnType<typeof logout>>, TError, void, TContext>;
+	request?: SecondParameter<typeof customInstance>;
 }): CreateMutationOptions<Awaited<ReturnType<typeof logout>>, TError, void, TContext> => {
 	const mutationKey = ["logout"];
-	const { mutation: mutationOptions } = options
+	const { mutation: mutationOptions, request: requestOptions } = options
 		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
 			? options
 			: { ...options, mutation: { ...options.mutation, mutationKey } }
-		: { mutation: { mutationKey } };
+		: { mutation: { mutationKey }, request: undefined };
 
 	const mutationFn: MutationFunction<Awaited<ReturnType<typeof logout>>, void> = () => {
-		return logout();
+		return logout(requestOptions);
 	};
 
 	return { mutationFn, ...mutationOptions };
@@ -410,30 +319,12 @@ export type LogoutMutationError = ErrorType<InternalErrorResponse>;
 export const createLogout = <TError = ErrorType<InternalErrorResponse>, TContext = unknown>(
 	options?: () => {
 		mutation?: CreateMutationOptions<Awaited<ReturnType<typeof logout>>, TError, void, TContext>;
+		request?: SecondParameter<typeof customInstance>;
 	},
 	queryClient?: () => QueryClient
 ): CreateMutationResult<Awaited<ReturnType<typeof logout>>, TError, void, TContext> => {
 	return createMutation(() => ({ ...getLogoutMutationOptions(options?.()) }), queryClient);
 };
-export type loginResponse200 = {
-	data: boolean;
-	status: 200;
-};
-
-export type loginResponse500 = {
-	data: InternalErrorResponse;
-	status: 500;
-};
-
-export type loginResponseSuccess = loginResponse200 & {
-	headers: Headers;
-};
-export type loginResponseError = loginResponse500 & {
-	headers: Headers;
-};
-
-export type loginResponse = loginResponseSuccess | loginResponseError;
-
 export const getLoginUrl = () => {
 	return `/account/login`;
 };
@@ -441,8 +332,8 @@ export const getLoginUrl = () => {
 export const login = async (
 	loginRequest: LoginRequest,
 	options?: RequestInit
-): Promise<loginResponse> => {
-	return customInstance<loginResponse>(getLoginUrl(), {
+): Promise<boolean> => {
+	return customInstance<boolean>(getLoginUrl(), {
 		...options,
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...options?.headers },
@@ -460,6 +351,7 @@ export const getLoginMutationOptions = <
 		{ data: BodyType<LoginRequest> },
 		TContext
 	>;
+	request?: SecondParameter<typeof customInstance>;
 }): CreateMutationOptions<
 	Awaited<ReturnType<typeof login>>,
 	TError,
@@ -467,11 +359,11 @@ export const getLoginMutationOptions = <
 	TContext
 > => {
 	const mutationKey = ["login"];
-	const { mutation: mutationOptions } = options
+	const { mutation: mutationOptions, request: requestOptions } = options
 		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
 			? options
 			: { ...options, mutation: { ...options.mutation, mutationKey } }
-		: { mutation: { mutationKey } };
+		: { mutation: { mutationKey }, request: undefined };
 
 	const mutationFn: MutationFunction<
 		Awaited<ReturnType<typeof login>>,
@@ -479,7 +371,7 @@ export const getLoginMutationOptions = <
 	> = (props) => {
 		const { data } = props ?? {};
 
-		return login(data);
+		return login(data, requestOptions);
 	};
 
 	return { mutationFn, ...mutationOptions };
@@ -497,6 +389,7 @@ export const createLogin = <TError = ErrorType<InternalErrorResponse>, TContext 
 			{ data: BodyType<LoginRequest> },
 			TContext
 		>;
+		request?: SecondParameter<typeof customInstance>;
 	},
 	queryClient?: () => QueryClient
 ): CreateMutationResult<
@@ -507,29 +400,6 @@ export const createLogin = <TError = ErrorType<InternalErrorResponse>, TContext 
 > => {
 	return createMutation(() => ({ ...getLoginMutationOptions(options?.()) }), queryClient);
 };
-export type onlineFeaturesAccountLoginGoogleEndpointResponse204 = {
-	data: void;
-	status: 204;
-};
-
-export type onlineFeaturesAccountLoginGoogleEndpointResponse500 = {
-	data: InternalErrorResponse;
-	status: 500;
-};
-
-export type onlineFeaturesAccountLoginGoogleEndpointResponseSuccess =
-	onlineFeaturesAccountLoginGoogleEndpointResponse204 & {
-		headers: Headers;
-	};
-export type onlineFeaturesAccountLoginGoogleEndpointResponseError =
-	onlineFeaturesAccountLoginGoogleEndpointResponse500 & {
-		headers: Headers;
-	};
-
-export type onlineFeaturesAccountLoginGoogleEndpointResponse =
-	| onlineFeaturesAccountLoginGoogleEndpointResponseSuccess
-	| onlineFeaturesAccountLoginGoogleEndpointResponseError;
-
 export const getOnlineFeaturesAccountLoginGoogleEndpointUrl = (
 	params: OnlineFeaturesAccountLoginGoogleEndpointParams
 ) => {
@@ -551,14 +421,11 @@ export const getOnlineFeaturesAccountLoginGoogleEndpointUrl = (
 export const onlineFeaturesAccountLoginGoogleEndpoint = async (
 	params: OnlineFeaturesAccountLoginGoogleEndpointParams,
 	options?: RequestInit
-): Promise<onlineFeaturesAccountLoginGoogleEndpointResponse> => {
-	return customInstance<onlineFeaturesAccountLoginGoogleEndpointResponse>(
-		getOnlineFeaturesAccountLoginGoogleEndpointUrl(params),
-		{
-			...options,
-			method: "GET",
-		}
-	);
+): Promise<void> => {
+	return customInstance<void>(getOnlineFeaturesAccountLoginGoogleEndpointUrl(params), {
+		...options,
+		method: "GET",
+	});
 };
 
 export const getOnlineFeaturesAccountLoginGoogleEndpointQueryKey = (
@@ -580,16 +447,17 @@ export const getOnlineFeaturesAccountLoginGoogleEndpointQueryOptions = <
 				TData
 			>
 		>;
+		request?: SecondParameter<typeof customInstance>;
 	}
 ) => {
-	const { query: queryOptions } = options ?? {};
+	const { query: queryOptions, request: requestOptions } = options ?? {};
 
 	const queryKey =
 		queryOptions?.queryKey ?? getOnlineFeaturesAccountLoginGoogleEndpointQueryKey(params);
 
 	const queryFn: QueryFunction<
 		Awaited<ReturnType<typeof onlineFeaturesAccountLoginGoogleEndpoint>>
-	> = () => onlineFeaturesAccountLoginGoogleEndpoint(params);
+	> = () => onlineFeaturesAccountLoginGoogleEndpoint(params, requestOptions);
 
 	return { queryKey, queryFn, ...queryOptions } as CreateQueryOptions<
 		Awaited<ReturnType<typeof onlineFeaturesAccountLoginGoogleEndpoint>>,
@@ -616,6 +484,7 @@ export function createOnlineFeaturesAccountLoginGoogleEndpoint<
 				TData
 			>
 		>;
+		request?: SecondParameter<typeof customInstance>;
 	},
 	queryClient?: () => QueryClient
 ): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {

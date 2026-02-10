@@ -18,6 +18,318 @@ export interface InternalErrorResponse {
 	note: string;
 }
 
+export interface OutletType {
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	name: string;
+}
+
+export interface Validation {
+	id: number;
+	name: string;
+}
+
+export interface SlotContract {
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	slotId: string;
+	slot: Slot;
+	contractId: number;
+	contract: Contract;
+	price: number;
+	validationId: number;
+	validation: Validation;
+}
+
+export interface BookingStatus {
+	id: number;
+	name: string;
+}
+
+export interface PaymentStatus {
+	id: number;
+	name: string;
+}
+
+export interface Payment {
+	id: number;
+	paymentStatusId: number;
+	paymentStatus: PaymentStatus;
+	paymentStatusDate: string;
+	amount: number;
+}
+
+export interface SlotBooking {
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	slotContractId: number;
+	slotContract: SlotContract;
+	bookingStatusId: number;
+	bookingStatus: BookingStatus;
+	bookingStatusDate: string;
+	userId: string;
+	user: User;
+	/** @nullable */
+	paymentId?: number | null;
+	payment?: Payment | null;
+}
+
+export interface Extra {
+	id: number;
+	name: string;
+	outletId: number;
+	outlet: Outlet;
+}
+
+export interface FacilityExtra {
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	facilityId: number;
+	facility: Facility;
+	extraId: number;
+	extra: Extra;
+	name: string;
+	code: string;
+	price: number;
+	startDate: string;
+	/** @nullable */
+	endDate?: string | null;
+	bookingStatusId: number;
+	bookingStatus: BookingStatus;
+	isAvailable: boolean;
+	isOnline: boolean;
+	userId: string;
+	user: User;
+}
+
+export interface ExtraBooking {
+	id: number;
+	facilityExtraId: number;
+	facilityExtra: FacilityExtra;
+	slotId: string;
+	slot: Slot;
+	bookingStatusId: number;
+	bookingStatus: BookingStatus;
+	statusDate: string;
+	/** @nullable */
+	paymentId?: number | null;
+	payment?: Payment | null;
+	userId: string;
+	user: User;
+}
+
+export interface Slot {
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: string;
+	/** @nullable */
+	resourceId?: number | null;
+	resource?: Resource | null;
+	startDatetime: string;
+	endDatetime: string;
+	groupId: string;
+	slotBookings: SlotBooking[];
+	slotContracts: SlotContract[];
+	extraBookings: ExtraBooking[];
+}
+
+export interface Resource {
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	name: string;
+	facilityId: number;
+	facility: Facility;
+	isActive: boolean;
+	slots: Slot[];
+}
+
+export interface Facility {
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	name: string;
+	outletId: number;
+	outlet: Outlet;
+	/** @nullable */
+	isActive?: boolean | null;
+	resources: Resource[];
+	slots: Slot[];
+	facilityExtras: FacilityExtra[];
+}
+
+export interface ContractOutlet {
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	contractId: number;
+	contract: Contract;
+	outletId: number;
+	outlet: Outlet;
+	/** @nullable */
+	contractStart?: string | null;
+	/** @nullable */
+	contractEnd?: string | null;
+	isActive: boolean;
+}
+
+export interface Outlet {
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	name: string;
+	businessId: number;
+	business: Business;
+	vatNumber: string;
+	/** @nullable */
+	logo?: string | null;
+	/** @nullable */
+	address?: string | null;
+	/** @nullable */
+	company?: string | null;
+	/** @nullable */
+	registration?: string | null;
+	displayName: string;
+	/** @nullable */
+	outletTypeId?: number | null;
+	outletType?: OutletType | null;
+	isActive: number;
+	facilities: Facility[];
+	extras: Extra[];
+	contractOutlets: ContractOutlet[];
+}
+
+export interface ContractContractConfig {
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	contractId: number;
+	contract: Contract;
+	contractConfigId: number;
+	contractConfig: ContractConfig;
+	isActive: boolean;
+}
+
+export interface ContractConfig {
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	name: string;
+	/** @nullable */
+	fieldValidation?: string | null;
+	businessId: number;
+	business: Business;
+	contractContractConfigs: ContractContractConfig[];
+}
+
+export interface Business {
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	name: string;
+	outlets: Outlet[];
+	contracts: Contract[];
+	contractConfigs: ContractConfig[];
+}
+
+export interface Contract {
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	name: string;
+	businessId: number;
+	business: Business;
+}
+
+export interface UserContract {
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	contractId: number;
+	contract: Contract;
+	startDate: string;
+	/** @nullable */
+	endDate?: string | null;
+	price: number;
+	isActive: boolean;
+	userId: string;
+	user: User;
+}
+
 export interface User {
 	id: string;
 	/** @nullable */
@@ -47,13 +359,18 @@ export interface User {
 	lastName: string;
 	/** @nullable */
 	picture?: string | null;
+	userContracts: UserContract[];
+	slotBookings: SlotBooking[];
+	extraBookings: ExtraBooking[];
 }
 
-export interface UserRegisterRequest {
-	firstName: string;
-	lastName: string;
-	email: string;
-	password: string;
+export interface PaginatedListOfOutlet {
+	items: Outlet[];
+	pageNumber: number;
+	totalPages: number;
+	totalCount: number;
+	hasPreviousPage: boolean;
+	hasNextPage: boolean;
 }
 
 /**
@@ -71,6 +388,13 @@ export interface ErrorResponse {
 	message: string;
 	/** the collection of errors for the current context */
 	errors: ErrorResponseErrors;
+}
+
+export interface UserRegisterRequest {
+	firstName: string;
+	lastName: string;
+	email: string;
+	password: string;
 }
 
 export interface UserModel {
@@ -98,6 +422,25 @@ export interface LoginRequest {
 
 export type TestParams = {
 	name: string;
+};
+
+export type OutletGetAllParams = {
+	/**
+	 * @nullable
+	 */
+	sorts?: string | null;
+	/**
+	 * @nullable
+	 */
+	filters?: string | null;
+	/**
+	 * @nullable
+	 */
+	page?: number | null;
+	/**
+	 * @nullable
+	 */
+	pageSize?: number | null;
 };
 
 export type ExampleVerifyParams = {

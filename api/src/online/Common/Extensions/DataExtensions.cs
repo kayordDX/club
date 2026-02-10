@@ -7,7 +7,7 @@ namespace Online.Common.Extensions;
 
 public static class DataExtensions
 {
-    public static IServiceCollection ConfigureEF(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment environment)
+    public static IServiceCollection ConfigureEF(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment env)
     {
         services.AddIdentity<User, IdentityRole<Guid>>(opt =>
         {
@@ -27,7 +27,7 @@ public static class DataExtensions
                 configuration.GetConnectionString("DefaultConnection"),
                 b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)
             );
-            if (environment.IsDevelopment())
+            if (env.IsDevelopment())
             {
                 options.EnableSensitiveDataLogging();
             }
@@ -42,13 +42,18 @@ public static class DataExtensions
         return services;
     }
 
-    public static async Task ApplyMigrations(this IServiceProvider serviceProvider, CancellationToken ct)
+    public static async Task ApplyMigrations(this IServiceProvider serviceProvider, IWebHostEnvironment env, CancellationToken ct)
     {
         using var scope = serviceProvider.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         if (db.Database.IsNpgsql())
         {
             await db.Database.MigrateAsync(ct);
+        }
+
+        if (env.IsDevelopment() || env.IsEnvironment("Testing"))
+        {
+            await SeedDbContext.SeedData(db, ct);
         }
     }
 }

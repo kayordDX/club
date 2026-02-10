@@ -9,3 +9,4 @@ bin/
 Logs/
 .idea/
 .vs
+api/src/online/bin*

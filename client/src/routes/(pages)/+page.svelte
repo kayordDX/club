@@ -3,6 +3,11 @@
 	import Clubs from "./Clubs.svelte";
 	import Search from "./Search.svelte";
 	import { user } from "$lib/stores/user.svelte";
+	import { createOutletGetAll } from "$lib/api";
+	import Outlet from "./Outlet.svelte";
+
+	const query = createOutletGetAll();
+	let data = $derived(query.data?.items ?? []);
 </script>
 
 <main class="container mx-auto px-4 py-8">
@@ -18,4 +23,9 @@
 	</div>
 	<Search />
 	<Clubs />
+	<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-2">
+		{#each data as outlet (outlet.id)}
+			<Outlet {outlet} />
+		{/each}
+	</div>
 </main>

@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
-using Online.Common.Extensions;
-using Online.Entities;
-using Online.Services;
+﻿using Online.Common.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,7 +18,7 @@ builder.Services.ConfigureTelemetry(builder.Configuration);
 
 var app = builder.Build();
 
-await app.Services.ApplyMigrations(app.Lifetime.ApplicationStopping);
+await app.Services.ApplyMigrations(app.Environment, app.Lifetime.ApplicationStopping);
 
 app.UseCorsKayord();
 app.UseAuthentication();

@@ -19,31 +19,14 @@ import type { ExampleVerifyParams, InternalErrorResponse } from "./api.schemas";
 import { customInstance } from "../mutator/customInstance.svelte";
 import type { ErrorType } from "../mutator/customInstance.svelte";
 
-export type exampleResponse200 = {
-	data: string;
-	status: 200;
-};
-
-export type exampleResponse500 = {
-	data: InternalErrorResponse;
-	status: 500;
-};
-
-export type exampleResponseSuccess = exampleResponse200 & {
-	headers: Headers;
-};
-export type exampleResponseError = exampleResponse500 & {
-	headers: Headers;
-};
-
-export type exampleResponse = exampleResponseSuccess | exampleResponseError;
+type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 export const getExampleUrl = () => {
 	return `/example`;
 };
 
-export const example = async (options?: RequestInit): Promise<exampleResponse> => {
-	return customInstance<exampleResponse>(getExampleUrl(), {
+export const example = async (options?: RequestInit): Promise<string> => {
+	return customInstance<string>(getExampleUrl(), {
 		...options,
 		method: "GET",
 	});
@@ -58,12 +41,13 @@ export const getExampleQueryOptions = <
 	TError = ErrorType<InternalErrorResponse>,
 >(options?: {
 	query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof example>>, TError, TData>>;
+	request?: SecondParameter<typeof customInstance>;
 }) => {
-	const { query: queryOptions } = options ?? {};
+	const { query: queryOptions, request: requestOptions } = options ?? {};
 
 	const queryKey = queryOptions?.queryKey ?? getExampleQueryKey();
 
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof example>>> = () => example();
+	const queryFn: QueryFunction<Awaited<ReturnType<typeof example>>> = () => example(requestOptions);
 
 	return { queryKey, queryFn, ...queryOptions } as CreateQueryOptions<
 		Awaited<ReturnType<typeof example>>,
@@ -81,6 +65,7 @@ export function createExample<
 >(
 	options?: () => {
 		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof example>>, TError, TData>>;
+		request?: SecondParameter<typeof customInstance>;
 	},
 	queryClient?: () => QueryClient
 ): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -91,25 +76,6 @@ export function createExample<
 
 	return query;
 }
-
-export type exampleVerifyResponse200 = {
-	data: boolean;
-	status: 200;
-};
-
-export type exampleVerifyResponse500 = {
-	data: InternalErrorResponse;
-	status: 500;
-};
-
-export type exampleVerifyResponseSuccess = exampleVerifyResponse200 & {
-	headers: Headers;
-};
-export type exampleVerifyResponseError = exampleVerifyResponse500 & {
-	headers: Headers;
-};
-
-export type exampleVerifyResponse = exampleVerifyResponseSuccess | exampleVerifyResponseError;
 
 export const getExampleVerifyUrl = (params: ExampleVerifyParams) => {
 	const normalizedParams = new URLSearchParams();
@@ -128,8 +94,8 @@ export const getExampleVerifyUrl = (params: ExampleVerifyParams) => {
 export const exampleVerify = async (
 	params: ExampleVerifyParams,
 	options?: RequestInit
-): Promise<exampleVerifyResponse> => {
-	return customInstance<exampleVerifyResponse>(getExampleVerifyUrl(params), {
+): Promise<boolean> => {
+	return customInstance<boolean>(getExampleVerifyUrl(params), {
 		...options,
 		method: "GET",
 	});
@@ -146,14 +112,15 @@ export const getExampleVerifyQueryOptions = <
 	params: ExampleVerifyParams,
 	options?: {
 		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof exampleVerify>>, TError, TData>>;
+		request?: SecondParameter<typeof customInstance>;
 	}
 ) => {
-	const { query: queryOptions } = options ?? {};
+	const { query: queryOptions, request: requestOptions } = options ?? {};
 
 	const queryKey = queryOptions?.queryKey ?? getExampleVerifyQueryKey(params);
 
 	const queryFn: QueryFunction<Awaited<ReturnType<typeof exampleVerify>>> = () =>
-		exampleVerify(params);
+		exampleVerify(params, requestOptions);
 
 	return { queryKey, queryFn, ...queryOptions } as CreateQueryOptions<
 		Awaited<ReturnType<typeof exampleVerify>>,
@@ -172,6 +139,7 @@ export function createExampleVerify<
 	params: () => ExampleVerifyParams,
 	options?: () => {
 		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof exampleVerify>>, TError, TData>>;
+		request?: SecondParameter<typeof customInstance>;
 	},
 	queryClient?: () => QueryClient
 ): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {

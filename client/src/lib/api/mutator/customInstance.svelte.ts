@@ -1,32 +1,57 @@
 import { getError, isValidationError } from "$lib/types";
 import { PUBLIC_API_URL } from "$env/static/public";
-import qs from "qs";
 import { user } from "$lib/stores/user.svelte";
 import { getCookie } from "$lib/util";
 import { SvelteDate } from "svelte/reactivity";
 
-export const customInstance = async <T>({
-	url,
-	method,
-	params,
-	headers,
-	data,
-	responseType = "json",
-}: {
-	url: string;
-	method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
-	params?: Record<string, any>;
-	headers?: Record<string, any>;
-	data?: BodyType<unknown>;
-	responseType?: string;
-}): Promise<T> => {
-	let fullUrl = `${PUBLIC_API_URL}${url}`;
-	if (params !== undefined) {
-		const urlParams = qs.stringify(params);
-		if (urlParams.length > 0) {
-			fullUrl = fullUrl + "?" + urlParams;
+const getUrl = (contextUrl: string): string => {
+	const baseUrl = PUBLIC_API_URL;
+	const url = new URL(baseUrl + contextUrl);
+	const pathname = url.pathname;
+	const search = url.search;
+	const requestUrl = new URL(`${baseUrl}${pathname}${search}`);
+	return requestUrl.toString();
+};
+
+const getBody = async <T>(resp: Response): Promise<T> => {
+	if (resp.ok) {
+		if (resp.status == 204) return null as unknown as Promise<T>;
+		const contentType = resp.headers.get("content-type");
+		if (contentType && contentType.includes("application/pdf")) {
+			return resp.blob() as Promise<T>;
+		}
+		return resp.json() as T;
+	} else {
+		if (resp.status == 401) {
+			// TODO: Possibly refresh token from lib/firebase
+			throw new Error("Unauthorized", { cause: "401" });
+		}
+		if (resp.status == 403) {
+			throw new Error("Forbidden", { cause: "403" });
+		}
+		if (resp.status == 404) {
+			throw new Error("Not found", { cause: "404" });
+		}
+
+		// Error response
+		const errorResult = await resp.json();
+		if (isValidationError(errorResult)) {
+			const errorMessage = Object.values(errorResult.errors ?? []).map((e) => e.toString());
+			throw new Error(errorResult.message, {
+				cause: errorMessage.join("\n"),
+			});
+		} else {
+			throw new Error(getError(errorResult).message);
 		}
 	}
+};
+
+export const customInstance = async <T>(url: string, options: RequestInit): Promise<T> => {
+	const requestUrl = getUrl(url);
+	const requestInit: RequestInit = {
+		...options,
+		credentials: "include",
+	};
 
 	// TODO: check cookie expiry and refresh if it expires soon
 	$effect.root(() => {
@@ -49,42 +74,11 @@ export const customInstance = async <T>({
 		});
 	});
 
-	const response = await fetch(fullUrl, {
-		method,
-		headers: {
-			...headers,
-		},
-		...(data ? { body: JSON.stringify(data) } : {}),
-		credentials: "include",
-	});
+	const request = new Request(requestUrl, requestInit);
+	const response = await fetch(request);
 
-	if (response.ok) {
-		if (response.status == 204) return null as unknown as T;
-		if (responseType === "blob") return (await response.blob()) as unknown as T;
-		if (responseType === "text") return (await response.text()) as unknown as T;
-		return response.json();
-	} else {
-		if (response.status == 401) {
-			throw new Error("Unauthorized", { cause: "401" });
-		}
-		if (response.status == 403) {
-			throw new Error("Forbidden", { cause: "403" });
-		}
-		if (response.status == 404) {
-			throw new Error("Not found", { cause: "404" });
-		}
-
-		// Error response
-		const errorResult = await response.json();
-		if (isValidationError(errorResult)) {
-			const errorMessage = Object.values(errorResult.errors ?? []).map((e) => e.toString());
-			throw new Error(errorResult.message, {
-				cause: errorMessage.join("\n"),
-			});
-		} else {
-			throw new Error(getError(errorResult).message);
-		}
-	}
+	const data = await getBody<T>(response);
+	return data as T;
 };
 
 export default customInstance;

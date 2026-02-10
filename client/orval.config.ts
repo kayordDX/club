@@ -1,7 +1,7 @@
 import { defineConfig } from "orval";
 
 export default defineConfig({
-	iot: {
+	api: {
 		input: "./swagger.json",
 		output: {
 			mode: "tags",
@@ -12,6 +12,10 @@ export default defineConfig({
 			headers: false,
 			clean: true,
 			override: {
+				fetch: {
+					// forceSuccessResponse: true,
+					includeHttpResponseReturnType: false,
+				},
 				mutator: {
 					path: "../mutator/customInstance.svelte.ts",
 					name: "customInstance",

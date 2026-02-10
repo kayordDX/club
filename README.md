@@ -62,3 +62,7 @@ pnpm dev
 - [ ] Extra Equipment Agreement
 - [ ] Notification Email/SMS
 - [ ] Payments - Account per club or 1 account managed by aviate - Create accounts. Link accounts to club or multiple clubs.
+
+slot_config_type
+slot_config
+resource_slot_config
