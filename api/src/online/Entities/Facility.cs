@@ -7,9 +7,7 @@ public class Facility : AuditableEntity
     public int OutletId { get; set; }
     public required Outlet Outlet { get; set; }
     public bool? IsActive { get; set; }
-
-    // Navigation properties
-    public ICollection<Resource> Resources { get; set; } = new List<Resource>();
-    public ICollection<Slot> Slots { get; set; } = new List<Slot>();
-    public ICollection<FacilityExtra> FacilityExtras { get; set; } = new List<FacilityExtra>();
+    public ICollection<Resource> Resources { get; set; } = [];
+    public ICollection<Slot> Slots { get; set; } = [];
+    public ICollection<FacilityExtra> FacilityExtras { get; set; } = [];
 }

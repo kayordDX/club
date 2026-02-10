@@ -9,12 +9,18 @@ The public site to book and login as member.
 ## API (Backend)
 
 ```bash
+# tool restore and update
 dotnet tool restore
+dotnet tool update --all
 
 # List updates
 dotnet list package --outdated
 # Update packages
 dotnet package update
+
+# ef
+dotnet ef migrations add InitTables --project src/online/online.csproj
+dotnet ef migrations remove --project src/online/online.csproj
 ```
 
 ### Secrets

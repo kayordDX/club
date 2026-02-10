@@ -18,7 +18,4 @@ public class FacilityExtra : AuditableEntity
     public bool IsOnline { get; set; }
     public Guid UserId { get; set; }
     public required User User { get; set; }
-
-    // Navigation properties
-    public ICollection<ExtraBooking> ExtraBookings { get; set; } = new List<ExtraBooking>();
 }

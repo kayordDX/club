@@ -7,7 +7,5 @@ public class ContractConfig : AuditableEntity
     public string? FieldValidation { get; set; }
     public int BusinessId { get; set; }
     public required Business Business { get; set; }
-
-    // Navigation properties
-    public ICollection<ContractContractConfig> ContractContractConfigs { get; set; } = new List<ContractContractConfig>();
+    public ICollection<ContractContractConfig> ContractContractConfigs { get; set; } = [];
 }

@@ -6,10 +6,8 @@ using Online.Entities;
 
 namespace Online.Data;
 
-public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
+public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext<User, IdentityRole<Guid>, Guid>(options)
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -34,9 +32,7 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
     public DbSet<ContractContractConfig> ContractContractConfig { get; set; }
 
     // Booking Entities
-    public DbSet<Booking> Booking { get; set; }
     public DbSet<BookingStatus> BookingStatus { get; set; }
-    public DbSet<BookingSlot> BookingSlot { get; set; }
 
     // Payment Entities
     public DbSet<Payment> Payment { get; set; }
@@ -45,9 +41,9 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
     public DbSet<Bill> Bill { get; set; }
 
     // Slot Entities
-    public DbSet<SlotGroup> SlotGroup { get; set; }
     public DbSet<SlotContract> SlotContract { get; set; }
     public DbSet<SlotBooking> SlotBooking { get; set; }
+    public DbSet<SlotBooking> BookingSlot { get; set; }
 
     // Extra Entities
     public DbSet<Extra> Extra { get; set; }

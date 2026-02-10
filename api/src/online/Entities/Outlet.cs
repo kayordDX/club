@@ -15,9 +15,7 @@ public class Outlet : AuditableEntity
     public int? OutletTypeId { get; set; }
     public OutletType? OutletType { get; set; }
     public int IsActive { get; set; }
-
-    // Navigation properties
-    public ICollection<Facility> Facilities { get; set; } = new List<Facility>();
-    public ICollection<Extra> Extras { get; set; } = new List<Extra>();
-    public ICollection<ContractOutlet> ContractOutlets { get; set; } = new List<ContractOutlet>();
+    public ICollection<Facility> Facilities { get; set; } = [];
+    public ICollection<Extra> Extras { get; set; } = [];
+    public ICollection<ContractOutlet> ContractOutlets { get; set; } = [];
 }

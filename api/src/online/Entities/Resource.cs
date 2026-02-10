@@ -7,7 +7,5 @@ public class Resource : AuditableEntity
     public int FacilityId { get; set; }
     public required Facility Facility { get; set; }
     public bool IsActive { get; set; }
-
-    // Navigation properties
-    public ICollection<Slot> Slots { get; set; } = new List<Slot>();
+    public ICollection<Slot> Slots { get; set; } = [];
 }
