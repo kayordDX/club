@@ -26,7 +26,7 @@ public class Endpoint : Endpoint<Request>
         var result = await HttpContext.AuthenticateAsync(GoogleDefaults.AuthenticationScheme);
         if (!result.Succeeded)
         {
-            await Send.UnauthorizedAsync();
+            await Send.UnauthorizedAsync(ct);
             return;
         }
         await _accountService.LoginWithGoogleAsync(result.Principal);

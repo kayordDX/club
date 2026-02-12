@@ -63,19 +63,19 @@ public class AuthTokenProcessor
             HttpOnly = true,
             Expires = expiration,
             IsEssential = true,
-            Secure = _environment.IsDevelopment() ? false : true,
+            Secure = !_environment.IsDevelopment(),
             SameSite = SameSiteMode.Strict
         });
     }
 
-    public void WriteAuthTokenAsClientCookie(string cookieName, DateTime expiration)
+    public void WriteAuthTokenAsClientCookie(string cookieName, string value, DateTime expiration)
     {
-        _httpContextAccessor.HttpContext?.Response.Cookies.Append(cookieName, expiration.ToString("o"), new CookieOptions
+        _httpContextAccessor.HttpContext?.Response.Cookies.Append(cookieName, value, new CookieOptions
         {
             HttpOnly = false,
             Expires = expiration,
             IsEssential = true,
-            Secure = _environment.IsDevelopment() ? false : true,
+            Secure = !_environment.IsDevelopment(),
             SameSite = SameSiteMode.Strict
         });
     }

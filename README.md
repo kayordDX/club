@@ -52,7 +52,7 @@ pnpm dev
 - [ ] Register - Google oauth
 - [ ] View Account - Profile Details
 - [ ] Log in - Google auth
-- [ ] View Timesheet
+- [ ] View Time sheet
 - [ ] Book slots - booking per day
 - [ ] Cancel booking
 - [ ] View other players in slot

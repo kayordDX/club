@@ -98,7 +98,7 @@ public class AccountService
 
         _authTokenProcessor.WriteAuthTokenAsHttpOnlyCookie("ACCESS_TOKEN", jwtToken, expirationDateInUtc);
         _authTokenProcessor.WriteAuthTokenAsHttpOnlyCookie("REFRESH_TOKEN", refreshTokenValue, refreshTokenExpirationDateInUtc);
-        _authTokenProcessor.WriteAuthTokenAsClientCookie("HAS_TOKEN", expirationDateInUtc);
+        _authTokenProcessor.WriteAuthTokenAsClientCookie("HAS_TOKEN", expirationDateInUtc.ToString("o"), refreshTokenExpirationDateInUtc);
     }
 
     public void Logout()
@@ -119,7 +119,7 @@ public class AccountService
         await LoginShared(user, null);
     }
 
-    public async Task RefreshTokenAsync(string? refreshToken, CancellationToken ct)
+    public async Task<Guid> RefreshTokenAsync(string? refreshToken, CancellationToken ct)
     {
         if (string.IsNullOrEmpty(refreshToken))
         {
@@ -142,6 +142,7 @@ public class AccountService
         }
 
         await LoginShared(tokenValue.User, tokenValue);
+        return tokenValue.User.Id;
     }
 
     // TODO: Validate This

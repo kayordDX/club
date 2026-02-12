@@ -1,8 +1,6 @@
 import { getError, isValidationError } from "$lib/types";
 import { PUBLIC_API_URL } from "$env/static/public";
 import { user } from "$lib/stores/user.svelte";
-import { getCookie } from "$lib/util";
-import { SvelteDate } from "svelte/reactivity";
 
 const getUrl = (contextUrl: string): string => {
 	const baseUrl = PUBLIC_API_URL;
@@ -47,32 +45,12 @@ const getBody = async <T>(resp: Response): Promise<T> => {
 };
 
 export const customInstance = async <T>(url: string, options: RequestInit): Promise<T> => {
+	await user.checkCookie();
 	const requestUrl = getUrl(url);
 	const requestInit: RequestInit = {
 		...options,
 		credentials: "include",
 	};
-
-	// TODO: check cookie expiry and refresh if it expires soon
-	$effect.root(() => {
-		$effect(() => {
-			if (!user.isLoading) {
-				const hasTokenCookie = getCookie("HAS_TOKEN");
-				if (hasTokenCookie) {
-					const expires = new SvelteDate(hasTokenCookie);
-					const now = new SvelteDate();
-					const diff = expires.getTime() - now.getTime();
-					const expireCheck = 2 * 60 * 1000;
-
-					// Token will expire in next 2 minutes
-					if (diff <= expireCheck) {
-						console.log("Refreshing token...");
-						user.refresh();
-					}
-				}
-			}
-		});
-	});
 
 	const request = new Request(requestUrl, requestInit);
 	const response = await fetch(request);

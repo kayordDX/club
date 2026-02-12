@@ -1,21 +1,13 @@
-
-using Online.Common;
 using Online.Data;
 using Online.Models;
 using Online.Services;
 
 namespace Online.Features.Account.Refresh;
 
-public class Endpoint : EndpointWithoutRequest<UserModel>
+public class Endpoint(AccountService accountService, AppDbContext dbContext) : EndpointWithoutRequest<UserModel>
 {
-    private readonly AccountService accountService;
-    private readonly AppDbContext _dbContext;
-
-    public Endpoint(AccountService accountService, AppDbContext dbContext)
-    {
-        this.accountService = accountService;
-        _dbContext = dbContext;
-    }
+    private readonly AccountService accountService = accountService;
+    private readonly AppDbContext _dbContext = dbContext;
 
     public override void Configure()
     {
@@ -29,20 +21,20 @@ public class Endpoint : EndpointWithoutRequest<UserModel>
         try
         {
             var refreshToken = HttpContext.Request.Cookies["REFRESH_TOKEN"];
-            await accountService.RefreshTokenAsync(refreshToken, ct);
+            var userId = await accountService.RefreshTokenAsync(refreshToken, ct);
 
-            var userId = Helpers.GetCurrentUserId(HttpContext);
+            // var userId = Helpers.GetCurrentUserId(HttpContext);
             var user = await Me.Data.Get(userId, _dbContext, ct);
             if (user == null)
             {
                 ValidationContext.Instance.ThrowError("user_not_found");
             }
-            await Send.OkAsync(user);
+            await Send.OkAsync(user, ct);
         }
         catch (Exception)
         {
             accountService.Logout();
-            await Send.ForbiddenAsync();
+            await Send.ForbiddenAsync(ct);
             return;
         }
     }
