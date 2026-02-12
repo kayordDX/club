@@ -312,6 +312,39 @@
         }
       }
     },
+    "/account/refresh/list": {
+      "get": {
+        "tags": [
+          "Account"
+        ],
+        "operationId": "RefreshList",
+        "responses": {
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalErrorResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RefreshListResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/account/passkey": {
       "post": {
         "tags": [
@@ -1857,6 +1890,48 @@
           "picture": {
             "type": "string",
             "nullable": true
+          }
+        }
+      },
+      "RefreshListResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "expiresAtUtc",
+          "browser",
+          "browserVersion",
+          "device",
+          "platform",
+          "processor",
+          "isCurrent"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "expiresAtUtc": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "browser": {
+            "type": "string"
+          },
+          "browserVersion": {
+            "type": "string"
+          },
+          "device": {
+            "type": "string"
+          },
+          "platform": {
+            "type": "string"
+          },
+          "processor": {
+            "type": "string"
+          },
+          "isCurrent": {
+            "type": "boolean"
           }
         }
       },

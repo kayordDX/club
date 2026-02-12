@@ -21,6 +21,7 @@ import type {
 	InternalErrorResponse,
 	LoginRequest,
 	OnlineFeaturesAccountLoginGoogleEndpointParams,
+	RefreshListResponse,
 	Request,
 	UserModel,
 	UserRegisterRequest,
@@ -151,6 +152,63 @@ export const createRefresh = <TError = ErrorType<InternalErrorResponse>, TContex
 ): CreateMutationResult<Awaited<ReturnType<typeof refresh>>, TError, void, TContext> => {
 	return createMutation(() => ({ ...getRefreshMutationOptions(options?.()) }), queryClient);
 };
+export const getRefreshListUrl = () => {
+	return `/account/refresh/list`;
+};
+
+export const refreshList = async (options?: RequestInit): Promise<RefreshListResponse[]> => {
+	return customInstance<RefreshListResponse[]>(getRefreshListUrl(), {
+		...options,
+		method: "GET",
+	});
+};
+
+export const getRefreshListQueryKey = () => {
+	return [`/account/refresh/list`] as const;
+};
+
+export const getRefreshListQueryOptions = <
+	TData = Awaited<ReturnType<typeof refreshList>>,
+	TError = ErrorType<InternalErrorResponse>,
+>(options?: {
+	query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof refreshList>>, TError, TData>>;
+	request?: SecondParameter<typeof customInstance>;
+}) => {
+	const { query: queryOptions, request: requestOptions } = options ?? {};
+
+	const queryKey = queryOptions?.queryKey ?? getRefreshListQueryKey();
+
+	const queryFn: QueryFunction<Awaited<ReturnType<typeof refreshList>>> = () =>
+		refreshList(requestOptions);
+
+	return { queryKey, queryFn, ...queryOptions } as CreateQueryOptions<
+		Awaited<ReturnType<typeof refreshList>>,
+		TError,
+		TData
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type RefreshListQueryResult = NonNullable<Awaited<ReturnType<typeof refreshList>>>;
+export type RefreshListQueryError = ErrorType<InternalErrorResponse>;
+
+export function createRefreshList<
+	TData = Awaited<ReturnType<typeof refreshList>>,
+	TError = ErrorType<InternalErrorResponse>,
+>(
+	options?: () => {
+		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof refreshList>>, TError, TData>>;
+		request?: SecondParameter<typeof customInstance>;
+	},
+	queryClient?: () => QueryClient
+): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+	const query = createQuery(
+		() => getRefreshListQueryOptions(options?.()),
+		queryClient
+	) as CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+	return query;
+}
+
 export const getPasskeyUrl = () => {
 	return `/account/passkey`;
 };

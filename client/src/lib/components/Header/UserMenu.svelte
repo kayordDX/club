@@ -4,15 +4,16 @@
 	import { getInitials } from "$lib/util";
 	import { Avatar, DropdownMenu } from "@kayord/ui";
 	import { createLogout } from "$lib/api";
-	import { LogOutIcon, WrenchIcon, ArrowRightLeft } from "@lucide/svelte";
+	import { LogOutIcon, WrenchIcon, ArrowRightLeft, SettingsIcon } from "@lucide/svelte";
 	import { user } from "$lib/stores/user.svelte";
 	import { LoginButton } from "../LoginButton";
+	import { resolve } from "$app/paths";
 
 	const logoutMut = createLogout();
 	const logout = async () => {
 		await logoutMut.mutateAsync();
 		user.clear();
-		goto("/");
+		goto(resolve("/"));
 	};
 </script>
 
@@ -35,17 +36,19 @@
 			<DropdownMenu.Label>{user.value.name}</DropdownMenu.Label>
 			<DropdownMenu.Separator />
 			<DropdownMenu.Group>
-				<DropdownMenu.Item onclick={() => goto("/login")}>
-					<ArrowRightLeft class="mr-2 h-4 w-4" />Login
+				<DropdownMenu.Item onclick={() => goto(resolve("/settings/session"))}>
+					<SettingsIcon />Settings
 				</DropdownMenu.Item>
-				<DropdownMenu.Item onclick={() => goto("/another")}>
-					<WrenchIcon class="mr-2 h-4 w-4" />Another
+				<DropdownMenu.Item onclick={() => goto(resolve("/login"))}>
+					<ArrowRightLeft />Login
+				</DropdownMenu.Item>
+				<DropdownMenu.Item onclick={() => goto(resolve("/another"))}>
+					<WrenchIcon />Another
 				</DropdownMenu.Item>
 			</DropdownMenu.Group>
 			<DropdownMenu.Separator />
 			<DropdownMenu.Item onclick={logout}>
-				<LogOutIcon class="mr-2 h-4 w-4" />
-				<span>Log out</span>
+				<LogOutIcon />Log out
 			</DropdownMenu.Item>
 		</DropdownMenu.Content>
 	</DropdownMenu.Root>

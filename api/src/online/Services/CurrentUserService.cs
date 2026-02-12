@@ -4,16 +4,10 @@ using Online.Entities;
 
 namespace Online.Services;
 
-public class CurrentUserService
+public class CurrentUserService(UserManager<User> userManager, IHttpContextAccessor httpContextAccessor)
 {
-    private readonly UserManager<User> _userManager;
-    private readonly IHttpContextAccessor _httpContextAccessor;
-
-    public CurrentUserService(UserManager<User> userManager, IHttpContextAccessor httpContextAccessor)
-    {
-        _userManager = userManager;
-        _httpContextAccessor = httpContextAccessor;
-    }
+    private readonly UserManager<User> _userManager = userManager;
+    private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
     public Guid? GetId()
     {

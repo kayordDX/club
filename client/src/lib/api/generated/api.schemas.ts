@@ -407,6 +407,17 @@ export interface UserModel {
 	picture?: string | null;
 }
 
+export interface RefreshListResponse {
+	id: string;
+	expiresAtUtc: string;
+	browser: string;
+	browserVersion: string;
+	device: string;
+	platform: string;
+	processor: string;
+	isCurrent: boolean;
+}
+
 export interface Request {
 	name: string;
 }

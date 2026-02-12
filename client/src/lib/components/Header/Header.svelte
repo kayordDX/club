@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { goto } from "$app/navigation";
 	import { cn } from "@kayord/ui/utils";
 	import type { Snippet } from "svelte";
 	import UserMenu from "./UserMenu.svelte";
@@ -21,10 +20,10 @@
 		className
 	)}
 >
-	<LogoButton />
-
 	{#if leftHeader}
 		{@render leftHeader()}
+	{:else}
+		<LogoButton />
 	{/if}
 
 	<span>
