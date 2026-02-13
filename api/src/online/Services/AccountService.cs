@@ -11,24 +11,14 @@ using Wangkanai.Detection.Services;
 
 namespace Online.Services;
 
-public class AccountService
+public class AccountService(UserManager<User> userManager, AuthTokenProcessor authTokenProcessor, AppDbContext dbContext, IOptions<JwtOptions> jwtOptions, IDetectionService detectionService, CurrentUserService currentUserService)
 {
-    private readonly AuthTokenProcessor _authTokenProcessor;
-    private readonly UserManager<User> _userManager;
-    private readonly AppDbContext _dbContext;
-    private readonly JwtOptions _jwtOptions;
-    private readonly IDetectionService _detectionService;
-    private readonly CurrentUserService _currentUserService;
-
-    public AccountService(UserManager<User> userManager, AuthTokenProcessor authTokenProcessor, AppDbContext dbContext, IOptions<JwtOptions> jwtOptions, IDetectionService detectionService, CurrentUserService currentUserService)
-    {
-        _userManager = userManager;
-        _authTokenProcessor = authTokenProcessor;
-        _dbContext = dbContext;
-        _jwtOptions = jwtOptions.Value;
-        _detectionService = detectionService;
-        _currentUserService = currentUserService;
-    }
+    private readonly AuthTokenProcessor _authTokenProcessor = authTokenProcessor;
+    private readonly UserManager<User> _userManager = userManager;
+    private readonly AppDbContext _dbContext = dbContext;
+    private readonly JwtOptions _jwtOptions = jwtOptions.Value;
+    private readonly IDetectionService _detectionService = detectionService;
+    private readonly CurrentUserService _currentUserService = currentUserService;
 
     public async Task RegisterAsync(UserRegisterRequest registerRequest)
     {
@@ -41,7 +31,6 @@ public class AccountService
 
         var user = new User
         {
-            // Id = registerRequest.Email,
             Email = registerRequest.Email,
             UserName = registerRequest.Email,
             FirstName = registerRequest.FirstName,
@@ -101,11 +90,18 @@ public class AccountService
         _authTokenProcessor.WriteAuthTokenAsClientCookie("HAS_TOKEN", expirationDateInUtc.ToString("o"), refreshTokenExpirationDateInUtc);
     }
 
-    public void Logout()
+    public async Task Logout(string? refreshToken)
     {
         _authTokenProcessor.DeleteAuthCookie("ACCESS_TOKEN");
         _authTokenProcessor.DeleteAuthCookie("REFRESH_TOKEN");
         _authTokenProcessor.DeleteAuthCookie("HAS_TOKEN");
+
+        var token = await _dbContext.UserRefreshToken.FirstOrDefaultAsync(x => x.Token == refreshToken);
+        if (token != null)
+        {
+            _dbContext.UserRefreshToken.Remove(token);
+            await _dbContext.SaveChangesAsync();
+        }
     }
 
     public async Task LoginAsync(LoginRequest loginRequest)

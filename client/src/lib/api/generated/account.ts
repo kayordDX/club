@@ -23,6 +23,7 @@ import type {
 	OnlineFeaturesAccountLoginGoogleEndpointParams,
 	RefreshListResponse,
 	Request,
+	Request2,
 	UserModel,
 	UserRegisterRequest,
 } from "./api.schemas";
@@ -152,6 +153,141 @@ export const createRefresh = <TError = ErrorType<InternalErrorResponse>, TContex
 ): CreateMutationResult<Awaited<ReturnType<typeof refresh>>, TError, void, TContext> => {
 	return createMutation(() => ({ ...getRefreshMutationOptions(options?.()) }), queryClient);
 };
+export const getRefreshRevokeAllUrl = () => {
+	return `/account/refresh/revokeAll`;
+};
+
+export const refreshRevokeAll = async (options?: RequestInit): Promise<void> => {
+	return customInstance<void>(getRefreshRevokeAllUrl(), {
+		...options,
+		method: "POST",
+	});
+};
+
+export const getRefreshRevokeAllMutationOptions = <
+	TError = ErrorType<InternalErrorResponse>,
+	TContext = unknown,
+>(options?: {
+	mutation?: CreateMutationOptions<
+		Awaited<ReturnType<typeof refreshRevokeAll>>,
+		TError,
+		void,
+		TContext
+	>;
+	request?: SecondParameter<typeof customInstance>;
+}): CreateMutationOptions<Awaited<ReturnType<typeof refreshRevokeAll>>, TError, void, TContext> => {
+	const mutationKey = ["refreshRevokeAll"];
+	const { mutation: mutationOptions, request: requestOptions } = options
+		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+			? options
+			: { ...options, mutation: { ...options.mutation, mutationKey } }
+		: { mutation: { mutationKey }, request: undefined };
+
+	const mutationFn: MutationFunction<Awaited<ReturnType<typeof refreshRevokeAll>>, void> = () => {
+		return refreshRevokeAll(requestOptions);
+	};
+
+	return { mutationFn, ...mutationOptions };
+};
+
+export type RefreshRevokeAllMutationResult = NonNullable<
+	Awaited<ReturnType<typeof refreshRevokeAll>>
+>;
+
+export type RefreshRevokeAllMutationError = ErrorType<InternalErrorResponse>;
+
+export const createRefreshRevokeAll = <
+	TError = ErrorType<InternalErrorResponse>,
+	TContext = unknown,
+>(
+	options?: () => {
+		mutation?: CreateMutationOptions<
+			Awaited<ReturnType<typeof refreshRevokeAll>>,
+			TError,
+			void,
+			TContext
+		>;
+		request?: SecondParameter<typeof customInstance>;
+	},
+	queryClient?: () => QueryClient
+): CreateMutationResult<Awaited<ReturnType<typeof refreshRevokeAll>>, TError, void, TContext> => {
+	return createMutation(
+		() => ({ ...getRefreshRevokeAllMutationOptions(options?.()) }),
+		queryClient
+	);
+};
+export const getRefreshRevokeUrl = () => {
+	return `/account/refresh/revoke`;
+};
+
+export const refreshRevoke = async (request: Request, options?: RequestInit): Promise<void> => {
+	return customInstance<void>(getRefreshRevokeUrl(), {
+		...options,
+		method: "POST",
+		headers: { "Content-Type": "application/json", ...options?.headers },
+		body: JSON.stringify(request),
+	});
+};
+
+export const getRefreshRevokeMutationOptions = <
+	TError = ErrorType<InternalErrorResponse>,
+	TContext = unknown,
+>(options?: {
+	mutation?: CreateMutationOptions<
+		Awaited<ReturnType<typeof refreshRevoke>>,
+		TError,
+		{ data: BodyType<Request> },
+		TContext
+	>;
+	request?: SecondParameter<typeof customInstance>;
+}): CreateMutationOptions<
+	Awaited<ReturnType<typeof refreshRevoke>>,
+	TError,
+	{ data: BodyType<Request> },
+	TContext
+> => {
+	const mutationKey = ["refreshRevoke"];
+	const { mutation: mutationOptions, request: requestOptions } = options
+		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+			? options
+			: { ...options, mutation: { ...options.mutation, mutationKey } }
+		: { mutation: { mutationKey }, request: undefined };
+
+	const mutationFn: MutationFunction<
+		Awaited<ReturnType<typeof refreshRevoke>>,
+		{ data: BodyType<Request> }
+	> = (props) => {
+		const { data } = props ?? {};
+
+		return refreshRevoke(data, requestOptions);
+	};
+
+	return { mutationFn, ...mutationOptions };
+};
+
+export type RefreshRevokeMutationResult = NonNullable<Awaited<ReturnType<typeof refreshRevoke>>>;
+export type RefreshRevokeMutationBody = BodyType<Request>;
+export type RefreshRevokeMutationError = ErrorType<InternalErrorResponse>;
+
+export const createRefreshRevoke = <TError = ErrorType<InternalErrorResponse>, TContext = unknown>(
+	options?: () => {
+		mutation?: CreateMutationOptions<
+			Awaited<ReturnType<typeof refreshRevoke>>,
+			TError,
+			{ data: BodyType<Request> },
+			TContext
+		>;
+		request?: SecondParameter<typeof customInstance>;
+	},
+	queryClient?: () => QueryClient
+): CreateMutationResult<
+	Awaited<ReturnType<typeof refreshRevoke>>,
+	TError,
+	{ data: BodyType<Request> },
+	TContext
+> => {
+	return createMutation(() => ({ ...getRefreshRevokeMutationOptions(options?.()) }), queryClient);
+};
 export const getRefreshListUrl = () => {
 	return `/account/refresh/list`;
 };
@@ -213,12 +349,12 @@ export const getPasskeyUrl = () => {
 	return `/account/passkey`;
 };
 
-export const passkey = async (request: Request, options?: RequestInit): Promise<string> => {
+export const passkey = async (request2: Request2, options?: RequestInit): Promise<string> => {
 	return customInstance<string>(getPasskeyUrl(), {
 		...options,
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...options?.headers },
-		body: JSON.stringify(request),
+		body: JSON.stringify(request2),
 	});
 };
 
@@ -229,14 +365,14 @@ export const getPasskeyMutationOptions = <
 	mutation?: CreateMutationOptions<
 		Awaited<ReturnType<typeof passkey>>,
 		TError,
-		{ data: BodyType<Request> },
+		{ data: BodyType<Request2> },
 		TContext
 	>;
 	request?: SecondParameter<typeof customInstance>;
 }): CreateMutationOptions<
 	Awaited<ReturnType<typeof passkey>>,
 	TError,
-	{ data: BodyType<Request> },
+	{ data: BodyType<Request2> },
 	TContext
 > => {
 	const mutationKey = ["passkey"];
@@ -248,7 +384,7 @@ export const getPasskeyMutationOptions = <
 
 	const mutationFn: MutationFunction<
 		Awaited<ReturnType<typeof passkey>>,
-		{ data: BodyType<Request> }
+		{ data: BodyType<Request2> }
 	> = (props) => {
 		const { data } = props ?? {};
 
@@ -259,7 +395,7 @@ export const getPasskeyMutationOptions = <
 };
 
 export type PasskeyMutationResult = NonNullable<Awaited<ReturnType<typeof passkey>>>;
-export type PasskeyMutationBody = BodyType<Request>;
+export type PasskeyMutationBody = BodyType<Request2>;
 export type PasskeyMutationError = ErrorType<InternalErrorResponse>;
 
 export const createPasskey = <TError = ErrorType<InternalErrorResponse>, TContext = unknown>(
@@ -267,7 +403,7 @@ export const createPasskey = <TError = ErrorType<InternalErrorResponse>, TContex
 		mutation?: CreateMutationOptions<
 			Awaited<ReturnType<typeof passkey>>,
 			TError,
-			{ data: BodyType<Request> },
+			{ data: BodyType<Request2> },
 			TContext
 		>;
 		request?: SecondParameter<typeof customInstance>;
@@ -276,7 +412,7 @@ export const createPasskey = <TError = ErrorType<InternalErrorResponse>, TContex
 ): CreateMutationResult<
 	Awaited<ReturnType<typeof passkey>>,
 	TError,
-	{ data: BodyType<Request> },
+	{ data: BodyType<Request2> },
 	TContext
 > => {
 	return createMutation(() => ({ ...getPasskeyMutationOptions(options?.()) }), queryClient);

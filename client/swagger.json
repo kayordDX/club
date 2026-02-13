@@ -312,6 +312,65 @@
         }
       }
     },
+    "/account/refresh/revokeAll": {
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "operationId": "RefreshRevokeAll",
+        "responses": {
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalErrorResponse"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/account/refresh/revoke": {
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "operationId": "RefreshRevoke",
+        "requestBody": {
+          "x-name": "Request",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Request"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalErrorResponse"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
     "/account/refresh/list": {
       "get": {
         "tags": [
@@ -357,7 +416,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Request"
+                "$ref": "#/components/schemas/Request2"
               }
             }
           },
@@ -1893,6 +1952,19 @@
           }
         }
       },
+      "Request": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          }
+        }
+      },
       "RefreshListResponse": {
         "type": "object",
         "additionalProperties": false,
@@ -1935,7 +2007,7 @@
           }
         }
       },
-      "Request": {
+      "Request2": {
         "type": "object",
         "additionalProperties": false,
         "required": [

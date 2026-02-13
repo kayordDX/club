@@ -4,6 +4,7 @@
 	import GoogleSvg from "$lib/svg/GoogleSVG.svelte";
 	import { user } from "$lib/stores/user.svelte";
 	import LogoButton from "$lib/components/LogoButton.svelte";
+	import LogoutButton from "$lib/components/LogoutButton/LogoutButton.svelte";
 
 	const handleLoginWithGoogle = () => {
 		isLoading = true;
@@ -19,11 +20,16 @@
 		<Card.Root>
 			<Card.Header>
 				<Card.Title class="text-center">Welcome back</Card.Title>
-				<Card.Description class="text-center">Sign in to book your next game</Card.Description>
+				<Card.Description class="text-center">
+					{user.isLoggedIn ? "You are already logged in" : "Sign in to book your next game"}
+				</Card.Description>
 			</Card.Header>
 			<Card.Content class="flex flex-col items-center">
 				{#if user.isLoggedIn}
 					Logged in as {user.value?.firstName}
+					<div class="mt-4">
+						<LogoutButton />
+					</div>
 				{:else}
 					<Button onclick={handleLoginWithGoogle} variant="outline">
 						{#if isLoading}

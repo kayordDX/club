@@ -407,6 +407,10 @@ export interface UserModel {
 	picture?: string | null;
 }
 
+export interface Request {
+	id: string;
+}
+
 export interface RefreshListResponse {
 	id: string;
 	expiresAtUtc: string;
@@ -418,7 +422,7 @@ export interface RefreshListResponse {
 	isCurrent: boolean;
 }
 
-export interface Request {
+export interface Request2 {
 	name: string;
 }
 

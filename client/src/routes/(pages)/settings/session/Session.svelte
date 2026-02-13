@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { RefreshListResponse } from "$lib/api";
+	import { createRefreshRevoke } from "$lib/api";
 	import { Badge, Button, Card, Tooltip } from "@kayord/ui";
 	import {
 		ClockIcon,
@@ -12,16 +13,34 @@
 		TvIcon,
 		WatchIcon,
 	} from "@lucide/svelte";
+	import { toast } from "svelte-sonner";
 
 	type Props = {
 		session: RefreshListResponse;
+		refetch: () => void;
 	};
 
-	let { session }: Props = $props();
+	let { session, refetch }: Props = $props();
 
 	const getShortenedBrowserVersion = (version: string) => {
 		const parts = version.split(".");
 		return parts.slice(0, 1).join(".");
+	};
+
+	const mutation = createRefreshRevoke();
+
+	let isRevoking = $state(false);
+	const revoke = async () => {
+		try {
+			isRevoking = true;
+			await mutation.mutateAsync({ data: { id: session.id } });
+			refetch();
+			toast.info("Successfully revoked session");
+		} catch {
+			toast.error("Error revoking session");
+		} finally {
+			isRevoking = false;
+		}
 	};
 </script>
 
@@ -66,7 +85,9 @@
 		{#if session.isCurrent}
 			<Badge>Current</Badge>
 		{:else}
-			<Button variant="destructive"><ShieldXIcon /> Revoke</Button>
+			<Button variant="destructive" size="sm" disabled={isRevoking} onclick={revoke}>
+				<ShieldXIcon /> Revoke
+			</Button>
 		{/if}
 	</div>
 </Card.Root>

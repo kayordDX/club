@@ -33,7 +33,8 @@ public class Endpoint(AccountService accountService, AppDbContext dbContext) : E
         }
         catch (Exception)
         {
-            accountService.Logout();
+            var refreshToken = HttpContext.Request.Cookies["REFRESH_TOKEN"];
+            await accountService.Logout(refreshToken);
             await Send.ForbiddenAsync(ct);
             return;
         }
