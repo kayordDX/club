@@ -71,7 +71,7 @@
 		<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-2">
 			{#each clubs as club (club.id)}
 				<Card.Root
-					class={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
+					class={`cursor-pointer pt-0 transition-all duration-200 hover:shadow-lg ${
 						selectedClub === club.id ? "ring-primary ring-2" : ""
 					}`}
 					onclick={() => handleClubSelect(club.id)}
@@ -104,7 +104,7 @@
 						<p class="text-muted-foreground mb-3 text-sm text-pretty">{club.description}</p>
 
 						<div class="mb-4 flex flex-wrap gap-2">
-							{#each club.facilities as facility}
+							{#each club.facilities as facility (facility)}
 								<Badge variant="secondary" class="text-xs">
 									{facility}
 								</Badge>
@@ -116,7 +116,11 @@
 								<ClockIcon class="mr-1 h-4 w-4" />
 								{club.priceRange}
 							</div>
-							<Button size="sm" class={selectedClub === club.id ? "bg-primary" : ""}>
+							<Button
+								size="sm"
+								class={selectedClub === club.id ? "bg-primary" : ""}
+								href={`/club/${club.id}`}
+							>
 								{selectedClub === club.id ? "Selected" : "Select Club"}
 							</Button>
 						</div>

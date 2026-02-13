@@ -25,6 +25,7 @@
 	"devDependencies": {
 		"@eslint/compat": "^2.0.2",
 		"@eslint/js": "^10.0.1",
+		"@internationalized/date": "^3.11.0",
 		"@kayord/ui": "^2.1.10",
 		"@lucide/svelte": "^0.563.1",
 		"@playwright/test": "^1.58.2",

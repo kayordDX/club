@@ -9,10 +9,15 @@
 		Tabs,
 		Separator,
 		Pagination,
+		Breadcrumb,
 	} from "@kayord/ui";
-	import { CalendarDays, User, Clock, CheckCircle, XCircle } from "@lucide/svelte";
+	import { Calendar } from "@kayord/ui/calendar";
+	import { CalendarDays, User, Clock, CircleXIcon, CircleCheckIcon } from "@lucide/svelte";
 	import { getAccountMeQueryOptions } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
+	import Times from "./Times.svelte";
+	import { today, getLocalTimeZone } from "@internationalized/date";
+	import Facility from "./Facility.svelte";
 
 	const query = createQuery(() => getAccountMeQueryOptions());
 
@@ -61,8 +66,21 @@
 			showAlert = false;
 		}, 2000);
 	}
+
+	let selectedDate = $state(today(getLocalTimeZone()).add({ days: 5 }));
 </script>
 
+<Breadcrumb.Root>
+	<Breadcrumb.List>
+		<Breadcrumb.Item>
+			<Breadcrumb.Link href="/">Home</Breadcrumb.Link>
+		</Breadcrumb.Item>
+		<Breadcrumb.Separator />
+		<Breadcrumb.Item>
+			<Breadcrumb.Page>Club Name</Breadcrumb.Page>
+		</Breadcrumb.Item>
+	</Breadcrumb.List>
+</Breadcrumb.Root>
 <div class="mx-auto flex max-w-3xl flex-col items-center gap-8 px-4 py-8">
 	<Card.Root class="w-full">
 		<Card.Header class="flex items-center gap-4">
@@ -84,7 +102,7 @@
 		<Card.Content>
 			<p class="mb-2">{club.description}</p>
 			<div class="mb-2 flex flex-wrap gap-2">
-				{#each club.amenities as amenity}
+				{#each club.amenities as amenity (amenity)}
 					<Badge>{amenity}</Badge>
 				{/each}
 			</div>
@@ -95,6 +113,12 @@
 			</div>
 		</Card.Content>
 	</Card.Root>
+
+	<Facility />
+	<div class="flex items-center gap-2">
+		<Times />
+		<Calendar type="single" bind:value={selectedDate} class="rounded-md border shadow-sm" />
+	</div>
 
 	<Tabs.Root value={selectedTab} class="w-full">
 		<Tabs.List>
@@ -112,15 +136,15 @@
 					</Table.Row>
 				</Table.Header>
 				<Table.Body>
-					{#each slots as slot}
+					{#each slots as slot (slot)}
 						<Table.Row>
 							<Table.Cell>{slot.type}</Table.Cell>
 							<Table.Cell><Clock class="mr-1 inline h-4 w-4" /> {slot.time}</Table.Cell>
 							<Table.Cell>
 								{#if slot.available}
-									<Badge><CheckCircle class="inline h-4 w-4" /> Available</Badge>
+									<Badge><CircleCheckIcon class="inline h-4 w-4" /> Available</Badge>
 								{:else}
-									<Badge variant="destructive"><XCircle class="inline h-4 w-4" /> Booked</Badge>
+									<Badge variant="destructive"><CircleXIcon class="inline h-4 w-4" /> Booked</Badge>
 								{/if}
 							</Table.Cell>
 							<Table.Cell>
@@ -172,7 +196,7 @@
 					</Table.Row>
 				</Table.Header>
 				<Table.Body>
-					{#each bookings as booking}
+					{#each bookings as booking (booking)}
 						<Table.Row>
 							<Table.Cell><User class="h-4 w-4" /> {booking.user}</Table.Cell>
 							<Table.Cell>{booking.type}</Table.Cell>
