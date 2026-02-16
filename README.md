@@ -40,12 +40,13 @@ dotnet user-secrets list --project api/src/online
 # cd client
 pnpm dev
 ```
-### Other Todo
+### Principles
 
-- [ ] Test google auth flow
-- [ ] Refresh Tokens test
-- [ ] Test roles
-- [ ] Create entities and test endpoints
+- [ ] Guests should be able to book
+- [ ] Re-use same UI for members guests and staff where possible
+- [ ] URLs should be deterministic.
+- [ ] Mobile First
+- [ ] Code first DB design
 
 ### Todo Phase 1
 

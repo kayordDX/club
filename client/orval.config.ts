@@ -13,15 +13,11 @@ export default defineConfig({
 			clean: true,
 			override: {
 				fetch: {
-					// forceSuccessResponse: true,
 					includeHttpResponseReturnType: false,
 				},
 				mutator: {
 					path: "../mutator/customInstance.svelte.ts",
 					name: "customInstance",
-				},
-				query: {
-					signal: false,
 				},
 			},
 		},
