@@ -13,15 +13,10 @@
 	} from "@kayord/ui";
 	import { Calendar } from "@kayord/ui/calendar";
 	import { CalendarDays, User, Clock, CircleXIcon, CircleCheckIcon } from "@lucide/svelte";
-	import { getAccountMeQueryOptions } from "$lib/api";
-	import { createQuery } from "@tanstack/svelte-query";
 	import Times from "./Times.svelte";
 	import { today, getLocalTimeZone } from "@internationalized/date";
 	import Facility from "./Facility.svelte";
-
-	const query = createQuery(() => getAccountMeQueryOptions());
-
-	console.log("User Data:", query.data);
+	import Rules from "./Rules.svelte";
 
 	// Inlined club data
 	const club = {
@@ -70,62 +65,34 @@
 	let selectedDate = $state(today(getLocalTimeZone()).add({ days: 5 }));
 </script>
 
-<Breadcrumb.Root>
-	<Breadcrumb.List>
-		<Breadcrumb.Item>
-			<Breadcrumb.Link href="/">Home</Breadcrumb.Link>
-		</Breadcrumb.Item>
-		<Breadcrumb.Separator />
-		<Breadcrumb.Item>
-			<Breadcrumb.Page>Club Name</Breadcrumb.Page>
-		</Breadcrumb.Item>
-	</Breadcrumb.List>
-</Breadcrumb.Root>
-<div class="mx-auto flex max-w-3xl flex-col items-center gap-8 px-4 py-8">
-	<Card.Root class="w-full">
-		<Card.Header class="flex items-center gap-4">
-			<Avatar.Root>
-				<Avatar.Image src={club.image} alt={club.name} />
-				<Avatar.Fallback>{club.name[0]}</Avatar.Fallback>
-			</Avatar.Root>
-			<div>
-				<Card.Title class="flex items-center gap-2 text-2xl font-bold">
-					{club.name}
-					<Badge variant="secondary">{club.type}</Badge>
-				</Card.Title>
-				<Card.Description class="flex items-center gap-2 text-gray-500">
-					<CalendarDays class="h-4 w-4" />
-					{club.location}
-				</Card.Description>
-			</div>
-		</Card.Header>
-		<Card.Content>
-			<p class="mb-2">{club.description}</p>
-			<div class="mb-2 flex flex-wrap gap-2">
-				{#each club.amenities as amenity (amenity)}
-					<Badge>{amenity}</Badge>
-				{/each}
-			</div>
-			<Separator />
-			<div class="mt-2 text-sm text-gray-600">
-				<span class="font-semibold">Contact:</span>
-				{club.contact.phone} | {club.contact.email}
-			</div>
-		</Card.Content>
-	</Card.Root>
-
-	<Facility />
-	<div class="flex items-center gap-2">
-		<Times />
-		<Calendar type="single" bind:value={selectedDate} class="rounded-md border shadow-sm" />
-	</div>
-
-	<Tabs.Root value={selectedTab} class="w-full">
-		<Tabs.List>
-			<Tabs.Trigger value="slots">Available Slots</Tabs.Trigger>
-			<Tabs.Trigger value="bookings">My Bookings</Tabs.Trigger>
-		</Tabs.List>
-		<Tabs.Content value="slots">
+<div class="m-4">
+	<Breadcrumb.Root class="mb-4">
+		<Breadcrumb.List>
+			<Breadcrumb.Item>
+				<Breadcrumb.Link href="/">Home</Breadcrumb.Link>
+			</Breadcrumb.Item>
+			<Breadcrumb.Separator />
+			<Breadcrumb.Item>
+				<Breadcrumb.Page>Club Name</Breadcrumb.Page>
+			</Breadcrumb.Item>
+		</Breadcrumb.List>
+	</Breadcrumb.Root>
+	<div class="flex flex-col gap-2 md:flex-row">
+		<div class="flex w-full flex-col gap-2">
+			<Facility />
+			<Card.Root>
+				<Card.Header>
+					<Card.Title>Select Date</Card.Title>
+					<Card.Description>Pick a day</Card.Description>
+				</Card.Header>
+				<Card.Content>
+					<Calendar
+						type="single"
+						bind:value={selectedDate}
+						class="w-fit rounded-md border shadow-sm"
+					/>
+				</Card.Content>
+			</Card.Root>
 			<Table.Root>
 				<Table.Header>
 					<Table.Row>
@@ -154,57 +121,43 @@
 					{/each}
 				</Table.Body>
 			</Table.Root>
-			<Pagination.Root count={100} perPage={10}>
-				{#snippet children({ pages, currentPage })}
-					<Pagination.Content>
-						<Pagination.Item>
-							<Pagination.PrevButton />
-						</Pagination.Item>
-						{#each pages as page (page.key)}
-							{#if page.type === "ellipsis"}
-								<Pagination.Item>
-									<Pagination.Ellipsis />
-								</Pagination.Item>
-							{:else}
-								<Pagination.Item>
-									<Pagination.Link {page} isActive={currentPage === page.value}>
-										{page.value}
-									</Pagination.Link>
-								</Pagination.Item>
-							{/if}
-						{/each}
-						<Pagination.Item>
-							<Pagination.NextButton />
-						</Pagination.Item>
-					</Pagination.Content>
-				{/snippet}
-			</Pagination.Root>
-			{#if showAlert}
-				<Alert.Root class="mt-4">
-					<Alert.Title>Success!</Alert.Title>
-					<Alert.Description>Slot booked successfully!</Alert.Description>
-				</Alert.Root>
-			{/if}
-		</Tabs.Content>
-		<Tabs.Content value="bookings">
-			<Table.Root>
-				<Table.Header>
-					<Table.Row>
-						<Table.Head>User</Table.Head>
-						<Table.Head>Type</Table.Head>
-						<Table.Head>Time</Table.Head>
-					</Table.Row>
-				</Table.Header>
-				<Table.Body>
-					{#each bookings as booking (booking)}
-						<Table.Row>
-							<Table.Cell><User class="h-4 w-4" /> {booking.user}</Table.Cell>
-							<Table.Cell>{booking.type}</Table.Cell>
-							<Table.Cell>{booking.time}</Table.Cell>
-						</Table.Row>
-					{/each}
-				</Table.Body>
-			</Table.Root>
-		</Tabs.Content>
-	</Tabs.Root>
+		</div>
+		<div class="flex flex-col gap-2">
+			<Card.Root class="p-2">
+				<Card.Root class="w-full">
+					<Card.Header class="flex items-center gap-4">
+						<Avatar.Root>
+							<Avatar.Image src={club.image} alt={club.name} />
+							<Avatar.Fallback>{club.name[0]}</Avatar.Fallback>
+						</Avatar.Root>
+						<div>
+							<Card.Title class="flex items-center gap-2 text-2xl font-bold">
+								{club.name}
+								<Badge variant="secondary">{club.type}</Badge>
+							</Card.Title>
+							<Card.Description class="flex items-center gap-2 text-gray-500">
+								<CalendarDays class="h-4 w-4" />
+								{club.location}
+							</Card.Description>
+						</div>
+					</Card.Header>
+					<Card.Content>
+						<p class="mb-2">{club.description}</p>
+						<div class="mb-2 flex flex-wrap gap-2">
+							{#each club.amenities as amenity (amenity)}
+								<Badge>{amenity}</Badge>
+							{/each}
+						</div>
+						<Separator />
+						<div class="mt-2 text-sm text-gray-600">
+							<span class="font-semibold">Contact:</span>
+							{club.contact.phone} | {club.contact.email}
+						</div>
+					</Card.Content>
+				</Card.Root>
+				<Times />
+				<Rules />
+			</Card.Root>
+		</div>
+	</div>
 </div>

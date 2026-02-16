@@ -2,10 +2,6 @@
 
 The public site to book and login as member.
 
-## Todo
-
-- [ ] Refresh tokens as own table and not part of user table
-
 ## API (Backend)
 
 ```bash
@@ -40,19 +36,19 @@ dotnet user-secrets list --project api/src/online
 # cd client
 pnpm dev
 ```
-### Principles
+## Principles
 
-- [ ] Guests should be able to book
-- [ ] Re-use same UI for members guests and staff where possible
-- [ ] URLs should be deterministic.
-- [ ] Mobile First
-- [ ] Code first DB design
+- Guests should be able to book
+- Re-use same UI for members guests and staff where possible
+- URLs should be deterministic.
+- Mobile First
+- Code first DB design
 
 ### Todo Phase 1
 
-- [ ] Register - Google oauth
-- [ ] View Account - Profile Details
-- [ ] Log in - Google auth
+- [x] Register - Google oauth
+- [ ] ~~View Account~~ - Profile Details
+- [x] Log in - Google auth
 - [ ] View Time sheet
 - [ ] Book slots - booking per day
 - [ ] Cancel booking
@@ -62,4 +58,4 @@ pnpm dev
 - [ ] Book Extras
 - [ ] Extra Equipment Agreement
 - [ ] Notification Email/SMS
-- [ ] Payments - Account per club or 1 account managed by aviate - Create accounts. Link accounts to club or multiple clubs.
+- [ ] Payments - Account per club or 1 account managed by Aviate - Create accounts. Link accounts to club or multiple clubs.

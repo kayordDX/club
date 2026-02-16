@@ -7,23 +7,25 @@
 		<Card.Title>Opening Hours</Card.Title>
 	</Card.Header>
 	<Card.Content>
-		<Table.Body>
-			<Table.Row>
-				<Table.Cell class="text-muted-foreground text-sm">Monday</Table.Cell>
-				<Table.Cell class="text-end">06:00 - 22:00</Table.Cell>
-			</Table.Row>
-			<Table.Row>
-				<Table.Cell class="text-muted-foreground text-sm">Tuesday</Table.Cell>
-				<Table.Cell class="text-end">06:00 - 22:00</Table.Cell>
-			</Table.Row>
-			<Table.Row>
-				<Table.Cell class="text-muted-foreground text-sm">Wednesday</Table.Cell>
-				<Table.Cell class="text-end">06:00 - 22:00</Table.Cell>
-			</Table.Row>
-			<Table.Row>
-				<Table.Cell class="text-muted-foreground text-sm">Thursday</Table.Cell>
-				<Table.Cell class="text-end">06:00 - 22:00</Table.Cell>
-			</Table.Row>
-		</Table.Body>
+		<Table.Root>
+			<Table.Body class="w-full">
+				<Table.Row>
+					<Table.Cell class="text-muted-foreground text-sm">Monday</Table.Cell>
+					<Table.Cell class="text-end">06:00 - 22:00</Table.Cell>
+				</Table.Row>
+				<Table.Row>
+					<Table.Cell class="text-muted-foreground text-sm">Tuesday</Table.Cell>
+					<Table.Cell class="text-end">06:00 - 22:00</Table.Cell>
+				</Table.Row>
+				<Table.Row>
+					<Table.Cell class="text-muted-foreground text-sm">Wednesday</Table.Cell>
+					<Table.Cell class="text-end">06:00 - 22:00</Table.Cell>
+				</Table.Row>
+				<Table.Row>
+					<Table.Cell class="text-muted-foreground text-sm">Thursday</Table.Cell>
+					<Table.Cell class="text-end">06:00 - 22:00</Table.Cell>
+				</Table.Row>
+			</Table.Body>
+		</Table.Root>
 	</Card.Content>
 </Card.Root>

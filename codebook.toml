@@ -2,8 +2,8 @@ dictionaries = [
     "en_gb",
     "en_za",
 ]
-
 words = [
+    "aviate",
     "kayord",
-    "lucide"
+    "lucide",
 ]
