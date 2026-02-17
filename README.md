@@ -38,6 +38,7 @@ pnpm dev
 ```
 ## Principles
 
+- Simplicity
 - Guests should be able to book
 - Re-use same UI for members guests and staff where possible
 - URLs should be deterministic.
