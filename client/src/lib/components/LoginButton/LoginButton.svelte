@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { Button, Loader } from "@kayord/ui";
+	import { Button } from "@kayord/ui";
 	import { PUBLIC_API_URL } from "$env/static/public";
-	import GoogleSvg from "$lib/svg/GoogleSVG.svelte";
 	import { user } from "$lib/stores/user.svelte";
 
 	const handleLoginWithGoogle = () => {
@@ -13,5 +12,5 @@
 </script>
 
 {#if !user.isLoggedIn}
-	<Button onclick={handleLoginWithGoogle}>Login</Button>
+	<Button onclick={handleLoginWithGoogle} disabled={isLoading}>Login</Button>
 {/if}

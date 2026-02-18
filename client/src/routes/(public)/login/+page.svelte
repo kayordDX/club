@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { Button, Card, Loader, Separator } from "@kayord/ui";
 	import { PUBLIC_API_URL } from "$env/static/public";
-	import GoogleSvg from "$lib/svg/GoogleSVG.svelte";
 	import { user } from "$lib/stores/user.svelte";
 	import LogoButton from "$lib/components/LogoButton.svelte";
 	import LogoutButton from "$lib/components/LogoutButton/LogoutButton.svelte";
+	import GoogleIcon from "$lib/svg/icons/GoogleIcon.svelte";
 
 	const handleLoginWithGoogle = () => {
 		isLoading = true;
@@ -35,7 +35,7 @@
 						{#if isLoading}
 							<Loader class="mr-2" />
 						{:else}
-							<GoogleSvg class="fill-white" />
+							<GoogleIcon class="fill-white" />
 						{/if}
 						Google
 					</Button>

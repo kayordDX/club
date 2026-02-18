@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { Button } from "@kayord/ui";
+	import { GolfIcon, GoogleIcon, TennisBallIcon } from "$lib/svg/icons";
 </script>
 
-<Button>Test</Button>
+<GoogleIcon class="fill-white" />
+<TennisBallIcon />
+<GolfIcon size={100} />
