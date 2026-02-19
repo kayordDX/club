@@ -3,6 +3,7 @@ namespace Online.DTO;
 public class OutletDTO
 {
     public int Id { get; set; }
+    public required string Slug { get; set; }
     public required string Name { get; set; }
     public int BusinessId { get; set; }
     public required BusinessDTO Business { get; set; }
@@ -14,6 +15,6 @@ public class OutletDTO
     public required string DisplayName { get; set; }
     public int OutletTypeId { get; set; }
     public OutletTypeDTO OutletType { get; set; } = default!;
-    public int IsActive { get; set; }
+    public bool IsActive { get; set; }
     public ICollection<FacilityDTO> Facilities { get; set; } = [];
 }

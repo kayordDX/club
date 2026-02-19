@@ -5,14 +5,9 @@ using Online.Services;
 
 namespace Online.Features.Account.Login.Google.Callback;
 
-public class Endpoint : Endpoint<Request>
+public class Endpoint(AccountService accountService) : Endpoint<Request>
 {
-    private readonly AccountService _accountService;
-
-    public Endpoint(AccountService accountService)
-    {
-        _accountService = accountService;
-    }
+    private readonly AccountService _accountService = accountService;
 
     public override void Configure()
     {

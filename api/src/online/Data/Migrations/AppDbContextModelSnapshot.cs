@@ -818,8 +818,8 @@ namespace Online.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("display_name");
 
-                    b.Property<int>("IsActive")
-                        .HasColumnType("integer")
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean")
                         .HasColumnName("is_active");
 
                     b.Property<DateTime?>("LastModified")
@@ -847,6 +847,11 @@ namespace Online.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("registration");
 
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("slug");
+
                     b.Property<string>("VatNumber")
                         .IsRequired()
                         .HasColumnType("text")
@@ -860,6 +865,10 @@ namespace Online.Data.Migrations
 
                     b.HasIndex("OutletTypeId")
                         .HasDatabaseName("ix_outlet_outlet_type_id");
+
+                    b.HasIndex("Slug")
+                        .IsUnique()
+                        .HasDatabaseName("ix_outlet_slug");
 
                     b.ToTable("outlet", (string)null);
                 });

@@ -8,6 +8,6 @@ public class OutletConfig : IEntityTypeConfiguration<Outlet>
 {
     public void Configure(EntityTypeBuilder<Outlet> builder)
     {
-
+        builder.HasIndex(o => o.Slug).IsUnique();
     }
 }

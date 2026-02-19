@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Online.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class InitTables : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -227,6 +227,7 @@ namespace Online.Data.Migrations
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    slug = table.Column<string>(type: "text", nullable: false),
                     name = table.Column<string>(type: "text", nullable: false),
                     business_id = table.Column<int>(type: "integer", nullable: false),
                     vat_number = table.Column<string>(type: "text", nullable: false),
@@ -236,7 +237,7 @@ namespace Online.Data.Migrations
                     registration = table.Column<string>(type: "text", nullable: true),
                     display_name = table.Column<string>(type: "text", nullable: false),
                     outlet_type_id = table.Column<int>(type: "integer", nullable: false),
-                    is_active = table.Column<int>(type: "integer", nullable: false),
+                    is_active = table.Column<bool>(type: "boolean", nullable: false),
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     created_by = table.Column<Guid>(type: "uuid", nullable: true),
                     last_modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -980,6 +981,12 @@ namespace Online.Data.Migrations
                 name: "ix_outlet_outlet_type_id",
                 table: "outlet",
                 column: "outlet_type_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_outlet_slug",
+                table: "outlet",
+                column: "slug",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "ix_payment_payment_status_id",
