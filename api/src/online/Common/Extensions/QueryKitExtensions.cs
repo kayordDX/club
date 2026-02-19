@@ -6,7 +6,7 @@ namespace Online.Common.Extensions;
 
 public static class QueryKitExtensions
 {
-    public static async Task<PaginatedList<T>> GetPagedAsync<T>(this IQueryable<T> query, QueryModel queryModel, CancellationToken ct) where T : class
+    public static async Task<PaginatedList<T>> GetPagedAsync<T>(this IOrderedQueryable<T> query, QueryModel queryModel, CancellationToken ct) where T : class
     {
         var (itemsQuery, pageNumber, pageSize, count) = await GetPagedResultAsync(query, queryModel, ct);
         return new PaginatedList<T>(await itemsQuery.ToListAsync(ct), count, pageNumber, pageSize);

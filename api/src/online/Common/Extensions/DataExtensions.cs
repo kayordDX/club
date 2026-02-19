@@ -48,6 +48,12 @@ public static class DataExtensions
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         if (db.Database.IsNpgsql())
         {
+            // Temp drop all for now
+            await db.Database.ExecuteSqlAsync($"""
+                DROP SCHEMA public CASCADE;
+                CREATE SCHEMA public;
+                GRANT ALL ON SCHEMA public TO online;
+            """, ct);
             await db.Database.MigrateAsync(ct);
         }
 

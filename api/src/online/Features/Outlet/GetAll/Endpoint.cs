@@ -17,7 +17,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<Request, PaginatedList<
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var results = await _dbContext.Outlet.GetPagedAsync(req, ct);
+        var results = await _dbContext.Outlet.OrderBy(x => x.Id).GetPagedAsync(req, ct);
         await Send.OkAsync(results, ct);
     }
 }
