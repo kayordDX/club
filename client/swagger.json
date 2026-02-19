@@ -176,6 +176,47 @@
         }
       }
     },
+    "/outlet/{id}": {
+      "get": {
+        "tags": [
+          "Outlet"
+        ],
+        "operationId": "OutletGet",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalErrorResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutletDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/example": {
       "get": {
         "tags": [
@@ -748,6 +789,7 @@
           },
           "createdBy": {
             "type": "string",
+            "format": "guid",
             "nullable": true
           },
           "lastModified": {
@@ -757,6 +799,7 @@
           },
           "lastModifiedBy": {
             "type": "string",
+            "format": "guid",
             "nullable": true
           },
           "id": {
@@ -812,6 +855,7 @@
           },
           "createdBy": {
             "type": "string",
+            "format": "guid",
             "nullable": true
           },
           "lastModified": {
@@ -821,6 +865,7 @@
           },
           "lastModifiedBy": {
             "type": "string",
+            "format": "guid",
             "nullable": true
           },
           "id": {
@@ -857,6 +902,7 @@
           },
           "createdBy": {
             "type": "string",
+            "format": "guid",
             "nullable": true
           },
           "lastModified": {
@@ -866,6 +912,7 @@
           },
           "lastModifiedBy": {
             "type": "string",
+            "format": "guid",
             "nullable": true
           },
           "id": {
@@ -906,6 +953,8 @@
           "business",
           "vatNumber",
           "displayName",
+          "outletTypeId",
+          "outletType",
           "isActive",
           "facilities",
           "extras",
@@ -918,6 +967,7 @@
           },
           "createdBy": {
             "type": "string",
+            "format": "guid",
             "nullable": true
           },
           "lastModified": {
@@ -927,6 +977,7 @@
           },
           "lastModifiedBy": {
             "type": "string",
+            "format": "guid",
             "nullable": true
           },
           "id": {
@@ -967,16 +1018,10 @@
           },
           "outletTypeId": {
             "type": "integer",
-            "format": "int32",
-            "nullable": true
+            "format": "int32"
           },
           "outletType": {
-            "nullable": true,
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/OutletType"
-              }
-            ]
+            "$ref": "#/components/schemas/OutletType"
           },
           "isActive": {
             "type": "integer",
@@ -1017,6 +1062,7 @@
           },
           "createdBy": {
             "type": "string",
+            "format": "guid",
             "nullable": true
           },
           "lastModified": {
@@ -1026,6 +1072,7 @@
           },
           "lastModifiedBy": {
             "type": "string",
+            "format": "guid",
             "nullable": true
           },
           "id": {
@@ -1046,6 +1093,8 @@
           "name",
           "outletId",
           "outlet",
+          "facilityTypeId",
+          "facilityType",
           "resources",
           "slots",
           "facilityExtras"
@@ -1057,6 +1106,7 @@
           },
           "createdBy": {
             "type": "string",
+            "format": "guid",
             "nullable": true
           },
           "lastModified": {
@@ -1066,6 +1116,7 @@
           },
           "lastModifiedBy": {
             "type": "string",
+            "format": "guid",
             "nullable": true
           },
           "id": {
@@ -1086,6 +1137,13 @@
             "type": "boolean",
             "nullable": true
           },
+          "facilityTypeId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "facilityType": {
+            "$ref": "#/components/schemas/FacilityType"
+          },
           "resources": {
             "type": "array",
             "items": {
@@ -1103,6 +1161,23 @@
             "items": {
               "$ref": "#/components/schemas/FacilityExtra"
             }
+          }
+        }
+      },
+      "FacilityType": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
           }
         }
       },
@@ -1125,6 +1200,7 @@
           },
           "createdBy": {
             "type": "string",
+            "format": "guid",
             "nullable": true
           },
           "lastModified": {
@@ -1134,6 +1210,7 @@
           },
           "lastModifiedBy": {
             "type": "string",
+            "format": "guid",
             "nullable": true
           },
           "id": {
@@ -1181,6 +1258,7 @@
           },
           "createdBy": {
             "type": "string",
+            "format": "guid",
             "nullable": true
           },
           "lastModified": {
@@ -1190,6 +1268,7 @@
           },
           "lastModifiedBy": {
             "type": "string",
+            "format": "guid",
             "nullable": true
           },
           "id": {
@@ -1262,6 +1341,7 @@
           },
           "createdBy": {
             "type": "string",
+            "format": "guid",
             "nullable": true
           },
           "lastModified": {
@@ -1271,6 +1351,7 @@
           },
           "lastModifiedBy": {
             "type": "string",
+            "format": "guid",
             "nullable": true
           },
           "id": {
@@ -1338,6 +1419,7 @@
           },
           "createdBy": {
             "type": "string",
+            "format": "guid",
             "nullable": true
           },
           "lastModified": {
@@ -1347,6 +1429,7 @@
           },
           "lastModifiedBy": {
             "type": "string",
+            "format": "guid",
             "nullable": true
           },
           "id": {
@@ -1558,6 +1641,7 @@
           },
           "createdBy": {
             "type": "string",
+            "format": "guid",
             "nullable": true
           },
           "lastModified": {
@@ -1567,6 +1651,7 @@
           },
           "lastModifiedBy": {
             "type": "string",
+            "format": "guid",
             "nullable": true
           },
           "id": {
@@ -1673,6 +1758,7 @@
           },
           "createdBy": {
             "type": "string",
+            "format": "guid",
             "nullable": true
           },
           "lastModified": {
@@ -1682,6 +1768,7 @@
           },
           "lastModifiedBy": {
             "type": "string",
+            "format": "guid",
             "nullable": true
           },
           "id": {
@@ -1735,6 +1822,7 @@
           },
           "createdBy": {
             "type": "string",
+            "format": "guid",
             "nullable": true
           },
           "lastModified": {
@@ -1744,6 +1832,7 @@
           },
           "lastModifiedBy": {
             "type": "string",
+            "format": "guid",
             "nullable": true
           },
           "id": {
@@ -1791,6 +1880,7 @@
           },
           "createdBy": {
             "type": "string",
+            "format": "guid",
             "nullable": true
           },
           "lastModified": {
@@ -1800,6 +1890,7 @@
           },
           "lastModifiedBy": {
             "type": "string",
+            "format": "guid",
             "nullable": true
           },
           "id": {
@@ -1893,6 +1984,163 @@
                 "type": "string"
               }
             }
+          }
+        }
+      },
+      "OutletDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "businessId",
+          "business",
+          "vatNumber",
+          "displayName",
+          "outletTypeId",
+          "outletType",
+          "isActive",
+          "facilities"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "businessId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "business": {
+            "$ref": "#/components/schemas/BusinessDTO"
+          },
+          "vatNumber": {
+            "type": "string"
+          },
+          "logo": {
+            "type": "string",
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "company": {
+            "type": "string",
+            "nullable": true
+          },
+          "registration": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "outletTypeId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "outletType": {
+            "$ref": "#/components/schemas/OutletTypeDTO"
+          },
+          "isActive": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "facilities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilityDTO"
+            }
+          }
+        }
+      },
+      "BusinessDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "OutletTypeDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "FacilityDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "outletId",
+          "facilityTypeId",
+          "facilityType"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "outletId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isActive": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "facilityTypeId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "facilityType": {
+            "$ref": "#/components/schemas/FacilityTypeDTO"
+          }
+        }
+      },
+      "FacilityTypeDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
           }
         }
       },

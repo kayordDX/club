@@ -30,6 +30,11 @@ export interface OutletType {
 	name: string;
 }
 
+export interface FacilityType {
+	id: number;
+	name: string;
+}
+
 export interface Validation {
 	id: number;
 	name: string;
@@ -192,6 +197,8 @@ export interface Facility {
 	outlet: Outlet;
 	/** @nullable */
 	isActive?: boolean | null;
+	facilityTypeId: number;
+	facilityType: FacilityType;
 	resources: Resource[];
 	slots: Slot[];
 	facilityExtras: FacilityExtra[];
@@ -239,9 +246,8 @@ export interface Outlet {
 	/** @nullable */
 	registration?: string | null;
 	displayName: string;
-	/** @nullable */
-	outletTypeId?: number | null;
-	outletType?: OutletType | null;
+	outletTypeId: number;
+	outletType: OutletType;
 	isActive: number;
 	facilities: Facility[];
 	extras: Extra[];
@@ -388,6 +394,52 @@ export interface ErrorResponse {
 	message: string;
 	/** the collection of errors for the current context */
 	errors: ErrorResponseErrors;
+}
+
+export interface BusinessDTO {
+	id: number;
+	name: string;
+}
+
+export interface OutletTypeDTO {
+	id: number;
+	name: string;
+}
+
+export interface FacilityTypeDTO {
+	id: number;
+	name: string;
+}
+
+export interface FacilityDTO {
+	id: number;
+	name: string;
+	outletId: number;
+	/** @nullable */
+	isActive?: boolean | null;
+	facilityTypeId: number;
+	facilityType: FacilityTypeDTO;
+}
+
+export interface OutletDTO {
+	id: number;
+	name: string;
+	businessId: number;
+	business: BusinessDTO;
+	vatNumber: string;
+	/** @nullable */
+	logo?: string | null;
+	/** @nullable */
+	address?: string | null;
+	/** @nullable */
+	company?: string | null;
+	/** @nullable */
+	registration?: string | null;
+	displayName: string;
+	outletTypeId: number;
+	outletType: OutletTypeDTO;
+	isActive: number;
+	facilities: FacilityDTO[];
 }
 
 export interface UserRegisterRequest {
