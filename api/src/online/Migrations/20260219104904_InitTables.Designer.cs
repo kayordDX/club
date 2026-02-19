@@ -2,18 +2,21 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Online.Data;
 
 #nullable disable
 
-namespace Online.Data.Migrations
+namespace Online.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260219104904_InitTables")]
+    partial class InitTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -225,16 +228,16 @@ namespace Online.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("created_by");
 
                     b.Property<DateTime?>("LastModified")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_modified");
 
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("last_modified_by");
 
                     b.Property<int>("PaymentId")
@@ -306,16 +309,16 @@ namespace Online.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("created_by");
 
                     b.Property<DateTime?>("LastModified")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_modified");
 
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("last_modified_by");
 
                     b.Property<string>("Name")
@@ -349,16 +352,16 @@ namespace Online.Data.Migrations
                         .HasDefaultValue(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified))
                         .HasColumnName("created");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("created_by");
 
                     b.Property<DateTime?>("LastModified")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_modified");
 
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("last_modified_by");
 
                     b.Property<string>("Name")
@@ -395,8 +398,8 @@ namespace Online.Data.Migrations
                         .HasDefaultValue(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified))
                         .HasColumnName("created");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("created_by");
 
                     b.Property<string>("FieldValidation")
@@ -408,8 +411,8 @@ namespace Online.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_modified");
 
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("last_modified_by");
 
                     b.Property<string>("Name")
@@ -450,8 +453,8 @@ namespace Online.Data.Migrations
                         .HasDefaultValue(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified))
                         .HasColumnName("created");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("created_by");
 
                     b.Property<bool>("IsActive")
@@ -462,8 +465,8 @@ namespace Online.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_modified");
 
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("last_modified_by");
 
                     b.HasKey("Id")
@@ -503,8 +506,8 @@ namespace Online.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("created_by");
 
                     b.Property<bool>("IsActive")
@@ -515,8 +518,8 @@ namespace Online.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_modified");
 
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("last_modified_by");
 
                     b.Property<int>("OutletId")
@@ -629,9 +632,13 @@ namespace Online.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("created_by");
+
+                    b.Property<int>("FacilityTypeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("facility_type_id");
 
                     b.Property<bool?>("IsActive")
                         .HasColumnType("boolean")
@@ -641,8 +648,8 @@ namespace Online.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_modified");
 
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("last_modified_by");
 
                     b.Property<string>("Name")
@@ -657,6 +664,9 @@ namespace Online.Data.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_facility");
+
+                    b.HasIndex("FacilityTypeId")
+                        .HasDatabaseName("ix_facility_facility_type_id");
 
                     b.HasIndex("OutletId")
                         .HasDatabaseName("ix_facility_outlet_id");
@@ -689,8 +699,8 @@ namespace Online.Data.Migrations
                         .HasDefaultValue(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified))
                         .HasColumnName("created");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("created_by");
 
                     b.Property<DateTime?>("EndDate")
@@ -717,8 +727,8 @@ namespace Online.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_modified");
 
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("last_modified_by");
 
                     b.Property<string>("Name")
@@ -757,6 +767,26 @@ namespace Online.Data.Migrations
                     b.ToTable("facility_extra", (string)null);
                 });
 
+            modelBuilder.Entity("Online.Entities.FacilityType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_facility_type");
+
+                    b.ToTable("facility_type", (string)null);
+                });
+
             modelBuilder.Entity("Online.Entities.Outlet", b =>
                 {
                     b.Property<int>("Id")
@@ -782,8 +812,8 @@ namespace Online.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("created_by");
 
                     b.Property<string>("DisplayName")
@@ -799,8 +829,8 @@ namespace Online.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_modified");
 
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("last_modified_by");
 
                     b.Property<string>("Logo")
@@ -812,7 +842,7 @@ namespace Online.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name");
 
-                    b.Property<int?>("OutletTypeId")
+                    b.Property<int>("OutletTypeId")
                         .HasColumnType("integer")
                         .HasColumnName("outlet_type_id");
 
@@ -850,16 +880,16 @@ namespace Online.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("created_by");
 
                     b.Property<DateTime?>("LastModified")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_modified");
 
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("last_modified_by");
 
                     b.Property<string>("Name")
@@ -959,8 +989,8 @@ namespace Online.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("created_by");
 
                     b.Property<int>("FacilityId")
@@ -977,8 +1007,8 @@ namespace Online.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_modified");
 
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("last_modified_by");
 
                     b.Property<string>("Name")
@@ -1008,8 +1038,8 @@ namespace Online.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("created_by");
 
                     b.Property<string>("Description")
@@ -1025,8 +1055,8 @@ namespace Online.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_modified");
 
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("last_modified_by");
 
                     b.Property<string>("Name")
@@ -1053,8 +1083,8 @@ namespace Online.Data.Migrations
                         .HasDefaultValue(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified))
                         .HasColumnName("created");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("created_by");
 
                     b.Property<DateTime>("EndDatetime")
@@ -1073,8 +1103,8 @@ namespace Online.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_modified");
 
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("last_modified_by");
 
                     b.Property<int?>("ResourceId")
@@ -1118,16 +1148,16 @@ namespace Online.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("created_by");
 
                     b.Property<DateTime?>("LastModified")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_modified");
 
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("last_modified_by");
 
                     b.Property<int?>("PaymentId")
@@ -1184,16 +1214,16 @@ namespace Online.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("created_by");
 
                     b.Property<DateTime?>("LastModified")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_modified");
 
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("last_modified_by");
 
                     b.Property<decimal>("Price")
@@ -1336,8 +1366,8 @@ namespace Online.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created");
 
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("created_by");
 
                     b.Property<DateTime?>("EndDate")
@@ -1352,8 +1382,8 @@ namespace Online.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_modified");
 
-                    b.Property<string>("LastModifiedBy")
-                        .HasColumnType("text")
+                    b.Property<Guid?>("LastModifiedBy")
+                        .HasColumnType("uuid")
                         .HasColumnName("last_modified_by");
 
                     b.Property<decimal>("Price")
@@ -1726,12 +1756,21 @@ namespace Online.Data.Migrations
 
             modelBuilder.Entity("Online.Entities.Facility", b =>
                 {
+                    b.HasOne("Online.Entities.FacilityType", "FacilityType")
+                        .WithMany()
+                        .HasForeignKey("FacilityTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_facility_facility_type_facility_type_id");
+
                     b.HasOne("Online.Entities.Outlet", "Outlet")
                         .WithMany("Facilities")
                         .HasForeignKey("OutletId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_facility_outlet_outlet_id");
+
+                    b.Navigation("FacilityType");
 
                     b.Navigation("Outlet");
                 });
@@ -1787,6 +1826,8 @@ namespace Online.Data.Migrations
                     b.HasOne("Online.Entities.OutletType", "OutletType")
                         .WithMany()
                         .HasForeignKey("OutletTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
                         .HasConstraintName("fk_outlet_outlet_type_outlet_type_id");
 
                     b.Navigation("Business");

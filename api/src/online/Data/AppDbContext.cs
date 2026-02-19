@@ -3,11 +3,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Online.Entities;
+using Online.Services;
 
 namespace Online.Data;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext<User, IdentityRole<Guid>, Guid>(options)
+public class AppDbContext(DbContextOptions<AppDbContext> options, CurrentUserService currentUserService) : IdentityDbContext<User, IdentityRole<Guid>, Guid>(options)
 {
+    private readonly CurrentUserService _currentUserService = currentUserService;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -56,4 +59,27 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
     // Validation Entities
     public DbSet<Validation> Validation { get; set; }
     public DbSet<RoleType> RoleType { get; set; }
+
+
+    public override async Task<int> SaveChangesAsync(CancellationToken ct = new CancellationToken())
+    {
+        foreach (Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<AuditableEntity> entry in ChangeTracker.Entries<AuditableEntity>())
+        {
+            switch (entry.State)
+            {
+                case EntityState.Added:
+                    entry.Entity.Created = DateTime.Now;
+                    entry.Entity.CreatedBy = _currentUserService.GetId();
+                    break;
+
+                case EntityState.Modified:
+                    entry.Entity.LastModified = DateTime.Now;
+                    entry.Entity.LastModifiedBy = _currentUserService.GetId();
+                    break;
+            }
+        }
+        int returnValue = await base.SaveChangesAsync(ct);
+        return returnValue;
+    }
+
 }

@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Online.Data.Migrations
+namespace Online.Migrations
 {
     /// <inheritdoc />
     public partial class InitTables : Migration
@@ -12,95 +12,6 @@ namespace Online.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "fk_facility_site_site_id",
-                table: "facility");
-
-            migrationBuilder.DropTable(
-                name: "site");
-
-            migrationBuilder.RenameColumn(
-                name: "site_id",
-                table: "facility",
-                newName: "outlet_id");
-
-            migrationBuilder.RenameIndex(
-                name: "ix_facility_site_id",
-                table: "facility",
-                newName: "ix_facility_outlet_id");
-
-            migrationBuilder.AddColumn<DateTime>(
-                name: "created",
-                table: "resource",
-                type: "timestamp with time zone",
-                nullable: false,
-                defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
-
-            migrationBuilder.AddColumn<string>(
-                name: "created_by",
-                table: "resource",
-                type: "text",
-                nullable: true);
-
-            migrationBuilder.AddColumn<bool>(
-                name: "is_active",
-                table: "resource",
-                type: "boolean",
-                nullable: false,
-                defaultValue: false);
-
-            migrationBuilder.AddColumn<DateTime>(
-                name: "last_modified",
-                table: "resource",
-                type: "timestamp with time zone",
-                nullable: true);
-
-            migrationBuilder.AddColumn<string>(
-                name: "last_modified_by",
-                table: "resource",
-                type: "text",
-                nullable: true);
-
-            migrationBuilder.AlterColumn<string>(
-                name: "name",
-                table: "facility",
-                type: "character varying(250)",
-                maxLength: 250,
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "text");
-
-            migrationBuilder.AddColumn<DateTime>(
-                name: "created",
-                table: "facility",
-                type: "timestamp with time zone",
-                nullable: false,
-                defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
-
-            migrationBuilder.AddColumn<string>(
-                name: "created_by",
-                table: "facility",
-                type: "text",
-                nullable: true);
-
-            migrationBuilder.AddColumn<bool>(
-                name: "is_active",
-                table: "facility",
-                type: "boolean",
-                nullable: true);
-
-            migrationBuilder.AddColumn<DateTime>(
-                name: "last_modified",
-                table: "facility",
-                type: "timestamp with time zone",
-                nullable: true);
-
-            migrationBuilder.AddColumn<string>(
-                name: "last_modified_by",
-                table: "facility",
-                type: "text",
-                nullable: true);
-
             migrationBuilder.CreateTable(
                 name: "booking_status",
                 columns: table => new
@@ -122,13 +33,26 @@ namespace Online.Data.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     name = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: false),
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    created_by = table.Column<string>(type: "text", nullable: true),
+                    created_by = table.Column<Guid>(type: "uuid", nullable: true),
                     last_modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    last_modified_by = table.Column<string>(type: "text", nullable: true)
+                    last_modified_by = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_business", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "facility_type",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    name = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_facility_type", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
@@ -139,9 +63,9 @@ namespace Online.Data.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     name = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: false),
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    created_by = table.Column<string>(type: "text", nullable: true),
+                    created_by = table.Column<Guid>(type: "uuid", nullable: true),
                     last_modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    last_modified_by = table.Column<string>(type: "text", nullable: true)
+                    last_modified_by = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -175,6 +99,20 @@ namespace Online.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "role",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    normalized_name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    concurrency_stamp = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_role", x => x.id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "role_type",
                 columns: table => new
                 {
@@ -184,9 +122,9 @@ namespace Online.Data.Migrations
                     description = table.Column<string>(type: "text", nullable: false),
                     is_super_admin = table.Column<bool>(type: "boolean", nullable: false),
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    created_by = table.Column<string>(type: "text", nullable: true),
+                    created_by = table.Column<Guid>(type: "uuid", nullable: true),
                     last_modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    last_modified_by = table.Column<string>(type: "text", nullable: true)
+                    last_modified_by = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -194,33 +132,31 @@ namespace Online.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "slot",
+                name: "user",
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
-                    resource_id = table.Column<int>(type: "integer", nullable: true),
-                    start_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    end_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    slot_group_id = table.Column<int>(type: "integer", nullable: false),
-                    facility_id = table.Column<int>(type: "integer", nullable: true),
-                    created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)),
-                    created_by = table.Column<string>(type: "text", nullable: true),
-                    last_modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    last_modified_by = table.Column<string>(type: "text", nullable: true)
+                    first_name = table.Column<string>(type: "text", nullable: false),
+                    last_name = table.Column<string>(type: "text", nullable: false),
+                    picture = table.Column<string>(type: "text", nullable: true),
+                    user_name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    normalized_user_name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    normalized_email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    email_confirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    password_hash = table.Column<string>(type: "text", nullable: true),
+                    security_stamp = table.Column<string>(type: "text", nullable: true),
+                    concurrency_stamp = table.Column<string>(type: "text", nullable: true),
+                    phone_number = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    phone_number_confirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    two_factor_enabled = table.Column<bool>(type: "boolean", nullable: false),
+                    lockout_end = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    lockout_enabled = table.Column<bool>(type: "boolean", nullable: false),
+                    access_failed_count = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_slot", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_slot_facility_facility_id",
-                        column: x => x.facility_id,
-                        principalTable: "facility",
-                        principalColumn: "id");
-                    table.ForeignKey(
-                        name: "fk_slot_resource_resource_id",
-                        column: x => x.resource_id,
-                        principalTable: "resource",
-                        principalColumn: "id");
+                    table.PrimaryKey("pk_user", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
@@ -245,9 +181,9 @@ namespace Online.Data.Migrations
                     name = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: false),
                     business_id = table.Column<int>(type: "integer", nullable: false),
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)),
-                    created_by = table.Column<string>(type: "text", nullable: true),
+                    created_by = table.Column<Guid>(type: "uuid", nullable: true),
                     last_modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    last_modified_by = table.Column<string>(type: "text", nullable: true)
+                    last_modified_by = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -270,9 +206,9 @@ namespace Online.Data.Migrations
                     field_validation = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: true),
                     business_id = table.Column<int>(type: "integer", nullable: false),
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)),
-                    created_by = table.Column<string>(type: "text", nullable: true),
+                    created_by = table.Column<Guid>(type: "uuid", nullable: true),
                     last_modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    last_modified_by = table.Column<string>(type: "text", nullable: true)
+                    last_modified_by = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -299,12 +235,12 @@ namespace Online.Data.Migrations
                     company = table.Column<string>(type: "text", nullable: true),
                     registration = table.Column<string>(type: "text", nullable: true),
                     display_name = table.Column<string>(type: "text", nullable: false),
-                    outlet_type_id = table.Column<int>(type: "integer", nullable: true),
+                    outlet_type_id = table.Column<int>(type: "integer", nullable: false),
                     is_active = table.Column<int>(type: "integer", nullable: false),
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    created_by = table.Column<string>(type: "text", nullable: true),
+                    created_by = table.Column<Guid>(type: "uuid", nullable: true),
                     last_modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    last_modified_by = table.Column<string>(type: "text", nullable: true)
+                    last_modified_by = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -319,7 +255,8 @@ namespace Online.Data.Migrations
                         name: "fk_outlet_outlet_type_outlet_type_id",
                         column: x => x.outlet_type_id,
                         principalTable: "outlet_type",
-                        principalColumn: "id");
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -344,39 +281,151 @@ namespace Online.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "slot_contract",
+                name: "role_claim",
                 columns: table => new
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    slot_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    contract_id = table.Column<int>(type: "integer", nullable: false),
-                    price = table.Column<decimal>(type: "numeric", nullable: false),
-                    validation_id = table.Column<int>(type: "integer", nullable: false),
-                    created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    created_by = table.Column<string>(type: "text", nullable: true),
-                    last_modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    last_modified_by = table.Column<string>(type: "text", nullable: true)
+                    role_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    claim_type = table.Column<string>(type: "text", nullable: true),
+                    claim_value = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_slot_contract", x => x.id);
+                    table.PrimaryKey("pk_role_claim", x => x.id);
                     table.ForeignKey(
-                        name: "fk_slot_contract_contract_contract_id",
-                        column: x => x.contract_id,
-                        principalTable: "contract",
+                        name: "fk_role_claim_role_role_id",
+                        column: x => x.role_id,
+                        principalTable: "role",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "claim",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    claim_type = table.Column<string>(type: "text", nullable: true),
+                    claim_value = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_claim", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_claim_asp_net_users_user_id",
+                        column: x => x.user_id,
+                        principalTable: "user",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "user_login",
+                columns: table => new
+                {
+                    login_provider = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
+                    provider_key = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
+                    provider_display_name = table.Column<string>(type: "text", nullable: true),
+                    user_id = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_user_login", x => new { x.login_provider, x.provider_key });
+                    table.ForeignKey(
+                        name: "fk_user_login_asp_net_users_user_id",
+                        column: x => x.user_id,
+                        principalTable: "user",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "user_passkey",
+                columns: table => new
+                {
+                    credential_id = table.Column<byte[]>(type: "bytea", maxLength: 1024, nullable: false),
+                    user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    data = table.Column<string>(type: "jsonb", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_user_passkey", x => x.credential_id);
+                    table.ForeignKey(
+                        name: "fk_user_passkey_asp_net_users_user_id",
+                        column: x => x.user_id,
+                        principalTable: "user",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "user_refresh_token",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    token = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    expires_at_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    browser = table.Column<string>(type: "text", nullable: false),
+                    browser_version = table.Column<string>(type: "text", nullable: false),
+                    device = table.Column<string>(type: "text", nullable: false),
+                    platform = table.Column<string>(type: "text", nullable: false),
+                    processor = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_user_refresh_token", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_user_refresh_token_users_user_id",
+                        column: x => x.user_id,
+                        principalTable: "user",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "user_role",
+                columns: table => new
+                {
+                    user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    role_id = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_user_role", x => new { x.user_id, x.role_id });
+                    table.ForeignKey(
+                        name: "fk_user_role_asp_net_users_user_id",
+                        column: x => x.user_id,
+                        principalTable: "user",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "fk_slot_contract_slot_slot_id",
-                        column: x => x.slot_id,
-                        principalTable: "slot",
+                        name: "fk_user_role_role_role_id",
+                        column: x => x.role_id,
+                        principalTable: "role",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "user_token",
+                columns: table => new
+                {
+                    user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    login_provider = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
+                    name = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
+                    value = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_user_token", x => new { x.user_id, x.login_provider, x.name });
                     table.ForeignKey(
-                        name: "fk_slot_contract_validation_validation_id",
-                        column: x => x.validation_id,
-                        principalTable: "validation",
+                        name: "fk_user_token_asp_net_users_user_id",
+                        column: x => x.user_id,
+                        principalTable: "user",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -394,9 +443,9 @@ namespace Online.Data.Migrations
                     is_active = table.Column<bool>(type: "boolean", nullable: false),
                     user_id = table.Column<Guid>(type: "uuid", nullable: false),
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    created_by = table.Column<string>(type: "text", nullable: true),
+                    created_by = table.Column<Guid>(type: "uuid", nullable: true),
                     last_modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    last_modified_by = table.Column<string>(type: "text", nullable: true)
+                    last_modified_by = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -425,9 +474,9 @@ namespace Online.Data.Migrations
                     contract_config_id = table.Column<int>(type: "integer", nullable: false),
                     is_active = table.Column<bool>(type: "boolean", nullable: false),
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)),
-                    created_by = table.Column<string>(type: "text", nullable: true),
+                    created_by = table.Column<Guid>(type: "uuid", nullable: true),
                     last_modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    last_modified_by = table.Column<string>(type: "text", nullable: true)
+                    last_modified_by = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -458,9 +507,9 @@ namespace Online.Data.Migrations
                     contract_end = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     is_active = table.Column<bool>(type: "boolean", nullable: false),
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    created_by = table.Column<string>(type: "text", nullable: true),
+                    created_by = table.Column<Guid>(type: "uuid", nullable: true),
                     last_modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    last_modified_by = table.Column<string>(type: "text", nullable: true)
+                    last_modified_by = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -500,6 +549,38 @@ namespace Online.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "facility",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    name = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: false),
+                    outlet_id = table.Column<int>(type: "integer", nullable: false),
+                    is_active = table.Column<bool>(type: "boolean", nullable: true),
+                    facility_type_id = table.Column<int>(type: "integer", nullable: false),
+                    created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    created_by = table.Column<Guid>(type: "uuid", nullable: true),
+                    last_modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    last_modified_by = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_facility", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_facility_facility_type_facility_type_id",
+                        column: x => x.facility_type_id,
+                        principalTable: "facility_type",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "fk_facility_outlet_outlet_id",
+                        column: x => x.outlet_id,
+                        principalTable: "outlet",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "bill",
                 columns: table => new
                 {
@@ -512,9 +593,9 @@ namespace Online.Data.Migrations
                     received_by = table.Column<Guid>(type: "uuid", nullable: false),
                     user_id = table.Column<Guid>(type: "uuid", nullable: false),
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    created_by = table.Column<string>(type: "text", nullable: true),
+                    created_by = table.Column<Guid>(type: "uuid", nullable: true),
                     last_modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    last_modified_by = table.Column<string>(type: "text", nullable: true)
+                    last_modified_by = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -540,56 +621,6 @@ namespace Online.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "slot_booking",
-                columns: table => new
-                {
-                    id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    slot_contract_id = table.Column<int>(type: "integer", nullable: false),
-                    booking_status_id = table.Column<int>(type: "integer", nullable: false),
-                    booking_status_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    user_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    payment_id = table.Column<int>(type: "integer", nullable: true),
-                    slot_id = table.Column<Guid>(type: "uuid", nullable: true),
-                    created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    created_by = table.Column<string>(type: "text", nullable: true),
-                    last_modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    last_modified_by = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_slot_booking", x => x.id);
-                    table.ForeignKey(
-                        name: "fk_slot_booking_booking_status_booking_status_id",
-                        column: x => x.booking_status_id,
-                        principalTable: "booking_status",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "fk_slot_booking_payment_payment_id",
-                        column: x => x.payment_id,
-                        principalTable: "payment",
-                        principalColumn: "id");
-                    table.ForeignKey(
-                        name: "fk_slot_booking_slot_contract_slot_contract_id",
-                        column: x => x.slot_contract_id,
-                        principalTable: "slot_contract",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "fk_slot_booking_slot_slot_id",
-                        column: x => x.slot_id,
-                        principalTable: "slot",
-                        principalColumn: "id");
-                    table.ForeignKey(
-                        name: "fk_slot_booking_users_user_id",
-                        column: x => x.user_id,
-                        principalTable: "user",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "facility_extra",
                 columns: table => new
                 {
@@ -607,9 +638,9 @@ namespace Online.Data.Migrations
                     is_online = table.Column<bool>(type: "boolean", nullable: false),
                     user_id = table.Column<Guid>(type: "uuid", nullable: false),
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)),
-                    created_by = table.Column<string>(type: "text", nullable: true),
+                    created_by = table.Column<Guid>(type: "uuid", nullable: true),
                     last_modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    last_modified_by = table.Column<string>(type: "text", nullable: true)
+                    last_modified_by = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -638,6 +669,61 @@ namespace Online.Data.Migrations
                         principalTable: "user",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "resource",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    name = table.Column<string>(type: "text", nullable: false),
+                    facility_id = table.Column<int>(type: "integer", nullable: false),
+                    is_active = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    created_by = table.Column<Guid>(type: "uuid", nullable: true),
+                    last_modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    last_modified_by = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_resource", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_resource_facility_facility_id",
+                        column: x => x.facility_id,
+                        principalTable: "facility",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "slot",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    resource_id = table.Column<int>(type: "integer", nullable: true),
+                    start_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    end_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    group_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    facility_id = table.Column<int>(type: "integer", nullable: true),
+                    created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)),
+                    created_by = table.Column<Guid>(type: "uuid", nullable: true),
+                    last_modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    last_modified_by = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_slot", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_slot_facility_facility_id",
+                        column: x => x.facility_id,
+                        principalTable: "facility",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_slot_resource_resource_id",
+                        column: x => x.resource_id,
+                        principalTable: "resource",
+                        principalColumn: "id");
                 });
 
             migrationBuilder.CreateTable(
@@ -687,6 +773,94 @@ namespace Online.Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "slot_contract",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    slot_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    contract_id = table.Column<int>(type: "integer", nullable: false),
+                    price = table.Column<decimal>(type: "numeric", nullable: false),
+                    validation_id = table.Column<int>(type: "integer", nullable: false),
+                    created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    created_by = table.Column<Guid>(type: "uuid", nullable: true),
+                    last_modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    last_modified_by = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_slot_contract", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_slot_contract_contract_contract_id",
+                        column: x => x.contract_id,
+                        principalTable: "contract",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "fk_slot_contract_slot_slot_id",
+                        column: x => x.slot_id,
+                        principalTable: "slot",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "fk_slot_contract_validation_validation_id",
+                        column: x => x.validation_id,
+                        principalTable: "validation",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "slot_booking",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    slot_contract_id = table.Column<int>(type: "integer", nullable: false),
+                    booking_status_id = table.Column<int>(type: "integer", nullable: false),
+                    booking_status_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    payment_id = table.Column<int>(type: "integer", nullable: true),
+                    slot_id = table.Column<Guid>(type: "uuid", nullable: true),
+                    created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    created_by = table.Column<Guid>(type: "uuid", nullable: true),
+                    last_modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    last_modified_by = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_slot_booking", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_slot_booking_booking_status_booking_status_id",
+                        column: x => x.booking_status_id,
+                        principalTable: "booking_status",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "fk_slot_booking_payment_payment_id",
+                        column: x => x.payment_id,
+                        principalTable: "payment",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_slot_booking_slot_contract_slot_contract_id",
+                        column: x => x.slot_contract_id,
+                        principalTable: "slot_contract",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "fk_slot_booking_slot_slot_id",
+                        column: x => x.slot_id,
+                        principalTable: "slot",
+                        principalColumn: "id");
+                    table.ForeignKey(
+                        name: "fk_slot_booking_users_user_id",
+                        column: x => x.user_id,
+                        principalTable: "user",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "ix_bill_payment_id",
                 table: "bill",
@@ -700,6 +874,11 @@ namespace Online.Data.Migrations
             migrationBuilder.CreateIndex(
                 name: "ix_bill_user_id",
                 table: "bill",
+                column: "user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_claim_user_id",
+                table: "claim",
                 column: "user_id");
 
             migrationBuilder.CreateIndex(
@@ -763,6 +942,16 @@ namespace Online.Data.Migrations
                 column: "user_id");
 
             migrationBuilder.CreateIndex(
+                name: "ix_facility_facility_type_id",
+                table: "facility",
+                column: "facility_type_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_facility_outlet_id",
+                table: "facility",
+                column: "outlet_id");
+
+            migrationBuilder.CreateIndex(
                 name: "ix_facility_extra_booking_status_id",
                 table: "facility_extra",
                 column: "booking_status_id");
@@ -796,6 +985,22 @@ namespace Online.Data.Migrations
                 name: "ix_payment_payment_status_id",
                 table: "payment",
                 column: "payment_status_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_resource_facility_id",
+                table: "resource",
+                column: "facility_id");
+
+            migrationBuilder.CreateIndex(
+                name: "RoleNameIndex",
+                table: "role",
+                column: "normalized_name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_role_claim_role_id",
+                table: "role_claim",
+                column: "role_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_slot_facility_id",
@@ -848,6 +1053,17 @@ namespace Online.Data.Migrations
                 column: "validation_id");
 
             migrationBuilder.CreateIndex(
+                name: "EmailIndex",
+                table: "user",
+                column: "normalized_email");
+
+            migrationBuilder.CreateIndex(
+                name: "UserNameIndex",
+                table: "user",
+                column: "normalized_user_name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "ix_user_contract_contract_id",
                 table: "user_contract",
                 column: "contract_id");
@@ -857,24 +1073,41 @@ namespace Online.Data.Migrations
                 table: "user_contract",
                 column: "user_id");
 
-            migrationBuilder.AddForeignKey(
-                name: "fk_facility_outlet_outlet_id",
-                table: "facility",
-                column: "outlet_id",
-                principalTable: "outlet",
-                principalColumn: "id",
-                onDelete: ReferentialAction.Cascade);
+            migrationBuilder.CreateIndex(
+                name: "ix_user_login_user_id",
+                table: "user_login",
+                column: "user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_user_passkey_user_id",
+                table: "user_passkey",
+                column: "user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_user_refresh_token_token",
+                table: "user_refresh_token",
+                column: "token",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "ix_user_refresh_token_user_id",
+                table: "user_refresh_token",
+                column: "user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_user_role_role_id",
+                table: "user_role",
+                column: "role_id");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "fk_facility_outlet_outlet_id",
-                table: "facility");
-
             migrationBuilder.DropTable(
                 name: "bill");
+
+            migrationBuilder.DropTable(
+                name: "claim");
 
             migrationBuilder.DropTable(
                 name: "contract_contract_config");
@@ -886,6 +1119,9 @@ namespace Online.Data.Migrations
                 name: "extra_booking");
 
             migrationBuilder.DropTable(
+                name: "role_claim");
+
+            migrationBuilder.DropTable(
                 name: "role_type");
 
             migrationBuilder.DropTable(
@@ -893,6 +1129,21 @@ namespace Online.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "user_contract");
+
+            migrationBuilder.DropTable(
+                name: "user_login");
+
+            migrationBuilder.DropTable(
+                name: "user_passkey");
+
+            migrationBuilder.DropTable(
+                name: "user_refresh_token");
+
+            migrationBuilder.DropTable(
+                name: "user_role");
+
+            migrationBuilder.DropTable(
+                name: "user_token");
 
             migrationBuilder.DropTable(
                 name: "payment_type");
@@ -910,10 +1161,16 @@ namespace Online.Data.Migrations
                 name: "slot_contract");
 
             migrationBuilder.DropTable(
+                name: "role");
+
+            migrationBuilder.DropTable(
                 name: "booking_status");
 
             migrationBuilder.DropTable(
                 name: "extra");
+
+            migrationBuilder.DropTable(
+                name: "user");
 
             migrationBuilder.DropTable(
                 name: "payment_status");
@@ -928,6 +1185,15 @@ namespace Online.Data.Migrations
                 name: "validation");
 
             migrationBuilder.DropTable(
+                name: "resource");
+
+            migrationBuilder.DropTable(
+                name: "facility");
+
+            migrationBuilder.DropTable(
+                name: "facility_type");
+
+            migrationBuilder.DropTable(
                 name: "outlet");
 
             migrationBuilder.DropTable(
@@ -935,86 +1201,6 @@ namespace Online.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "outlet_type");
-
-            migrationBuilder.DropColumn(
-                name: "created",
-                table: "resource");
-
-            migrationBuilder.DropColumn(
-                name: "created_by",
-                table: "resource");
-
-            migrationBuilder.DropColumn(
-                name: "is_active",
-                table: "resource");
-
-            migrationBuilder.DropColumn(
-                name: "last_modified",
-                table: "resource");
-
-            migrationBuilder.DropColumn(
-                name: "last_modified_by",
-                table: "resource");
-
-            migrationBuilder.DropColumn(
-                name: "created",
-                table: "facility");
-
-            migrationBuilder.DropColumn(
-                name: "created_by",
-                table: "facility");
-
-            migrationBuilder.DropColumn(
-                name: "is_active",
-                table: "facility");
-
-            migrationBuilder.DropColumn(
-                name: "last_modified",
-                table: "facility");
-
-            migrationBuilder.DropColumn(
-                name: "last_modified_by",
-                table: "facility");
-
-            migrationBuilder.RenameColumn(
-                name: "outlet_id",
-                table: "facility",
-                newName: "site_id");
-
-            migrationBuilder.RenameIndex(
-                name: "ix_facility_outlet_id",
-                table: "facility",
-                newName: "ix_facility_site_id");
-
-            migrationBuilder.AlterColumn<string>(
-                name: "name",
-                table: "facility",
-                type: "text",
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "character varying(250)",
-                oldMaxLength: 250);
-
-            migrationBuilder.CreateTable(
-                name: "site",
-                columns: table => new
-                {
-                    id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    name = table.Column<string>(type: "text", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_site", x => x.id);
-                });
-
-            migrationBuilder.AddForeignKey(
-                name: "fk_facility_site_site_id",
-                table: "facility",
-                column: "site_id",
-                principalTable: "site",
-                principalColumn: "id",
-                onDelete: ReferentialAction.Cascade);
         }
     }
 }

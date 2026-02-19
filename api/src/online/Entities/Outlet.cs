@@ -12,8 +12,8 @@ public class Outlet : AuditableEntity
     public string? Company { get; set; }
     public string? Registration { get; set; }
     public required string DisplayName { get; set; }
-    public int? OutletTypeId { get; set; }
-    public OutletType? OutletType { get; set; }
+    public int OutletTypeId { get; set; }
+    public OutletType OutletType { get; set; } = default!;
     public int IsActive { get; set; }
     public ICollection<Facility> Facilities { get; set; } = [];
     public ICollection<Extra> Extras { get; set; } = [];
