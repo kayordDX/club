@@ -15,6 +15,10 @@ public static class SeedDbContext
         // """, ct);
 
         await dbContext.Business.ExecuteDeleteAsync(ct);
+        await dbContext.Database.ExecuteSqlRawAsync("ALTER SEQUENCE facility_id_seq RESTART WITH 1;", ct);
+        await dbContext.Database.ExecuteSqlRawAsync("delete from facility_type;", ct);
+        await dbContext.Database.ExecuteSqlRawAsync("ALTER SEQUENCE facility_type_id_seq RESTART WITH 1;", ct);
+
 
         if (!dbContext.Business.Any())
         {
