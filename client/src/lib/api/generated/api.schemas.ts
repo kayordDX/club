@@ -233,6 +233,7 @@ export interface Outlet {
 	/** @nullable */
 	lastModifiedBy?: string | null;
 	id: number;
+	slug: string;
 	name: string;
 	businessId: number;
 	business: Business;
@@ -248,7 +249,7 @@ export interface Outlet {
 	displayName: string;
 	outletTypeId: number;
 	outletType: OutletType;
-	isActive: number;
+	isActive: boolean;
 	facilities: Facility[];
 	extras: Extra[];
 	contractOutlets: ContractOutlet[];
@@ -423,6 +424,7 @@ export interface FacilityDTO {
 
 export interface OutletDTO {
 	id: number;
+	slug: string;
 	name: string;
 	businessId: number;
 	business: BusinessDTO;
@@ -438,7 +440,7 @@ export interface OutletDTO {
 	displayName: string;
 	outletTypeId: number;
 	outletType: OutletTypeDTO;
-	isActive: number;
+	isActive: boolean;
 	facilities: FacilityDTO[];
 }
 

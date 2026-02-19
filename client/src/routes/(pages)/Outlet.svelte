@@ -11,7 +11,7 @@
 	let { outlet }: Props = $props();
 </script>
 
-<a href={resolve(`/club/${outlet.id}/book`)}>
+<a href={resolve(`/outlet/${outlet.slug}/book`)}>
 	<Card.Root class="flex w-full cursor-pointer pt-0 transition-all duration-200 hover:shadow-lg">
 		<div class="relative aspect-video overflow-hidden rounded-t-lg">
 			<img
@@ -52,7 +52,7 @@
 				<div class="text-muted-foreground flex items-center text-sm">
 					<ClockIcon class="mr-1 h-4 w-4" />
 				</div>
-				<Button size="sm" href={`/club/${outlet.id}/book`}>Select Club</Button>
+				<Button size="sm" href={`/outlet/${outlet.slug}/book`}>Select Club</Button>
 			</div>
 		</Card.Content>
 	</Card.Root>

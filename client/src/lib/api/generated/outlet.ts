@@ -100,26 +100,26 @@ export function createOutletGetAll<
 	return query;
 }
 
-export const getOutletGetUrl = (id: number) => {
-	return `/outlet/${id}`;
+export const getOutletGetUrl = (slug: string) => {
+	return `/outlet/${slug}`;
 };
 
-export const outletGet = async (id: number, options?: RequestInit): Promise<OutletDTO> => {
-	return customInstance<OutletDTO>(getOutletGetUrl(id), {
+export const outletGet = async (slug: string, options?: RequestInit): Promise<OutletDTO> => {
+	return customInstance<OutletDTO>(getOutletGetUrl(slug), {
 		...options,
 		method: "GET",
 	});
 };
 
-export const getOutletGetQueryKey = (id: number) => {
-	return [`/outlet/${id}`] as const;
+export const getOutletGetQueryKey = (slug: string) => {
+	return [`/outlet/${slug}`] as const;
 };
 
 export const getOutletGetQueryOptions = <
 	TData = Awaited<ReturnType<typeof outletGet>>,
 	TError = ErrorType<InternalErrorResponse>,
 >(
-	id: number,
+	slug: string,
 	options?: {
 		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof outletGet>>, TError, TData>>;
 		request?: SecondParameter<typeof customInstance>;
@@ -127,12 +127,12 @@ export const getOutletGetQueryOptions = <
 ) => {
 	const { query: queryOptions, request: requestOptions } = options ?? {};
 
-	const queryKey = queryOptions?.queryKey ?? getOutletGetQueryKey(id);
+	const queryKey = queryOptions?.queryKey ?? getOutletGetQueryKey(slug);
 
 	const queryFn: QueryFunction<Awaited<ReturnType<typeof outletGet>>> = ({ signal }) =>
-		outletGet(id, { signal, ...requestOptions });
+		outletGet(slug, { signal, ...requestOptions });
 
-	return { queryKey, queryFn, enabled: !!id, ...queryOptions } as CreateQueryOptions<
+	return { queryKey, queryFn, enabled: !!slug, ...queryOptions } as CreateQueryOptions<
 		Awaited<ReturnType<typeof outletGet>>,
 		TError,
 		TData
@@ -146,7 +146,7 @@ export function createOutletGet<
 	TData = Awaited<ReturnType<typeof outletGet>>,
 	TError = ErrorType<InternalErrorResponse>,
 >(
-	id: () => number,
+	slug: () => string,
 	options?: () => {
 		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof outletGet>>, TError, TData>>;
 		request?: SecondParameter<typeof customInstance>;
@@ -154,7 +154,7 @@ export function createOutletGet<
 	queryClient?: () => QueryClient
 ): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 	const query = createQuery(
-		() => getOutletGetQueryOptions(id(), options?.()),
+		() => getOutletGetQueryOptions(slug(), options?.()),
 		queryClient
 	) as CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

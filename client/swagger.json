@@ -176,7 +176,7 @@
         }
       }
     },
-    "/outlet/{id}": {
+    "/outlet/{slug}": {
       "get": {
         "tags": [
           "Outlet"
@@ -184,12 +184,11 @@
         "operationId": "OutletGet",
         "parameters": [
           {
-            "name": "id",
+            "name": "slug",
             "in": "path",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int32"
+              "type": "string"
             }
           }
         ],
@@ -948,6 +947,7 @@
         "required": [
           "created",
           "id",
+          "slug",
           "name",
           "businessId",
           "business",
@@ -983,6 +983,9 @@
           "id": {
             "type": "integer",
             "format": "int32"
+          },
+          "slug": {
+            "type": "string"
           },
           "name": {
             "type": "string"
@@ -1024,8 +1027,7 @@
             "$ref": "#/components/schemas/OutletType"
           },
           "isActive": {
-            "type": "integer",
-            "format": "int32"
+            "type": "boolean"
           },
           "facilities": {
             "type": "array",
@@ -1992,6 +1994,7 @@
         "additionalProperties": false,
         "required": [
           "id",
+          "slug",
           "name",
           "businessId",
           "business",
@@ -2006,6 +2009,9 @@
           "id": {
             "type": "integer",
             "format": "int32"
+          },
+          "slug": {
+            "type": "string"
           },
           "name": {
             "type": "string"
@@ -2047,8 +2053,7 @@
             "$ref": "#/components/schemas/OutletTypeDTO"
           },
           "isActive": {
-            "type": "integer",
-            "format": "int32"
+            "type": "boolean"
           },
           "facilities": {
             "type": "array",
