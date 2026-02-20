@@ -1,15 +1,33 @@
 <script lang="ts">
-	import { Card, Button, Badge, Table, Avatar, Separator, Breadcrumb } from "@kayord/ui";
+	import {
+		Card,
+		Button,
+		Badge,
+		Table,
+		Avatar,
+		Separator,
+		Breadcrumb,
+		Popover,
+		ButtonGroup,
+	} from "@kayord/ui";
 	import { Calendar } from "@kayord/ui/calendar";
-	import { CalendarDays, Clock, CircleXIcon, CircleCheckIcon } from "@lucide/svelte";
+	import {
+		CalendarDays,
+		Clock,
+		CircleXIcon,
+		CircleCheckIcon,
+		CalendarIcon,
+		ChevronRightIcon,
+		ChevronLeftIcon,
+	} from "@lucide/svelte";
 	import Times from "./Times.svelte";
-	import { today, getLocalTimeZone } from "@internationalized/date";
-	import Facility from "./Facility.svelte";
+	import { today, getLocalTimeZone, DateFormatter, type DateValue } from "@internationalized/date";
 	import Rules from "./Rules.svelte";
 	import { createOutletGet } from "$lib/api";
 	import { page } from "$app/state";
 	import Query from "$lib/components/Query.svelte";
 	import { resolve } from "$app/paths";
+	import { cn } from "@kayord/ui/utils";
 
 	// Inlined club data
 	const club = {
@@ -42,6 +60,16 @@
 	const outlet = $derived(query.data);
 
 	const facility = $derived(outlet?.facilities.find((x) => x.id == Number(page.params.id)));
+
+	const df = new DateFormatter("en-ZA", {
+		dateStyle: "long",
+	});
+
+	let value = $state<DateValue>(today(getLocalTimeZone()));
+
+	const incrementDate = (incrementValue: number) => {
+		value = value.add({ days: incrementValue });
+	};
 </script>
 
 <div class="m-4">
@@ -77,6 +105,35 @@
 							bind:value={selectedDate}
 							class="w-fit rounded-md border shadow-sm"
 						/>
+
+						<Popover.Root>
+							<Popover.Trigger>
+								{#snippet child({ props })}
+									<ButtonGroup.Root class="hidden sm:flex">
+										<Button size="icon" variant="outline" onclick={() => incrementDate(-1)}>
+											<ChevronLeftIcon />
+										</Button>
+										<Button
+											variant="outline"
+											class={cn(
+												"w-[280px] justify-start text-start font-normal",
+												!value && "text-muted-foreground"
+											)}
+											{...props}
+										>
+											<CalendarIcon class="me-2 size-4" />
+											{value ? df.format(value.toDate(getLocalTimeZone())) : "Select a date"}
+										</Button>
+										<Button size="icon" variant="outline" onclick={() => incrementDate(1)}>
+											<ChevronRightIcon />
+										</Button>
+									</ButtonGroup.Root>
+								{/snippet}
+							</Popover.Trigger>
+							<Popover.Content class="w-auto p-0">
+								<Calendar bind:value type="single" initialFocus captionLayout="dropdown" />
+							</Popover.Content>
+						</Popover.Root>
 					</Card.Content>
 				</Card.Root>
 				<Table.Root>

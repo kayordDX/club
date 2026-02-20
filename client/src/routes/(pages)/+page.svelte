@@ -1,6 +1,5 @@
 <script>
 	import { Button } from "@kayord/ui";
-	import Clubs from "./Clubs.svelte";
 	import Search from "./Search.svelte";
 	import { user } from "$lib/stores/user.svelte";
 	import { createOutletGetAll } from "$lib/api";
@@ -22,7 +21,6 @@
 		{/if}
 	</div>
 	<Search />
-	<Clubs />
 	<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-2">
 		{#each data as outlet (outlet.id)}
 			<Outlet {outlet} />
