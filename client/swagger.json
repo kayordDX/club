@@ -11,49 +11,6 @@
     }
   ],
   "paths": {
-    "/what": {
-      "post": {
-        "tags": [
-          "What"
-        ],
-        "operationId": "What",
-        "requestBody": {
-          "x-name": "String",
-          "description": "",
-          "content": {
-            "*/*": {
-              "schema": {
-                "type": "string"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 1
-        },
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/test": {
       "get": {
         "tags": [
@@ -286,6 +243,62 @@
         }
       }
     },
+    "/user/role": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "operationId": "UserRole",
+        "requestBody": {
+          "x-name": "Request",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Request"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/account/register": {
       "post": {
         "tags": [
@@ -387,7 +400,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Request"
+                "$ref": "#/components/schemas/Request2"
               }
             }
           },
@@ -456,7 +469,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Request2"
+                "$ref": "#/components/schemas/Request3"
               }
             }
           },
@@ -677,7 +690,8 @@
           "lastName",
           "userContracts",
           "slotBookings",
-          "extraBookings"
+          "extraBookings",
+          "userRoles"
         ],
         "properties": {
           "id": {
@@ -763,6 +777,12 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ExtraBooking"
+            }
+          },
+          "userRoles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserRole"
             }
           }
         }
@@ -1918,6 +1938,42 @@
           }
         }
       },
+      "UserRole": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "userId",
+          "roleId",
+          "id"
+        ],
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "roleId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "outletId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "outlet": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Outlet"
+              }
+            ]
+          }
+        }
+      },
       "PaginatedListOfOutlet": {
         "type": "object",
         "additionalProperties": false,
@@ -2149,6 +2205,20 @@
           }
         }
       },
+      "Request": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "nullable": false
+          }
+        }
+      },
       "UserRegisterRequest": {
         "type": "object",
         "additionalProperties": false,
@@ -2205,7 +2275,7 @@
           }
         }
       },
-      "Request": {
+      "Request2": {
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -2260,7 +2330,7 @@
           }
         }
       },
-      "Request2": {
+      "Request3": {
         "type": "object",
         "additionalProperties": false,
         "required": [

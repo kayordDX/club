@@ -9,16 +9,16 @@ public class UserStore(AppDbContext context, IdentityErrorDescriber? describer =
 {
     private readonly AppDbContext _dbContext = context;
 
-    public async Task<IdentityResult> AddToRoleAsync(User user, string roleName, int? outletId, CancellationToken cancellationToken = default)
+    public async Task<IdentityResult> AddToRoleAsync(User user, string normalizedName, int? outletId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
 
         ArgumentNullException.ThrowIfNull(user);
-        ArgumentException.ThrowIfNullOrWhiteSpace(roleName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(normalizedName);
 
-        var role = await FindRoleAsync(roleName, cancellationToken)
-            ?? throw new InvalidOperationException($"Role '{roleName}' not found.");
+        var role = await FindRoleAsync(normalizedName, cancellationToken)
+            ?? throw new InvalidOperationException($"Role '{normalizedName}' not found.");
 
         var existing = await _dbContext.Set<UserRole>()
             .AnyAsync(ur => ur.UserId == user.Id && ur.RoleId == role.Id && ur.OutletId == outletId, cancellationToken);
@@ -28,7 +28,7 @@ public class UserStore(AppDbContext context, IdentityErrorDescriber? describer =
             return IdentityResult.Failed(new IdentityError
             {
                 Code = "UserAlreadyInRole",
-                Description = $"User is already in role '{roleName}' for outlet {outletId}."
+                Description = $"User is already in role '{normalizedName}' for outlet {outletId}."
             });
         }
 
@@ -44,16 +44,16 @@ public class UserStore(AppDbContext context, IdentityErrorDescriber? describer =
         return IdentityResult.Success;
     }
 
-    public async Task<IdentityResult> RemoveFromRoleAsync(User user, string roleName, int outletId, CancellationToken cancellationToken = default)
+    public async Task<IdentityResult> RemoveFromRoleAsync(User user, string normalizedName, int outletId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
 
         ArgumentNullException.ThrowIfNull(user);
-        ArgumentException.ThrowIfNullOrWhiteSpace(roleName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(normalizedName);
 
-        var role = await FindRoleAsync(roleName, cancellationToken)
-            ?? throw new InvalidOperationException($"Role '{roleName}' not found.");
+        var role = await FindRoleAsync(normalizedName, cancellationToken)
+            ?? throw new InvalidOperationException($"Role '{normalizedName}' not found.");
 
         var userRole = await _dbContext.Set<UserRole>()
             .FirstOrDefaultAsync(ur => ur.UserId == user.Id && ur.RoleId == role.Id && ur.OutletId == outletId, cancellationToken);
@@ -63,7 +63,7 @@ public class UserStore(AppDbContext context, IdentityErrorDescriber? describer =
             return IdentityResult.Failed(new IdentityError
             {
                 Code = "UserNotInRole",
-                Description = $"User is not in role '{roleName}' for outlet {outletId}."
+                Description = $"User is not in role '{normalizedName}' for outlet {outletId}."
             });
         }
 
@@ -73,15 +73,15 @@ public class UserStore(AppDbContext context, IdentityErrorDescriber? describer =
         return IdentityResult.Success;
     }
 
-    public async Task<bool> IsInRoleAsync(User user, string roleName, int outletId, CancellationToken cancellationToken = default)
+    public async Task<bool> IsInRoleAsync(User user, string normalizedName, int outletId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
 
         ArgumentNullException.ThrowIfNull(user);
-        ArgumentException.ThrowIfNullOrWhiteSpace(roleName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(normalizedName);
 
-        var role = await FindRoleAsync(roleName, cancellationToken);
+        var role = await FindRoleAsync(normalizedName, cancellationToken);
         if (role == null)
         {
             return false;
@@ -121,14 +121,14 @@ public class UserStore(AppDbContext context, IdentityErrorDescriber? describer =
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IList<User>> GetUsersInRoleForOutletAsync(string roleName, int outletId, CancellationToken cancellationToken = default)
+    public async Task<IList<User>> GetUsersInRoleForOutletAsync(string normalizedName, int outletId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
 
-        ArgumentException.ThrowIfNullOrWhiteSpace(roleName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(normalizedName);
 
-        var role = await FindRoleAsync(roleName, cancellationToken);
+        var role = await FindRoleAsync(normalizedName, cancellationToken);
         if (role == null)
         {
             return [];

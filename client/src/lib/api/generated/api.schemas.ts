@@ -337,6 +337,15 @@ export interface UserContract {
 	user: User;
 }
 
+export interface UserRole {
+	userId: string;
+	roleId: string;
+	id: number;
+	/** @nullable */
+	outletId?: number | null;
+	outlet?: Outlet | null;
+}
+
 export interface User {
 	id: string;
 	/** @nullable */
@@ -369,6 +378,7 @@ export interface User {
 	userContracts: UserContract[];
 	slotBookings: SlotBooking[];
 	extraBookings: ExtraBooking[];
+	userRoles: UserRole[];
 }
 
 export interface PaginatedListOfOutlet {
@@ -444,6 +454,11 @@ export interface OutletDTO {
 	facilities: FacilityDTO[];
 }
 
+export interface Request {
+	/** @minLength 1 */
+	name: string;
+}
+
 export interface UserRegisterRequest {
 	firstName: string;
 	lastName: string;
@@ -461,7 +476,7 @@ export interface UserModel {
 	picture?: string | null;
 }
 
-export interface Request {
+export interface Request2 {
 	id: string;
 }
 
@@ -476,7 +491,7 @@ export interface RefreshListResponse {
 	isCurrent: boolean;
 }
 
-export interface Request2 {
+export interface Request3 {
 	name: string;
 }
 

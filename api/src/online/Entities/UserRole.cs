@@ -4,7 +4,7 @@ namespace Online.Entities;
 
 public class UserRole : IdentityUserRole<Guid>
 {
+    public int Id { get; set; }
     public int? OutletId { get; set; }
-    public Outlet? Outlet { get; set; } = default!;
-    public User User { get; set; } = default!;
+    public Outlet? Outlet { get; set; }
 }

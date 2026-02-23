@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Online.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class InitTables : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -388,30 +388,6 @@ namespace Online.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "user_role",
-                columns: table => new
-                {
-                    user_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    role_id = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("pk_user_role", x => new { x.user_id, x.role_id });
-                    table.ForeignKey(
-                        name: "fk_user_role_asp_net_users_user_id",
-                        column: x => x.user_id,
-                        principalTable: "user",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "fk_user_role_role_role_id",
-                        column: x => x.role_id,
-                        principalTable: "role",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "user_token",
                 columns: table => new
                 {
@@ -577,6 +553,37 @@ namespace Online.Data.Migrations
                         name: "fk_facility_outlet_outlet_id",
                         column: x => x.outlet_id,
                         principalTable: "outlet",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "user_role",
+                columns: table => new
+                {
+                    user_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    role_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    outlet_id = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_user_role", x => new { x.user_id, x.role_id, x.outlet_id });
+                    table.ForeignKey(
+                        name: "fk_user_role_asp_net_users_user_id",
+                        column: x => x.user_id,
+                        principalTable: "user",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "fk_user_role_outlet_outlet_id",
+                        column: x => x.outlet_id,
+                        principalTable: "outlet",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "fk_user_role_role_role_id",
+                        column: x => x.role_id,
+                        principalTable: "role",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -1100,6 +1107,11 @@ namespace Online.Data.Migrations
                 name: "ix_user_refresh_token_user_id",
                 table: "user_refresh_token",
                 column: "user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_user_role_outlet_id",
+                table: "user_role",
+                column: "outlet_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_user_role_role_id",

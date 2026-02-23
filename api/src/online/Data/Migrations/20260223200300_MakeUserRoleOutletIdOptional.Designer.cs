@@ -12,8 +12,8 @@ using Online.Data;
 namespace Online.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260219125823_Init")]
-    partial class Init
+    [Migration("20260223200300_MakeUserRoleOutletIdOptional")]
+    partial class MakeUserRoleOutletIdOptional
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -164,25 +164,6 @@ namespace Online.Data.Migrations
                         .HasDatabaseName("ix_user_passkey_user_id");
 
                     b.ToTable("user_passkey", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
-                {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.Property<Guid>("RoleId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("role_id");
-
-                    b.HasKey("UserId", "RoleId")
-                        .HasName("pk_user_role");
-
-                    b.HasIndex("RoleId")
-                        .HasDatabaseName("ix_user_role_role_id");
-
-                    b.ToTable("user_role", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
@@ -1478,6 +1459,43 @@ namespace Online.Data.Migrations
                     b.ToTable("user_refresh_token", (string)null);
                 });
 
+            modelBuilder.Entity("Online.Entities.UserRole", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("OutletId")
+                        .HasColumnType("integer")
+                        .HasColumnName("outlet_id");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("role_id");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_user_role");
+
+                    b.HasIndex("OutletId")
+                        .HasDatabaseName("ix_user_role_outlet_id");
+
+                    b.HasIndex("RoleId")
+                        .HasDatabaseName("ix_user_role_role_id");
+
+                    b.HasIndex("UserId", "RoleId", "OutletId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_user_role_user_id_role_id_outlet_id");
+
+                    b.ToTable("user_role", (string)null);
+                });
+
             modelBuilder.Entity("Online.Entities.Validation", b =>
                 {
                     b.Property<int>("Id")
@@ -1580,23 +1598,6 @@ namespace Online.Data.Migrations
 
                     b.Navigation("Data")
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_user_role_role_role_id");
-
-                    b.HasOne("Online.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_user_role_asp_net_users_user_id");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
@@ -1988,6 +1989,31 @@ namespace Online.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Online.Entities.UserRole", b =>
+                {
+                    b.HasOne("Online.Entities.Outlet", "Outlet")
+                        .WithMany()
+                        .HasForeignKey("OutletId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_user_role_outlet_outlet_id");
+
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_role_role_role_id");
+
+                    b.HasOne("Online.Entities.User", null)
+                        .WithMany("UserRoles")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_role_asp_net_users_user_id");
+
+                    b.Navigation("Outlet");
+                });
+
             modelBuilder.Entity("Online.Entities.Business", b =>
                 {
                     b.Navigation("ContractConfigs");
@@ -2046,6 +2072,8 @@ namespace Online.Data.Migrations
                     b.Navigation("SlotBookings");
 
                     b.Navigation("UserContracts");
+
+                    b.Navigation("UserRoles");
                 });
 #pragma warning restore 612, 618
         }

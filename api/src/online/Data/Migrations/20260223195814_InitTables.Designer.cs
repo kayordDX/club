@@ -12,8 +12,8 @@ using Online.Data;
 namespace Online.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260223191044_AddOutletToUserRole")]
-    partial class AddOutletToUserRole
+    [Migration("20260223195814_InitTables")]
+    partial class InitTables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1994,7 +1994,7 @@ namespace Online.Data.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_user_role_role_role_id");
 
-                    b.HasOne("Online.Entities.User", "User")
+                    b.HasOne("Online.Entities.User", null)
                         .WithMany("UserRoles")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2002,8 +2002,6 @@ namespace Online.Data.Migrations
                         .HasConstraintName("fk_user_role_asp_net_users_user_id");
 
                     b.Navigation("Outlet");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Online.Entities.Business", b =>

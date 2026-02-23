@@ -22,8 +22,8 @@ import type {
 	LoginRequest,
 	OnlineFeaturesAccountLoginGoogleEndpointParams,
 	RefreshListResponse,
-	Request,
 	Request2,
+	Request3,
 	UserModel,
 	UserRegisterRequest,
 } from "./api.schemas";
@@ -220,12 +220,12 @@ export const getRefreshRevokeUrl = () => {
 	return `/account/refresh/revoke`;
 };
 
-export const refreshRevoke = async (request: Request, options?: RequestInit): Promise<void> => {
+export const refreshRevoke = async (request2: Request2, options?: RequestInit): Promise<void> => {
 	return customInstance<void>(getRefreshRevokeUrl(), {
 		...options,
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...options?.headers },
-		body: JSON.stringify(request),
+		body: JSON.stringify(request2),
 	});
 };
 
@@ -236,14 +236,14 @@ export const getRefreshRevokeMutationOptions = <
 	mutation?: CreateMutationOptions<
 		Awaited<ReturnType<typeof refreshRevoke>>,
 		TError,
-		{ data: BodyType<Request> },
+		{ data: BodyType<Request2> },
 		TContext
 	>;
 	request?: SecondParameter<typeof customInstance>;
 }): CreateMutationOptions<
 	Awaited<ReturnType<typeof refreshRevoke>>,
 	TError,
-	{ data: BodyType<Request> },
+	{ data: BodyType<Request2> },
 	TContext
 > => {
 	const mutationKey = ["refreshRevoke"];
@@ -255,7 +255,7 @@ export const getRefreshRevokeMutationOptions = <
 
 	const mutationFn: MutationFunction<
 		Awaited<ReturnType<typeof refreshRevoke>>,
-		{ data: BodyType<Request> }
+		{ data: BodyType<Request2> }
 	> = (props) => {
 		const { data } = props ?? {};
 
@@ -266,7 +266,7 @@ export const getRefreshRevokeMutationOptions = <
 };
 
 export type RefreshRevokeMutationResult = NonNullable<Awaited<ReturnType<typeof refreshRevoke>>>;
-export type RefreshRevokeMutationBody = BodyType<Request>;
+export type RefreshRevokeMutationBody = BodyType<Request2>;
 export type RefreshRevokeMutationError = ErrorType<InternalErrorResponse>;
 
 export const createRefreshRevoke = <TError = ErrorType<InternalErrorResponse>, TContext = unknown>(
@@ -274,7 +274,7 @@ export const createRefreshRevoke = <TError = ErrorType<InternalErrorResponse>, T
 		mutation?: CreateMutationOptions<
 			Awaited<ReturnType<typeof refreshRevoke>>,
 			TError,
-			{ data: BodyType<Request> },
+			{ data: BodyType<Request2> },
 			TContext
 		>;
 		request?: SecondParameter<typeof customInstance>;
@@ -283,7 +283,7 @@ export const createRefreshRevoke = <TError = ErrorType<InternalErrorResponse>, T
 ): CreateMutationResult<
 	Awaited<ReturnType<typeof refreshRevoke>>,
 	TError,
-	{ data: BodyType<Request> },
+	{ data: BodyType<Request2> },
 	TContext
 > => {
 	return createMutation(() => ({ ...getRefreshRevokeMutationOptions(options?.()) }), queryClient);
@@ -349,12 +349,12 @@ export const getPasskeyUrl = () => {
 	return `/account/passkey`;
 };
 
-export const passkey = async (request2: Request2, options?: RequestInit): Promise<string> => {
+export const passkey = async (request3: Request3, options?: RequestInit): Promise<string> => {
 	return customInstance<string>(getPasskeyUrl(), {
 		...options,
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...options?.headers },
-		body: JSON.stringify(request2),
+		body: JSON.stringify(request3),
 	});
 };
 
@@ -365,14 +365,14 @@ export const getPasskeyMutationOptions = <
 	mutation?: CreateMutationOptions<
 		Awaited<ReturnType<typeof passkey>>,
 		TError,
-		{ data: BodyType<Request2> },
+		{ data: BodyType<Request3> },
 		TContext
 	>;
 	request?: SecondParameter<typeof customInstance>;
 }): CreateMutationOptions<
 	Awaited<ReturnType<typeof passkey>>,
 	TError,
-	{ data: BodyType<Request2> },
+	{ data: BodyType<Request3> },
 	TContext
 > => {
 	const mutationKey = ["passkey"];
@@ -384,7 +384,7 @@ export const getPasskeyMutationOptions = <
 
 	const mutationFn: MutationFunction<
 		Awaited<ReturnType<typeof passkey>>,
-		{ data: BodyType<Request2> }
+		{ data: BodyType<Request3> }
 	> = (props) => {
 		const { data } = props ?? {};
 
@@ -395,7 +395,7 @@ export const getPasskeyMutationOptions = <
 };
 
 export type PasskeyMutationResult = NonNullable<Awaited<ReturnType<typeof passkey>>>;
-export type PasskeyMutationBody = BodyType<Request2>;
+export type PasskeyMutationBody = BodyType<Request3>;
 export type PasskeyMutationError = ErrorType<InternalErrorResponse>;
 
 export const createPasskey = <TError = ErrorType<InternalErrorResponse>, TContext = unknown>(
@@ -403,7 +403,7 @@ export const createPasskey = <TError = ErrorType<InternalErrorResponse>, TContex
 		mutation?: CreateMutationOptions<
 			Awaited<ReturnType<typeof passkey>>,
 			TError,
-			{ data: BodyType<Request2> },
+			{ data: BodyType<Request3> },
 			TContext
 		>;
 		request?: SecondParameter<typeof customInstance>;
@@ -412,7 +412,7 @@ export const createPasskey = <TError = ErrorType<InternalErrorResponse>, TContex
 ): CreateMutationResult<
 	Awaited<ReturnType<typeof passkey>>,
 	TError,
-	{ data: BodyType<Request2> },
+	{ data: BodyType<Request3> },
 	TContext
 > => {
 	return createMutation(() => ({ ...getPasskeyMutationOptions(options?.()) }), queryClient);

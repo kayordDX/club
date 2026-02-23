@@ -22,6 +22,8 @@ public static class DataExtensions
         .AddDefaultTokenProviders()
         .AddUserStore<UserStore>();
 
+        services.AddScoped<UserStore>();
+
         services.AddDbContext<AppDbContext>(options =>
         {
             options.UseSnakeCaseNamingConvention();

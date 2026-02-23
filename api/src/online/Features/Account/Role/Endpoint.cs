@@ -18,7 +18,6 @@ public class Endpoint(UserManager<User> userManager, UserStore userStore) : Endp
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
         await Task.Delay(2000, ct);
-
         var user = await _userManager.GetUserAsync(HttpContext.User);
 
         if (user is null)

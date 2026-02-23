@@ -1458,19 +1458,26 @@ namespace Online.Data.Migrations
 
             modelBuilder.Entity("Online.Entities.UserRole", b =>
                 {
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("OutletId")
+                        .HasColumnType("integer")
+                        .HasColumnName("outlet_id");
 
                     b.Property<Guid>("RoleId")
                         .HasColumnType("uuid")
                         .HasColumnName("role_id");
 
-                    b.Property<int>("OutletId")
-                        .HasColumnType("integer")
-                        .HasColumnName("outlet_id");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
 
-                    b.HasKey("UserId", "RoleId", "OutletId")
+                    b.HasKey("Id")
                         .HasName("pk_user_role");
 
                     b.HasIndex("OutletId")
@@ -1478,6 +1485,10 @@ namespace Online.Data.Migrations
 
                     b.HasIndex("RoleId")
                         .HasDatabaseName("ix_user_role_role_id");
+
+                    b.HasIndex("UserId", "RoleId", "OutletId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_user_role_user_id_role_id_outlet_id");
 
                     b.ToTable("user_role", (string)null);
                 });
@@ -1980,8 +1991,7 @@ namespace Online.Data.Migrations
                     b.HasOne("Online.Entities.Outlet", "Outlet")
                         .WithMany()
                         .HasForeignKey("OutletId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
+                        .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_user_role_outlet_outlet_id");
 
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
@@ -1991,7 +2001,7 @@ namespace Online.Data.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_user_role_role_role_id");
 
-                    b.HasOne("Online.Entities.User", "User")
+                    b.HasOne("Online.Entities.User", null)
                         .WithMany("UserRoles")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1999,8 +2009,6 @@ namespace Online.Data.Migrations
                         .HasConstraintName("fk_user_role_asp_net_users_user_id");
 
                     b.Navigation("Outlet");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Online.Entities.Business", b =>
