@@ -47,7 +47,7 @@ public class AccountService(UserManager<User> userManager, AuthTokenProcessor au
 
     private async Task LoginShared(User user, UserRefreshToken? tokenValue)
     {
-        var (jwtToken, expirationDateInUtc) = _authTokenProcessor.GenerateJwtToken(user);
+        var (jwtToken, expirationDateInUtc) = await _authTokenProcessor.GenerateJwtTokenAsync(user);
         var refreshTokenValue = _authTokenProcessor.GenerateRefreshToken();
 
         var refreshTokenExpirationDateInUtc = DateTime.UtcNow.AddMinutes(_jwtOptions.RefreshTokenExpirationTimeInMinutes);

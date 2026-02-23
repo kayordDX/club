@@ -4,14 +4,9 @@ using Online.Models;
 
 namespace Online.Features.Account.Me;
 
-public class Endpoint : EndpointWithoutRequest<UserModel?>
+public class Endpoint(AppDbContext dbContext) : EndpointWithoutRequest<UserModel?>
 {
-    private readonly AppDbContext _dbContext;
-
-    public Endpoint(AppDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
+    private readonly AppDbContext _dbContext = dbContext;
 
     public override void Configure()
     {
@@ -25,6 +20,6 @@ public class Endpoint : EndpointWithoutRequest<UserModel?>
 
         var user = await Data.Get(userId, _dbContext, ct);
 
-        await Send.OkAsync(user);
+        await Send.OkAsync(user, ct);
     }
 }

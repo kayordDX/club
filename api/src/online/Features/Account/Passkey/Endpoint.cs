@@ -23,7 +23,7 @@ public class Endpoint(UserManager<User> userManager, SignInManager<User> signInM
 
         if (user is null)
         {
-            await Send.NotFoundAsync();
+            await Send.NotFoundAsync(ct);
             return;
         }
 

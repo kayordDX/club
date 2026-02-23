@@ -2,36 +2,33 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Online.Common.Config;
+using Online.Data;
 using Online.Entities;
 
 namespace Online.Services;
 
-public class AuthTokenProcessor
+public class AuthTokenProcessor(IOptions<JwtOptions> jwtOptions, IHttpContextAccessor httpContextAccessor, IWebHostEnvironment environment)
 {
-    private readonly JwtOptions _jwtOptions;
-    private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly IWebHostEnvironment _environment;
+    private readonly JwtOptions _jwtOptions = jwtOptions.Value;
+    private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+    private readonly IWebHostEnvironment _environment = environment;
 
-    public AuthTokenProcessor(IOptions<JwtOptions> jwtOptions, IHttpContextAccessor httpContextAccessor, IWebHostEnvironment environment)
-    {
-        _jwtOptions = jwtOptions.Value;
-        _httpContextAccessor = httpContextAccessor;
-        _environment = environment;
-    }
-
-    public (string jwtToken, DateTime expiresAtUtc) GenerateJwtToken(User user)
+    public async Task<(string jwtToken, DateTime expiresAtUtc)> GenerateJwtTokenAsync(User user)
     {
         var signinKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Secret));
         var credentials = new SigningCredentials(signinKey, SecurityAlgorithms.HmacSha256);
-        var claims = new[] {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email ?? ""),
-            new Claim(JwtRegisteredClaimNames.Name, user.ToString()),
-            new Claim(JwtRegisteredClaimNames.Picture, user.Picture ?? "")
+
+        var claims = new List<Claim>
+        {
+            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(JwtRegisteredClaimNames.Email, user.Email ?? ""),
+            new(JwtRegisteredClaimNames.Name, user.ToString()),
+            new(JwtRegisteredClaimNames.Picture, user.Picture ?? "")
         };
 
         var expires = DateTime.UtcNow.AddMinutes(_jwtOptions.ExpirationTimeInMinutes);
