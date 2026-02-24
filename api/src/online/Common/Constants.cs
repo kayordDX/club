@@ -4,7 +4,7 @@ public class Constants
 {
     public static class Policy
     {
-        public const string Role = "role";
-        public const string OutletRole = "outletRole";
+        public const string SuperAdmin = "superAdmin";
+        public const string OutletAdmin = "outletAdmin";
     }
 }

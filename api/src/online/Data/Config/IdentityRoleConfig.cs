@@ -1,12 +1,12 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Online.Entities;
 
 namespace Online.Data.Config;
 
-public class IdentityRole : IEntityTypeConfiguration<IdentityRole<Guid>>
+public class RoleConfig : IEntityTypeConfiguration<Role>
 {
-    public void Configure(EntityTypeBuilder<IdentityRole<Guid>> builder)
+    public void Configure(EntityTypeBuilder<Role> builder)
     {
         builder.ToTable("role");
     }

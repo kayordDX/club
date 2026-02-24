@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Online.Common;
 using Online.Data;
 using Online.Entities;
 
@@ -10,11 +11,12 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<Request, List<User>>
     {
         Get("/test");
         Description(x => x.WithName("Test"));
+        // Policies(Constants.Policy.SuperAdmin);
+        Policies(Constants.Policy.OutletAdmin);
     }
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        await Task.Delay(2000, ct);
         var users = await dbContext.Users.ToListAsync(ct);
         await Send.OkAsync(users, ct);
     }

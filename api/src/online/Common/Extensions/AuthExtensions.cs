@@ -2,6 +2,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Online.Common.Auth;
 using Online.Common.Config;
@@ -55,8 +56,12 @@ public static class AuthExtensions
         });
 
         services.AddAuthorizationBuilder()
-            .AddPolicy(Constants.Policy.Role, b => b.Requirements.Add(new RoleTypeRequirement(Constants.Policy.Role)))
-            .AddPolicy(Constants.Policy.OutletRole, b => b.Requirements.Add(new OutletRoleTypeRequirement(Constants.Policy.OutletRole)));
+            .AddPolicy(Constants.Policy.SuperAdmin, b => b.Requirements.Add(new RoleTypeRequirement(Constants.Policy.SuperAdmin)))
+            .AddPolicy(Constants.Policy.OutletAdmin, b => b.Requirements.Add(new OutletRoleTypeRequirement(Constants.Policy.OutletAdmin)));
+
+        // Register authorization handlers
+        services.AddScoped<IAuthorizationHandler, RoleTypeHandler>();
+        services.AddScoped<IAuthorizationHandler, OutletRoleTypeHandler>();
 
         return services;
     }

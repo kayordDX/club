@@ -5,7 +5,7 @@ using Online.Entities;
 
 namespace Online.Data;
 
-public class UserStore(AppDbContext context, IdentityErrorDescriber? describer = null) : UserStore<User, IdentityRole<Guid>, AppDbContext, Guid, IdentityUserClaim<Guid>, UserRole, IdentityUserLogin<Guid>, IdentityUserToken<Guid>, IdentityRoleClaim<Guid>>(context, describer)
+public class UserStore(AppDbContext context, IdentityErrorDescriber? describer = null) : UserStore<User, Role, AppDbContext, Guid, IdentityUserClaim<Guid>, UserRole, IdentityUserLogin<Guid>, IdentityUserToken<Guid>, IdentityRoleClaim<Guid>>(context, describer)
 {
     private readonly AppDbContext _dbContext = context;
 
@@ -106,6 +106,30 @@ public class UserStore(AppDbContext context, IdentityErrorDescriber? describer =
                 r => r.Id,
                 (ur, r) => r.Name!)
             .ToListAsync(cancellationToken);
+    }
+
+    public override async Task<IList<string>> GetRolesAsync(User user, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+        return await _dbContext.UserRoles
+            .Where(x => x.UserId == user.Id && x.OutletId == null && !string.IsNullOrEmpty(x.Role.Name))
+            .Select(ur => ur.Role.Name!)
+            .Distinct()
+            .ToListAsync(ct);
+    }
+
+    public async Task<IList<string>> GetOutletRolesAsync(User user, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+        return await _dbContext.UserRoles
+            .Where(x => x.UserId == user.Id && x.OutletId > 0 && x.Role.Name != null && x.Outlet != null)
+            .Select(x => $"{x.Role.Name}:{x.Outlet!.Slug}")
+            .Distinct()
+            .ToListAsync(ct);
     }
 
     public async Task<IList<UserRole>> GetUserRolesWithOutletsAsync(User user, CancellationToken cancellationToken = default)

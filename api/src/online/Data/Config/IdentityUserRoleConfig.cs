@@ -29,7 +29,7 @@ public class IdentityUserRoleConfig : IEntityTypeConfiguration<UserRole>
             .IsRequired();
 
         builder
-            .HasOne<IdentityRole<Guid>>()
+            .HasOne(ur => ur.Role)
             .WithMany()
             .HasForeignKey(ur => ur.RoleId)
             .OnDelete(DeleteBehavior.Cascade)

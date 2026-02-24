@@ -2,7 +2,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Online.Common.Config;
@@ -11,11 +10,12 @@ using Online.Entities;
 
 namespace Online.Services;
 
-public class AuthTokenProcessor(IOptions<JwtOptions> jwtOptions, IHttpContextAccessor httpContextAccessor, IWebHostEnvironment environment)
+public class AuthTokenProcessor(IOptions<JwtOptions> jwtOptions, IHttpContextAccessor httpContextAccessor, IWebHostEnvironment environment, UserStore userStore)
 {
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
     private readonly IWebHostEnvironment _environment = environment;
+    private readonly UserStore _userStore = userStore;
 
     public async Task<(string jwtToken, DateTime expiresAtUtc)> GenerateJwtTokenAsync(User user)
     {
@@ -30,6 +30,18 @@ public class AuthTokenProcessor(IOptions<JwtOptions> jwtOptions, IHttpContextAcc
             new(JwtRegisteredClaimNames.Name, user.ToString()),
             new(JwtRegisteredClaimNames.Picture, user.Picture ?? "")
         };
+
+        // Add Roles to claims
+        var roles = await _userStore.GetRolesAsync(user);
+        foreach (var role in roles)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role));
+        }
+        var outletRoles = await _userStore.GetOutletRolesAsync(user);
+        foreach (var role in outletRoles)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role));
+        }
 
         var expires = DateTime.UtcNow.AddMinutes(_jwtOptions.ExpirationTimeInMinutes);
 

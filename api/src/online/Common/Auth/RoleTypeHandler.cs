@@ -1,15 +1,13 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
-using Online.Data;
 
 namespace Online.Common.Auth;
 
-public class RoleTypeHandler(UserStore userStore) : AuthorizationHandler<RoleTypeRequirement>
+public class RoleTypeHandler : AuthorizationHandler<RoleTypeRequirement>
 {
-    private readonly UserStore _userStore = userStore;
-
     protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, RoleTypeRequirement requirement)
     {
-        var roles = await _userStore.GetRolesAsync(context);
+        var roles = context.User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList();
         if (roles.Count == 0) return;
 
         if (roles.Contains(requirement.RoleType))
