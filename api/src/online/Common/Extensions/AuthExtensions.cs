@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Online.Common.Auth;
 using Online.Common.Config;
 
 namespace Online.Common.Extensions;
@@ -52,7 +53,11 @@ public static class AuthExtensions
                 }
             };
         });
-        services.AddAuthorization();
+
+        services.AddAuthorizationBuilder()
+            .AddPolicy(Constants.Policy.Role, b => b.Requirements.Add(new RoleTypeRequirement(Constants.Policy.Role)))
+            .AddPolicy(Constants.Policy.OutletRole, b => b.Requirements.Add(new OutletRoleTypeRequirement(Constants.Policy.OutletRole)));
+
         return services;
     }
 }

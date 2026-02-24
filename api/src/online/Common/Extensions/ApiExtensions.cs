@@ -13,8 +13,6 @@ public static class ApiExtensions
         });
         services.AddFastEndpoints();
 
-        services.AddAuthorization();
-
         services.SwaggerDocument(o =>
         {
             o.ShortSchemaNames = true;
