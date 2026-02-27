@@ -1582,7 +1582,7 @@ namespace Online.Data.Migrations
 
                             b1.HasKey("IdentityUserPasskeyCredentialId");
 
-                            b1.ToTable("user_passkey", (string)null);
+                            b1.ToTable("user_passkey");
 
                             b1
                                 .ToJson("data")
@@ -1868,7 +1868,7 @@ namespace Online.Data.Migrations
 
             modelBuilder.Entity("Online.Entities.Slot", b =>
                 {
-                    b.HasOne("Online.Entities.Facility", null)
+                    b.HasOne("Online.Entities.Facility", "Facility")
                         .WithMany("Slots")
                         .HasForeignKey("FacilityId")
                         .HasConstraintName("fk_slot_facility_facility_id");
@@ -1877,6 +1877,8 @@ namespace Online.Data.Migrations
                         .WithMany("Slots")
                         .HasForeignKey("ResourceId")
                         .HasConstraintName("fk_slot_resource_resource_id");
+
+                    b.Navigation("Facility");
 
                     b.Navigation("Resource");
                 });
@@ -1994,7 +1996,7 @@ namespace Online.Data.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_user_role_outlet_outlet_id");
 
-                    b.HasOne("Online.Entities.Role", null)
+                    b.HasOne("Online.Entities.Role", "Role")
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2009,6 +2011,8 @@ namespace Online.Data.Migrations
                         .HasConstraintName("fk_user_role_asp_net_users_user_id");
 
                     b.Navigation("Outlet");
+
+                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("Online.Entities.Business", b =>

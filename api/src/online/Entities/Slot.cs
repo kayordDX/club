@@ -5,6 +5,8 @@ public class Slot : AuditableEntity
     public Guid Id { get; set; }
     public int? ResourceId { get; set; }
     public Resource? Resource { get; set; }
+    public int? FacilityId { get; set; }
+    public Facility? Facility { get; set; }
     public required DateTime StartDatetime { get; set; }
     public required DateTime EndDatetime { get; set; }
     public Guid GroupId { get; set; }
