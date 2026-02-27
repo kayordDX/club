@@ -28,6 +28,7 @@
 	import Query from "$lib/components/Query.svelte";
 	import { resolve } from "$app/paths";
 	import { cn } from "@kayord/ui/utils";
+	import { createGetSlots } from "$lib/api";
 
 	// Inlined club data
 	const club = {
@@ -70,6 +71,9 @@
 	const incrementDate = (incrementValue: number) => {
 		value = value.add({ days: incrementValue });
 	};
+
+	const slotsQuery = createGetSlots(() => ({ facilityId: 1, date: value.toString() }));
+	const slotsData = $derived(slotsQuery.data ?? []);
 </script>
 
 <div class="m-4">

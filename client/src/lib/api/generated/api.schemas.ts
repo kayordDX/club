@@ -18,6 +18,104 @@ export interface InternalErrorResponse {
 	note: string;
 }
 
+export interface TestResponse {
+	success: boolean;
+}
+
+export interface SlotGetResponse {
+	id: string;
+	/** @nullable */
+	facilityId?: number | null;
+	/** @nullable */
+	resourceId?: number | null;
+	/** @nullable */
+	resourceName?: string | null;
+	startDatetime: string;
+	endDatetime: string;
+	groupId: string;
+	availableSpots: number;
+	totalSpots: number;
+}
+
+/**
+ * the collection of errors for the current context
+ */
+export type ErrorResponseErrors = { [key: string]: string[] };
+
+/**
+ * the dto used to send an error response to the client
+ */
+export interface ErrorResponse {
+	/** the http status code sent to the client. default is 400. */
+	statusCode: number;
+	/** the message for the error response */
+	message: string;
+	/** the collection of errors for the current context */
+	errors: ErrorResponseErrors;
+}
+
+export interface Contract {
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	name: string;
+	businessId: number;
+	business: Business;
+}
+
+export interface ContractContractConfig {
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	contractId: number;
+	contract: Contract;
+	contractConfigId: number;
+	contractConfig: ContractConfig;
+	isActive: boolean;
+}
+
+export interface ContractConfig {
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	name: string;
+	/** @nullable */
+	fieldValidation?: string | null;
+	businessId: number;
+	business: Business;
+	contractContractConfigs: ContractContractConfig[];
+}
+
+export interface Business {
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	name: string;
+	outlets: Outlet[];
+	contracts: Contract[];
+	contractConfigs: ContractConfig[];
+}
+
 export interface OutletType {
 	created: string;
 	/** @nullable */
@@ -63,20 +161,7 @@ export interface BookingStatus {
 	name: string;
 }
 
-export interface PaymentStatus {
-	id: number;
-	name: string;
-}
-
-export interface Payment {
-	id: number;
-	paymentStatusId: number;
-	paymentStatus: PaymentStatus;
-	paymentStatusDate: string;
-	amount: number;
-}
-
-export interface SlotBooking {
+export interface UserContract {
 	created: string;
 	/** @nullable */
 	createdBy?: string | null;
@@ -85,16 +170,15 @@ export interface SlotBooking {
 	/** @nullable */
 	lastModifiedBy?: string | null;
 	id: number;
-	slotContractId: number;
-	slotContract: SlotContract;
-	bookingStatusId: number;
-	bookingStatus: BookingStatus;
-	bookingStatusDate: string;
+	contractId: number;
+	contract: Contract;
+	startDate: string;
+	/** @nullable */
+	endDate?: string | null;
+	price: number;
+	isActive: boolean;
 	userId: string;
 	user: User;
-	/** @nullable */
-	paymentId?: number | null;
-	payment?: Payment | null;
 }
 
 export interface Extra {
@@ -131,6 +215,19 @@ export interface FacilityExtra {
 	user: User;
 }
 
+export interface PaymentStatus {
+	id: number;
+	name: string;
+}
+
+export interface Payment {
+	id: number;
+	paymentStatusId: number;
+	paymentStatus: PaymentStatus;
+	paymentStatusDate: string;
+	amount: number;
+}
+
 export interface ExtraBooking {
 	id: number;
 	facilityExtraId: number;
@@ -147,6 +244,82 @@ export interface ExtraBooking {
 	user: User;
 }
 
+export interface Role {
+	id: string;
+	/** @nullable */
+	name?: string | null;
+	/** @nullable */
+	normalizedName?: string | null;
+	/** @nullable */
+	concurrencyStamp?: string | null;
+}
+
+export interface UserRole {
+	userId: string;
+	roleId: string;
+	id: number;
+	/** @nullable */
+	outletId?: number | null;
+	outlet?: Outlet | null;
+	role: Role;
+}
+
+export interface User {
+	id: string;
+	/** @nullable */
+	userName?: string | null;
+	/** @nullable */
+	normalizedUserName?: string | null;
+	/** @nullable */
+	email?: string | null;
+	/** @nullable */
+	normalizedEmail?: string | null;
+	emailConfirmed: boolean;
+	/** @nullable */
+	passwordHash?: string | null;
+	/** @nullable */
+	securityStamp?: string | null;
+	/** @nullable */
+	concurrencyStamp?: string | null;
+	/** @nullable */
+	phoneNumber?: string | null;
+	phoneNumberConfirmed: boolean;
+	twoFactorEnabled: boolean;
+	/** @nullable */
+	lockoutEnd?: string | null;
+	lockoutEnabled: boolean;
+	accessFailedCount: number;
+	firstName: string;
+	lastName: string;
+	/** @nullable */
+	picture?: string | null;
+	userContracts: UserContract[];
+	slotBookings: SlotBooking[];
+	extraBookings: ExtraBooking[];
+	userRoles: UserRole[];
+}
+
+export interface SlotBooking {
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	slotContractId: number;
+	slotContract: SlotContract;
+	bookingStatusId: number;
+	bookingStatus: BookingStatus;
+	bookingStatusDate: string;
+	userId: string;
+	user: User;
+	/** @nullable */
+	paymentId?: number | null;
+	payment?: Payment | null;
+}
+
 export interface Slot {
 	created: string;
 	/** @nullable */
@@ -159,6 +332,9 @@ export interface Slot {
 	/** @nullable */
 	resourceId?: number | null;
 	resource?: Resource | null;
+	/** @nullable */
+	facilityId?: number | null;
+	facility?: Facility | null;
 	startDatetime: string;
 	endDatetime: string;
 	groupId: string;
@@ -255,156 +431,13 @@ export interface Outlet {
 	contractOutlets: ContractOutlet[];
 }
 
-export interface ContractContractConfig {
-	created: string;
-	/** @nullable */
-	createdBy?: string | null;
-	/** @nullable */
-	lastModified?: string | null;
-	/** @nullable */
-	lastModifiedBy?: string | null;
-	id: number;
-	contractId: number;
-	contract: Contract;
-	contractConfigId: number;
-	contractConfig: ContractConfig;
-	isActive: boolean;
-}
-
-export interface ContractConfig {
-	created: string;
-	/** @nullable */
-	createdBy?: string | null;
-	/** @nullable */
-	lastModified?: string | null;
-	/** @nullable */
-	lastModifiedBy?: string | null;
-	id: number;
-	name: string;
-	/** @nullable */
-	fieldValidation?: string | null;
-	businessId: number;
-	business: Business;
-	contractContractConfigs: ContractContractConfig[];
-}
-
-export interface Business {
-	created: string;
-	/** @nullable */
-	createdBy?: string | null;
-	/** @nullable */
-	lastModified?: string | null;
-	/** @nullable */
-	lastModifiedBy?: string | null;
-	id: number;
-	name: string;
-	outlets: Outlet[];
-	contracts: Contract[];
-	contractConfigs: ContractConfig[];
-}
-
-export interface Contract {
-	created: string;
-	/** @nullable */
-	createdBy?: string | null;
-	/** @nullable */
-	lastModified?: string | null;
-	/** @nullable */
-	lastModifiedBy?: string | null;
-	id: number;
-	name: string;
-	businessId: number;
-	business: Business;
-}
-
-export interface UserContract {
-	created: string;
-	/** @nullable */
-	createdBy?: string | null;
-	/** @nullable */
-	lastModified?: string | null;
-	/** @nullable */
-	lastModifiedBy?: string | null;
-	id: number;
-	contractId: number;
-	contract: Contract;
-	startDate: string;
-	/** @nullable */
-	endDate?: string | null;
-	price: number;
-	isActive: boolean;
-	userId: string;
-	user: User;
-}
-
-export interface UserRole {
-	userId: string;
-	roleId: string;
-	id: number;
-	/** @nullable */
-	outletId?: number | null;
-	outlet?: Outlet | null;
-}
-
-export interface User {
-	id: string;
-	/** @nullable */
-	userName?: string | null;
-	/** @nullable */
-	normalizedUserName?: string | null;
-	/** @nullable */
-	email?: string | null;
-	/** @nullable */
-	normalizedEmail?: string | null;
-	emailConfirmed: boolean;
-	/** @nullable */
-	passwordHash?: string | null;
-	/** @nullable */
-	securityStamp?: string | null;
-	/** @nullable */
-	concurrencyStamp?: string | null;
-	/** @nullable */
-	phoneNumber?: string | null;
-	phoneNumberConfirmed: boolean;
-	twoFactorEnabled: boolean;
-	/** @nullable */
-	lockoutEnd?: string | null;
-	lockoutEnabled: boolean;
-	accessFailedCount: number;
-	firstName: string;
-	lastName: string;
-	/** @nullable */
-	picture?: string | null;
-	userContracts: UserContract[];
-	slotBookings: SlotBooking[];
-	extraBookings: ExtraBooking[];
-	userRoles: UserRole[];
-}
-
-export interface PaginatedListOfOutlet {
+export interface PaginatedList1 {
 	items: Outlet[];
 	pageNumber: number;
 	totalPages: number;
 	totalCount: number;
 	hasPreviousPage: boolean;
 	hasNextPage: boolean;
-}
-
-/**
- * the collection of errors for the current context
- */
-export type ErrorResponseErrors = { [key: string]: string[] };
-
-/**
- * the dto used to send an error response to the client
- */
-export interface ErrorResponse {
-	/** the http status code sent to the client. default is 400. */
-	statusCode: number;
-	/** the message for the error response */
-	message: string;
-	/** the collection of errors for the current context */
-	errors: ErrorResponseErrors;
 }
 
 export interface BusinessDTO {
@@ -454,7 +487,7 @@ export interface OutletDTO {
 	facilities: FacilityDTO[];
 }
 
-export interface Request {
+export interface AccountRoleRequest {
 	/** @minLength 1 */
 	name: string;
 }
@@ -469,6 +502,7 @@ export interface UserRegisterRequest {
 export interface UserModel {
 	id: string;
 	email: string;
+	emailConfirmed: boolean;
 	firstName: string;
 	lastName: string;
 	name: string;
@@ -476,7 +510,7 @@ export interface UserModel {
 	picture?: string | null;
 }
 
-export interface Request2 {
+export interface AccountRefreshRevokeRequest {
 	id: string;
 }
 
@@ -491,7 +525,7 @@ export interface RefreshListResponse {
 	isCurrent: boolean;
 }
 
-export interface Request3 {
+export interface AccountPasskeyRequest {
 	name: string;
 }
 
@@ -506,6 +540,11 @@ export interface LoginRequest {
 
 export type TestParams = {
 	name: string;
+};
+
+export type GetSlotsParams = {
+	facilityId: number;
+	date: string;
 };
 
 export type OutletGetAllParams = {

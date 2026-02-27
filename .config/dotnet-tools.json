@@ -8,6 +8,13 @@
         "dotnet-ef"
       ],
       "rollForward": false
+    },
+    "stewardef": {
+      "version": "0.4.0",
+      "commands": [
+        "steward"
+      ],
+      "rollForward": false
     }
   }
 }

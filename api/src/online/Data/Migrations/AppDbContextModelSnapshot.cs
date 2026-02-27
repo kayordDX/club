@@ -1065,9 +1065,7 @@ namespace Online.Data.Migrations
                         .HasColumnName("id");
 
                     b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
-                        .HasDefaultValue(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified))
                         .HasColumnName("created");
 
                     b.Property<Guid?>("CreatedBy")

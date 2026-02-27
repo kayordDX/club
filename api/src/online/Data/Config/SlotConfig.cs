@@ -8,6 +8,6 @@ public class SlotConfig : IEntityTypeConfiguration<Slot>
 {
     public void Configure(EntityTypeBuilder<Slot> builder)
     {
-        builder.Property(s => s.Created).HasDefaultValue(DateTime.MinValue);
+
     }
 }

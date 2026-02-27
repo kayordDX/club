@@ -1,4 +1,5 @@
 using FastEndpoints.Swagger;
+using Online.Common.Swagger;
 using Scalar.AspNetCore;
 
 namespace Online.Common.Extensions;
@@ -24,7 +25,7 @@ public static class ApiExtensions
                 s.Version = "v1";
                 s.MarkNonNullablePropsAsRequired();
                 // s.OperationProcessors.Add(new CustomOperationsProcessor());
-                // s.SchemaSettings.SchemaNameGenerator = new CustomSchemaNameGenerator(false);
+                s.SchemaSettings.SchemaNameGenerator = new CustomSchemaNameGenerator();
             };
         });
     }

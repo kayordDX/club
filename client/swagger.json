@@ -33,10 +33,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/User"
-                  }
+                  "$ref": "#/components/schemas/TestResponse"
                 }
               }
             }
@@ -53,6 +50,72 @@
           },
           "401": {
             "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/slot": {
+      "get": {
+        "tags": [
+          "Slot"
+        ],
+        "operationId": "GetSlots",
+        "parameters": [
+          {
+            "name": "facilityId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SlotGetResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
           },
           "500": {
             "description": "Server Error",
@@ -125,7 +188,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PaginatedListOfOutlet"
+                  "$ref": "#/components/schemas/PaginatedList_1"
                 }
               }
             }
@@ -139,6 +202,46 @@
           "Outlet"
         ],
         "operationId": "OutletGet",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalErrorResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutletDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/outlet/{slug}/admin": {
+      "get": {
+        "tags": [
+          "Outlet"
+        ],
+        "operationId": "OutletAdminGet",
         "parameters": [
           {
             "name": "slug",
@@ -255,7 +358,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Request"
+                "$ref": "#/components/schemas/AccountRoleRequest"
               }
             }
           },
@@ -400,7 +503,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Request2"
+                "$ref": "#/components/schemas/AccountRefreshRevokeRequest"
               }
             }
           },
@@ -469,7 +572,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Request3"
+                "$ref": "#/components/schemas/AccountPasskeyRequest"
               }
             }
           },
@@ -676,288 +779,138 @@
           }
         }
       },
-      "User": {
+      "TestResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SlotGetResponse": {
         "type": "object",
         "additionalProperties": false,
         "required": [
           "id",
-          "emailConfirmed",
-          "phoneNumberConfirmed",
-          "twoFactorEnabled",
-          "lockoutEnabled",
-          "accessFailedCount",
-          "firstName",
-          "lastName",
-          "userContracts",
-          "slotBookings",
-          "extraBookings",
-          "userRoles"
+          "startDatetime",
+          "endDatetime",
+          "groupId",
+          "availableSpots",
+          "totalSpots"
         ],
         "properties": {
           "id": {
             "type": "string",
             "format": "guid"
           },
-          "userName": {
-            "type": "string",
-            "nullable": true
-          },
-          "normalizedUserName": {
-            "type": "string",
-            "nullable": true
-          },
-          "email": {
-            "type": "string",
-            "nullable": true
-          },
-          "normalizedEmail": {
-            "type": "string",
-            "nullable": true
-          },
-          "emailConfirmed": {
-            "type": "boolean"
-          },
-          "passwordHash": {
-            "type": "string",
-            "nullable": true
-          },
-          "securityStamp": {
-            "type": "string",
-            "nullable": true
-          },
-          "concurrencyStamp": {
-            "type": "string",
-            "nullable": true
-          },
-          "phoneNumber": {
-            "type": "string",
-            "nullable": true
-          },
-          "phoneNumberConfirmed": {
-            "type": "boolean"
-          },
-          "twoFactorEnabled": {
-            "type": "boolean"
-          },
-          "lockoutEnd": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "lockoutEnabled": {
-            "type": "boolean"
-          },
-          "accessFailedCount": {
+          "facilityId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
-          "firstName": {
-            "type": "string"
+          "resourceId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           },
-          "lastName": {
-            "type": "string"
-          },
-          "picture": {
+          "resourceName": {
             "type": "string",
             "nullable": true
           },
-          "userContracts": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UserContract"
-            }
-          },
-          "slotBookings": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SlotBooking"
-            }
-          },
-          "extraBookings": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ExtraBooking"
-            }
-          },
-          "userRoles": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UserRole"
-            }
-          }
-        }
-      },
-      "UserContract": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "created",
-          "id",
-          "contractId",
-          "contract",
-          "startDate",
-          "price",
-          "isActive",
-          "userId",
-          "user"
-        ],
-        "properties": {
-          "created": {
+          "startDatetime": {
             "type": "string",
             "format": "date-time"
           },
-          "createdBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "lastModified": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "lastModifiedBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "contractId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "contract": {
-            "$ref": "#/components/schemas/Contract"
-          },
-          "startDate": {
+          "endDatetime": {
             "type": "string",
             "format": "date-time"
           },
-          "endDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "price": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "isActive": {
-            "type": "boolean"
-          },
-          "userId": {
+          "groupId": {
             "type": "string",
             "format": "guid"
           },
-          "user": {
-            "$ref": "#/components/schemas/User"
+          "availableSpots": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalSpots": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
-      "Contract": {
+      "ErrorResponse": {
         "type": "object",
+        "description": "the dto used to send an error response to the client",
         "additionalProperties": false,
         "required": [
-          "created",
-          "id",
-          "name",
-          "businessId",
-          "business"
+          "statusCode",
+          "message",
+          "errors"
         ],
         "properties": {
-          "created": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "lastModified": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "lastModifiedBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "id": {
+          "statusCode": {
             "type": "integer",
-            "format": "int32"
+            "description": "the http status code sent to the client. default is 400.",
+            "format": "int32",
+            "default": 400
           },
-          "name": {
-            "type": "string"
+          "message": {
+            "type": "string",
+            "description": "the message for the error response",
+            "default": "One or more errors occurred!"
           },
-          "businessId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "business": {
-            "$ref": "#/components/schemas/Business"
+          "errors": {
+            "type": "object",
+            "description": "the collection of errors for the current context",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           }
         }
       },
-      "Business": {
+      "PaginatedList_1": {
         "type": "object",
         "additionalProperties": false,
         "required": [
-          "created",
-          "id",
-          "name",
-          "outlets",
-          "contracts",
-          "contractConfigs"
+          "items",
+          "pageNumber",
+          "totalPages",
+          "totalCount",
+          "hasPreviousPage",
+          "hasNextPage"
         ],
         "properties": {
-          "created": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "lastModified": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "lastModifiedBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "name": {
-            "type": "string"
-          },
-          "outlets": {
+          "items": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Outlet"
             }
           },
-          "contracts": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Contract"
-            }
+          "pageNumber": {
+            "type": "integer",
+            "format": "int32"
           },
-          "contractConfigs": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ContractConfig"
-            }
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "hasPreviousPage": {
+            "type": "boolean"
+          },
+          "hasNextPage": {
+            "type": "boolean"
           }
         }
       },
@@ -1066,6 +1019,222 @@
             "items": {
               "$ref": "#/components/schemas/ContractOutlet"
             }
+          }
+        }
+      },
+      "Business": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "created",
+          "id",
+          "name",
+          "outlets",
+          "contracts",
+          "contractConfigs"
+        ],
+        "properties": {
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "lastModified": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastModifiedBy": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "outlets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Outlet"
+            }
+          },
+          "contracts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Contract"
+            }
+          },
+          "contractConfigs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContractConfig"
+            }
+          }
+        }
+      },
+      "Contract": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "created",
+          "id",
+          "name",
+          "businessId",
+          "business"
+        ],
+        "properties": {
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "lastModified": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastModifiedBy": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "businessId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "business": {
+            "$ref": "#/components/schemas/Business"
+          }
+        }
+      },
+      "ContractConfig": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "created",
+          "id",
+          "name",
+          "businessId",
+          "business",
+          "contractContractConfigs"
+        ],
+        "properties": {
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "lastModified": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastModifiedBy": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "fieldValidation": {
+            "type": "string",
+            "nullable": true
+          },
+          "businessId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "business": {
+            "$ref": "#/components/schemas/Business"
+          },
+          "contractContractConfigs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContractContractConfig"
+            }
+          }
+        }
+      },
+      "ContractContractConfig": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "created",
+          "id",
+          "contractId",
+          "contract",
+          "contractConfigId",
+          "contractConfig",
+          "isActive"
+        ],
+        "properties": {
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "lastModified": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastModifiedBy": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "contractId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "contract": {
+            "$ref": "#/components/schemas/Contract"
+          },
+          "contractConfigId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "contractConfig": {
+            "$ref": "#/components/schemas/ContractConfig"
+          },
+          "isActive": {
+            "type": "boolean"
           }
         }
       },
@@ -1310,6 +1479,19 @@
               }
             ]
           },
+          "facilityId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "facility": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Facility"
+              }
+            ]
+          },
           "startDatetime": {
             "type": "string",
             "format": "date-time"
@@ -1519,52 +1701,184 @@
           }
         }
       },
-      "Payment": {
+      "User": {
         "type": "object",
         "additionalProperties": false,
         "required": [
           "id",
-          "paymentStatusId",
-          "paymentStatus",
-          "paymentStatusDate",
-          "amount"
+          "emailConfirmed",
+          "phoneNumberConfirmed",
+          "twoFactorEnabled",
+          "lockoutEnabled",
+          "accessFailedCount",
+          "firstName",
+          "lastName",
+          "userContracts",
+          "slotBookings",
+          "extraBookings",
+          "userRoles"
         ],
         "properties": {
           "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "paymentStatusId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "paymentStatus": {
-            "$ref": "#/components/schemas/PaymentStatus"
-          },
-          "paymentStatusDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "guid"
           },
-          "amount": {
-            "type": "number",
-            "format": "decimal"
+          "userName": {
+            "type": "string",
+            "nullable": true
+          },
+          "normalizedUserName": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "normalizedEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "emailConfirmed": {
+            "type": "boolean"
+          },
+          "passwordHash": {
+            "type": "string",
+            "nullable": true
+          },
+          "securityStamp": {
+            "type": "string",
+            "nullable": true
+          },
+          "concurrencyStamp": {
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumberConfirmed": {
+            "type": "boolean"
+          },
+          "twoFactorEnabled": {
+            "type": "boolean"
+          },
+          "lockoutEnd": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lockoutEnabled": {
+            "type": "boolean"
+          },
+          "accessFailedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "picture": {
+            "type": "string",
+            "nullable": true
+          },
+          "userContracts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserContract"
+            }
+          },
+          "slotBookings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SlotBooking"
+            }
+          },
+          "extraBookings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ExtraBooking"
+            }
+          },
+          "userRoles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserRole"
+            }
           }
         }
       },
-      "PaymentStatus": {
+      "UserContract": {
         "type": "object",
         "additionalProperties": false,
         "required": [
+          "created",
           "id",
-          "name"
+          "contractId",
+          "contract",
+          "startDate",
+          "price",
+          "isActive",
+          "userId",
+          "user"
         ],
         "properties": {
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "lastModified": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastModifiedBy": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
           "id": {
             "type": "integer",
             "format": "int32"
           },
-          "name": {
-            "type": "string"
+          "contractId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "contract": {
+            "$ref": "#/components/schemas/Contract"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "userId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
           }
         }
       },
@@ -1761,6 +2075,120 @@
           }
         }
       },
+      "Payment": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "paymentStatusId",
+          "paymentStatus",
+          "paymentStatusDate",
+          "amount"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "paymentStatusId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "paymentStatus": {
+            "$ref": "#/components/schemas/PaymentStatus"
+          },
+          "paymentStatusDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "amount": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
+      "PaymentStatus": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "UserRole": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "userId",
+          "roleId",
+          "id",
+          "role"
+        ],
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "roleId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "outletId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "outlet": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Outlet"
+              }
+            ]
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role"
+          }
+        }
+      },
+      "Role": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "normalizedName": {
+            "type": "string",
+            "nullable": true
+          },
+          "concurrencyStamp": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
       "ContractOutlet": {
         "type": "object",
         "additionalProperties": false,
@@ -1823,225 +2251,6 @@
           },
           "isActive": {
             "type": "boolean"
-          }
-        }
-      },
-      "ContractConfig": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "created",
-          "id",
-          "name",
-          "businessId",
-          "business",
-          "contractContractConfigs"
-        ],
-        "properties": {
-          "created": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "lastModified": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "lastModifiedBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "name": {
-            "type": "string"
-          },
-          "fieldValidation": {
-            "type": "string",
-            "nullable": true
-          },
-          "businessId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "business": {
-            "$ref": "#/components/schemas/Business"
-          },
-          "contractContractConfigs": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ContractContractConfig"
-            }
-          }
-        }
-      },
-      "ContractContractConfig": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "created",
-          "id",
-          "contractId",
-          "contract",
-          "contractConfigId",
-          "contractConfig",
-          "isActive"
-        ],
-        "properties": {
-          "created": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "lastModified": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "lastModifiedBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "contractId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "contract": {
-            "$ref": "#/components/schemas/Contract"
-          },
-          "contractConfigId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "contractConfig": {
-            "$ref": "#/components/schemas/ContractConfig"
-          },
-          "isActive": {
-            "type": "boolean"
-          }
-        }
-      },
-      "UserRole": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "userId",
-          "roleId",
-          "id"
-        ],
-        "properties": {
-          "userId": {
-            "type": "string",
-            "format": "guid"
-          },
-          "roleId": {
-            "type": "string",
-            "format": "guid"
-          },
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "outletId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "outlet": {
-            "nullable": true,
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/Outlet"
-              }
-            ]
-          }
-        }
-      },
-      "PaginatedListOfOutlet": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "items",
-          "pageNumber",
-          "totalPages",
-          "totalCount",
-          "hasPreviousPage",
-          "hasNextPage"
-        ],
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Outlet"
-            }
-          },
-          "pageNumber": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "totalPages": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "totalCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "hasPreviousPage": {
-            "type": "boolean"
-          },
-          "hasNextPage": {
-            "type": "boolean"
-          }
-        }
-      },
-      "ErrorResponse": {
-        "type": "object",
-        "description": "the dto used to send an error response to the client",
-        "additionalProperties": false,
-        "required": [
-          "statusCode",
-          "message",
-          "errors"
-        ],
-        "properties": {
-          "statusCode": {
-            "type": "integer",
-            "description": "the http status code sent to the client. default is 400.",
-            "format": "int32",
-            "default": 400
-          },
-          "message": {
-            "type": "string",
-            "description": "the message for the error response",
-            "default": "One or more errors occurred!"
-          },
-          "errors": {
-            "type": "object",
-            "description": "the collection of errors for the current context",
-            "additionalProperties": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
           }
         }
       },
@@ -2205,7 +2414,7 @@
           }
         }
       },
-      "Request": {
+      "AccountRoleRequest": {
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -2249,6 +2458,7 @@
         "required": [
           "id",
           "email",
+          "emailConfirmed",
           "firstName",
           "lastName",
           "name"
@@ -2259,6 +2469,9 @@
           },
           "email": {
             "type": "string"
+          },
+          "emailConfirmed": {
+            "type": "boolean"
           },
           "firstName": {
             "type": "string"
@@ -2275,7 +2488,7 @@
           }
         }
       },
-      "Request2": {
+      "AccountRefreshRevokeRequest": {
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -2330,7 +2543,7 @@
           }
         }
       },
-      "Request3": {
+      "AccountPasskeyRequest": {
         "type": "object",
         "additionalProperties": false,
         "required": [

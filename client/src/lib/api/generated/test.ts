@@ -14,7 +14,7 @@ import type {
 	QueryKey,
 } from "@tanstack/svelte-query";
 
-import type { ErrorResponse, InternalErrorResponse, TestParams, User } from "./api.schemas";
+import type { ErrorResponse, InternalErrorResponse, TestParams, TestResponse } from "./api.schemas";
 
 import { customInstance } from "../mutator/customInstance.svelte";
 import type { ErrorType } from "../mutator/customInstance.svelte";
@@ -35,8 +35,8 @@ export const getTestUrl = (params: TestParams) => {
 	return stringifiedParams.length > 0 ? `/test?${stringifiedParams}` : `/test`;
 };
 
-export const test = async (params: TestParams, options?: RequestInit): Promise<User[]> => {
-	return customInstance<User[]>(getTestUrl(params), {
+export const test = async (params: TestParams, options?: RequestInit): Promise<TestResponse> => {
+	return customInstance<TestResponse>(getTestUrl(params), {
 		...options,
 		method: "GET",
 	});

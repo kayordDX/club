@@ -5,7 +5,7 @@ using Online.Entities;
 
 namespace Online.Features.Test;
 
-public class Endpoint(AppDbContext dbContext) : Endpoint<Request, List<User>>
+public class Endpoint(AppDbContext dbContext) : Endpoint<Request, Response>
 {
     public override void Configure()
     {
@@ -18,6 +18,10 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<Request, List<User>>
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
         var users = await dbContext.Users.ToListAsync(ct);
-        await Send.OkAsync(users, ct);
+        var response = new Response
+        {
+            Success = true
+        };
+        await Send.OkAsync(response, ct);
     }
 }
