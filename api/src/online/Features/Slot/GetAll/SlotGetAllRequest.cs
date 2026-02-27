@@ -1,14 +1,14 @@
 using FluentValidation;
 
-namespace Online.Features.Slot.Get;
+namespace Online.Features.Slot.GetAll;
 
-public class Request
+public class SlotGetAllRequest
 {
     public int FacilityId { get; set; }
     public required DateTime Date { get; set; }
 }
 
-public class Validator : Validator<Request>
+public class Validator : Validator<SlotGetAllRequest>
 {
     public Validator()
     {

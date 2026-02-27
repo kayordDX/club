@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Online.Features.Account.Role;
 
-public class Endpoint(UserManager<User> userManager, UserStore userStore) : Endpoint<Request, bool>
+public class Endpoint(UserManager<User> userManager, UserStore userStore) : Endpoint<UserRoleRequest, bool>
 {
     private readonly UserManager<User> _userManager = userManager;
     private readonly UserStore _userStore = userStore;
@@ -15,7 +15,7 @@ public class Endpoint(UserManager<User> userManager, UserStore userStore) : Endp
         Description(x => x.WithName("UserRole"));
     }
 
-    public override async Task HandleAsync(Request req, CancellationToken ct)
+    public override async Task HandleAsync(UserRoleRequest req, CancellationToken ct)
     {
         await Task.Delay(2000, ct);
         var user = await _userManager.GetUserAsync(HttpContext.User);

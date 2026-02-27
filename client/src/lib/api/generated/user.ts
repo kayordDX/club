@@ -12,7 +12,7 @@ import type {
 	QueryClient,
 } from "@tanstack/svelte-query";
 
-import type { AccountRoleRequest, ErrorResponse, InternalErrorResponse } from "./api.schemas";
+import type { ErrorResponse, InternalErrorResponse, UserRoleRequest } from "./api.schemas";
 
 import { customInstance } from "../mutator/customInstance.svelte";
 import type { ErrorType, BodyType } from "../mutator/customInstance.svelte";
@@ -24,14 +24,14 @@ export const getUserRoleUrl = () => {
 };
 
 export const userRole = async (
-	accountRoleRequest: AccountRoleRequest,
+	userRoleRequest: UserRoleRequest,
 	options?: RequestInit
 ): Promise<boolean> => {
 	return customInstance<boolean>(getUserRoleUrl(), {
 		...options,
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...options?.headers },
-		body: JSON.stringify(accountRoleRequest),
+		body: JSON.stringify(userRoleRequest),
 	});
 };
 
@@ -42,14 +42,14 @@ export const getUserRoleMutationOptions = <
 	mutation?: CreateMutationOptions<
 		Awaited<ReturnType<typeof userRole>>,
 		TError,
-		{ data: BodyType<AccountRoleRequest> },
+		{ data: BodyType<UserRoleRequest> },
 		TContext
 	>;
 	request?: SecondParameter<typeof customInstance>;
 }): CreateMutationOptions<
 	Awaited<ReturnType<typeof userRole>>,
 	TError,
-	{ data: BodyType<AccountRoleRequest> },
+	{ data: BodyType<UserRoleRequest> },
 	TContext
 > => {
 	const mutationKey = ["userRole"];
@@ -61,7 +61,7 @@ export const getUserRoleMutationOptions = <
 
 	const mutationFn: MutationFunction<
 		Awaited<ReturnType<typeof userRole>>,
-		{ data: BodyType<AccountRoleRequest> }
+		{ data: BodyType<UserRoleRequest> }
 	> = (props) => {
 		const { data } = props ?? {};
 
@@ -72,7 +72,7 @@ export const getUserRoleMutationOptions = <
 };
 
 export type UserRoleMutationResult = NonNullable<Awaited<ReturnType<typeof userRole>>>;
-export type UserRoleMutationBody = BodyType<AccountRoleRequest>;
+export type UserRoleMutationBody = BodyType<UserRoleRequest>;
 export type UserRoleMutationError = ErrorType<ErrorResponse | void | InternalErrorResponse>;
 
 export const createUserRole = <
@@ -83,7 +83,7 @@ export const createUserRole = <
 		mutation?: CreateMutationOptions<
 			Awaited<ReturnType<typeof userRole>>,
 			TError,
-			{ data: BodyType<AccountRoleRequest> },
+			{ data: BodyType<UserRoleRequest> },
 			TContext
 		>;
 		request?: SecondParameter<typeof customInstance>;
@@ -92,7 +92,7 @@ export const createUserRole = <
 ): CreateMutationResult<
 	Awaited<ReturnType<typeof userRole>>,
 	TError,
-	{ data: BodyType<AccountRoleRequest> },
+	{ data: BodyType<UserRoleRequest> },
 	TContext
 > => {
 	return createMutation(() => ({ ...getUserRoleMutationOptions(options?.()) }), queryClient);

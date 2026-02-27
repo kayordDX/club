@@ -18,7 +18,7 @@ import type {
 	InternalErrorResponse,
 	OutletDTO,
 	OutletGetAllParams,
-	PaginatedList1,
+	PaginatedListOfOutlet,
 } from "./api.schemas";
 
 import { customInstance } from "../mutator/customInstance.svelte";
@@ -43,8 +43,8 @@ export const getOutletGetAllUrl = (params?: OutletGetAllParams) => {
 export const outletGetAll = async (
 	params?: OutletGetAllParams,
 	options?: RequestInit
-): Promise<PaginatedList1> => {
-	return customInstance<PaginatedList1>(getOutletGetAllUrl(params), {
+): Promise<PaginatedListOfOutlet> => {
+	return customInstance<PaginatedListOfOutlet>(getOutletGetAllUrl(params), {
 		...options,
 		method: "GET",
 	});

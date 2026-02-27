@@ -18,12 +18,12 @@ import type {
 } from "@tanstack/svelte-query";
 
 import type {
-	AccountPasskeyRequest,
-	AccountRefreshRevokeRequest,
 	InternalErrorResponse,
+	LoginGoogleParams,
 	LoginRequest,
-	OnlineFeaturesAccountLoginGoogleEndpointParams,
+	PasskeyRequest,
 	RefreshListResponse,
+	RefreshRevokeRequest,
 	UserModel,
 	UserRegisterRequest,
 } from "./api.schemas";
@@ -221,14 +221,14 @@ export const getRefreshRevokeUrl = () => {
 };
 
 export const refreshRevoke = async (
-	accountRefreshRevokeRequest: AccountRefreshRevokeRequest,
+	refreshRevokeRequest: RefreshRevokeRequest,
 	options?: RequestInit
 ): Promise<void> => {
 	return customInstance<void>(getRefreshRevokeUrl(), {
 		...options,
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...options?.headers },
-		body: JSON.stringify(accountRefreshRevokeRequest),
+		body: JSON.stringify(refreshRevokeRequest),
 	});
 };
 
@@ -239,14 +239,14 @@ export const getRefreshRevokeMutationOptions = <
 	mutation?: CreateMutationOptions<
 		Awaited<ReturnType<typeof refreshRevoke>>,
 		TError,
-		{ data: BodyType<AccountRefreshRevokeRequest> },
+		{ data: BodyType<RefreshRevokeRequest> },
 		TContext
 	>;
 	request?: SecondParameter<typeof customInstance>;
 }): CreateMutationOptions<
 	Awaited<ReturnType<typeof refreshRevoke>>,
 	TError,
-	{ data: BodyType<AccountRefreshRevokeRequest> },
+	{ data: BodyType<RefreshRevokeRequest> },
 	TContext
 > => {
 	const mutationKey = ["refreshRevoke"];
@@ -258,7 +258,7 @@ export const getRefreshRevokeMutationOptions = <
 
 	const mutationFn: MutationFunction<
 		Awaited<ReturnType<typeof refreshRevoke>>,
-		{ data: BodyType<AccountRefreshRevokeRequest> }
+		{ data: BodyType<RefreshRevokeRequest> }
 	> = (props) => {
 		const { data } = props ?? {};
 
@@ -269,7 +269,7 @@ export const getRefreshRevokeMutationOptions = <
 };
 
 export type RefreshRevokeMutationResult = NonNullable<Awaited<ReturnType<typeof refreshRevoke>>>;
-export type RefreshRevokeMutationBody = BodyType<AccountRefreshRevokeRequest>;
+export type RefreshRevokeMutationBody = BodyType<RefreshRevokeRequest>;
 export type RefreshRevokeMutationError = ErrorType<InternalErrorResponse>;
 
 export const createRefreshRevoke = <TError = ErrorType<InternalErrorResponse>, TContext = unknown>(
@@ -277,7 +277,7 @@ export const createRefreshRevoke = <TError = ErrorType<InternalErrorResponse>, T
 		mutation?: CreateMutationOptions<
 			Awaited<ReturnType<typeof refreshRevoke>>,
 			TError,
-			{ data: BodyType<AccountRefreshRevokeRequest> },
+			{ data: BodyType<RefreshRevokeRequest> },
 			TContext
 		>;
 		request?: SecondParameter<typeof customInstance>;
@@ -286,7 +286,7 @@ export const createRefreshRevoke = <TError = ErrorType<InternalErrorResponse>, T
 ): CreateMutationResult<
 	Awaited<ReturnType<typeof refreshRevoke>>,
 	TError,
-	{ data: BodyType<AccountRefreshRevokeRequest> },
+	{ data: BodyType<RefreshRevokeRequest> },
 	TContext
 > => {
 	return createMutation(() => ({ ...getRefreshRevokeMutationOptions(options?.()) }), queryClient);
@@ -353,14 +353,14 @@ export const getPasskeyUrl = () => {
 };
 
 export const passkey = async (
-	accountPasskeyRequest: AccountPasskeyRequest,
+	passkeyRequest: PasskeyRequest,
 	options?: RequestInit
 ): Promise<string> => {
 	return customInstance<string>(getPasskeyUrl(), {
 		...options,
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...options?.headers },
-		body: JSON.stringify(accountPasskeyRequest),
+		body: JSON.stringify(passkeyRequest),
 	});
 };
 
@@ -371,14 +371,14 @@ export const getPasskeyMutationOptions = <
 	mutation?: CreateMutationOptions<
 		Awaited<ReturnType<typeof passkey>>,
 		TError,
-		{ data: BodyType<AccountPasskeyRequest> },
+		{ data: BodyType<PasskeyRequest> },
 		TContext
 	>;
 	request?: SecondParameter<typeof customInstance>;
 }): CreateMutationOptions<
 	Awaited<ReturnType<typeof passkey>>,
 	TError,
-	{ data: BodyType<AccountPasskeyRequest> },
+	{ data: BodyType<PasskeyRequest> },
 	TContext
 > => {
 	const mutationKey = ["passkey"];
@@ -390,7 +390,7 @@ export const getPasskeyMutationOptions = <
 
 	const mutationFn: MutationFunction<
 		Awaited<ReturnType<typeof passkey>>,
-		{ data: BodyType<AccountPasskeyRequest> }
+		{ data: BodyType<PasskeyRequest> }
 	> = (props) => {
 		const { data } = props ?? {};
 
@@ -401,7 +401,7 @@ export const getPasskeyMutationOptions = <
 };
 
 export type PasskeyMutationResult = NonNullable<Awaited<ReturnType<typeof passkey>>>;
-export type PasskeyMutationBody = BodyType<AccountPasskeyRequest>;
+export type PasskeyMutationBody = BodyType<PasskeyRequest>;
 export type PasskeyMutationError = ErrorType<InternalErrorResponse>;
 
 export const createPasskey = <TError = ErrorType<InternalErrorResponse>, TContext = unknown>(
@@ -409,7 +409,7 @@ export const createPasskey = <TError = ErrorType<InternalErrorResponse>, TContex
 		mutation?: CreateMutationOptions<
 			Awaited<ReturnType<typeof passkey>>,
 			TError,
-			{ data: BodyType<AccountPasskeyRequest> },
+			{ data: BodyType<PasskeyRequest> },
 			TContext
 		>;
 		request?: SecondParameter<typeof customInstance>;
@@ -418,7 +418,7 @@ export const createPasskey = <TError = ErrorType<InternalErrorResponse>, TContex
 ): CreateMutationResult<
 	Awaited<ReturnType<typeof passkey>>,
 	TError,
-	{ data: BodyType<AccountPasskeyRequest> },
+	{ data: BodyType<PasskeyRequest> },
 	TContext
 > => {
 	return createMutation(() => ({ ...getPasskeyMutationOptions(options?.()) }), queryClient);
@@ -600,9 +600,7 @@ export const createLogin = <TError = ErrorType<InternalErrorResponse>, TContext 
 > => {
 	return createMutation(() => ({ ...getLoginMutationOptions(options?.()) }), queryClient);
 };
-export const getOnlineFeaturesAccountLoginGoogleEndpointUrl = (
-	params: OnlineFeaturesAccountLoginGoogleEndpointParams
-) => {
+export const getLoginGoogleUrl = (params: LoginGoogleParams) => {
 	const normalizedParams = new URLSearchParams();
 
 	Object.entries(params || {}).forEach(([key, value]) => {
@@ -618,79 +616,60 @@ export const getOnlineFeaturesAccountLoginGoogleEndpointUrl = (
 		: `/account/login/google`;
 };
 
-export const onlineFeaturesAccountLoginGoogleEndpoint = async (
-	params: OnlineFeaturesAccountLoginGoogleEndpointParams,
+export const loginGoogle = async (
+	params: LoginGoogleParams,
 	options?: RequestInit
 ): Promise<void> => {
-	return customInstance<void>(getOnlineFeaturesAccountLoginGoogleEndpointUrl(params), {
+	return customInstance<void>(getLoginGoogleUrl(params), {
 		...options,
 		method: "GET",
 	});
 };
 
-export const getOnlineFeaturesAccountLoginGoogleEndpointQueryKey = (
-	params?: OnlineFeaturesAccountLoginGoogleEndpointParams
-) => {
+export const getLoginGoogleQueryKey = (params?: LoginGoogleParams) => {
 	return [`/account/login/google`, ...(params ? [params] : [])] as const;
 };
 
-export const getOnlineFeaturesAccountLoginGoogleEndpointQueryOptions = <
-	TData = Awaited<ReturnType<typeof onlineFeaturesAccountLoginGoogleEndpoint>>,
+export const getLoginGoogleQueryOptions = <
+	TData = Awaited<ReturnType<typeof loginGoogle>>,
 	TError = ErrorType<InternalErrorResponse>,
 >(
-	params: OnlineFeaturesAccountLoginGoogleEndpointParams,
+	params: LoginGoogleParams,
 	options?: {
-		query?: Partial<
-			CreateQueryOptions<
-				Awaited<ReturnType<typeof onlineFeaturesAccountLoginGoogleEndpoint>>,
-				TError,
-				TData
-			>
-		>;
+		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof loginGoogle>>, TError, TData>>;
 		request?: SecondParameter<typeof customInstance>;
 	}
 ) => {
 	const { query: queryOptions, request: requestOptions } = options ?? {};
 
-	const queryKey =
-		queryOptions?.queryKey ?? getOnlineFeaturesAccountLoginGoogleEndpointQueryKey(params);
+	const queryKey = queryOptions?.queryKey ?? getLoginGoogleQueryKey(params);
 
-	const queryFn: QueryFunction<
-		Awaited<ReturnType<typeof onlineFeaturesAccountLoginGoogleEndpoint>>
-	> = ({ signal }) =>
-		onlineFeaturesAccountLoginGoogleEndpoint(params, { signal, ...requestOptions });
+	const queryFn: QueryFunction<Awaited<ReturnType<typeof loginGoogle>>> = ({ signal }) =>
+		loginGoogle(params, { signal, ...requestOptions });
 
 	return { queryKey, queryFn, ...queryOptions } as CreateQueryOptions<
-		Awaited<ReturnType<typeof onlineFeaturesAccountLoginGoogleEndpoint>>,
+		Awaited<ReturnType<typeof loginGoogle>>,
 		TError,
 		TData
 	> & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
-export type OnlineFeaturesAccountLoginGoogleEndpointQueryResult = NonNullable<
-	Awaited<ReturnType<typeof onlineFeaturesAccountLoginGoogleEndpoint>>
->;
-export type OnlineFeaturesAccountLoginGoogleEndpointQueryError = ErrorType<InternalErrorResponse>;
+export type LoginGoogleQueryResult = NonNullable<Awaited<ReturnType<typeof loginGoogle>>>;
+export type LoginGoogleQueryError = ErrorType<InternalErrorResponse>;
 
-export function createOnlineFeaturesAccountLoginGoogleEndpoint<
-	TData = Awaited<ReturnType<typeof onlineFeaturesAccountLoginGoogleEndpoint>>,
+export function createLoginGoogle<
+	TData = Awaited<ReturnType<typeof loginGoogle>>,
 	TError = ErrorType<InternalErrorResponse>,
 >(
-	params: () => OnlineFeaturesAccountLoginGoogleEndpointParams,
+	params: () => LoginGoogleParams,
 	options?: () => {
-		query?: Partial<
-			CreateQueryOptions<
-				Awaited<ReturnType<typeof onlineFeaturesAccountLoginGoogleEndpoint>>,
-				TError,
-				TData
-			>
-		>;
+		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof loginGoogle>>, TError, TData>>;
 		request?: SecondParameter<typeof customInstance>;
 	},
 	queryClient?: () => QueryClient
 ): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 	const query = createQuery(
-		() => getOnlineFeaturesAccountLoginGoogleEndpointQueryOptions(params(), options?.()),
+		() => getLoginGoogleQueryOptions(params(), options?.()),
 		queryClient
 	) as CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

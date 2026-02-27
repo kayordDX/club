@@ -28,7 +28,8 @@
 	import Query from "$lib/components/Query.svelte";
 	import { resolve } from "$app/paths";
 	import { cn } from "@kayord/ui/utils";
-	import { createGetSlots } from "$lib/api";
+	import { createSlotGetAll } from "$lib/api";
+	import Slots from "./Slots.svelte";
 
 	// Inlined club data
 	const club = {
@@ -72,7 +73,7 @@
 		value = value.add({ days: incrementValue });
 	};
 
-	const slotsQuery = createGetSlots(() => ({ facilityId: 1, date: value.toString() }));
+	const slotsQuery = createSlotGetAll(() => ({ facilityId: 1, date: value.toString() }));
 	const slotsData = $derived(slotsQuery.data ?? []);
 </script>
 
@@ -134,6 +135,7 @@
 						</Popover.Root>
 					</Card.Content>
 				</Card.Root>
+				<Slots slots={slotsData} />
 				<Table.Root>
 					<Table.Header>
 						<Table.Row>

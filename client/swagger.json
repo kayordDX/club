@@ -72,7 +72,7 @@
         "tags": [
           "Slot"
         ],
-        "operationId": "GetSlots",
+        "operationId": "SlotGetAll",
         "parameters": [
           {
             "name": "facilityId",
@@ -101,7 +101,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/SlotGetResponse"
+                    "$ref": "#/components/schemas/SlotGetAllResponse"
                   }
                 }
               }
@@ -188,7 +188,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PaginatedList_1"
+                  "$ref": "#/components/schemas/PaginatedListOfOutlet"
                 }
               }
             }
@@ -353,12 +353,12 @@
         ],
         "operationId": "UserRole",
         "requestBody": {
-          "x-name": "Request",
+          "x-name": "UserRoleRequest",
           "description": "",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AccountRoleRequest"
+                "$ref": "#/components/schemas/UserRoleRequest"
               }
             }
           },
@@ -498,12 +498,12 @@
         ],
         "operationId": "RefreshRevoke",
         "requestBody": {
-          "x-name": "Request",
+          "x-name": "RefreshRevokeRequest",
           "description": "",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AccountRefreshRevokeRequest"
+                "$ref": "#/components/schemas/RefreshRevokeRequest"
               }
             }
           },
@@ -567,12 +567,12 @@
         ],
         "operationId": "Passkey",
         "requestBody": {
-          "x-name": "Request",
+          "x-name": "PasskeyRequest",
           "description": "",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AccountPasskeyRequest"
+                "$ref": "#/components/schemas/PasskeyRequest"
               }
             }
           },
@@ -714,7 +714,7 @@
         "tags": [
           "Account"
         ],
-        "operationId": "OnlineFeaturesAccountLoginGoogleEndpoint",
+        "operationId": "LoginGoogle",
         "parameters": [
           {
             "name": "returnUrl",
@@ -791,7 +791,7 @@
           }
         }
       },
-      "SlotGetResponse": {
+      "SlotGetAllResponse": {
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -876,7 +876,7 @@
           }
         }
       },
-      "PaginatedList_1": {
+      "PaginatedListOfOutlet": {
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -2414,7 +2414,7 @@
           }
         }
       },
-      "AccountRoleRequest": {
+      "UserRoleRequest": {
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -2488,7 +2488,7 @@
           }
         }
       },
-      "AccountRefreshRevokeRequest": {
+      "RefreshRevokeRequest": {
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -2543,7 +2543,7 @@
           }
         }
       },
-      "AccountPasskeyRequest": {
+      "PasskeyRequest": {
         "type": "object",
         "additionalProperties": false,
         "required": [

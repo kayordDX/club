@@ -4,7 +4,7 @@ using Online.Data;
 
 namespace Online.Features.Outlet.GetAll;
 
-public class Endpoint(AppDbContext dbContext) : Endpoint<Request, PaginatedList<Entities.Outlet>>
+public class Endpoint(AppDbContext dbContext) : Endpoint<OutletGetAllRequest, PaginatedList<Entities.Outlet>>
 {
     private readonly AppDbContext _dbContext = dbContext;
 
@@ -15,7 +15,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<Request, PaginatedList<
         AllowAnonymous();
     }
 
-    public override async Task HandleAsync(Request req, CancellationToken ct)
+    public override async Task HandleAsync(OutletGetAllRequest req, CancellationToken ct)
     {
         var results = await _dbContext.Outlet.OrderBy(x => x.Id).GetPagedAsync(req, ct);
         await Send.OkAsync(results, ct);

@@ -2,7 +2,7 @@ using Online.Common.Models;
 
 namespace Online.Features.Outlet.GetAll;
 
-public class Request : QueryModel
+public class OutletGetAllRequest : QueryModel
 {
 
 }

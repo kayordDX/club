@@ -4,7 +4,7 @@ using Online.DTO;
 
 namespace Online.Features.Outlet.Admin;
 
-public class Endpoint(AppDbContext dbContext) : Endpoint<Request, OutletDTO>
+public class Endpoint(AppDbContext dbContext) : Endpoint<OutletAdminGetRequest, OutletDTO>
 {
     private readonly AppDbContext _dbContext = dbContext;
 
@@ -15,7 +15,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<Request, OutletDTO>
         AllowAnonymous();
     }
 
-    public override async Task HandleAsync(Request req, CancellationToken ct)
+    public override async Task HandleAsync(OutletAdminGetRequest req, CancellationToken ct)
     {
         var results = await _dbContext.Outlet.ProjectToDto().FirstOrDefaultAsync(x => x.Slug == req.Slug, ct);
         if (results == null)

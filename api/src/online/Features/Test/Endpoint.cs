@@ -5,7 +5,7 @@ using Online.Entities;
 
 namespace Online.Features.Test;
 
-public class Endpoint(AppDbContext dbContext) : Endpoint<Request, Response>
+public class Endpoint(AppDbContext dbContext) : Endpoint<TestRequest, TestResponse>
 {
     public override void Configure()
     {
@@ -15,10 +15,10 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<Request, Response>
         Policies(Constants.Policy.OutletAdmin);
     }
 
-    public override async Task HandleAsync(Request req, CancellationToken ct)
+    public override async Task HandleAsync(TestRequest req, CancellationToken ct)
     {
         var users = await dbContext.Users.ToListAsync(ct);
-        var response = new Response
+        var response = new TestResponse
         {
             Success = true
         };

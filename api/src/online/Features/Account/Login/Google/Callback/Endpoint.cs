@@ -5,7 +5,7 @@ using Online.Services;
 
 namespace Online.Features.Account.Login.Google.Callback;
 
-public class Endpoint(AccountService accountService) : Endpoint<Request>
+public class Endpoint(AccountService accountService) : Endpoint<GoogleLoginCallbackRequest>
 {
     private readonly AccountService _accountService = accountService;
 
@@ -16,7 +16,7 @@ public class Endpoint(AccountService accountService) : Endpoint<Request>
         AllowAnonymous();
     }
 
-    public override async Task HandleAsync(Request r, CancellationToken ct)
+    public override async Task HandleAsync(GoogleLoginCallbackRequest r, CancellationToken ct)
     {
         var result = await HttpContext.AuthenticateAsync(GoogleDefaults.AuthenticationScheme);
         if (!result.Succeeded)

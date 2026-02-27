@@ -22,7 +22,7 @@ export interface TestResponse {
 	success: boolean;
 }
 
-export interface SlotGetResponse {
+export interface SlotGetAllResponse {
 	id: string;
 	/** @nullable */
 	facilityId?: number | null;
@@ -431,7 +431,7 @@ export interface Outlet {
 	contractOutlets: ContractOutlet[];
 }
 
-export interface PaginatedList1 {
+export interface PaginatedListOfOutlet {
 	items: Outlet[];
 	pageNumber: number;
 	totalPages: number;
@@ -487,7 +487,7 @@ export interface OutletDTO {
 	facilities: FacilityDTO[];
 }
 
-export interface AccountRoleRequest {
+export interface UserRoleRequest {
 	/** @minLength 1 */
 	name: string;
 }
@@ -510,7 +510,7 @@ export interface UserModel {
 	picture?: string | null;
 }
 
-export interface AccountRefreshRevokeRequest {
+export interface RefreshRevokeRequest {
 	id: string;
 }
 
@@ -525,7 +525,7 @@ export interface RefreshListResponse {
 	isCurrent: boolean;
 }
 
-export interface AccountPasskeyRequest {
+export interface PasskeyRequest {
 	name: string;
 }
 
@@ -542,7 +542,7 @@ export type TestParams = {
 	name: string;
 };
 
-export type GetSlotsParams = {
+export type SlotGetAllParams = {
 	facilityId: number;
 	date: string;
 };
@@ -570,6 +570,6 @@ export type ExampleVerifyParams = {
 	code: string;
 };
 
-export type OnlineFeaturesAccountLoginGoogleEndpointParams = {
+export type LoginGoogleParams = {
 	returnUrl: string;
 };

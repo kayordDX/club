@@ -16,9 +16,9 @@ import type {
 
 import type {
 	ErrorResponse,
-	GetSlotsParams,
 	InternalErrorResponse,
-	SlotGetResponse,
+	SlotGetAllParams,
+	SlotGetAllResponse,
 } from "./api.schemas";
 
 import { customInstance } from "../mutator/customInstance.svelte";
@@ -26,7 +26,7 @@ import type { ErrorType } from "../mutator/customInstance.svelte";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
-export const getGetSlotsUrl = (params: GetSlotsParams) => {
+export const getSlotGetAllUrl = (params: SlotGetAllParams) => {
 	const normalizedParams = new URLSearchParams();
 
 	Object.entries(params || {}).forEach(([key, value]) => {
@@ -40,60 +40,60 @@ export const getGetSlotsUrl = (params: GetSlotsParams) => {
 	return stringifiedParams.length > 0 ? `/slot?${stringifiedParams}` : `/slot`;
 };
 
-export const getSlots = async (
-	params: GetSlotsParams,
+export const slotGetAll = async (
+	params: SlotGetAllParams,
 	options?: RequestInit
-): Promise<SlotGetResponse[]> => {
-	return customInstance<SlotGetResponse[]>(getGetSlotsUrl(params), {
+): Promise<SlotGetAllResponse[]> => {
+	return customInstance<SlotGetAllResponse[]>(getSlotGetAllUrl(params), {
 		...options,
 		method: "GET",
 	});
 };
 
-export const getGetSlotsQueryKey = (params?: GetSlotsParams) => {
+export const getSlotGetAllQueryKey = (params?: SlotGetAllParams) => {
 	return [`/slot`, ...(params ? [params] : [])] as const;
 };
 
-export const getGetSlotsQueryOptions = <
-	TData = Awaited<ReturnType<typeof getSlots>>,
+export const getSlotGetAllQueryOptions = <
+	TData = Awaited<ReturnType<typeof slotGetAll>>,
 	TError = ErrorType<ErrorResponse | InternalErrorResponse>,
 >(
-	params: GetSlotsParams,
+	params: SlotGetAllParams,
 	options?: {
-		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof getSlots>>, TError, TData>>;
+		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof slotGetAll>>, TError, TData>>;
 		request?: SecondParameter<typeof customInstance>;
 	}
 ) => {
 	const { query: queryOptions, request: requestOptions } = options ?? {};
 
-	const queryKey = queryOptions?.queryKey ?? getGetSlotsQueryKey(params);
+	const queryKey = queryOptions?.queryKey ?? getSlotGetAllQueryKey(params);
 
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof getSlots>>> = ({ signal }) =>
-		getSlots(params, { signal, ...requestOptions });
+	const queryFn: QueryFunction<Awaited<ReturnType<typeof slotGetAll>>> = ({ signal }) =>
+		slotGetAll(params, { signal, ...requestOptions });
 
 	return { queryKey, queryFn, ...queryOptions } as CreateQueryOptions<
-		Awaited<ReturnType<typeof getSlots>>,
+		Awaited<ReturnType<typeof slotGetAll>>,
 		TError,
 		TData
 	> & { queryKey: DataTag<QueryKey, TData, TError> };
 };
 
-export type GetSlotsQueryResult = NonNullable<Awaited<ReturnType<typeof getSlots>>>;
-export type GetSlotsQueryError = ErrorType<ErrorResponse | InternalErrorResponse>;
+export type SlotGetAllQueryResult = NonNullable<Awaited<ReturnType<typeof slotGetAll>>>;
+export type SlotGetAllQueryError = ErrorType<ErrorResponse | InternalErrorResponse>;
 
-export function createGetSlots<
-	TData = Awaited<ReturnType<typeof getSlots>>,
+export function createSlotGetAll<
+	TData = Awaited<ReturnType<typeof slotGetAll>>,
 	TError = ErrorType<ErrorResponse | InternalErrorResponse>,
 >(
-	params: () => GetSlotsParams,
+	params: () => SlotGetAllParams,
 	options?: () => {
-		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof getSlots>>, TError, TData>>;
+		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof slotGetAll>>, TError, TData>>;
 		request?: SecondParameter<typeof customInstance>;
 	},
 	queryClient?: () => QueryClient
 ): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 	const query = createQuery(
-		() => getGetSlotsQueryOptions(params(), options?.()),
+		() => getSlotGetAllQueryOptions(params(), options?.()),
 		queryClient
 	) as CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 

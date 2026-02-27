@@ -1,6 +1,6 @@
 namespace Online.Features.Test;
 
-public class Response
+public class TestResponse
 {
     public bool Success { get; set; }
 }

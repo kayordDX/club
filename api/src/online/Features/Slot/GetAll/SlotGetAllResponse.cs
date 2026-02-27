@@ -1,6 +1,6 @@
-namespace Online.Features.Slot.Get;
+namespace Online.Features.Slot.GetAll;
 
-public class Response
+public class SlotGetAllResponse
 {
     public Guid Id { get; set; }
     public int? FacilityId { get; set; }

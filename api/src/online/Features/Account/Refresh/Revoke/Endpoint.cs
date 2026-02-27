@@ -3,7 +3,7 @@ using Online.Data;
 
 namespace Online.Features.Account.Refresh.Revoke;
 
-public class Endpoint(AppDbContext dbContext) : Endpoint<Request>
+public class Endpoint(AppDbContext dbContext) : Endpoint<RefreshRevokeRequest>
 {
     private readonly AppDbContext _dbContext = dbContext;
 
@@ -14,7 +14,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<Request>
         Description(x => x.WithName("RefreshRevoke"));
     }
 
-    public override async Task HandleAsync(Request r, CancellationToken ct)
+    public override async Task HandleAsync(RefreshRevokeRequest r, CancellationToken ct)
     {
         var token = await _dbContext.UserRefreshToken.FirstOrDefaultAsync(x => x.Id == r.Id, ct);
         if (token == null)

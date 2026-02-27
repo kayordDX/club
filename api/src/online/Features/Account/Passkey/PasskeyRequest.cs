@@ -1,6 +1,6 @@
 namespace Online.Features.Account.Passkey;
 
-public class Request
+public class PasskeyRequest
 {
     public string Name { get; set; } = string.Empty;
 }

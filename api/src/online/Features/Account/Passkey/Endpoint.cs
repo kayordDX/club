@@ -4,7 +4,7 @@ using Online.Entities;
 
 namespace Online.Features.Account.Passkey;
 
-public class Endpoint(UserManager<User> userManager, SignInManager<User> signInManager) : Endpoint<Request, string>
+public class Endpoint(UserManager<User> userManager, SignInManager<User> signInManager) : Endpoint<PasskeyRequest, string>
 {
     private readonly UserManager<User> _userManager = userManager;
     private readonly SignInManager<User> _signInManager = signInManager;
@@ -16,7 +16,7 @@ public class Endpoint(UserManager<User> userManager, SignInManager<User> signInM
         AllowAnonymous();
     }
 
-    public override async Task HandleAsync(Request r, CancellationToken ct)
+    public override async Task HandleAsync(PasskeyRequest r, CancellationToken ct)
     {
 
         var user = await _userManager.GetUserAsync(HttpContext.User);

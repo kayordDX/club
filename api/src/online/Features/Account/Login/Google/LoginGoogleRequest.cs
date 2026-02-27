@@ -1,6 +1,6 @@
 namespace Online.Features.Account.Login.Google;
 
-public class Request
+public class LoginGoogleRequest
 {
     public required string ReturnUrl { get; set; }
 }

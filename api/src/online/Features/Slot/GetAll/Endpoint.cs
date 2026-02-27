@@ -1,20 +1,20 @@
 using Microsoft.EntityFrameworkCore;
 using Online.Data;
 
-namespace Online.Features.Slot.Get;
+namespace Online.Features.Slot.GetAll;
 
-public class Endpoint(AppDbContext dbContext) : Endpoint<Request, List<Response>>
+public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List<SlotGetAllResponse>>
 {
     private readonly AppDbContext _dbContext = dbContext;
 
     public override void Configure()
     {
         Get("/slot");
-        Description(x => x.WithName("GetSlots"));
+        Description(x => x.WithName("SlotGetAll"));
         AllowAnonymous();
     }
 
-    public override async Task HandleAsync(Request req, CancellationToken ct)
+    public override async Task HandleAsync(SlotGetAllRequest req, CancellationToken ct)
     {
         // Ensure the date is in UTC
         var dateUtc = req.Date.Kind switch
@@ -37,7 +37,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<Request, List<Response>
             .OrderBy(s => s.StartDatetime)
             .ToListAsync(ct);
 
-        var slotResponses = slots.Select(slot => new Response
+        var slotResponses = slots.Select(slot => new SlotGetAllResponse
         {
             Id = slot.Id,
             FacilityId = slot.FacilityId,

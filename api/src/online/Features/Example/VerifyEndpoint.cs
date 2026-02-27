@@ -4,16 +4,10 @@ using Online.Entities;
 
 namespace Online.Features.Example;
 
-public class VerifyEndpoint : Endpoint<Request, bool>
+public class VerifyEndpoint(AppDbContext dbContext, UserManager<User> userManager) : Endpoint<ExampleRequest, bool>
 {
-    private readonly AppDbContext _dbContext;
-    private readonly UserManager<User> _userManager;
-
-    public VerifyEndpoint(AppDbContext dbContext, UserManager<User> userManager)
-    {
-        _dbContext = dbContext;
-        _userManager = userManager;
-    }
+    private readonly AppDbContext _dbContext = dbContext;
+    private readonly UserManager<User> _userManager = userManager;
 
     public override void Configure()
     {
@@ -22,17 +16,17 @@ public class VerifyEndpoint : Endpoint<Request, bool>
         AllowAnonymous();
     }
 
-    public override async Task HandleAsync(Request r, CancellationToken ct)
+    public override async Task HandleAsync(ExampleRequest r, CancellationToken ct)
     {
         string email = "kokjaco2@gmail.com";
         var user = await _userManager.FindByEmailAsync(email);
         if (user != null)
         {
             bool result = await _userManager.VerifyTwoFactorTokenAsync(user, TokenOptions.DefaultEmailProvider, r.Code);
-            await Send.OkAsync(result);
+            await Send.OkAsync(result, ct);
             return;
 
         }
-        await Send.OkAsync(false);
+        await Send.OkAsync(false, ct);
     }
 }

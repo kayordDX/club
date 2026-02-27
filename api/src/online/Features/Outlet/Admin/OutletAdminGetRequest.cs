@@ -1,6 +1,6 @@
 namespace Online.Features.Outlet.Admin;
 
-public class Request
+public class OutletAdminGetRequest
 {
     public required string Slug { get; set; }
 }
