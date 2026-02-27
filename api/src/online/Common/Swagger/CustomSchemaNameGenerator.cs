@@ -6,6 +6,29 @@ public class CustomSchemaNameGenerator : DefaultSchemaNameGenerator, ISchemaName
 {
     public override string Generate(Type type)
     {
+        if (type.IsGenericType)
+        {
+            var genericDefinition = type.GetGenericTypeDefinition();
+            var genericArguments = type.GetGenericArguments();
+
+            // Special handling for PaginatedList<T>
+            // if (genericDefinition.Name == "PaginatedList`1" && genericArguments.Length == 1)
+            // {
+            //     var itemTypeName = genericArguments[0].Name;
+            //     return $"PaginatedList{itemTypeName}";
+            // }
+
+            // Generic fallback for other generic types
+            var baseName = genericDefinition.Name.Split('`')[0];
+            var argNames = string.Join("", genericArguments.Select(arg => arg.Name));
+            if (argNames == "Response")
+            {
+                var operationName = GetOperationNameFromType(type);
+                argNames = $"{operationName}Response";
+            }
+            return $"{baseName}{argNames}";
+        }
+
         if (type.Name == "Response")
         {
             var operationName = GetOperationNameFromType(type);
