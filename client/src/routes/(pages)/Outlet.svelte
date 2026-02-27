@@ -11,7 +11,7 @@
 	let { outlet }: Props = $props();
 </script>
 
-<a href={resolve(`/outlet/${outlet.slug}/book`)} class="group">
+<a href={resolve(`/outlet/${outlet.slug}/book`)} class="group" data-testid={`outlet-${outlet.id}`}>
 	<Card.Root class="flex w-full cursor-pointer pt-0 transition-all duration-200 hover:shadow-lg">
 		<div class="relative aspect-video overflow-hidden rounded-t-lg">
 			<img

@@ -10,3 +10,6 @@ Logs/
 .idea/
 .vs
 api/src/online/bin*
+
+# Playwright screenshots
+**/__screenshots/
