@@ -4,28 +4,36 @@ namespace Online.Common.Swagger;
 
 public class CustomSchemaNameGenerator : DefaultSchemaNameGenerator, ISchemaNameGenerator
 {
+    // Known namespace roots to strip from type names
+    private static readonly string[] KnownNamespacePrefixes =
+    {
+        "Online.Entities",
+        "Online.Features",
+        "Online.Models",
+        // Add more as needed
+    };
+
     public override string Generate(Type type)
     {
+        // Handle generic types (e.g., PaginatedList<Response> -> OutletGetAllAdminPaginatedListResponse)
         if (type.IsGenericType)
         {
             var genericDefinition = type.GetGenericTypeDefinition();
             var genericArguments = type.GetGenericArguments();
 
             // Special handling for PaginatedList<T>
-            // if (genericDefinition.Name == "PaginatedList`1" && genericArguments.Length == 1)
-            // {
-            //     var itemTypeName = genericArguments[0].Name;
-            //     return $"PaginatedList{itemTypeName}";
-            // }
+            if (genericDefinition.Name == "PaginatedList`1" && genericArguments.Length == 1)
+            {
+                var itemType = genericArguments[0];
+                var itemTypeName = itemType.Name;
+
+                var operationName = GetOperationNameFromType(itemType);
+                return $"PaginatedList{operationName}{itemTypeName}";
+            }
 
             // Generic fallback for other generic types
             var baseName = genericDefinition.Name.Split('`')[0];
             var argNames = string.Join("", genericArguments.Select(arg => arg.Name));
-            if (argNames == "Response")
-            {
-                var operationName = GetOperationNameFromType(type);
-                argNames = $"{operationName}Response";
-            }
             return $"{baseName}{argNames}";
         }
 
@@ -45,7 +53,14 @@ public class CustomSchemaNameGenerator : DefaultSchemaNameGenerator, ISchemaName
     private static string? GetOperationNameFromType(Type type)
     {
         var fullName = type.FullName;
-        var parts = fullName?.Split('.') ?? [];
+        if (string.IsNullOrEmpty(fullName))
+        {
+            return null;
+        }
+
+        // Strip known namespace prefixes
+        var cleanNamespace = StripKnownPrefix(fullName);
+        var parts = cleanNamespace.Split('.');
 
         // Find the index where "Features" starts
         var featuresIndex = Array.IndexOf(parts, "Features");
@@ -53,6 +68,8 @@ public class CustomSchemaNameGenerator : DefaultSchemaNameGenerator, ISchemaName
         if (featuresIndex >= 0 && featuresIndex < parts.Length - 1)
         {
             // Get all parts after "Features" except the last one (which is the class name)
+            // For example: Outlet.GetAllAdmin.Response
+            // Should extract: Outlet + GetAllAdmin = OutletGetAllAdmin
             var featureParts = new ArraySegment<string>(parts, featuresIndex + 1, parts.Length - featuresIndex - 2);
 
             if (featureParts.Count > 0)
@@ -69,5 +86,18 @@ public class CustomSchemaNameGenerator : DefaultSchemaNameGenerator, ISchemaName
         }
 
         return null;
+    }
+
+    private static string StripKnownPrefix(string fullName)
+    {
+        foreach (var prefix in KnownNamespacePrefixes)
+        {
+            if (fullName.StartsWith(prefix + "."))
+            {
+                return fullName.Substring(prefix.Length + 1);
+            }
+        }
+
+        return fullName;
     }
 }
