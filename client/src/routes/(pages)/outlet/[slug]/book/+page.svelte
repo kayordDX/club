@@ -8,6 +8,15 @@
 
 	const query = createOutletGet(() => page.params.slug ?? "");
 	const outlet = $derived(query.data);
+
+	let facilityTypeIdFilter = $state("0");
+
+	const facilitiesFiltered = $derived(
+		facilityTypeIdFilter === "0"
+			? (outlet?.facilities ?? [])
+			: (outlet?.facilities.filter((f) => f.facilityType.id.toString() === facilityTypeIdFilter) ??
+					[])
+	);
 </script>
 
 <div class="m-4">
@@ -27,10 +36,9 @@
 		<h1 class="text-3xl">Choose your facility</h1>
 		<h3 class="text-muted-foreground mb-6">Select facility to continue with your booking.</h3>
 
-		<FacilityFilter facilities={outlet!.facilities} />
-
+		<FacilityFilter bind:facilityTypeIdFilter facilities={outlet!.facilities} />
 		<div class="flex flex-col gap-2">
-			{#each outlet!.facilities as facility (facility.id)}
+			{#each facilitiesFiltered as facility (facility.id)}
 				<Facility {facility} />
 			{/each}
 		</div>

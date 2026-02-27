@@ -18,6 +18,7 @@ public static class Data
                 FirstName = x.FirstName,
                 LastName = x.LastName,
                 Picture = x.Picture,
+                EmailConfirmed = x.EmailConfirmed
             }).FirstOrDefaultAsync(ct);
         return user;
     }

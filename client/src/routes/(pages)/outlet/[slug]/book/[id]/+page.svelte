@@ -100,12 +100,6 @@
 						<Card.Description>Pick a day</Card.Description>
 					</Card.Header>
 					<Card.Content>
-						<Calendar
-							type="single"
-							bind:value={selectedDate}
-							class="w-fit rounded-md border shadow-sm"
-						/>
-
 						<Popover.Root>
 							<Popover.Trigger>
 								{#snippet child({ props })}
@@ -116,7 +110,7 @@
 										<Button
 											variant="outline"
 											class={cn(
-												"w-[280px] justify-start text-start font-normal",
+												"w-70 justify-start text-start font-normal",
 												!value && "text-muted-foreground"
 											)}
 											{...props}

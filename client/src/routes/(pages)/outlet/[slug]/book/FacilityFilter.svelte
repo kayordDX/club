@@ -6,9 +6,10 @@
 
 	type Props = {
 		facilities: Array<FacilityDTO>;
+		facilityTypeIdFilter: string;
 	};
 
-	let { facilities }: Props = $props();
+	let { facilities, facilityTypeIdFilter = $bindable() }: Props = $props();
 
 	// Get count of facilities for a specific type
 	const getFacilityTypeCount = $derived(
@@ -17,7 +18,13 @@
 </script>
 
 {#if facilities.length > 0}
-	<ToggleGroup.Root type="single" spacing={2} class="mb-2" value="0" variant="outline">
+	<ToggleGroup.Root
+		type="single"
+		spacing={2}
+		class="mb-2"
+		bind:value={facilityTypeIdFilter}
+		variant="outline"
+	>
 		<ToggleGroup.Item value="0" aria-label="Toggle all">
 			<Grid2X2Icon />
 			All Facilities <Badge variant="outline">{facilities.length}</Badge>
