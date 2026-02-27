@@ -11,6 +11,7 @@ public static class GeneralExtensions
         services.AddScoped<AuthTokenProcessor>();
         services.AddDetection();
         services.AddScoped<AccountService>();
+        services.AddScoped<EncryptionService>();
         return services;
     }
 }

@@ -7,6 +7,7 @@ public static class ConfigExtensions
     public static IServiceCollection ConfigureConfig(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.JwtOptionsKey));
+        services.Configure<AppConfig>(configuration.GetSection("App"));
         return services;
     }
 }

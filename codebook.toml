@@ -4,7 +4,11 @@ dictionaries = [
 ]
 words = [
     "aviate",
+    "decrypt",
+    "decrypted",
+    "decryptor",
     "dto",
+    "encryptor",
     "kayord",
     "lucide",
     "normalized",

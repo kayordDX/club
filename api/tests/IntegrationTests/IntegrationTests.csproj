@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>IntegrationTests</RootNamespace>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- FastEndpoints Testing -->
+    <PackageReference Include="FastEndpoints.Testing" />
+
+    <PackageReference Include="xunit.v3.mtp-v2" />
+
+    <!-- Assertions -->
+    <PackageReference Include="Shouldly" />
+
+    <!-- Test Containers for PostgreSQL -->
+    <PackageReference Include="Testcontainers" />
+    <PackageReference Include="Testcontainers.PostgreSql" />
+
+    <!-- Project Reference -->
+    <ProjectReference Include="../../src/online/online.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="$(AssemblyName)" />
+  </ItemGroup>
+
+  <!-- Copy appsettings files to output directory -->
+  <ItemGroup>
+    <Content Include="appsettings.Testing.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>

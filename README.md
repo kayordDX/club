@@ -45,11 +45,28 @@ pnpm dev
 - Mobile First
 - Code first DB design
 
+### Diagram
+
+```mermaid
+architecture-beta
+    group online(server)[Online]
+
+    service db(database)[Postgres] in online
+    service redis(database)[Redis] in online
+    service api(server)[api] in online
+    service svelte(internet)[Svelte] in online
+
+    svelte:B -- T:api
+    db:L -- R:api
+    redis:R -- L:api
+```
+
 ### Todo Phase 1
 
 - [x] Register - Google oauth
 - [ ] ~~View Account~~ - Profile Details
 - [x] Log in - Google auth
+- [ ] Roles and Policies
 - [ ] View Time sheet
 - [ ] Book slots - booking per day
 - [ ] Cancel booking
