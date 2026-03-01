@@ -4,7 +4,7 @@
 	let { children } = $props();
 </script>
 
-<AuthCheck>
+<AuthCheck isProtected={true}>
 	<Header />
 	{@render children?.()}
 </AuthCheck>

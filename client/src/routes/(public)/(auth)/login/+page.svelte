@@ -1,14 +1,17 @@
 <script lang="ts">
 	import { Button, Card, Loader, Separator } from "@kayord/ui";
-	import { PUBLIC_API_URL } from "$env/static/public";
+	import { PUBLIC_API_URL, PUBLIC_APP_URL } from "$env/static/public";
 	import { user } from "$lib/stores/user.svelte";
 	import LogoButton from "$lib/components/LogoButton.svelte";
 	import LogoutButton from "$lib/components/LogoutButton/LogoutButton.svelte";
 	import GoogleIcon from "$lib/svg/icons/GoogleIcon.svelte";
+	import { page } from "$app/state";
+
+	const redirect = $derived(`${PUBLIC_APP_URL}${page.url.searchParams.get("redirect")}`);
 
 	const handleLoginWithGoogle = () => {
 		isLoading = true;
-		window.location.href = `${PUBLIC_API_URL}/account/login/google?returnUrl=http://localhost:5173`;
+		window.location.href = `${PUBLIC_API_URL}/account/login/google?returnUrl=${redirect}`;
 	};
 
 	let isLoading = $state(false);
