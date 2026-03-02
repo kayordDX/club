@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { Button, Empty, StatusDot } from "@kayord/ui";
+	import { Button, Empty, Popover, StatusDot, Table } from "@kayord/ui";
 	import { type SlotGetAllResponse } from "$lib/api";
 	import { Card } from "@kayord/ui";
-	import { ChevronRightIcon, TicketXIcon } from "@lucide/svelte";
+	import { ChevronRightIcon, CircleQuestionMark, TicketXIcon } from "@lucide/svelte";
 	type Props = {
 		slots: SlotGetAllResponse[];
 	};
@@ -18,7 +18,7 @@
 	};
 </script>
 
-<div class="flex flex-wrap gap-2">
+<div class="grid grid-cols-[repeat(auto-fit,minmax(22rem,1fr))] place-items-center gap-2">
 	{#if slots.length == 0}
 		<Empty.Root>
 			<Empty.Header>
@@ -34,7 +34,7 @@
 		</Empty.Root>
 	{/if}
 	{#each slots as slot (slot)}
-		<Card.Root class="flex w-80 flex-row items-center gap-4 p-4">
+		<Card.Root class="flex flex-row items-center gap-4 p-4">
 			<div class="flex flex-col gap-2">
 				<div class="text-muted-foreground text-xs">Tee</div>
 				<div class="font-bold">1st</div>
@@ -46,6 +46,39 @@
 			<div class="flex flex-col gap-2">
 				<div class="text-muted-foreground text-xs">End</div>
 				<div class="font-bold">{formatTime(slot.endDatetime)}</div>
+			</div>
+			<div class="flex flex-col gap-2">
+				<div class="text-muted-foreground text-xs">Price</div>
+				<div class="flex gap-1 font-bold">
+					<Popover.Root>
+						<Popover.Trigger>
+							<button>
+								<CircleQuestionMark class="text-primary size-3" />
+							</button>
+						</Popover.Trigger>
+						<Popover.Content>
+							<Table.Root>
+								<Table.Header>
+									<Table.Row>
+										<Table.Head>Type</Table.Head>
+										<Table.Head>Price</Table.Head>
+									</Table.Row>
+								</Table.Header>
+								<Table.Body>
+									<Table.Row>
+										<Table.Cell>Member</Table.Cell>
+										<Table.Cell>R100.00</Table.Cell>
+									</Table.Row>
+									<Table.Row>
+										<Table.Cell>Non-Member</Table.Cell>
+										<Table.Cell>R150.00</Table.Cell>
+									</Table.Row>
+								</Table.Body>
+							</Table.Root>
+						</Popover.Content>
+					</Popover.Root>
+					R100.00
+				</div>
 			</div>
 			<div class="flex flex-col justify-center gap-2">
 				<div class="text-muted-foreground text-xs">Slots</div>

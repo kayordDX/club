@@ -4,9 +4,9 @@ using Online.Entities;
 
 namespace Online.Data.Config;
 
-public class ContractConfigurationConfig : IEntityTypeConfiguration<ContractConfig>
+public class ContractFieldConfiguration : IEntityTypeConfiguration<ContractField>
 {
-    public void Configure(EntityTypeBuilder<ContractConfig> builder)
+    public void Configure(EntityTypeBuilder<ContractField> builder)
     {
         builder.Property(cc => cc.Name)
             .HasMaxLength(250)

@@ -16,7 +16,12 @@ public static class SeedDbContext
 
         await dbContext.Database.ExecuteSqlRawAsync("delete from slot;", ct);
         await dbContext.Database.ExecuteSqlRawAsync("delete from resource;", ct);
+        await dbContext.Database.ExecuteSqlRawAsync("delete from contract;", ct);
+        await dbContext.Database.ExecuteSqlRawAsync("delete from contract_field;", ct);
+        await dbContext.Database.ExecuteSqlRawAsync("delete from validation;", ct);
         await dbContext.Business.ExecuteDeleteAsync(ct);
+        await dbContext.Database.ExecuteSqlRawAsync("ALTER SEQUENCE validation_id_seq RESTART WITH 1;", ct);
+        await dbContext.Database.ExecuteSqlRawAsync("ALTER SEQUENCE contract_id_seq RESTART WITH 1;", ct);
         await dbContext.Database.ExecuteSqlRawAsync("ALTER SEQUENCE facility_id_seq RESTART WITH 1;", ct);
         await dbContext.Database.ExecuteSqlRawAsync("delete from facility_type;", ct);
         await dbContext.Database.ExecuteSqlRawAsync("ALTER SEQUENCE resource_id_seq RESTART WITH 1;", ct);
@@ -48,6 +53,20 @@ public static class SeedDbContext
             await dbContext.Resource.AddAsync(resource3, ct);
             await dbContext.Resource.AddAsync(resource4, ct);
 
+            var contract1 = new Contract { Name = "Guest", Business = business };
+            var contract2 = new Contract { Name = "Member", Business = business };
+
+            await dbContext.Contract.AddAsync(contract1, ct);
+            await dbContext.Contract.AddAsync(contract2, ct);
+
+            var validation1 = new Validation { Name = "Login", Id = 1 };
+            var validation2 = new Validation { Name = "HNA Verify", Id = 2 };
+            await dbContext.Validation.AddAsync(validation1, ct);
+            await dbContext.Validation.AddAsync(validation2, ct);
+
+            var contractField1 = new ContractField { Id = 1, Name = "Price", FieldValidation = "decimal", Business = business };
+            await dbContext.ContractField.AddAsync(contractField1, ct);
+
             // Create hourly slots for the entire day for all resources
             var today = DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
             var resources = new[] { resource1, resource2, resource3, resource4 };
@@ -58,7 +77,9 @@ public static class SeedDbContext
                 {
                     var startTime = today.AddHours(hour);
                     var endTime = startTime.AddHours(1);
-                    await dbContext.Slot.AddAsync(new Slot { StartDatetime = startTime, EndDatetime = endTime, Resource = resource, Facility = resource.Facility }, ct);
+                    var id = Guid.CreateVersion7();
+                    await dbContext.Slot.AddAsync(new Slot { Id = id, StartDatetime = startTime, EndDatetime = endTime, Resource = resource, Facility = resource.Facility, Price = 150 }, ct);
+                    await dbContext.SlotContract.AddAsync(new SlotContract { Contract = contract2, Price = 100, SlotId = id, Validation = validation1 }, ct);
                 }
             }
 

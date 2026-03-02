@@ -30,9 +30,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IHttpContextAc
 
     // Contract Entities
     public DbSet<Contract> Contract { get; set; }
-    public DbSet<ContractConfig> ContractConfig { get; set; }
+    public DbSet<ContractField> ContractField { get; set; }
     public DbSet<ContractOutlet> ContractOutlet { get; set; }
-    public DbSet<ContractContractConfig> ContractContractConfig { get; set; }
+    public DbSet<ContractFieldConfig> ContractFieldConfig { get; set; }
 
     // Booking Entities
     public DbSet<BookingStatus> BookingStatus { get; set; }

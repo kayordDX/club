@@ -3,7 +3,6 @@
 		Card,
 		Button,
 		Badge,
-		Table,
 		Avatar,
 		Separator,
 		Breadcrumb,
@@ -11,15 +10,7 @@
 		ButtonGroup,
 	} from "@kayord/ui";
 	import { Calendar } from "@kayord/ui/calendar";
-	import {
-		CalendarDays,
-		Clock,
-		CircleXIcon,
-		CircleCheckIcon,
-		CalendarIcon,
-		ChevronRightIcon,
-		ChevronLeftIcon,
-	} from "@lucide/svelte";
+	import { CalendarDays, CalendarIcon, ChevronRightIcon, ChevronLeftIcon } from "@lucide/svelte";
 	import Times from "./Times.svelte";
 	import { today, getLocalTimeZone, DateFormatter, type DateValue } from "@internationalized/date";
 	import Rules from "./Rules.svelte";
@@ -45,18 +36,6 @@
 			email: "info@greenvalleyclub.com",
 		},
 	};
-
-	// Inlined booking slots
-	const slots = [
-		{ id: 1, type: "Golf", time: "08:00 - 09:30", available: true },
-		{ id: 2, type: "Golf", time: "10:00 - 11:30", available: false },
-		{ id: 3, type: "Golf", time: "12:00 - 13:30", available: true },
-		{ id: 4, type: "Paddle", time: "09:00 - 10:00", available: true },
-		{ id: 5, type: "Paddle", time: "11:00 - 12:00", available: false },
-		{ id: 6, type: "Paddle", time: "13:00 - 14:00", available: true },
-	];
-
-	let selectedDate = $state(today(getLocalTimeZone()).add({ days: 5 }));
 
 	const query = createOutletGet(() => page.params.slug ?? "");
 	const outlet = $derived(query.data);
@@ -134,36 +113,6 @@
 					</Popover.Root>
 				</div>
 				<Slots slots={slotsData} />
-				<Table.Root>
-					<Table.Header>
-						<Table.Row>
-							<Table.Head>Type</Table.Head>
-							<Table.Head>Time</Table.Head>
-							<Table.Head>Status</Table.Head>
-							<Table.Head></Table.Head>
-						</Table.Row>
-					</Table.Header>
-					<Table.Body>
-						{#each slots as slot (slot)}
-							<Table.Row>
-								<Table.Cell>{slot.type}</Table.Cell>
-								<Table.Cell><Clock class="mr-1 inline h-4 w-4" /> {slot.time}</Table.Cell>
-								<Table.Cell>
-									{#if slot.available}
-										<Badge><CircleCheckIcon class="inline h-4 w-4" /> Available</Badge>
-									{:else}
-										<Badge variant="destructive"
-											><CircleXIcon class="inline h-4 w-4" /> Booked</Badge
-										>
-									{/if}
-								</Table.Cell>
-								<Table.Cell>
-									<Button disabled={!slot.available} onclick={() => console.log(slot)}>Book</Button>
-								</Table.Cell>
-							</Table.Row>
-						{/each}
-					</Table.Body>
-				</Table.Root>
 			</div>
 			<div class="flex flex-col gap-2">
 				<Card.Root class="p-2">

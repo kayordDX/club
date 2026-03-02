@@ -10,6 +10,7 @@ public class Slot : AuditableEntity
     public required DateTime StartDatetime { get; set; }
     public required DateTime EndDatetime { get; set; }
     public Guid GroupId { get; set; }
+    public decimal Price { get; set; }
     public ICollection<SlotBooking> SlotBookings { get; set; } = [];
     public ICollection<SlotContract> SlotContracts { get; set; } = [];
     public ICollection<ExtraBooking> ExtraBookings { get; set; } = [];

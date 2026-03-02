@@ -1,8 +1,8 @@
-using Online.Features.Slot.Get;
 using Online.Entities;
 using Online.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Online.Features.Slot.GetAll;
 
 namespace IntegrationTests.Features.Slot;
 
@@ -14,14 +14,14 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
     {
         // Arrange
         var today = DateTime.UtcNow.Date;
-        var request = new Request
+        var request = new SlotGetAllRequest
         {
             FacilityId = 999, // Non-existent facility
             Date = new DateTime(today.Year, today.Month, today.Day, 0, 0, 0, DateTimeKind.Utc)
         };
 
         // Act
-        var (rsp, result) = await app.Client.GETAsync<Endpoint, Request, List<Response>>(request);
+        var (rsp, result) = await app.Client.GETAsync<Endpoint, SlotGetAllRequest, List<SlotGetAllResponse>>(request);
 
         // Assert
         rsp.IsSuccessStatusCode.ShouldBeTrue();
@@ -56,7 +56,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
         var slotStartTime = new DateTime(today.Year, today.Month, today.Day, 10, 0, 0, DateTimeKind.Utc);
         var slotEndTime = slotStartTime.AddHours(1);
 
-        var request = new Request
+        var request = new SlotGetAllRequest
         {
             FacilityId = facility.Id,
             Date = new DateTime(today.Year, today.Month, today.Day, 0, 0, 0, DateTimeKind.Utc)
@@ -76,7 +76,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
 
 
         // Act
-        var (rsp, result) = await app.Client.GETAsync<Endpoint, Request, List<Response>>(request);
+        var (rsp, result) = await app.Client.GETAsync<Endpoint, SlotGetAllRequest, List<SlotGetAllResponse>>(request);
 
         // Assert
         rsp.IsSuccessStatusCode.ShouldBeTrue();
@@ -135,14 +135,14 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
         db.Slot.AddRange(slotToday, slotTomorrow);
         await db.SaveChangesAsync();
 
-        var requestToday = new Request
+        var requestToday = new SlotGetAllRequest
         {
             FacilityId = facility.Id,
             Date = new DateTime(today.Year, today.Month, today.Day, 0, 0, 0, DateTimeKind.Utc)
         };
 
         // Act - Query for today's slots
-        var (rspToday, resultToday) = await app.Client.GETAsync<Endpoint, Request, List<Response>>(requestToday);
+        var (rspToday, resultToday) = await app.Client.GETAsync<Endpoint, SlotGetAllRequest, List<SlotGetAllResponse>>(requestToday);
 
         // Assert
         rspToday.IsSuccessStatusCode.ShouldBeTrue();
@@ -150,12 +150,12 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
         resultToday.First().Id.ShouldBe(slotToday.Id);
 
         // Act - Query for tomorrow's slots
-        var requestTomorrow = new Request
+        var requestTomorrow = new SlotGetAllRequest
         {
             FacilityId = facility.Id,
             Date = new DateTime(tomorrow.Year, tomorrow.Month, tomorrow.Day, 0, 0, 0, DateTimeKind.Utc)
         };
-        var (rspTomorrow, resultTomorrow) = await app.Client.GETAsync<Endpoint, Request, List<Response>>(requestTomorrow);
+        var (rspTomorrow, resultTomorrow) = await app.Client.GETAsync<Endpoint, SlotGetAllRequest, List<SlotGetAllResponse>>(requestTomorrow);
 
         // Assert
         rspTomorrow.IsSuccessStatusCode.ShouldBeTrue();
@@ -217,14 +217,14 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
         db.Slot.AddRange(slot1, slot2, slot3);
         await db.SaveChangesAsync();
 
-        var request = new Request
+        var request = new SlotGetAllRequest
         {
             FacilityId = facility.Id,
             Date = new DateTime(today.Year, today.Month, today.Day, 0, 0, 0, DateTimeKind.Utc)
         };
 
         // Act
-        var (rsp, result) = await app.Client.GETAsync<Endpoint, Request, List<Response>>(request);
+        var (rsp, result) = await app.Client.GETAsync<Endpoint, SlotGetAllRequest, List<SlotGetAllResponse>>(request);
 
         // Assert
         rsp.IsSuccessStatusCode.ShouldBeTrue();
@@ -278,14 +278,14 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
         db.Slot.Add(slot);
         await db.SaveChangesAsync();
 
-        var request = new Request
+        var request = new SlotGetAllRequest
         {
             FacilityId = facility.Id,
             Date = new DateTime(today.Year, today.Month, today.Day, 0, 0, 0, DateTimeKind.Utc)
         };
 
         // Act
-        var (rsp, result) = await app.Client.GETAsync<Endpoint, Request, List<Response>>(request);
+        var (rsp, result) = await app.Client.GETAsync<Endpoint, SlotGetAllRequest, List<SlotGetAllResponse>>(request);
 
         // Assert
         rsp.IsSuccessStatusCode.ShouldBeTrue();
@@ -300,14 +300,14 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
     {
         // Arrange
         var today = DateTime.UtcNow.Date;
-        var request = new Request
+        var request = new SlotGetAllRequest
         {
             FacilityId = 999999, // Non-existent facility ID
             Date = new DateTime(today.Year, today.Month, today.Day, 0, 0, 0, DateTimeKind.Utc)
         };
 
         // Act
-        var (rsp, result) = await app.Client.GETAsync<Endpoint, Request, List<Response>>(request);
+        var (rsp, result) = await app.Client.GETAsync<Endpoint, SlotGetAllRequest, List<SlotGetAllResponse>>(request);
 
         // Assert
         rsp.IsSuccessStatusCode.ShouldBeTrue();
@@ -369,14 +369,14 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
         db.Slot.AddRange(slot1, slot2);
         await db.SaveChangesAsync();
 
-        var request = new Request
+        var request = new SlotGetAllRequest
         {
             FacilityId = facility1.Id,
             Date = new DateTime(today.Year, today.Month, today.Day, 0, 0, 0, DateTimeKind.Utc)
         };
 
         // Act
-        var (rsp, result) = await app.Client.GETAsync<Endpoint, Request, List<Response>>(request);
+        var (rsp, result) = await app.Client.GETAsync<Endpoint, SlotGetAllRequest, List<SlotGetAllResponse>>(request);
 
         // Assert
         rsp.IsSuccessStatusCode.ShouldBeTrue();
