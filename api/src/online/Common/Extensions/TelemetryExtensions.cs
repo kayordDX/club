@@ -24,6 +24,8 @@ public static class TelemetryExtensions
             .WithMetrics(metrics => metrics
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
+                    .AddRuntimeInstrumentation()
+                    .AddProcessInstrumentation()
                     .AddNpgsqlInstrumentation())
             .WithTracing(tracing => tracing
                 .AddHttpClientInstrumentation()

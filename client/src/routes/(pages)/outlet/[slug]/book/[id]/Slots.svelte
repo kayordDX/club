@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { Button, StatusDot } from "@kayord/ui";
+	import { Button, Empty, StatusDot } from "@kayord/ui";
 	import { type SlotGetAllResponse } from "$lib/api";
 	import { Card } from "@kayord/ui";
-	import { ChevronRightIcon } from "@lucide/svelte";
+	import { ChevronRightIcon, TicketXIcon } from "@lucide/svelte";
 	type Props = {
 		slots: SlotGetAllResponse[];
 	};
@@ -19,6 +19,20 @@
 </script>
 
 <div class="flex flex-wrap gap-2">
+	{#if slots.length == 0}
+		<Empty.Root>
+			<Empty.Header>
+				<Empty.Media variant="icon">
+					<TicketXIcon />
+				</Empty.Media>
+				<Empty.Title>No Slots Available</Empty.Title>
+				<Empty.Description>
+					There are no slots available for your current selection
+				</Empty.Description>
+			</Empty.Header>
+			<Empty.Content></Empty.Content>
+		</Empty.Root>
+	{/if}
 	{#each slots as slot (slot)}
 		<Card.Root class="flex w-80 flex-row items-center gap-4 p-4">
 			<div class="flex flex-col gap-2">

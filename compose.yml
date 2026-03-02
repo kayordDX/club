@@ -35,7 +35,8 @@ services:
       - "6379:6379"
 
   aspire-dashboard:
-    image: mcr.microsoft.com/dotnet/aspire-dashboard:9.3
+    # image: mcr.microsoft.com/dotnet/aspire-dashboard:9.3
+    image: "mcr.microsoft.com/dotnet/nightly/aspire-dashboard:latest"
     environment:
       DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS: true
     ports:

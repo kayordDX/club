@@ -18,11 +18,11 @@ importers:
         specifier: ^3.11.0
         version: 3.11.0
       '@kayord/ui':
-        specifier: ^2.1.11
-        version: 2.1.11(6081c19b8844ad0c95f77b866a3422b4)
+        specifier: ^2.1.12
+        version: 2.1.12(9e329b00eb1cd5122666635f2381bf70)
       '@lucide/svelte':
-        specifier: ^0.575.0
-        version: 0.575.0(svelte@5.53.6)
+        specifier: ^0.576.0
+        version: 0.576.0(svelte@5.53.6)
       '@playwright/test':
         specifier: ^1.58.2
         version: 1.58.2
@@ -39,8 +39,8 @@ importers:
         specifier: ^4.2.1
         version: 4.2.1(vite@7.3.1(@types/node@25.0.1)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.2))
       '@tanstack/svelte-query':
-        specifier: ^6.0.18
-        version: 6.0.18(svelte@5.53.6)
+        specifier: ^6.1.0
+        version: 6.1.0(svelte@5.53.6)
       '@tanstack/table-core':
         specifier: ^8.21.3
         version: 8.21.3
@@ -572,8 +572,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@kayord/ui@2.1.11':
-    resolution: {integrity: sha512-dN53Dy5sCVurWqQXMwFGgRrxGx5cfYLVASJRou4/rCayePbp69kfFSpWLROyOw23b59frwAawB2CEDDQWq3tgQ==}
+  '@kayord/ui@2.1.12':
+    resolution: {integrity: sha512-iS61Kpso37kxGxrKkY6dgkvun6E4+qvbF5y4XpRwwznYYpXu5ovzjQXjGn8eTLoPP574yK37LJtiGJlBnt75+w==}
     peerDependencies:
       '@internationalized/date': ^3.10.0
       '@lucide/svelte': '>= 0.482.0 < 1.0.0'
@@ -622,8 +622,8 @@ packages:
   '@layerstack/utils@2.0.0-next.14':
     resolution: {integrity: sha512-1I2CS0Cwgs53W35qVg1eBdYhB/CiPvL3s0XE61b8jWkTHxgjBF65yYNgXjW74kv7WI7GsJcWMNBufPd0rnu9kA==}
 
-  '@lucide/svelte@0.575.0':
-    resolution: {integrity: sha512-FEFp/0McZwsjBqh1Dn8H+UBm1yHFQYk+utuVMFDw57155+wz2XMoc1pw027ylCPzs+bi14UEXYKbekFhuJKtnw==}
+  '@lucide/svelte@0.576.0':
+    resolution: {integrity: sha512-/xO9QPnPj5F5hvmPVdos+f9TeDQm0DntBdD7SpNPG9ZB7hOjzl8qUbfR6RsMik3yHvNlT4rUKE/ZMqzoBoiFDQ==}
     peerDependencies:
       svelte: ^5
 
@@ -1021,8 +1021,8 @@ packages:
   '@tanstack/query-core@5.90.20':
     resolution: {integrity: sha512-OMD2HLpNouXEfZJWcKeVKUgQ5n+n3A2JFmBaScpNDUqSrQSjiveC7dKMe53uJUg1nDG16ttFPz2xfilz6i2uVg==}
 
-  '@tanstack/svelte-query@6.0.18':
-    resolution: {integrity: sha512-iGS8osfrIVUW5pkV4Ig6pspNIMtiNjGnVTNJKDas0m/QaNDFFIKbgg74rCzcjwrTIvO38tMpzb4VUKklvAmjxw==}
+  '@tanstack/svelte-query@6.1.0':
+    resolution: {integrity: sha512-iKeMaBalk5NeRvp1Y2LgtG3j9HCeLcTEpfsyM+jL1wASnW/EYdCqyyotMKkOY4SNsnBpPDM5zrmstMn6tOzKFQ==}
     peerDependencies:
       svelte: ^5.25.0
 
@@ -3041,9 +3041,9 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@kayord/ui@2.1.11(6081c19b8844ad0c95f77b866a3422b4)':
+  '@kayord/ui@2.1.12(9e329b00eb1cd5122666635f2381bf70)':
     dependencies:
-      '@lucide/svelte': 0.575.0(svelte@5.53.6)
+      '@lucide/svelte': 0.576.0(svelte@5.53.6)
       bits-ui: 2.16.2(@internationalized/date@3.11.0)(@sveltejs/kit@2.53.4(@sveltejs/vite-plugin-svelte@6.2.4(svelte@5.53.6)(vite@7.3.1(@types/node@25.0.1)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.2)))(svelte@5.53.6)(typescript@5.9.3)(vite@7.3.1(@types/node@25.0.1)(jiti@2.6.1)(lightningcss@1.31.1)(yaml@2.8.2)))(svelte@5.53.6)
       clsx: 2.1.1
       mode-watcher: 1.1.0(svelte@5.53.6)
@@ -3090,7 +3090,7 @@ snapshots:
       d3-time-format: 4.1.0
       lodash-es: 4.17.21
 
-  '@lucide/svelte@0.575.0(svelte@5.53.6)':
+  '@lucide/svelte@0.576.0(svelte@5.53.6)':
     dependencies:
       svelte: 5.53.6
 
@@ -3482,7 +3482,7 @@ snapshots:
 
   '@tanstack/query-core@5.90.20': {}
 
-  '@tanstack/svelte-query@6.0.18(svelte@5.53.6)':
+  '@tanstack/svelte-query@6.1.0(svelte@5.53.6)':
     dependencies:
       '@tanstack/query-core': 5.90.20
       svelte: 5.53.6

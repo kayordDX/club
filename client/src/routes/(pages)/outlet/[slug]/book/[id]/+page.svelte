@@ -99,42 +99,40 @@
 
 		<div class="flex flex-col gap-2 md:flex-row">
 			<div class="flex w-full flex-col gap-2">
-				<Card.Root>
-					<Card.Header>
-						<Card.Title>Select Date</Card.Title>
-						<Card.Description>Pick a day</Card.Description>
-					</Card.Header>
-					<Card.Content>
-						<Popover.Root>
-							<Popover.Trigger>
-								{#snippet child({ props })}
-									<ButtonGroup.Root class="hidden sm:flex">
-										<Button size="icon" variant="outline" onclick={() => incrementDate(-1)}>
-											<ChevronLeftIcon />
-										</Button>
-										<Button
-											variant="outline"
-											class={cn(
-												"w-70 justify-start text-start font-normal",
-												!value && "text-muted-foreground"
-											)}
-											{...props}
-										>
-											<CalendarIcon class="me-2 size-4" />
-											{value ? df.format(value.toDate(getLocalTimeZone())) : "Select a date"}
-										</Button>
-										<Button size="icon" variant="outline" onclick={() => incrementDate(1)}>
-											<ChevronRightIcon />
-										</Button>
-									</ButtonGroup.Root>
-								{/snippet}
-							</Popover.Trigger>
-							<Popover.Content class="w-auto p-0">
-								<Calendar bind:value type="single" initialFocus captionLayout="dropdown" />
-							</Popover.Content>
-						</Popover.Root>
-					</Card.Content>
-				</Card.Root>
+				<div class="flex flex-row gap-4 p-4">
+					<div>
+						<div class="font-bold">Select Date</div>
+						<div class="text-muted-foreground text-xs">Pick a day</div>
+					</div>
+					<Popover.Root>
+						<Popover.Trigger>
+							{#snippet child({ props })}
+								<ButtonGroup.Root class="hidden sm:flex">
+									<Button size="icon" variant="outline" onclick={() => incrementDate(-1)}>
+										<ChevronLeftIcon />
+									</Button>
+									<Button
+										variant="outline"
+										class={cn(
+											"w-70 justify-start text-start font-normal",
+											!value && "text-muted-foreground"
+										)}
+										{...props}
+									>
+										<CalendarIcon class="me-2 size-4" />
+										{value ? df.format(value.toDate(getLocalTimeZone())) : "Select a date"}
+									</Button>
+									<Button size="icon" variant="outline" onclick={() => incrementDate(1)}>
+										<ChevronRightIcon />
+									</Button>
+								</ButtonGroup.Root>
+							{/snippet}
+						</Popover.Trigger>
+						<Popover.Content class="w-auto p-0">
+							<Calendar bind:value type="single" initialFocus captionLayout="dropdown" />
+						</Popover.Content>
+					</Popover.Root>
+				</div>
 				<Slots slots={slotsData} />
 				<Table.Root>
 					<Table.Header>
