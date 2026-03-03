@@ -37,17 +37,20 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List
             .OrderBy(s => s.StartDatetime)
             .ToListAsync(ct);
 
-        var slotResponses = slots.Select(slot => new SlotGetAllResponse
-        {
-            Id = slot.Id,
-            FacilityId = slot.FacilityId,
-            ResourceId = slot.ResourceId,
-            ResourceName = slot.Resource?.Name,
-            StartDatetime = DateTime.SpecifyKind(slot.StartDatetime, DateTimeKind.Utc),
-            EndDatetime = slot.EndDatetime,
-            AvailableSpots = CalculateAvailableSpots(slot),
-            TotalSpots = slot.SlotBookings?.Count ?? 0,
-        }).ToList();
+        var slotResponses = slots
+            .GroupBy(s => s.GroupId ?? s.Id)
+            .Select(group => new SlotGetAllResponse
+            {
+                Id = group.Key,
+                IsGroup = group.First().GroupId.HasValue,
+                FacilityId = group.First().FacilityId,
+                ResourceId = group.First().ResourceId,
+                ResourceName = group.First().Resource?.Name,
+                StartDatetime = DateTime.SpecifyKind(group.First().StartDatetime, DateTimeKind.Utc),
+                EndDatetime = group.First().EndDatetime,
+                AvailableSpots = group.Sum(s => CalculateAvailableSpots(s)),
+                TotalSpots = group.Sum(s => s.SlotBookings?.Count ?? 0),
+            }).ToList();
 
         await Send.OkAsync(slotResponses, ct);
     }
