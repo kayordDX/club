@@ -800,7 +800,8 @@
           "endDatetime",
           "groupId",
           "availableSpots",
-          "totalSpots"
+          "totalSpots",
+          "price"
         ],
         "properties": {
           "id": {
@@ -840,6 +841,10 @@
           "totalSpots": {
             "type": "integer",
             "format": "int32"
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal"
           }
         }
       },
@@ -1031,7 +1036,7 @@
           "name",
           "outlets",
           "contracts",
-          "contractConfigs"
+          "contractFields"
         ],
         "properties": {
           "created": {
@@ -1072,10 +1077,10 @@
               "$ref": "#/components/schemas/Contract"
             }
           },
-          "contractConfigs": {
+          "contractFields": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ContractConfig"
+              "$ref": "#/components/schemas/ContractField"
             }
           }
         }
@@ -1126,7 +1131,7 @@
           }
         }
       },
-      "ContractConfig": {
+      "ContractField": {
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -1135,7 +1140,7 @@
           "name",
           "businessId",
           "business",
-          "contractContractConfigs"
+          "contractFieldConfigs"
         ],
         "properties": {
           "created": {
@@ -1175,15 +1180,15 @@
           "business": {
             "$ref": "#/components/schemas/Business"
           },
-          "contractContractConfigs": {
+          "contractFieldConfigs": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ContractContractConfig"
+              "$ref": "#/components/schemas/ContractFieldConfig"
             }
           }
         }
       },
-      "ContractContractConfig": {
+      "ContractFieldConfig": {
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -1192,7 +1197,7 @@
           "contractId",
           "contract",
           "contractConfigId",
-          "contractConfig",
+          "contractField",
           "isActive"
         ],
         "properties": {
@@ -1230,8 +1235,8 @@
             "type": "integer",
             "format": "int32"
           },
-          "contractConfig": {
-            "$ref": "#/components/schemas/ContractConfig"
+          "contractField": {
+            "$ref": "#/components/schemas/ContractField"
           },
           "isActive": {
             "type": "boolean"
@@ -1438,6 +1443,7 @@
           "startDatetime",
           "endDatetime",
           "groupId",
+          "price",
           "slotBookings",
           "slotContracts",
           "extraBookings"
@@ -1503,6 +1509,10 @@
           "groupId": {
             "type": "string",
             "format": "guid"
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal"
           },
           "slotBookings": {
             "type": "array",
@@ -1612,9 +1622,7 @@
           "slot",
           "contractId",
           "contract",
-          "price",
-          "validationId",
-          "validation"
+          "price"
         ],
         "properties": {
           "created": {
@@ -1660,10 +1668,16 @@
           },
           "validationId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "validation": {
-            "$ref": "#/components/schemas/Validation"
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Validation"
+              }
+            ]
           }
         }
       },

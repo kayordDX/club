@@ -35,6 +35,7 @@ export interface SlotGetAllResponse {
 	groupId: string;
 	availableSpots: number;
 	totalSpots: number;
+	price: number;
 }
 
 /**
@@ -68,7 +69,7 @@ export interface Contract {
 	business: Business;
 }
 
-export interface ContractContractConfig {
+export interface ContractFieldConfig {
 	created: string;
 	/** @nullable */
 	createdBy?: string | null;
@@ -80,11 +81,11 @@ export interface ContractContractConfig {
 	contractId: number;
 	contract: Contract;
 	contractConfigId: number;
-	contractConfig: ContractConfig;
+	contractField: ContractField;
 	isActive: boolean;
 }
 
-export interface ContractConfig {
+export interface ContractField {
 	created: string;
 	/** @nullable */
 	createdBy?: string | null;
@@ -98,7 +99,7 @@ export interface ContractConfig {
 	fieldValidation?: string | null;
 	businessId: number;
 	business: Business;
-	contractContractConfigs: ContractContractConfig[];
+	contractFieldConfigs: ContractFieldConfig[];
 }
 
 export interface Business {
@@ -113,7 +114,7 @@ export interface Business {
 	name: string;
 	outlets: Outlet[];
 	contracts: Contract[];
-	contractConfigs: ContractConfig[];
+	contractFields: ContractField[];
 }
 
 export interface OutletType {
@@ -152,8 +153,9 @@ export interface SlotContract {
 	contractId: number;
 	contract: Contract;
 	price: number;
-	validationId: number;
-	validation: Validation;
+	/** @nullable */
+	validationId?: number | null;
+	validation?: Validation | null;
 }
 
 export interface BookingStatus {
@@ -338,6 +340,7 @@ export interface Slot {
 	startDatetime: string;
 	endDatetime: string;
 	groupId: string;
+	price: number;
 	slotBookings: SlotBooking[];
 	slotContracts: SlotContract[];
 	extraBookings: ExtraBooking[];

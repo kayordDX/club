@@ -8,8 +8,8 @@ public class Slot : AuditableEntity
     public int? FacilityId { get; set; }
     public Facility? Facility { get; set; }
     public required DateTime StartDatetime { get; set; }
-    public required DateTime EndDatetime { get; set; }
-    public Guid GroupId { get; set; }
+    public DateTime? EndDatetime { get; set; }
+    public Guid? GroupId { get; set; }
     public decimal Price { get; set; }
     public ICollection<SlotBooking> SlotBookings { get; set; } = [];
     public ICollection<SlotContract> SlotContracts { get; set; } = [];

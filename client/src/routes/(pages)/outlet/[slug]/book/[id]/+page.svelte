@@ -52,7 +52,10 @@
 		value = value.add({ days: incrementValue });
 	};
 
-	const slotsQuery = createSlotGetAll(() => ({ facilityId: 1, date: value.toString() }));
+	const slotsQuery = createSlotGetAll(() => ({
+		facilityId: Number(page.params.id),
+		date: value.toString(),
+	}));
 	const slotsData = $derived(slotsQuery.data ?? []);
 </script>
 

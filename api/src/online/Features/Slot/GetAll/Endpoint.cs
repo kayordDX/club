@@ -44,8 +44,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List
             ResourceId = slot.ResourceId,
             ResourceName = slot.Resource?.Name,
             StartDatetime = DateTime.SpecifyKind(slot.StartDatetime, DateTimeKind.Utc),
-            EndDatetime = DateTime.SpecifyKind(slot.EndDatetime, DateTimeKind.Utc),
-            GroupId = slot.GroupId,
+            EndDatetime = slot.EndDatetime,
             AvailableSpots = CalculateAvailableSpots(slot),
             TotalSpots = slot.SlotBookings?.Count ?? 0,
         }).ToList();

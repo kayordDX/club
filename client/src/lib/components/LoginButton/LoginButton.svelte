@@ -4,7 +4,7 @@
 	import { user } from "$lib/stores/user.svelte";
 	import { page } from "$app/state";
 
-	const redirect = $derived(`${PUBLIC_APP_URL}${page.url.searchParams.get("redirect")}`);
+	const redirect = $derived(`${PUBLIC_APP_URL}${page.url.searchParams.get("redirect") ?? ""}`);
 
 	const handleLoginWithGoogle = () => {
 		isLoading = true;

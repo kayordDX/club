@@ -40,8 +40,8 @@ public static class SeedDbContext
             var facility1 = new Facility { Name = "Ruimsig Golf Course", IsActive = true, OutletId = 1, FacilityType = facilityTypeGolf, Outlet = outlet };
             var facility2 = new Facility { Name = "Ruimsig Paddle Court", IsActive = true, OutletId = 1, FacilityType = facilityTypePaddle, Outlet = outlet };
 
-            var resource1 = new Resource { Name = "Morning Field", Facility = facility1 };
-            var resource2 = new Resource { Name = "Afternoon Field", Facility = facility1 };
+            var resource1 = new Resource { Name = "1st", Facility = facility1 };
+            var resource2 = new Resource { Name = "10th", Facility = facility1 };
             var resource3 = new Resource { Name = "Court 1", Facility = facility2 };
             var resource4 = new Resource { Name = "Court 2", Facility = facility2 };
 
@@ -73,13 +73,28 @@ public static class SeedDbContext
 
             foreach (var resource in resources)
             {
-                for (int hour = 0; hour < 24; hour++)
+                for (int hour = 8; hour < 11; hour++)
                 {
                     var startTime = today.AddHours(hour);
                     var endTime = startTime.AddHours(1);
-                    var id = Guid.CreateVersion7();
-                    await dbContext.Slot.AddAsync(new Slot { Id = id, StartDatetime = startTime, EndDatetime = endTime, Resource = resource, Facility = resource.Facility, Price = 150 }, ct);
-                    await dbContext.SlotContract.AddAsync(new SlotContract { Contract = contract2, Price = 100, SlotId = id, Validation = validation1 }, ct);
+
+                    if (resource.Name == "1st" || resource.Name == "10th")
+                    {
+                        var groupId = Guid.CreateVersion7();
+                        // Loop 4 times
+                        for (int i = 0; i < 4; i++)
+                        {
+                            var id = Guid.CreateVersion7();
+                            await dbContext.Slot.AddAsync(new Slot { Id = id, StartDatetime = startTime, EndDatetime = endTime, Resource = resource, Facility = resource.Facility, Price = 150, GroupId = groupId }, ct);
+                            await dbContext.SlotContract.AddAsync(new SlotContract { Contract = contract1, Price = 100, SlotId = id, Validation = validation2 }, ct);
+                        }
+                    }
+                    else
+                    {
+                        var id = Guid.CreateVersion7();
+                        await dbContext.Slot.AddAsync(new Slot { Id = id, StartDatetime = startTime, EndDatetime = endTime, Resource = resource, Facility = resource.Facility, Price = 150 }, ct);
+                        await dbContext.SlotContract.AddAsync(new SlotContract { Contract = contract2, Price = 100, SlotId = id, Validation = validation1 }, ct);
+                    }
                 }
             }
 

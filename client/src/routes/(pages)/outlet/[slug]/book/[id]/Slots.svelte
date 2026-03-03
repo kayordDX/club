@@ -18,7 +18,7 @@
 	};
 </script>
 
-<div class="grid grid-cols-[repeat(auto-fit,minmax(22rem,1fr))] place-items-center gap-2">
+<div class="grid grid-cols-1 place-items-center gap-2">
 	{#if slots.length == 0}
 		<Empty.Root>
 			<Empty.Header>
@@ -34,18 +34,20 @@
 		</Empty.Root>
 	{/if}
 	{#each slots as slot (slot)}
-		<Card.Root class="flex flex-row items-center gap-4 p-4">
+		<Card.Root class="flex w-full flex-row items-center gap-6 p-4">
 			<div class="flex flex-col gap-2">
-				<div class="text-muted-foreground text-xs">Tee</div>
-				<div class="font-bold">1st</div>
+				<div class="text-muted-foreground text-xs">Resource</div>
+				<div class="font-bold">
+					{slot.resourceName}
+				</div>
 			</div>
 			<div class="flex flex-col gap-2">
-				<div class="text-muted-foreground text-xs">Start</div>
-				<div class="font-bold">{formatTime(slot.startDatetime)}</div>
-			</div>
-			<div class="flex flex-col gap-2">
-				<div class="text-muted-foreground text-xs">End</div>
-				<div class="font-bold">{formatTime(slot.endDatetime)}</div>
+				<div class="text-muted-foreground text-xs">Time</div>
+				<div class="font-bold">
+					{formatTime(slot.startDatetime)}
+					<span class="text-muted-foreground">-</span>
+					{formatTime(slot.endDatetime)}
+				</div>
 			</div>
 			<div class="flex flex-col gap-2">
 				<div class="text-muted-foreground text-xs">Price</div>
@@ -56,8 +58,8 @@
 								<CircleQuestionMark class="text-primary size-3" />
 							</button>
 						</Popover.Trigger>
-						<Popover.Content>
-							<Table.Root>
+						<Popover.Content class="p-0">
+							<Table.Root class="rounded-md">
 								<Table.Header>
 									<Table.Row>
 										<Table.Head>Type</Table.Head>
@@ -66,32 +68,32 @@
 								</Table.Header>
 								<Table.Body>
 									<Table.Row>
-										<Table.Cell>Member</Table.Cell>
-										<Table.Cell>R100.00</Table.Cell>
+										<Table.Cell>Price</Table.Cell>
+										<Table.Cell>R{slot.price.toFixed(2)}</Table.Cell>
 									</Table.Row>
 									<Table.Row>
-										<Table.Cell>Non-Member</Table.Cell>
-										<Table.Cell>R150.00</Table.Cell>
+										<Table.Cell>Member</Table.Cell>
+										<Table.Cell>R100.00</Table.Cell>
 									</Table.Row>
 								</Table.Body>
 							</Table.Root>
 						</Popover.Content>
 					</Popover.Root>
-					R100.00
+					R{slot.price.toFixed(2)}
 				</div>
 			</div>
 			<div class="flex flex-col justify-center gap-2">
 				<div class="text-muted-foreground text-xs">Slots</div>
 				<div class="flex items-center gap-1">
-					<StatusDot.Root variant="success" />
+					<StatusDot.Root variant="error" />
 					<StatusDot.Root variant="success" />
 					<StatusDot.Root variant="success" />
 					<StatusDot.Root variant="success" />
 				</div>
 			</div>
 			<div class="flex flex-col gap-2">
-				<Button size="icon" variant="outline">
-					<ChevronRightIcon />
+				<Button variant="outline">
+					<ChevronRightIcon /> Book
 				</Button>
 			</div>
 		</Card.Root>
