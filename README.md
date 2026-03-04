@@ -80,3 +80,10 @@ architecture-beta
 - [ ] Extra Equipment Agreement
 - [ ] Notification Email/SMS
 - [ ] Payments - Account per club or 1 account managed by Aviate - Create accounts. Link accounts to club or multiple clubs.
+
+### Planning
+
+- [ ] Playing 9 holes is just a contract with different price?
+- [ ] Should we make some slots only available to members?
+- [ ] Do we need options for 9 holes instead. Then we can have contract on options as well to have different prices.
+- [ ] Do we need events as concept?
