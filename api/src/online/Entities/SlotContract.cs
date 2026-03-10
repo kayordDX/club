@@ -10,4 +10,6 @@ public class SlotContract : AuditableEntity
     public decimal Price { get; set; }
     public int? ValidationId { get; set; }
     public Validation? Validation { get; set; }
+    public bool CanPayLater { get; set; }
+    public string? Description { get; set; }
 }

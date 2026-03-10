@@ -83,7 +83,8 @@ architecture-beta
 
 ### Planning
 
-- [ ] Playing 9 holes is just a contract with different price?
-- [ ] Should we make some slots only available to members?
-- [ ] Do we need options for 9 holes instead. Then we can have contract on options as well to have different prices.
-- [ ] Do we need events as concept?
+- [ ] What do we do with 9 holes?
+- [ ] Some slots only available to members
+- [ ] Do we need events as a different concept?
+- [ ] Pay later option
+- [ ] Only member option
