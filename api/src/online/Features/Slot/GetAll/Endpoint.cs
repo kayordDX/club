@@ -28,16 +28,36 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List
         var dateStart = new DateTime(dateUtc.Year, dateUtc.Month, dateUtc.Day, 0, 0, 0, DateTimeKind.Utc);
         var dateEnd = dateStart.AddDays(1);
 
-        var slots = await _dbContext.Slot
+        var slotResponses = await _dbContext.Slot
             .Where(s => s.FacilityId == req.FacilityId &&
                         s.StartDatetime >= dateStart &&
                         s.StartDatetime < dateEnd)
-            .Include(s => s.Resource)
-            .Include(s => s.SlotBookings)
             .OrderBy(s => s.StartDatetime)
+            .Select(s => new
+            {
+                s.Id,
+                s.GroupId,
+                s.FacilityId,
+                s.ResourceId,
+                s.StartDatetime,
+                s.EndDatetime,
+                Resource = s.Resource,
+                SlotContracts = s.SlotContracts.Select(sc => new
+                {
+                    sc.Id,
+                    sc.ContractId,
+                    sc.Contract.Name,
+                    sc.Price,
+                    sc.ValidationId,
+                    sc.Validation,
+                    sc.CanPayLater,
+                    sc.Description
+                }).ToList(),
+                SlotBookingsCount = s.SlotBookings.Count
+            })
             .ToListAsync(ct);
 
-        var slotResponses = slots
+        var result = slotResponses
             .GroupBy(s => s.GroupId ?? s.Id)
             .Select(group => new SlotGetAllResponse
             {
@@ -48,11 +68,23 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List
                 ResourceName = group.First().Resource?.Name,
                 StartDatetime = DateTime.SpecifyKind(group.First().StartDatetime, DateTimeKind.Utc),
                 EndDatetime = group.First().EndDatetime,
-                AvailableSpots = group.Sum(s => CalculateAvailableSpots(s)),
-                TotalSpots = group.Sum(s => s.SlotBookings?.Count ?? 0),
+                AvailableSpots = group.Sum(g => g.SlotBookingsCount),
+                TotalSpots = group.Sum(g => g.SlotBookingsCount),
+                SlotContracts = [.. group.SelectMany(g => g.SlotContracts)
+                    .Select(sc => new SlotContractResponse
+                    {
+                        Id = sc.Id,
+                        ContractId = sc.ContractId,
+                        ContractName = sc.Name,
+                        Price = sc.Price,
+                        ValidationId = sc.ValidationId,
+                        Validation = sc.Validation,
+                        CanPayLater = sc.CanPayLater,
+                        Description = sc.Description
+                    })]
             }).ToList();
 
-        await Send.OkAsync(slotResponses, ct);
+        await Send.OkAsync(result, ct);
     }
 
     private static int CalculateAvailableSpots(Entities.Slot slot)

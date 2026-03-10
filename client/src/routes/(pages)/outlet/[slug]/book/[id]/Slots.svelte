@@ -9,7 +9,8 @@
 
 	let { slots }: Props = $props();
 
-	const formatTime = (datetime: string) => {
+	const formatTime = (datetime?: string | undefined | null) => {
+		if (!datetime) return "";
 		return new Date(datetime).toLocaleTimeString("en-US", {
 			hour: "2-digit",
 			minute: "2-digit",
@@ -67,14 +68,12 @@
 									</Table.Row>
 								</Table.Header>
 								<Table.Body>
-									<Table.Row>
-										<Table.Cell>Price</Table.Cell>
-										<Table.Cell>R{slot.price.toFixed(2)}</Table.Cell>
-									</Table.Row>
-									<Table.Row>
-										<Table.Cell>Member</Table.Cell>
-										<Table.Cell>R100.00</Table.Cell>
-									</Table.Row>
+									{#each slot.slotContracts as contract (contract.id)}
+										<Table.Row>
+											<Table.Cell>{contract.contractName} ({contract.description})</Table.Cell>
+											<Table.Cell>R{contract.price.toFixed(2)}</Table.Cell>
+										</Table.Row>
+									{/each}
 								</Table.Body>
 							</Table.Root>
 						</Popover.Content>

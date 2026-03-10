@@ -1,3 +1,5 @@
+using Online.Entities;
+
 namespace Online.Features.Slot.GetAll;
 
 public class SlotGetAllResponse
@@ -12,4 +14,17 @@ public class SlotGetAllResponse
     public int AvailableSpots { get; set; }
     public int TotalSpots { get; set; }
     public decimal Price { get; set; }
+    public List<SlotContractResponse> SlotContracts { get; set; } = [];
+}
+
+public class SlotContractResponse
+{
+    public int Id { get; set; }
+    public int ContractId { get; set; }
+    public string ContractName { get; set; } = string.Empty;
+    public decimal Price { get; set; }
+    public int? ValidationId { get; set; }
+    public Validation? Validation { get; set; }
+    public bool CanPayLater { get; set; }
+    public string? Description { get; set; }
 }

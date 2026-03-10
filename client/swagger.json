@@ -796,17 +796,20 @@
         "additionalProperties": false,
         "required": [
           "id",
+          "isGroup",
           "startDatetime",
-          "endDatetime",
-          "groupId",
           "availableSpots",
           "totalSpots",
-          "price"
+          "price",
+          "slotContracts"
         ],
         "properties": {
           "id": {
             "type": "string",
             "format": "guid"
+          },
+          "isGroup": {
+            "type": "boolean"
           },
           "facilityId": {
             "type": "integer",
@@ -828,11 +831,8 @@
           },
           "endDatetime": {
             "type": "string",
-            "format": "date-time"
-          },
-          "groupId": {
-            "type": "string",
-            "format": "guid"
+            "format": "date-time",
+            "nullable": true
           },
           "availableSpots": {
             "type": "integer",
@@ -845,6 +845,12 @@
           "price": {
             "type": "number",
             "format": "decimal"
+          },
+          "slotContracts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SlotContractResponse"
+            }
           }
         }
       },
@@ -878,6 +884,71 @@
                 "type": "string"
               }
             }
+          }
+        }
+      },
+      "SlotContractResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "contractId",
+          "contractName",
+          "price",
+          "canPayLater"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "contractId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "contractName": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "validationId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "validation": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Validation"
+              }
+            ]
+          },
+          "canPayLater": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Validation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
           }
         }
       },
@@ -1441,9 +1512,6 @@
           "created",
           "id",
           "startDatetime",
-          "endDatetime",
-          "groupId",
-          "price",
           "slotBookings",
           "slotContracts",
           "extraBookings"
@@ -1504,15 +1572,13 @@
           },
           "endDatetime": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           },
           "groupId": {
             "type": "string",
-            "format": "guid"
-          },
-          "price": {
-            "type": "number",
-            "format": "decimal"
+            "format": "guid",
+            "nullable": true
           },
           "slotBookings": {
             "type": "array",
@@ -1622,7 +1688,8 @@
           "slot",
           "contractId",
           "contract",
-          "price"
+          "price",
+          "canPayLater"
         ],
         "properties": {
           "created": {
@@ -1678,23 +1745,13 @@
                 "$ref": "#/components/schemas/Validation"
               }
             ]
-          }
-        }
-      },
-      "Validation": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "id",
-          "name"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
           },
-          "name": {
-            "type": "string"
+          "canPayLater": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
           }
         }
       },

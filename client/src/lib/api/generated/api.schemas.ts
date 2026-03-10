@@ -22,8 +22,27 @@ export interface TestResponse {
 	success: boolean;
 }
 
+export interface Validation {
+	id: number;
+	name: string;
+}
+
+export interface SlotContractResponse {
+	id: number;
+	contractId: number;
+	contractName: string;
+	price: number;
+	/** @nullable */
+	validationId?: number | null;
+	validation?: Validation | null;
+	canPayLater: boolean;
+	/** @nullable */
+	description?: string | null;
+}
+
 export interface SlotGetAllResponse {
 	id: string;
+	isGroup: boolean;
 	/** @nullable */
 	facilityId?: number | null;
 	/** @nullable */
@@ -31,11 +50,12 @@ export interface SlotGetAllResponse {
 	/** @nullable */
 	resourceName?: string | null;
 	startDatetime: string;
-	endDatetime: string;
-	groupId: string;
+	/** @nullable */
+	endDatetime?: string | null;
 	availableSpots: number;
 	totalSpots: number;
 	price: number;
+	slotContracts: SlotContractResponse[];
 }
 
 /**
@@ -134,11 +154,6 @@ export interface FacilityType {
 	name: string;
 }
 
-export interface Validation {
-	id: number;
-	name: string;
-}
-
 export interface SlotContract {
 	created: string;
 	/** @nullable */
@@ -156,6 +171,9 @@ export interface SlotContract {
 	/** @nullable */
 	validationId?: number | null;
 	validation?: Validation | null;
+	canPayLater: boolean;
+	/** @nullable */
+	description?: string | null;
 }
 
 export interface BookingStatus {
@@ -338,9 +356,10 @@ export interface Slot {
 	facilityId?: number | null;
 	facility?: Facility | null;
 	startDatetime: string;
-	endDatetime: string;
-	groupId: string;
-	price: number;
+	/** @nullable */
+	endDatetime?: string | null;
+	/** @nullable */
+	groupId?: string | null;
 	slotBookings: SlotBooking[];
 	slotContracts: SlotContract[];
 	extraBookings: ExtraBooking[];
