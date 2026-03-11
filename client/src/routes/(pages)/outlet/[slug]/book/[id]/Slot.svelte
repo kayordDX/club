@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button, Input, Popover, StatusDot, Table } from "@kayord/ui";
-	import { type SlotGetAllResponse } from "$lib/api";
+	import { type SlotGetAllResponse, createSlotGetContracts } from "$lib/api";
 	import { Card } from "@kayord/ui";
 	import { ChevronRightIcon, CircleQuestionMark, MinusIcon, PlusIcon } from "@lucide/svelte";
 	type Props = {
@@ -8,6 +8,14 @@
 	};
 
 	let { slot }: Props = $props();
+
+	let slotCount = $state(1);
+	let slotContractEnabled = $state(false);
+
+	const contractsQuery = createSlotGetContracts(
+		() => slot.id,
+		() => ({ query: { enabled: slotContractEnabled } })
+	);
 
 	const formatTime = (datetime?: string | undefined | null) => {
 		if (!datetime) return "";
@@ -17,8 +25,6 @@
 			hour12: false,
 		});
 	};
-
-	let slotCount = $state(1);
 </script>
 
 <Card.Root class="flex h-full w-full flex-row items-center gap-6 p-4">
@@ -80,7 +86,7 @@
 		</div>
 	{/if}
 	<div class="flex h-full flex-col justify-center gap-2">
-		<Popover.Root>
+		<Popover.Root bind:open={slotContractEnabled}>
 			<Popover.Trigger>
 				<button>
 					<CircleQuestionMark class="text-primary size-4" />
@@ -95,12 +101,12 @@
 						</Table.Row>
 					</Table.Header>
 					<Table.Body>
-						<!-- {#each slot.slotContracts as contract (contract.id)}
-										<Table.Row>
-											<Table.Cell>{contract.contractName} ({contract.description})</Table.Cell>
-											<Table.Cell>R{contract.price.toFixed(2)}</Table.Cell>
-										</Table.Row>
-									{/each} -->
+						{#each contractsQuery.data as contract (contract.id)}
+							<Table.Row>
+								<Table.Cell>{contract.contractName} ({contract.description})</Table.Cell>
+								<Table.Cell>R{contract.price.toFixed(2)}</Table.Cell>
+							</Table.Row>
+						{/each}
 					</Table.Body>
 				</Table.Root>
 			</Popover.Content>

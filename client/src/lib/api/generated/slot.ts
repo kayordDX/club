@@ -19,12 +19,81 @@ import type {
 	InternalErrorResponse,
 	SlotGetAllParams,
 	SlotGetAllResponse,
+	SlotGetContractsResponse,
 } from "./api.schemas";
 
 import { customInstance } from "../mutator/customInstance.svelte";
 import type { ErrorType } from "../mutator/customInstance.svelte";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
+export const getSlotGetContractsUrl = (id: string) => {
+	return `/slot/contracts/${id}`;
+};
+
+export const slotGetContracts = async (
+	id: string,
+	options?: RequestInit
+): Promise<SlotGetContractsResponse[]> => {
+	return customInstance<SlotGetContractsResponse[]>(getSlotGetContractsUrl(id), {
+		...options,
+		method: "GET",
+	});
+};
+
+export const getSlotGetContractsQueryKey = (id: string) => {
+	return [`/slot/contracts/${id}`] as const;
+};
+
+export const getSlotGetContractsQueryOptions = <
+	TData = Awaited<ReturnType<typeof slotGetContracts>>,
+	TError = ErrorType<ErrorResponse | InternalErrorResponse>,
+>(
+	id: string,
+	options?: {
+		query?: Partial<
+			CreateQueryOptions<Awaited<ReturnType<typeof slotGetContracts>>, TError, TData>
+		>;
+		request?: SecondParameter<typeof customInstance>;
+	}
+) => {
+	const { query: queryOptions, request: requestOptions } = options ?? {};
+
+	const queryKey = queryOptions?.queryKey ?? getSlotGetContractsQueryKey(id);
+
+	const queryFn: QueryFunction<Awaited<ReturnType<typeof slotGetContracts>>> = ({ signal }) =>
+		slotGetContracts(id, { signal, ...requestOptions });
+
+	return { queryKey, queryFn, enabled: !!id, ...queryOptions } as CreateQueryOptions<
+		Awaited<ReturnType<typeof slotGetContracts>>,
+		TError,
+		TData
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type SlotGetContractsQueryResult = NonNullable<Awaited<ReturnType<typeof slotGetContracts>>>;
+export type SlotGetContractsQueryError = ErrorType<ErrorResponse | InternalErrorResponse>;
+
+export function createSlotGetContracts<
+	TData = Awaited<ReturnType<typeof slotGetContracts>>,
+	TError = ErrorType<ErrorResponse | InternalErrorResponse>,
+>(
+	id: () => string,
+	options?: () => {
+		query?: Partial<
+			CreateQueryOptions<Awaited<ReturnType<typeof slotGetContracts>>, TError, TData>
+		>;
+		request?: SecondParameter<typeof customInstance>;
+	},
+	queryClient?: () => QueryClient
+): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+	const query = createQuery(
+		() => getSlotGetContractsQueryOptions(id(), options?.()),
+		queryClient
+	) as CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+	return query;
+}
 
 export const getSlotGetAllUrl = (params: SlotGetAllParams) => {
 	const normalizedParams = new URLSearchParams();

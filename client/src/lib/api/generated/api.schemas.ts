@@ -22,20 +22,17 @@ export interface TestResponse {
 	success: boolean;
 }
 
-export interface SlotGetAllResponse {
-	id: string;
+export interface SlotGetContractsResponse {
+	id: number;
+	slotId: string;
+	contractId: number;
+	contractName: string;
+	price: number;
 	/** @nullable */
-	facilityId?: number | null;
+	validationId?: number | null;
+	canPayLater: boolean;
 	/** @nullable */
-	resourceId?: number | null;
-	/** @nullable */
-	resourceName?: string | null;
-	startDatetime: string;
-	/** @nullable */
-	endDatetime?: string | null;
-	booked: number;
-	total: number;
-	isAvailable: boolean;
+	description?: string | null;
 }
 
 /**
@@ -53,6 +50,22 @@ export interface ErrorResponse {
 	message: string;
 	/** the collection of errors for the current context */
 	errors: ErrorResponseErrors;
+}
+
+export interface SlotGetAllResponse {
+	id: string;
+	/** @nullable */
+	facilityId?: number | null;
+	/** @nullable */
+	resourceId?: number | null;
+	/** @nullable */
+	resourceName?: string | null;
+	startDatetime: string;
+	/** @nullable */
+	endDatetime?: string | null;
+	booked: number;
+	total: number;
+	isAvailable: boolean;
 }
 
 export interface Contract {
