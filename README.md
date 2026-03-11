@@ -81,10 +81,10 @@ architecture-beta
 - [ ] Notification Email/SMS
 - [ ] Payments - Account per club or 1 account managed by Aviate - Create accounts. Link accounts to club or multiple clubs.
 
-### Planning
+### Temp Planning
 
-- [ ] What do we do with 9 holes?
-- [ ] Some slots only available to members
-- [ ] Do we need events as a different concept?
-- [ ] Pay later option
-- [ ] Only member option
+- [ ] Add Players + and - button with client validation
+  - [ ] Validate on book button before showing next page
+  - [ ] On booking page you should be able to reload and still continue where you left off with time remaining if applicable.
+  - [ ] You decide before how many players you are booking for. This will get validated. Start over if you want to change it.
+- [ ] my Bookings
