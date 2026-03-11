@@ -22,27 +22,8 @@ export interface TestResponse {
 	success: boolean;
 }
 
-export interface Validation {
-	id: number;
-	name: string;
-}
-
-export interface SlotContractResponse {
-	id: number;
-	contractId: number;
-	contractName: string;
-	price: number;
-	/** @nullable */
-	validationId?: number | null;
-	validation?: Validation | null;
-	canPayLater: boolean;
-	/** @nullable */
-	description?: string | null;
-}
-
 export interface SlotGetAllResponse {
 	id: string;
-	isGroup: boolean;
 	/** @nullable */
 	facilityId?: number | null;
 	/** @nullable */
@@ -52,10 +33,9 @@ export interface SlotGetAllResponse {
 	startDatetime: string;
 	/** @nullable */
 	endDatetime?: string | null;
-	availableSpots: number;
-	totalSpots: number;
-	price: number;
-	slotContracts: SlotContractResponse[];
+	booked: number;
+	total: number;
+	isAvailable: boolean;
 }
 
 /**
@@ -150,6 +130,11 @@ export interface OutletType {
 }
 
 export interface FacilityType {
+	id: number;
+	name: string;
+}
+
+export interface Validation {
 	id: number;
 	name: string;
 }

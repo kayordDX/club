@@ -62,34 +62,15 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List
             .Select(group => new SlotGetAllResponse
             {
                 Id = group.Key,
-                IsGroup = group.First().GroupId.HasValue,
                 FacilityId = group.First().FacilityId,
                 ResourceId = group.First().ResourceId,
                 ResourceName = group.First().Resource?.Name,
                 StartDatetime = DateTime.SpecifyKind(group.First().StartDatetime, DateTimeKind.Utc),
                 EndDatetime = group.First().EndDatetime,
-                AvailableSpots = group.Sum(g => g.SlotBookingsCount),
-                TotalSpots = group.Sum(g => g.SlotBookingsCount),
-                SlotContracts = [.. group.SelectMany(g => g.SlotContracts)
-                    .Select(sc => new SlotContractResponse
-                    {
-                        Id = sc.Id,
-                        ContractId = sc.ContractId,
-                        ContractName = sc.Name,
-                        Price = sc.Price,
-                        ValidationId = sc.ValidationId,
-                        Validation = sc.Validation,
-                        CanPayLater = sc.CanPayLater,
-                        Description = sc.Description
-                    })]
+                Booked = group.Sum(g => g.SlotBookingsCount),
+                Total = group.Count(),
             }).ToList();
 
         await Send.OkAsync(result, ct);
-    }
-
-    private static int CalculateAvailableSpots(Entities.Slot slot)
-    {
-        var bookedCount = slot.SlotBookings?.Count ?? 0;
-        return bookedCount;
     }
 }
