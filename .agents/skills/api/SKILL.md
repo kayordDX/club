@@ -1,3 +1,8 @@
+---
+name: api backend
+description: This skill provides comprehensive guidance for working with the **Online** backend API built with **FastEndpoints** and .NET 10. Use this skill when creating, editing, or debugging API endpoints in the `api/src/online/Features/` directory.
+---
+
 # Backend API Skill
 
 This skill provides comprehensive guidance for working with the **Online** backend API built with **FastEndpoints** and .NET 10. Use this skill when creating, editing, or debugging API endpoints in the `api/src/online/Features/` directory.
@@ -1018,5 +1023,4 @@ await Send.ConflictAsync(ct)                    // 409 Conflict
 await Send.NoContentAsync(ct)                   // 204 No Content
 await Send.InternalErrorAsync(ct)               // 500 Internal Error
 ```
-
 ---
