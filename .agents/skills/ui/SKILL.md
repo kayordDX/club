@@ -29,6 +29,23 @@ Use @kayord/ui shadcn-svelte components (bits-ui) for UI. Import with namespace 
 </script>
 ```
 
+## Card Example
+
+```svelte
+<Card.Root>
+  <Card.Header>
+    <Card.Title>Card Title</Card.Title>
+    <Card.Description>Card Description</Card.Description>
+  </Card.Header>
+  <Card.Content>
+    <p>Card Content</p>
+  </Card.Content>
+  <Card.Footer>
+    <p>Card Footer</p>
+  </Card.Footer>
+</Card.Root>
+```
+
 ## Trigger Components - Child Snippet Pattern
 
 When using trigger components with custom elements like Button, **always use the `child` snippet pattern**:
