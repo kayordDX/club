@@ -36,12 +36,25 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List
             .Select(s => new
             {
                 s.Id,
-                s.GroupId,
+                s.SlotGroupId,
                 s.FacilityId,
                 s.ResourceId,
                 s.StartDatetime,
                 s.EndDatetime,
                 Resource = s.Resource,
+                SlotGroup = s.SlotGroupId.HasValue
+                    ? _dbContext.SlotGroup
+                        .Where(sg => sg.Id == s.SlotGroupId.Value)
+                        .Select(sg => new
+                        {
+                            sg.Id,
+                            sg.CanBookForGuests,
+                            sg.FacilityId,
+                            sg.ResourceId,
+                            ResourceName = sg.Resource != null ? sg.Resource.Name : null
+                        })
+                        .FirstOrDefault()
+                    : null,
                 SlotContracts = s.SlotContracts.Select(sc => new
                 {
                     sc.Id,
@@ -58,17 +71,28 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List
             .ToListAsync(ct);
 
         var result = slotResponses
-            .GroupBy(s => s.GroupId ?? s.Id)
+            .GroupBy(s => s.SlotGroupId ?? s.Id)
             .Select(group => new SlotGetAllResponse
             {
                 Id = group.Key,
-                FacilityId = group.First().FacilityId,
-                ResourceId = group.First().ResourceId,
-                ResourceName = group.First().Resource?.Name,
+                FacilityId = group.First().SlotGroup?.FacilityId ?? group.First().FacilityId,
+                ResourceId = group.First().SlotGroup?.ResourceId ?? group.First().ResourceId,
+                ResourceName = group.First().SlotGroup?.ResourceName ?? group.First().Resource?.Name,
                 StartDatetime = DateTime.SpecifyKind(group.First().StartDatetime, DateTimeKind.Utc),
                 EndDatetime = group.First().EndDatetime,
                 Booked = group.Sum(g => g.SlotBookingsCount),
                 Total = group.Count(),
+                CanBookForGuests = group.First().SlotGroup?.CanBookForGuests ?? false,
+                SlotGroup = group.First().SlotGroup is null
+                    ? null
+                    : new SlotGroupResponse
+                    {
+                        Id = group.First().SlotGroup!.Id,
+                        FacilityId = group.First().SlotGroup!.FacilityId,
+                        ResourceId = group.First().SlotGroup!.ResourceId,
+                        ResourceName = group.First().SlotGroup!.ResourceName,
+                        CanBookForGuests = group.First().SlotGroup!.CanBookForGuests
+                    }
             }).ToList();
 
         await Send.OkAsync(result, ct);

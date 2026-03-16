@@ -23,7 +23,7 @@ public class AppFixture : AppFixture<Program>, IAsyncLifetime
     protected override async ValueTask PreSetupAsync()
     {
         // Start PostgreSQL TestContainer
-        _dbContainer = new PostgreSqlBuilder()
+        _dbContainer = new PostgreSqlBuilder("postgres:17")
             .WithImage("postgres:17")
             .WithDatabase("online_test")
             .WithUsername("postgres")

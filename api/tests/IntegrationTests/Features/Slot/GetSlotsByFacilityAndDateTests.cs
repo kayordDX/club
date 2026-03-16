@@ -50,7 +50,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             IsActive = true
         };
         db.Facility.Add(facility);
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(app.Context.CancellationToken);
 
         var today = DateTime.UtcNow.Date;
         var slotStartTime = new DateTime(today.Year, today.Month, today.Day, 10, 0, 0, DateTimeKind.Utc);
@@ -68,10 +68,10 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             FacilityId = facility.Id,
             StartDatetime = slotStartTime,
             EndDatetime = slotEndTime,
-            GroupId = Guid.NewGuid()
+            SlotGroupId = Guid.NewGuid()
         };
         db.Slot.Add(slot);
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(app.Context.CancellationToken);
 
 
 
@@ -108,7 +108,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             IsActive = true
         };
         db.Facility.Add(facility);
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(app.Context.CancellationToken);
 
         var today = DateTime.UtcNow.Date;
         var tomorrow = today.AddDays(1);
@@ -120,7 +120,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             FacilityId = facility.Id,
             StartDatetime = new DateTime(today.Year, today.Month, today.Day, 10, 0, 0, DateTimeKind.Utc),
             EndDatetime = new DateTime(today.Year, today.Month, today.Day, 11, 0, 0, DateTimeKind.Utc),
-            GroupId = Guid.NewGuid()
+            SlotGroupId = Guid.NewGuid()
         };
 
         var slotTomorrow = new Online.Entities.Slot
@@ -129,11 +129,11 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             FacilityId = facility.Id,
             StartDatetime = new DateTime(tomorrow.Year, tomorrow.Month, tomorrow.Day, 10, 0, 0, DateTimeKind.Utc),
             EndDatetime = new DateTime(tomorrow.Year, tomorrow.Month, tomorrow.Day, 11, 0, 0, DateTimeKind.Utc),
-            GroupId = Guid.NewGuid()
+            SlotGroupId = Guid.NewGuid()
         };
 
         db.Slot.AddRange(slotToday, slotTomorrow);
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(app.Context.CancellationToken);
 
         var requestToday = new SlotGetAllRequest
         {
@@ -182,7 +182,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             IsActive = true
         };
         db.Facility.Add(facility);
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(app.Context.CancellationToken);
 
         var today = DateTime.UtcNow.Date;
 
@@ -193,7 +193,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             FacilityId = facility.Id,
             StartDatetime = new DateTime(today.Year, today.Month, today.Day, 10, 0, 0, DateTimeKind.Utc),
             EndDatetime = new DateTime(today.Year, today.Month, today.Day, 11, 0, 0, DateTimeKind.Utc),
-            GroupId = Guid.NewGuid()
+            SlotGroupId = Guid.NewGuid()
         };
 
         var slot2 = new Online.Entities.Slot
@@ -202,7 +202,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             FacilityId = facility.Id,
             StartDatetime = new DateTime(today.Year, today.Month, today.Day, 14, 0, 0, DateTimeKind.Utc),
             EndDatetime = new DateTime(today.Year, today.Month, today.Day, 15, 0, 0, DateTimeKind.Utc),
-            GroupId = Guid.NewGuid()
+            SlotGroupId = Guid.NewGuid()
         };
 
         var slot3 = new Online.Entities.Slot
@@ -211,11 +211,11 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             FacilityId = facility.Id,
             StartDatetime = new DateTime(today.Year, today.Month, today.Day, 12, 0, 0, DateTimeKind.Utc),
             EndDatetime = new DateTime(today.Year, today.Month, today.Day, 13, 0, 0, DateTimeKind.Utc),
-            GroupId = Guid.NewGuid()
+            SlotGroupId = Guid.NewGuid()
         };
 
         db.Slot.AddRange(slot1, slot2, slot3);
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(app.Context.CancellationToken);
 
         var request = new SlotGetAllRequest
         {
@@ -253,7 +253,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             IsActive = true
         };
         db.Facility.Add(facility);
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(app.Context.CancellationToken);
 
         var resource = new Resource
         {
@@ -263,7 +263,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             IsActive = true
         };
         db.Resource.Add(resource);
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(app.Context.CancellationToken);
 
         var today = DateTime.UtcNow.Date;
         var slot = new Online.Entities.Slot
@@ -273,10 +273,10 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             ResourceId = resource.Id,
             StartDatetime = new DateTime(today.Year, today.Month, today.Day, 10, 0, 0, DateTimeKind.Utc),
             EndDatetime = new DateTime(today.Year, today.Month, today.Day, 11, 0, 0, DateTimeKind.Utc),
-            GroupId = Guid.NewGuid()
+            SlotGroupId = Guid.NewGuid()
         };
         db.Slot.Add(slot);
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(app.Context.CancellationToken);
 
         var request = new SlotGetAllRequest
         {
@@ -344,7 +344,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
         };
 
         db.Facility.AddRange(facility1, facility2);
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(app.Context.CancellationToken);
 
         var today = DateTime.UtcNow.Date;
 
@@ -354,7 +354,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             FacilityId = facility1.Id,
             StartDatetime = new DateTime(today.Year, today.Month, today.Day, 10, 0, 0, DateTimeKind.Utc),
             EndDatetime = new DateTime(today.Year, today.Month, today.Day, 11, 0, 0, DateTimeKind.Utc),
-            GroupId = Guid.NewGuid()
+            SlotGroupId = Guid.NewGuid()
         };
 
         var slot2 = new Online.Entities.Slot
@@ -363,11 +363,11 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             FacilityId = facility2.Id,
             StartDatetime = new DateTime(today.Year, today.Month, today.Day, 10, 0, 0, DateTimeKind.Utc),
             EndDatetime = new DateTime(today.Year, today.Month, today.Day, 11, 0, 0, DateTimeKind.Utc),
-            GroupId = Guid.NewGuid()
+            SlotGroupId = Guid.NewGuid()
         };
 
         db.Slot.AddRange(slot1, slot2);
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(app.Context.CancellationToken);
 
         var request = new SlotGetAllRequest
         {

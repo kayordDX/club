@@ -83,8 +83,28 @@ architecture-beta
 
 ### Temp Planning
 
-- [ ] Add Players + and - button with client validation
+- [x] Add Players + and - button with client validation
   - [ ] Validate on book button before showing next page
   - [ ] On booking page you should be able to reload and still continue where you left off with time remaining if applicable.
   - [ ] You decide before how many players you are booking for. This will get validated. Start over if you want to change it.
 - [ ] my Bookings
+
+
+### Temp Booking validation types?
+
+Types of validation checks
+- Pre Check (This check happens before a booking is created) - Check if slots are available. Only allow if you lower price if you are part of it.
+- Check (This check happens before booking status can become confirmed)
+
+- Logged in
+- Has Contract (Needs params, can be comma seperated list?)
+- Has Handicap
+
+- Other option can book for guests. All should be members?
+
+Payments can you allow no payment and accept payment on arrival?
+
+Payment Options?
+- Pay before
+- Pay on arrival
+- Deposit %
