@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Online.Common;
 using Online.Data;
 
 namespace Online.Features.Slot.GetAll;
@@ -16,6 +17,8 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List
 
     public override async Task HandleAsync(SlotGetAllRequest req, CancellationToken ct)
     {
+        var pendingCutoff = DateTime.UtcNow.Subtract(BookingConstants.PendingTimeout);
+
         // Ensure the date is in UTC
         var dateUtc = req.Date.Kind switch
         {
@@ -41,6 +44,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List
                 s.ResourceId,
                 s.StartDatetime,
                 s.EndDatetime,
+                s.RequiresLogin,
                 Resource = s.Resource,
                 SlotGroup = s.SlotGroupId.HasValue
                     ? _dbContext.SlotGroup
@@ -66,7 +70,10 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List
                     sc.CanPayLater,
                     sc.Description
                 }).ToList(),
-                SlotBookingsCount = s.SlotBookings.Count
+                SlotBookingsCount = s.SlotBookings.Count(sb =>
+                    sb.BookingStatus.Name == BookingConstants.ConfirmedStatus ||
+                    (sb.BookingStatus.Name == BookingConstants.PendingStatus &&
+                     sb.BookingStatusDate >= pendingCutoff))
             })
             .ToListAsync(ct);
 
@@ -83,6 +90,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List
                 Booked = group.Sum(g => g.SlotBookingsCount),
                 Total = group.Count(),
                 CanBookForGuests = group.First().SlotGroup?.CanBookForGuests ?? false,
+                RequiresLogin = group.Any(g => g.RequiresLogin),
                 SlotGroup = group.First().SlotGroup is null
                     ? null
                     : new SlotGroupResponse
@@ -93,7 +101,9 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List
                         ResourceName = group.First().SlotGroup!.ResourceName,
                         CanBookForGuests = group.First().SlotGroup!.CanBookForGuests
                     }
-            }).ToList();
+            })
+            .Where(x => x.IsAvailable)
+            .ToList();
 
         await Send.OkAsync(result, ct);
     }

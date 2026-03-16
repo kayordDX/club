@@ -1,16 +1,30 @@
 <script lang="ts">
 	import { Button, Input, Popover, StatusDot, Table } from "@kayord/ui";
+	import { page } from "$app/state";
+	import { resolve } from "$app/paths";
 	import { type SlotGetAllResponse, createSlotGetContracts } from "$lib/api";
 	import { Card } from "@kayord/ui";
 	import { ChevronRightIcon, CircleQuestionMark, MinusIcon, PlusIcon } from "@lucide/svelte";
+
 	type Props = {
 		slot: SlotGetAllResponse;
+		selectedDate: string;
 	};
 
-	let { slot }: Props = $props();
+	let { slot, selectedDate }: Props = $props();
 
 	let slotCount = $state(1);
 	let slotContractEnabled = $state(false);
+	const available = $derived(slot.total - slot.booked);
+	const bookHref = $derived.by(() => {
+		const params = new URLSearchParams({
+			slotId: slot.id,
+			quantity: String(slotCount),
+			date: selectedDate,
+		});
+
+		return resolve(`/outlet/${page.params.slug}/book/${page.params.id}/confirm?${params.toString()}`);
+	});
 
 	const contractsQuery = createSlotGetContracts(
 		() => slot.id,
@@ -45,7 +59,6 @@
 
 	{#if slot.total > 1}
 		{@const booked = slot.booked}
-		{@const available = slot.total - slot.booked}
 		<div class="flex h-full flex-col justify-between gap-2">
 			<div class="text-muted-foreground text-xs">Slots</div>
 
@@ -78,7 +91,7 @@
 					variant="outline"
 					class="size-7"
 					onclick={() => slotCount++}
-					disabled={slotCount >= slot.total - slot.booked}
+					disabled={slotCount >= available}
 				>
 					<PlusIcon class="size-3" />
 				</Button>
@@ -88,9 +101,11 @@
 	<div class="flex h-full flex-col justify-center gap-2">
 		<Popover.Root bind:open={slotContractEnabled}>
 			<Popover.Trigger>
-				<button>
-					<CircleQuestionMark class="text-primary size-4" />
-				</button>
+				{#snippet child({ props })}
+					<Button {...props} variant="ghost" size="icon" class="size-8">
+						<CircleQuestionMark class="text-primary size-4" />
+					</Button>
+				{/snippet}
 			</Popover.Trigger>
 			<Popover.Content class="p-0">
 				<Table.Root class="rounded-md">
@@ -101,7 +116,7 @@
 						</Table.Row>
 					</Table.Header>
 					<Table.Body>
-						{#each contractsQuery.data as contract (contract.id)}
+						{#each contractsQuery.data ?? [] as contract (contract.id)}
 							<Table.Row>
 								<Table.Cell>{contract.contractName} ({contract.description})</Table.Cell>
 								<Table.Cell>R{contract.price.toFixed(2)}</Table.Cell>
@@ -113,7 +128,7 @@
 		</Popover.Root>
 	</div>
 	<div class="flex h-full flex-col justify-center gap-2">
-		<Button variant="outline">
+		<Button variant="outline" href={bookHref} disabled={available <= 0}>
 			<ChevronRightIcon /> Book
 		</Button>
 	</div>

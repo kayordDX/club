@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:5000"
+      "url": "http://localhost:5001"
     }
   ],
   "paths": {
@@ -393,6 +393,59 @@
               "application/json": {
                 "schema": {
                   "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/booking": {
+      "post": {
+        "tags": [
+          "Booking"
+        ],
+        "operationId": "BookingCreate",
+        "requestBody": {
+          "x-name": "BookingCreateRequest",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookingCreateRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookingCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalErrorResponse"
                 }
               }
             }
@@ -931,6 +984,8 @@
           "startDatetime",
           "booked",
           "total",
+          "canBookForGuests",
+          "requiresLogin",
           "isAvailable"
         ],
         "properties": {
@@ -969,7 +1024,52 @@
             "type": "integer",
             "format": "int32"
           },
+          "canBookForGuests": {
+            "type": "boolean"
+          },
+          "requiresLogin": {
+            "type": "boolean"
+          },
+          "slotGroup": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/SlotGroupResponse"
+              }
+            ]
+          },
           "isAvailable": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SlotGroupResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "canBookForGuests"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid"
+          },
+          "facilityId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "resourceId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "resourceName": {
+            "type": "string",
+            "nullable": true
+          },
+          "canBookForGuests": {
             "type": "boolean"
           }
         }
@@ -1534,6 +1634,8 @@
           "created",
           "id",
           "startDatetime",
+          "canPayLater",
+          "requiresLogin",
           "slotBookings",
           "slotContracts",
           "extraBookings"
@@ -1597,10 +1699,16 @@
             "format": "date-time",
             "nullable": true
           },
-          "groupId": {
+          "slotGroupId": {
             "type": "string",
             "format": "guid",
             "nullable": true
+          },
+          "canPayLater": {
+            "type": "boolean"
+          },
+          "requiresLogin": {
+            "type": "boolean"
           },
           "slotBookings": {
             "type": "array",
@@ -1632,9 +1740,7 @@
           "slotContract",
           "bookingStatusId",
           "bookingStatus",
-          "bookingStatusDate",
-          "userId",
-          "user"
+          "bookingStatusDate"
         ],
         "properties": {
           "created": {
@@ -1667,6 +1773,19 @@
           "slotContract": {
             "$ref": "#/components/schemas/SlotContract"
           },
+          "slotId": {
+            "type": "string",
+            "format": "guid",
+            "nullable": true
+          },
+          "slot": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Slot"
+              }
+            ]
+          },
           "bookingStatusId": {
             "type": "integer",
             "format": "int32"
@@ -1680,10 +1799,20 @@
           },
           "userId": {
             "type": "string",
-            "format": "guid"
+            "format": "guid",
+            "nullable": true
           },
           "user": {
-            "$ref": "#/components/schemas/User"
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/User"
+              }
+            ]
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
           },
           "paymentId": {
             "type": "integer",
@@ -2521,6 +2650,92 @@
           },
           "name": {
             "type": "string"
+          }
+        }
+      },
+      "BookingCreateResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "bookingIds",
+          "slotId",
+          "quantity",
+          "email",
+          "status",
+          "totalPrice",
+          "createdAt",
+          "expiresAt"
+        ],
+        "properties": {
+          "bookingIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          "slotId": {
+            "type": "string",
+            "format": "guid"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "email": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "totalPrice": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "BookingCreateRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "slotId",
+          "email",
+          "slotContractId",
+          "quantity"
+        ],
+        "properties": {
+          "slotId": {
+            "type": "string",
+            "format": "guid",
+            "minLength": 1,
+            "nullable": false
+          },
+          "slotContractId": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0.0,
+            "exclusiveMinimum": true
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0.0,
+            "exclusiveMinimum": true
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "minLength": 1,
+            "pattern": "^[^@]+@[^@]+$",
+            "nullable": false
           }
         }
       },

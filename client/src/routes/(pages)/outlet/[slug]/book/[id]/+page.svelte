@@ -2,7 +2,13 @@
 	import { Button, Breadcrumb, Popover, ButtonGroup } from "@kayord/ui";
 	import { Calendar } from "@kayord/ui/calendar";
 	import { CalendarIcon, ChevronRightIcon, ChevronLeftIcon, BuildingIcon } from "@lucide/svelte";
-	import { today, getLocalTimeZone, DateFormatter, type DateValue } from "@internationalized/date";
+	import {
+		parseDate,
+		today,
+		getLocalTimeZone,
+		DateFormatter,
+		type DateValue,
+	} from "@internationalized/date";
 	import { createOutletGet } from "$lib/api";
 	import { page } from "$app/state";
 	import Query from "$lib/components/Query.svelte";
@@ -20,7 +26,9 @@
 		dateStyle: "long",
 	});
 
-	let value = $state<DateValue>(today(getLocalTimeZone()));
+	const initialDate = page.url.searchParams.get("date") ?? today(getLocalTimeZone()).toString();
+
+	let value = $state<DateValue>(parseDate(initialDate));
 
 	const incrementDate = (incrementValue: number) => {
 		value = value.add({ days: incrementValue });
@@ -98,7 +106,7 @@
 			</div>
 		</div>
 		<div>
-			<Slots slots={slotsData} />
+			<Slots slots={slotsData} selectedDate={value.toString()} />
 		</div>
 	</Query>
 </div>

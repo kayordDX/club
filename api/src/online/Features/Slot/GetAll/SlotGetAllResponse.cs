@@ -13,6 +13,7 @@ public class SlotGetAllResponse
     public int Booked { get; set; }
     public int Total { get; set; }
     public bool CanBookForGuests { get; set; }
+    public bool RequiresLogin { get; set; }
     public SlotGroupResponse? SlotGroup { get; set; }
     public bool IsAvailable => Booked < Total;
 }

@@ -14,6 +14,8 @@ public static class SeedDbContext
         //     GRANT ALL ON SCHEMA public TO online;
         // """, ct);
 
+        await dbContext.Database.ExecuteSqlRawAsync("delete from slot_booking;", ct);
+        await dbContext.Database.ExecuteSqlRawAsync("delete from extra_booking;", ct);
         await dbContext.Database.ExecuteSqlRawAsync("delete from slot;", ct);
         await dbContext.Database.ExecuteSqlRawAsync("delete from slot_group;", ct);
         await dbContext.Database.ExecuteSqlRawAsync("delete from resource;", ct);
@@ -28,6 +30,25 @@ public static class SeedDbContext
         await dbContext.Database.ExecuteSqlRawAsync("ALTER SEQUENCE resource_id_seq RESTART WITH 1;", ct);
         await dbContext.Database.ExecuteSqlRawAsync("ALTER SEQUENCE facility_type_id_seq RESTART WITH 1;", ct);
         await dbContext.Database.ExecuteSqlRawAsync("ALTER SEQUENCE outlet_id_seq RESTART WITH 1;", ct);
+
+        var bookingStatuses = await dbContext.BookingStatus
+            .Select(x => x.Name)
+            .ToListAsync(ct);
+
+        if (!bookingStatuses.Contains(Common.BookingConstants.PendingStatus))
+        {
+            await dbContext.BookingStatus.AddAsync(new BookingStatus { Name = Common.BookingConstants.PendingStatus }, ct);
+        }
+
+        if (!bookingStatuses.Contains(Common.BookingConstants.ConfirmedStatus))
+        {
+            await dbContext.BookingStatus.AddAsync(new BookingStatus { Name = Common.BookingConstants.ConfirmedStatus }, ct);
+        }
+
+        if (!bookingStatuses.Contains(Common.BookingConstants.CancelledStatus))
+        {
+            await dbContext.BookingStatus.AddAsync(new BookingStatus { Name = Common.BookingConstants.CancelledStatus }, ct);
+        }
 
 
         if (!dbContext.Business.Any())

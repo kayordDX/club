@@ -3,15 +3,19 @@
 	import { type SlotGetAllResponse } from "$lib/api";
 	import { TicketXIcon } from "@lucide/svelte";
 	import Slot from "./Slot.svelte";
+
 	type Props = {
 		slots: SlotGetAllResponse[];
+		selectedDate: string;
 	};
 
-	let { slots }: Props = $props();
+	let { slots, selectedDate }: Props = $props();
+
+	const availableSlots = $derived(slots.filter((slot) => slot.isAvailable));
 </script>
 
 <div class="grid grid-cols-1 place-items-center gap-2">
-	{#if slots.length == 0}
+	{#if availableSlots.length == 0}
 		<Empty.Root>
 			<Empty.Header>
 				<Empty.Media variant="icon">
@@ -25,7 +29,7 @@
 			<Empty.Content></Empty.Content>
 		</Empty.Root>
 	{/if}
-	{#each slots as slot (slot)}
-		<Slot {slot} />
+	{#each availableSlots as slot (slot.id)}
+		<Slot {slot} {selectedDate} />
 	{/each}
 </div>

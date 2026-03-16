@@ -12,47 +12,52 @@ import type {
 	QueryClient,
 } from "@tanstack/svelte-query";
 
-import type { ErrorResponse, InternalErrorResponse, UserRoleRequest } from "./api.schemas";
+import type {
+	BookingCreateRequest,
+	BookingCreateResponse,
+	ErrorResponse,
+	InternalErrorResponse,
+} from "./api.schemas";
 
 import { customInstance } from "../mutator/customInstance.svelte";
 import type { ErrorType, BodyType } from "../mutator/customInstance.svelte";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
-export const getUserRoleUrl = () => {
-	return `/user/role`;
+export const getBookingCreateUrl = () => {
+	return `/booking`;
 };
 
-export const userRole = async (
-	userRoleRequest: UserRoleRequest,
+export const bookingCreate = async (
+	bookingCreateRequest: BookingCreateRequest,
 	options?: RequestInit
-): Promise<boolean> => {
-	return customInstance<boolean>(getUserRoleUrl(), {
+): Promise<BookingCreateResponse> => {
+	return customInstance<BookingCreateResponse>(getBookingCreateUrl(), {
 		...options,
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...options?.headers },
-		body: JSON.stringify(userRoleRequest),
+		body: JSON.stringify(bookingCreateRequest),
 	});
 };
 
-export const getUserRoleMutationOptions = <
-	TError = ErrorType<ErrorResponse | void | InternalErrorResponse>,
+export const getBookingCreateMutationOptions = <
+	TError = ErrorType<ErrorResponse | InternalErrorResponse>,
 	TContext = unknown,
 >(options?: {
 	mutation?: CreateMutationOptions<
-		Awaited<ReturnType<typeof userRole>>,
+		Awaited<ReturnType<typeof bookingCreate>>,
 		TError,
-		{ data: BodyType<UserRoleRequest> },
+		{ data: BodyType<BookingCreateRequest> },
 		TContext
 	>;
 	request?: SecondParameter<typeof customInstance>;
 }): CreateMutationOptions<
-	Awaited<ReturnType<typeof userRole>>,
+	Awaited<ReturnType<typeof bookingCreate>>,
 	TError,
-	{ data: BodyType<UserRoleRequest> },
+	{ data: BodyType<BookingCreateRequest> },
 	TContext
 > => {
-	const mutationKey = ["userRole"];
+	const mutationKey = ["bookingCreate"];
 	const { mutation: mutationOptions, request: requestOptions } = options
 		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
 			? options
@@ -60,40 +65,40 @@ export const getUserRoleMutationOptions = <
 		: { mutation: { mutationKey }, request: undefined };
 
 	const mutationFn: MutationFunction<
-		Awaited<ReturnType<typeof userRole>>,
-		{ data: BodyType<UserRoleRequest> }
+		Awaited<ReturnType<typeof bookingCreate>>,
+		{ data: BodyType<BookingCreateRequest> }
 	> = (props) => {
 		const { data } = props ?? {};
 
-		return userRole(data, requestOptions);
+		return bookingCreate(data, requestOptions);
 	};
 
 	return { mutationFn, ...mutationOptions };
 };
 
-export type UserRoleMutationResult = NonNullable<Awaited<ReturnType<typeof userRole>>>;
-export type UserRoleMutationBody = BodyType<UserRoleRequest>;
-export type UserRoleMutationError = ErrorType<ErrorResponse | void | InternalErrorResponse>;
+export type BookingCreateMutationResult = NonNullable<Awaited<ReturnType<typeof bookingCreate>>>;
+export type BookingCreateMutationBody = BodyType<BookingCreateRequest>;
+export type BookingCreateMutationError = ErrorType<ErrorResponse | InternalErrorResponse>;
 
-export const createUserRole = <
-	TError = ErrorType<ErrorResponse | void | InternalErrorResponse>,
+export const createBookingCreate = <
+	TError = ErrorType<ErrorResponse | InternalErrorResponse>,
 	TContext = unknown,
 >(
 	options?: () => {
 		mutation?: CreateMutationOptions<
-			Awaited<ReturnType<typeof userRole>>,
+			Awaited<ReturnType<typeof bookingCreate>>,
 			TError,
-			{ data: BodyType<UserRoleRequest> },
+			{ data: BodyType<BookingCreateRequest> },
 			TContext
 		>;
 		request?: SecondParameter<typeof customInstance>;
 	},
 	queryClient?: () => QueryClient
 ): CreateMutationResult<
-	Awaited<ReturnType<typeof userRole>>,
+	Awaited<ReturnType<typeof bookingCreate>>,
 	TError,
-	{ data: BodyType<UserRoleRequest> },
+	{ data: BodyType<BookingCreateRequest> },
 	TContext
 > => {
-	return createMutation(() => ({ ...getUserRoleMutationOptions(options?.()) }), queryClient);
+	return createMutation(() => ({ ...getBookingCreateMutationOptions(options?.()) }), queryClient);
 };
