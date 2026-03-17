@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Online.Common;
 using Online.Entities;
 
 namespace Online.Data;
@@ -31,24 +32,31 @@ public static class SeedDbContext
         await dbContext.Database.ExecuteSqlRawAsync("ALTER SEQUENCE facility_type_id_seq RESTART WITH 1;", ct);
         await dbContext.Database.ExecuteSqlRawAsync("ALTER SEQUENCE outlet_id_seq RESTART WITH 1;", ct);
 
-        var bookingStatuses = await dbContext.BookingStatus
+        await dbContext.Database.ExecuteSqlRawAsync("delete from booking_status;", ct);
+        await dbContext.Database.ExecuteSqlRawAsync("ALTER SEQUENCE booking_status_id_seq RESTART WITH 4;", ct);
+
+        await dbContext.BookingStatus.AddRangeAsync(
+        [
+            new BookingStatus { Id = BookingStatuses.PendingId, Name = BookingStatuses.PendingName },
+            new BookingStatus { Id = BookingStatuses.ConfirmedId, Name = BookingStatuses.ConfirmedName },
+            new BookingStatus { Id = BookingStatuses.CancelledId, Name = BookingStatuses.CancelledName }
+        ], ct);
+
+        var paymentTypes = await dbContext.PaymentType
             .Select(x => x.Name)
             .ToListAsync(ct);
 
-        if (!bookingStatuses.Contains(Common.BookingConstants.PendingStatus))
+        if (!paymentTypes.Contains("Pay on arrival"))
         {
-            await dbContext.BookingStatus.AddAsync(new BookingStatus { Name = Common.BookingConstants.PendingStatus }, ct);
+            await dbContext.PaymentType.AddAsync(new PaymentType { Name = "Pay on arrival" }, ct);
         }
 
-        if (!bookingStatuses.Contains(Common.BookingConstants.ConfirmedStatus))
+        if (!paymentTypes.Contains("Credit card"))
         {
-            await dbContext.BookingStatus.AddAsync(new BookingStatus { Name = Common.BookingConstants.ConfirmedStatus }, ct);
+            await dbContext.PaymentType.AddAsync(new PaymentType { Name = "Credit card" }, ct);
         }
 
-        if (!bookingStatuses.Contains(Common.BookingConstants.CancelledStatus))
-        {
-            await dbContext.BookingStatus.AddAsync(new BookingStatus { Name = Common.BookingConstants.CancelledStatus }, ct);
-        }
+        await dbContext.SaveChangesAsync(ct);
 
 
         if (!dbContext.Business.Any())

@@ -1,12 +1,15 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Online.Common;
+using Online.Common.Config;
 using Online.Data;
 
 namespace Online.Features.Slot.GetAll;
 
-public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List<SlotGetAllResponse>>
+public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : Endpoint<SlotGetAllRequest, List<SlotGetAllResponse>>
 {
     private readonly AppDbContext _dbContext = dbContext;
+    private readonly AppConfig _appConfig = appConfig.Value;
 
     public override void Configure()
     {
@@ -17,7 +20,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List
 
     public override async Task HandleAsync(SlotGetAllRequest req, CancellationToken ct)
     {
-        var pendingCutoff = DateTime.UtcNow.Subtract(BookingConstants.PendingTimeout);
+        var pendingCutoff = DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(_appConfig.PendingTimeoutMinutes));
 
         // Ensure the date is in UTC
         var dateUtc = req.Date.Kind switch
@@ -71,8 +74,8 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List
                     sc.Description
                 }).ToList(),
                 SlotBookingsCount = s.SlotBookings.Count(sb =>
-                    sb.BookingStatus.Name == BookingConstants.ConfirmedStatus ||
-                    (sb.BookingStatus.Name == BookingConstants.PendingStatus &&
+                    sb.BookingStatusId == BookingStatuses.ConfirmedId ||
+                    (sb.BookingStatusId == BookingStatuses.PendingId &&
                      sb.BookingStatusDate >= pendingCutoff))
             })
             .ToListAsync(ct);

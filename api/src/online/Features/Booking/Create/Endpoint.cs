@@ -1,14 +1,17 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Online.Common;
+using Online.Common.Config;
 using Online.Data;
 using Online.Entities;
 
 namespace Online.Features.Booking.Create;
 
-public class Endpoint(AppDbContext dbContext) : Endpoint<BookingCreateRequest, BookingCreateResponse>
+public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : Endpoint<BookingCreateRequest, BookingCreateResponse>
 {
     private readonly AppDbContext _dbContext = dbContext;
+    private readonly AppConfig _appConfig = appConfig.Value;
 
     public override void Configure()
     {
@@ -20,7 +23,8 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingCreateRequest, B
     public override async Task HandleAsync(BookingCreateRequest req, CancellationToken ct)
     {
         var now = DateTime.UtcNow;
-        var pendingCutoff = now.Subtract(BookingConstants.PendingTimeout);
+        var pendingTimeout = TimeSpan.FromMinutes(_appConfig.PendingTimeoutMinutes);
+        var pendingCutoff = now.Subtract(pendingTimeout);
         var currentUserId = Helpers.GetCurrentUserId(HttpContext);
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(
@@ -74,8 +78,8 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingCreateRequest, B
                     })
                     .FirstOrDefault(),
                 HasActiveBooking = s.SlotBookings.Any(sb =>
-                    sb.BookingStatus.Name == BookingConstants.ConfirmedStatus ||
-                    (sb.BookingStatus.Name == BookingConstants.PendingStatus &&
+                    sb.BookingStatusId == BookingStatuses.ConfirmedId ||
+                    (sb.BookingStatusId == BookingStatuses.PendingId &&
                      sb.BookingStatusDate >= pendingCutoff))
             })
             .ToListAsync(ct);
@@ -109,23 +113,13 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingCreateRequest, B
             return;
         }
 
-        var pendingStatus = await _dbContext.BookingStatus
-            .FirstOrDefaultAsync(x => x.Name == BookingConstants.PendingStatus, ct);
-
-        if (pendingStatus is null)
-        {
-            pendingStatus = new BookingStatus { Name = BookingConstants.PendingStatus };
-            await _dbContext.BookingStatus.AddAsync(pendingStatus, ct);
-            await _dbContext.SaveChangesAsync(ct);
-        }
-
         var email = req.Email.Trim();
         var bookings = availableSlots
             .Select(slot => new SlotBooking
             {
                 SlotId = slot.Id,
                 SlotContractId = slot.MatchingContract!.Id,
-                BookingStatusId = pendingStatus.Id,
+                BookingStatusId = BookingStatuses.PendingId,
                 BookingStatusDate = now,
                 UserId = currentUserId,
                 Email = email
@@ -142,12 +136,12 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingCreateRequest, B
             SlotId = req.SlotId,
             Quantity = bookings.Count,
             Email = email,
-            Status = BookingConstants.PendingStatus,
+            Status = BookingStatuses.PendingName,
             TotalPrice = bookings.Sum(x => availableSlots
                 .First(slot => slot.Id == x.SlotId)
                 .MatchingContract!.Price),
             CreatedAt = now,
-            ExpiresAt = now.Add(BookingConstants.PendingTimeout)
+            ExpiresAt = now.Add(pendingTimeout)
         };
 
         await HttpContext.Response.SendAsync(response, StatusCodes.Status201Created, cancellation: ct);
