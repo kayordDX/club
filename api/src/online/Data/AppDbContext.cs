@@ -45,7 +45,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IHttpContextAc
 
     // Slot Entities
     public DbSet<SlotContract> SlotContract { get; set; }
-    public DbSet<SlotGroup> SlotGroup { get; set; }
     public DbSet<SlotBooking> SlotBooking { get; set; }
     public DbSet<SlotBooking> BookingSlot { get; set; }
 

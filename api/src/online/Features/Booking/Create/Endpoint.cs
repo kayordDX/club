@@ -52,18 +52,12 @@ public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : E
         }
 
         var slotOptions = await _dbContext.Slot
-            .Where(s => s.Id == req.SlotId || s.SlotGroupId == req.SlotId)
+            .Where(s => s.Id == req.SlotId || s.GroupId == req.SlotId)
             .OrderBy(s => s.Id)
             .Select(s => new
             {
                 s.Id,
                 s.RequiresLogin,
-                CanBookForGuests = s.SlotGroupId.HasValue
-                    ? _dbContext.SlotGroup
-                        .Where(sg => sg.Id == s.SlotGroupId)
-                        .Select(sg => sg.CanBookForGuests)
-                        .FirstOrDefault()
-                    : false,
                 MatchingContract = s.SlotContracts
                     .Where(sc =>
                         sc.ContractId == selectedContract.ContractId &&
@@ -91,7 +85,7 @@ public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : E
             return;
         }
 
-        if (!currentUserId.HasValue && slotOptions.Any(x => x.RequiresLogin || !x.CanBookForGuests))
+        if (!currentUserId.HasValue && slotOptions.Any(x => x.RequiresLogin))
         {
             await transaction.RollbackAsync(ct);
             await Send.ForbiddenAsync(ct);

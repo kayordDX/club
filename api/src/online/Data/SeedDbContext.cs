@@ -18,7 +18,6 @@ public static class SeedDbContext
         await dbContext.Database.ExecuteSqlRawAsync("delete from slot_booking;", ct);
         await dbContext.Database.ExecuteSqlRawAsync("delete from extra_booking;", ct);
         await dbContext.Database.ExecuteSqlRawAsync("delete from slot;", ct);
-        await dbContext.Database.ExecuteSqlRawAsync("delete from slot_group;", ct);
         await dbContext.Database.ExecuteSqlRawAsync("delete from resource;", ct);
         await dbContext.Database.ExecuteSqlRawAsync("delete from contract;", ct);
         await dbContext.Database.ExecuteSqlRawAsync("delete from contract_field;", ct);
@@ -112,11 +111,10 @@ public static class SeedDbContext
                     {
                         var groupId = Guid.CreateVersion7();
                         // Loop 4 times
-                        await dbContext.SlotGroup.AddAsync(new SlotGroup { Id = groupId, CanBookForGuests = true, Resource = resource, Facility = resource.Facility }, ct);
                         for (int i = 0; i < 4; i++)
                         {
                             var id = Guid.CreateVersion7();
-                            await dbContext.Slot.AddAsync(new Slot { Id = id, StartDatetime = startTime, EndDatetime = endTime, Resource = resource, Facility = resource.Facility, SlotGroupId = groupId }, ct);
+                            await dbContext.Slot.AddAsync(new Slot { Id = id, StartDatetime = startTime, EndDatetime = endTime, Resource = resource, Facility = resource.Facility, GroupId = groupId }, ct);
                             await dbContext.SlotContract.AddAsync(new SlotContract { Contract = contract1, Price = 50, SlotId = id, Validation = validation2, Description = "9 Holes" }, ct);
                             await dbContext.SlotContract.AddAsync(new SlotContract { Contract = contract1, Price = 100, SlotId = id, Validation = validation2, Description = "18 Holes" }, ct);
                         }

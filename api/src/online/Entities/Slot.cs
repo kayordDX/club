@@ -9,7 +9,7 @@ public class Slot : AuditableEntity
     public Facility? Facility { get; set; }
     public required DateTime StartDatetime { get; set; }
     public DateTime? EndDatetime { get; set; }
-    public Guid? SlotGroupId { get; set; }
+    public Guid? GroupId { get; set; }
     public bool CanPayLater { get; set; }
     public bool RequiresLogin { get; set; }
     public ICollection<SlotBooking> SlotBookings { get; set; } = [];

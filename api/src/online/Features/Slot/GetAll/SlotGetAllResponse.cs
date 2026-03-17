@@ -14,15 +14,5 @@ public class SlotGetAllResponse
     public int Total { get; set; }
     public bool CanBookForGuests { get; set; }
     public bool RequiresLogin { get; set; }
-    public SlotGroupResponse? SlotGroup { get; set; }
     public bool IsAvailable => Booked < Total;
-}
-
-public class SlotGroupResponse
-{
-    public Guid Id { get; set; }
-    public int? FacilityId { get; set; }
-    public int? ResourceId { get; set; }
-    public string? ResourceName { get; set; }
-    public bool CanBookForGuests { get; set; }
 }

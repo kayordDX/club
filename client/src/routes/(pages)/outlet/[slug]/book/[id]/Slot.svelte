@@ -23,7 +23,7 @@
 			date: selectedDate,
 		});
 
-		return resolve(`/outlet/${page.params.slug}/book/${page.params.id}/confirm?${params.toString()}`);
+		return resolve(`/outlet/${page.params.slug}/book/${page.params.id}/booking?${params.toString()}`);
 	});
 
 	const contractsQuery = createSlotGetContracts(
