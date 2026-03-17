@@ -69,6 +69,7 @@ public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : E
             .Select(group => new SlotGetAllResponse
             {
                 Id = group.Key,
+                GroupId = group.First().GroupId,
                 FacilityId = group.First().FacilityId,
                 ResourceId = group.First().ResourceId,
                 ResourceName = group.First().Resource?.Name,

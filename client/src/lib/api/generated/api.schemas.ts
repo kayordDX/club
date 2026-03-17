@@ -52,19 +52,10 @@ export interface ErrorResponse {
 	errors: ErrorResponseErrors;
 }
 
-export interface SlotGroupResponse {
-	id: string;
-	/** @nullable */
-	facilityId?: number | null;
-	/** @nullable */
-	resourceId?: number | null;
-	/** @nullable */
-	resourceName?: string | null;
-	canBookForGuests: boolean;
-}
-
 export interface SlotGetAllResponse {
 	id: string;
+	/** @nullable */
+	groupId?: string | null;
 	/** @nullable */
 	facilityId?: number | null;
 	/** @nullable */
@@ -78,8 +69,14 @@ export interface SlotGetAllResponse {
 	total: number;
 	canBookForGuests: boolean;
 	requiresLogin: boolean;
-	slotGroup?: SlotGroupResponse | null;
 	isAvailable: boolean;
+}
+
+export interface AvailableSlotRequest {
+	id: string;
+	typeId: number;
+	/** @nullable */
+	slotCount?: number | null;
 }
 
 export interface Contract {
@@ -188,6 +185,13 @@ export interface SlotContract {
 	description?: string | null;
 }
 
+export interface Extra {
+	id: number;
+	name: string;
+	outletId: number;
+	outlet: Outlet;
+}
+
 export interface BookingStatus {
 	id: number;
 	name: string;
@@ -209,69 +213,6 @@ export interface UserContract {
 	endDate?: string | null;
 	price: number;
 	isActive: boolean;
-	userId: string;
-	user: User;
-}
-
-export interface Extra {
-	id: number;
-	name: string;
-	outletId: number;
-	outlet: Outlet;
-}
-
-export interface FacilityExtra {
-	created: string;
-	/** @nullable */
-	createdBy?: string | null;
-	/** @nullable */
-	lastModified?: string | null;
-	/** @nullable */
-	lastModifiedBy?: string | null;
-	id: number;
-	facilityId: number;
-	facility: Facility;
-	extraId: number;
-	extra: Extra;
-	name: string;
-	code: string;
-	price: number;
-	startDate: string;
-	/** @nullable */
-	endDate?: string | null;
-	bookingStatusId: number;
-	bookingStatus: BookingStatus;
-	isAvailable: boolean;
-	isOnline: boolean;
-	userId: string;
-	user: User;
-}
-
-export interface PaymentStatus {
-	id: number;
-	name: string;
-}
-
-export interface Payment {
-	id: number;
-	paymentStatusId: number;
-	paymentStatus: PaymentStatus;
-	paymentStatusDate: string;
-	amount: number;
-}
-
-export interface ExtraBooking {
-	id: number;
-	facilityExtraId: number;
-	facilityExtra: FacilityExtra;
-	slotId: string;
-	slot: Slot;
-	bookingStatusId: number;
-	bookingStatus: BookingStatus;
-	statusDate: string;
-	/** @nullable */
-	paymentId?: number | null;
-	payment?: Payment | null;
 	userId: string;
 	user: User;
 }
@@ -326,12 +267,10 @@ export interface User {
 	/** @nullable */
 	picture?: string | null;
 	userContracts: UserContract[];
-	slotBookings: SlotBooking[];
-	extraBookings: ExtraBooking[];
 	userRoles: UserRole[];
 }
 
-export interface SlotBooking {
+export interface Booking {
 	created: string;
 	/** @nullable */
 	createdBy?: string | null;
@@ -340,22 +279,22 @@ export interface SlotBooking {
 	/** @nullable */
 	lastModifiedBy?: string | null;
 	id: number;
-	slotContractId: number;
-	slotContract: SlotContract;
-	/** @nullable */
-	slotId?: string | null;
-	slot?: Slot | null;
 	bookingStatusId: number;
 	bookingStatus: BookingStatus;
 	bookingStatusDate: string;
 	/** @nullable */
 	userId?: string | null;
 	user?: User | null;
-	/** @nullable */
-	email?: string | null;
-	/** @nullable */
-	paymentId?: number | null;
-	payment?: Payment | null;
+	isPaid: boolean;
+	amountOutstanding: number;
+	amountPaid: number;
+}
+
+export interface ExtraBooking {
+	extraId: number;
+	extra: Extra;
+	bookingId: number;
+	booking: Booking;
 }
 
 export interface Slot {
@@ -377,10 +316,9 @@ export interface Slot {
 	/** @nullable */
 	endDatetime?: string | null;
 	/** @nullable */
-	slotGroupId?: string | null;
+	groupId?: string | null;
 	canPayLater: boolean;
 	requiresLogin: boolean;
-	slotBookings: SlotBooking[];
 	slotContracts: SlotContract[];
 	extraBookings: ExtraBooking[];
 }
@@ -399,6 +337,33 @@ export interface Resource {
 	facility: Facility;
 	isActive: boolean;
 	slots: Slot[];
+}
+
+export interface FacilityExtra {
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	facilityId: number;
+	facility: Facility;
+	extraId: number;
+	extra: Extra;
+	name: string;
+	code: string;
+	price: number;
+	startDate: string;
+	/** @nullable */
+	endDate?: string | null;
+	bookingStatusId: number;
+	bookingStatus: BookingStatus;
+	isAvailable: boolean;
+	isOnline: boolean;
+	userId: string;
+	user: User;
 }
 
 export interface Facility {

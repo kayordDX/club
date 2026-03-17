@@ -7,9 +7,10 @@
 	type Props = {
 		slots: SlotGetAllResponse[];
 		selectedDate: string;
+		refetch: () => void;
 	};
 
-	let { slots, selectedDate }: Props = $props();
+	let { slots, selectedDate, refetch }: Props = $props();
 
 	const availableSlots = $derived(slots.filter((slot) => slot.isAvailable));
 </script>
@@ -30,6 +31,6 @@
 		</Empty.Root>
 	{/if}
 	{#each availableSlots as slot (slot.id)}
-		<Slot {slot} {selectedDate} />
+		<Slot {slot} {selectedDate} {refetch} />
 	{/each}
 </div>

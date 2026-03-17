@@ -5,6 +5,7 @@ namespace Online.Features.Slot.GetAll;
 public class SlotGetAllResponse
 {
     public Guid Id { get; set; }
+    public Guid? GroupId { get; set; }
     public int? FacilityId { get; set; }
     public int? ResourceId { get; set; }
     public string? ResourceName { get; set; }

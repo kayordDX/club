@@ -79,5 +79,5 @@
 	</div>
 </div>
 <div>
-	<Slots slots={slotsData} selectedDate={value.toString()} />
+	<Slots slots={slotsData} selectedDate={value.toString()} refetch={slotsQuery.refetch} />
 </div>

@@ -4,17 +4,21 @@
  * online
  * OpenAPI spec version: v1
  */
-import { createQuery } from "@tanstack/svelte-query";
+import { createMutation, createQuery } from "@tanstack/svelte-query";
 import type {
+	CreateMutationOptions,
+	CreateMutationResult,
 	CreateQueryOptions,
 	CreateQueryResult,
 	DataTag,
+	MutationFunction,
 	QueryClient,
 	QueryFunction,
 	QueryKey,
 } from "@tanstack/svelte-query";
 
 import type {
+	AvailableSlotRequest,
 	ErrorResponse,
 	InternalErrorResponse,
 	SlotGetAllParams,
@@ -23,7 +27,7 @@ import type {
 } from "./api.schemas";
 
 import { customInstance } from "../mutator/customInstance.svelte";
-import type { ErrorType } from "../mutator/customInstance.svelte";
+import type { ErrorType, BodyType } from "../mutator/customInstance.svelte";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
@@ -168,3 +172,79 @@ export function createSlotGetAll<
 
 	return query;
 }
+
+export const getSlotAvailableUrl = () => {
+	return `/slot/available`;
+};
+
+export const slotAvailable = async (
+	availableSlotRequest: AvailableSlotRequest,
+	options?: RequestInit
+): Promise<boolean> => {
+	return customInstance<boolean>(getSlotAvailableUrl(), {
+		...options,
+		method: "POST",
+		headers: { "Content-Type": "application/json", ...options?.headers },
+		body: JSON.stringify(availableSlotRequest),
+	});
+};
+
+export const getSlotAvailableMutationOptions = <
+	TError = ErrorType<InternalErrorResponse>,
+	TContext = unknown,
+>(options?: {
+	mutation?: CreateMutationOptions<
+		Awaited<ReturnType<typeof slotAvailable>>,
+		TError,
+		{ data: BodyType<AvailableSlotRequest> },
+		TContext
+	>;
+	request?: SecondParameter<typeof customInstance>;
+}): CreateMutationOptions<
+	Awaited<ReturnType<typeof slotAvailable>>,
+	TError,
+	{ data: BodyType<AvailableSlotRequest> },
+	TContext
+> => {
+	const mutationKey = ["slotAvailable"];
+	const { mutation: mutationOptions, request: requestOptions } = options
+		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+			? options
+			: { ...options, mutation: { ...options.mutation, mutationKey } }
+		: { mutation: { mutationKey }, request: undefined };
+
+	const mutationFn: MutationFunction<
+		Awaited<ReturnType<typeof slotAvailable>>,
+		{ data: BodyType<AvailableSlotRequest> }
+	> = (props) => {
+		const { data } = props ?? {};
+
+		return slotAvailable(data, requestOptions);
+	};
+
+	return { mutationFn, ...mutationOptions };
+};
+
+export type SlotAvailableMutationResult = NonNullable<Awaited<ReturnType<typeof slotAvailable>>>;
+export type SlotAvailableMutationBody = BodyType<AvailableSlotRequest>;
+export type SlotAvailableMutationError = ErrorType<InternalErrorResponse>;
+
+export const createSlotAvailable = <TError = ErrorType<InternalErrorResponse>, TContext = unknown>(
+	options?: () => {
+		mutation?: CreateMutationOptions<
+			Awaited<ReturnType<typeof slotAvailable>>,
+			TError,
+			{ data: BodyType<AvailableSlotRequest> },
+			TContext
+		>;
+		request?: SecondParameter<typeof customInstance>;
+	},
+	queryClient?: () => QueryClient
+): CreateMutationResult<
+	Awaited<ReturnType<typeof slotAvailable>>,
+	TError,
+	{ data: BodyType<AvailableSlotRequest> },
+	TContext
+> => {
+	return createMutation(() => ({ ...getSlotAvailableMutationOptions(options?.()) }), queryClient);
+};

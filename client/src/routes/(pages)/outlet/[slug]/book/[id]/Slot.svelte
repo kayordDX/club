@@ -2,29 +2,53 @@
 	import { Button, Input, Popover, StatusDot, Table } from "@kayord/ui";
 	import { page } from "$app/state";
 	import { resolve } from "$app/paths";
-	import { type SlotGetAllResponse, createSlotGetContracts } from "$lib/api";
+	import { type SlotGetAllResponse, createSlotGetContracts, createSlotAvailable } from "$lib/api";
 	import { Card } from "@kayord/ui";
 	import { ChevronRightIcon, CircleQuestionMark, MinusIcon, PlusIcon } from "@lucide/svelte";
+	import { toast } from "svelte-sonner";
+	import { goto } from "$app/navigation";
 
 	type Props = {
 		slot: SlotGetAllResponse;
 		selectedDate: string;
+		refetch: () => void;
 	};
 
-	let { slot, selectedDate }: Props = $props();
+	let { slot, selectedDate, refetch }: Props = $props();
 
 	let slotCount = $state(1);
 	let slotContractEnabled = $state(false);
 	const available = $derived(slot.total - slot.booked);
-	const bookHref = $derived.by(() => {
-		const params = new URLSearchParams({
-			slotId: slot.id,
-			quantity: String(slotCount),
-			date: selectedDate,
-		});
 
-		return resolve(`/outlet/${page.params.slug}/book/${page.params.id}/booking?${params.toString()}`);
-	});
+	const availableMutation = createSlotAvailable();
+
+	const checkAvailable = async (slot: SlotGetAllResponse) => {
+		try {
+			const isAvailable = await availableMutation.mutateAsync({
+				data: {
+					id: slot.groupId ?? slot.id,
+					typeId: slot.groupId ? 2 : 1,
+					slotCount: slotCount,
+				},
+			});
+			if (isAvailable) {
+				const params = new URLSearchParams({
+					id: slot.id,
+					typeId: slot.groupId ? "2" : "1",
+					slotCount: String(slotCount),
+				});
+
+				goto(
+					resolve(`/outlet/${page.params.slug}/book/${page.params.id}/booking?${params.toString()}`)
+				);
+			} else {
+				toast.error("Not enough slots available");
+				refetch();
+			}
+		} catch {
+			console.error("Check failed");
+		}
+	};
 
 	const contractsQuery = createSlotGetContracts(
 		() => slot.id,
@@ -128,7 +152,7 @@
 		</Popover.Root>
 	</div>
 	<div class="flex h-full flex-col justify-center gap-2">
-		<Button variant="outline" href={bookHref} disabled={available <= 0}>
+		<Button variant="outline" onclick={() => checkAvailable(slot)} disabled={available <= 0}>
 			<ChevronRightIcon /> Book
 		</Button>
 	</div>
