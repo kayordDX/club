@@ -15,7 +15,7 @@ public static class SeedDbContext
         //     GRANT ALL ON SCHEMA public TO online;
         // """, ct);
 
-        await dbContext.Database.ExecuteSqlRawAsync("delete from slot_booking;", ct);
+        await dbContext.Database.ExecuteSqlRawAsync("delete from slot_contract_booking;", ct);
         await dbContext.Database.ExecuteSqlRawAsync("delete from extra_booking;", ct);
         await dbContext.Database.ExecuteSqlRawAsync("delete from slot;", ct);
         await dbContext.Database.ExecuteSqlRawAsync("delete from resource;", ct);

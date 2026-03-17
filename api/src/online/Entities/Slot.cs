@@ -12,7 +12,6 @@ public class Slot : AuditableEntity
     public Guid? GroupId { get; set; }
     public bool CanPayLater { get; set; }
     public bool RequiresLogin { get; set; }
-    public ICollection<SlotBooking> SlotBookings { get; set; } = [];
     public ICollection<SlotContract> SlotContracts { get; set; } = [];
     public ICollection<ExtraBooking> ExtraBookings { get; set; } = [];
 }

@@ -48,7 +48,7 @@ public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : E
                 s.StartDatetime,
                 s.EndDatetime,
                 s.RequiresLogin,
-                Resource = s.Resource,
+                s.Resource,
                 SlotContracts = s.SlotContracts.Select(sc => new
                 {
                     sc.Id,
@@ -60,10 +60,7 @@ public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : E
                     sc.CanPayLater,
                     sc.Description
                 }).ToList(),
-                SlotBookingsCount = s.SlotBookings.Count(sb =>
-                    sb.BookingStatusId == BookingStatuses.ConfirmedId ||
-                    (sb.BookingStatusId == BookingStatuses.PendingId &&
-                     sb.BookingStatusDate >= pendingCutoff))
+                SlotBookingsCount = 0
             })
             .ToListAsync(ct);
 

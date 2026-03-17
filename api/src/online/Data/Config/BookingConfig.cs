@@ -4,9 +4,9 @@ using Online.Entities;
 
 namespace Online.Data.Config;
 
-public class BillConfig : IEntityTypeConfiguration<Bill>
+public class BookingConfig : IEntityTypeConfiguration<Booking>
 {
-    public void Configure(EntityTypeBuilder<Bill> builder)
+    public void Configure(EntityTypeBuilder<Booking> builder)
     {
     }
 }
