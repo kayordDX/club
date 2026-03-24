@@ -26,20 +26,15 @@
 		try {
 			const isAvailable = await availableMutation.mutateAsync({
 				data: {
-					id: slot.groupId ?? slot.id,
-					typeId: slot.groupId ? 2 : 1,
+					id: slot.id,
 					slotCount: slotCount,
 				},
 			});
 			if (isAvailable) {
-				const params = new URLSearchParams({
-					id: slot.id,
-					typeId: slot.groupId ? "2" : "1",
-					slotCount: String(slotCount),
-				});
-
 				goto(
-					resolve(`/outlet/${page.params.slug}/book/${page.params.id}/booking?${params.toString()}`)
+					resolve(
+						`/outlet/${page.params.slug}/book/${page.params.id}/slot/${slot.id}?slotCount=${slotCount ?? 1}`
+					)
 				);
 			} else {
 				toast.error("Not enough slots available");

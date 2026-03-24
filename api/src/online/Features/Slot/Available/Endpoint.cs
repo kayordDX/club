@@ -16,36 +16,14 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<AvailableSlotRequest, b
 
     public override async Task HandleAsync(AvailableSlotRequest r, CancellationToken ct)
     {
-        bool result = false;
-
-        // TypeId 1 == Slot, 2 == Group
-        if (r.TypeId == 1)
+        var slot = await _dbContext.Slot.FirstOrDefaultAsync(x => x.Id == r.Id, ct);
+        if (slot == null)
         {
-            var slotContract = await _dbContext.SlotContract.FirstOrDefaultAsync(x => x.SlotId == r.Id, ct);
-            result = slotContract != null && !_dbContext.SlotContractBooking.Any(x => x.SlotContractId == slotContract.Id);
+            ValidationContext.Instance.ThrowError("Slot not found");
         }
 
-        if (r.TypeId == 2)
-        {
-            // Get all slot contract IDs for slots in this group
-            var slotContractIds = await _dbContext.SlotContract
-                .Where(sc => _dbContext.Slot
-                    .Where(s => s.GroupId == r.Id)
-                    .Select(s => s.Id)
-                    .Contains(sc.SlotId))
-                .Select(sc => sc.Id)
-                .ToListAsync(ct);
-
-            int maxCount = await _dbContext.Slot
-                .Where(s => s.GroupId == r.Id)
-                .CountAsync(ct);
-
-            // Count how many of those slot contracts are already booked
-            int bookedCount = await _dbContext.SlotContractBooking
-                .CountAsync(scb => slotContractIds.Contains(scb.SlotContractId), ct);
-            int requested = r.SlotCount ?? 1;
-            result = (maxCount - bookedCount) >= requested;
-        }
+        int bookedCount = await _dbContext.SlotContractBooking.Where(x => x.SlotContract.SlotId == r.Id).CountAsync(ct);
+        bool result = (slot.MaxBookings - bookedCount) >= (r.SlotCount ?? 1);
         await Send.OkAsync(result, ct);
     }
 }

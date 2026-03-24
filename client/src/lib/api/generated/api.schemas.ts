@@ -55,8 +55,6 @@ export interface ErrorResponse {
 export interface SlotGetAllResponse {
 	id: string;
 	/** @nullable */
-	groupId?: string | null;
-	/** @nullable */
 	facilityId?: number | null;
 	/** @nullable */
 	resourceId?: number | null;
@@ -67,14 +65,11 @@ export interface SlotGetAllResponse {
 	endDatetime?: string | null;
 	booked: number;
 	total: number;
-	canBookForGuests: boolean;
-	requiresLogin: boolean;
 	isAvailable: boolean;
 }
 
 export interface AvailableSlotRequest {
 	id: string;
-	typeId: number;
 	/** @nullable */
 	slotCount?: number | null;
 }
@@ -315,10 +310,7 @@ export interface Slot {
 	startDatetime: string;
 	/** @nullable */
 	endDatetime?: string | null;
-	/** @nullable */
-	groupId?: string | null;
-	canPayLater: boolean;
-	requiresLogin: boolean;
+	maxBookings: number;
 	slotContracts: SlotContract[];
 	extraBookings: ExtraBooking[];
 }

@@ -1,15 +1,11 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using Online.Common;
-using Online.Common.Config;
 using Online.Data;
 
 namespace Online.Features.Slot.GetAll;
 
-public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : Endpoint<SlotGetAllRequest, List<SlotGetAllResponse>>
+public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List<SlotGetAllResponse>>
 {
     private readonly AppDbContext _dbContext = dbContext;
-    private readonly AppConfig _appConfig = appConfig.Value;
 
     public override void Configure()
     {
@@ -20,8 +16,6 @@ public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : E
 
     public override async Task HandleAsync(SlotGetAllRequest req, CancellationToken ct)
     {
-        var pendingCutoff = DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(_appConfig.PendingTimeoutMinutes));
-
         // Ensure the date is in UTC
         var dateUtc = req.Date.Kind switch
         {
@@ -34,53 +28,31 @@ public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : E
         var dateStart = new DateTime(dateUtc.Year, dateUtc.Month, dateUtc.Day, 0, 0, 0, DateTimeKind.Utc);
         var dateEnd = dateStart.AddDays(1);
 
-        var slotResponses = await _dbContext.Slot
-            .Where(s => s.FacilityId == req.FacilityId &&
-                        s.StartDatetime >= dateStart &&
-                        s.StartDatetime < dateEnd)
-            .OrderBy(s => s.StartDatetime)
-            .Select(s => new
-            {
-                s.Id,
-                s.GroupId,
-                s.FacilityId,
-                s.ResourceId,
-                s.StartDatetime,
-                s.EndDatetime,
-                s.RequiresLogin,
-                s.Resource,
-                SlotContracts = s.SlotContracts.Select(sc => new
-                {
-                    sc.Id,
-                    sc.ContractId,
-                    sc.Contract.Name,
-                    sc.Price,
-                    sc.ValidationId,
-                    sc.Validation,
-                    sc.CanPayLater,
-                    sc.Description
-                }).ToList(),
-                SlotBookingsCount = 0
-            })
+        var result = await _dbContext.Database
+            .SqlQuery<SlotGetAllResponse>($"""
+                SELECT
+                    s.id,
+                    s.facility_id,
+                    s.resource_id,
+                    r.name resource_name,
+                    s.start_datetime,
+                    s.end_datetime,
+                    CAST(COUNT(scb.id) AS integer) booked,
+                    s.max_bookings total
+                FROM slot s
+                LEFT JOIN resource r
+                    ON r.id = s.resource_id
+                LEFT JOIN slot_contract sc
+                    ON sc.slot_id = s.id
+                LEFT JOIN slot_contract_booking scb
+                    ON scb.slot_contract_id = sc.id
+                WHERE s.facility_id = {req.FacilityId}
+                  AND s.start_datetime >= {dateStart}
+                  AND s.start_datetime < {dateEnd}
+                GROUP BY s.id, r.name
+                ORDER BY s.start_datetime
+                """)
             .ToListAsync(ct);
-
-        var result = slotResponses
-            .GroupBy(s => s.GroupId ?? s.Id)
-            .Select(group => new SlotGetAllResponse
-            {
-                Id = group.Key,
-                GroupId = group.First().GroupId,
-                FacilityId = group.First().FacilityId,
-                ResourceId = group.First().ResourceId,
-                ResourceName = group.First().Resource?.Name,
-                StartDatetime = DateTime.SpecifyKind(group.First().StartDatetime, DateTimeKind.Utc),
-                EndDatetime = group.First().EndDatetime,
-                Booked = group.Sum(g => g.SlotBookingsCount),
-                Total = group.Count(),
-                RequiresLogin = group.Any(g => g.RequiresLogin),
-            })
-            .Where(x => x.IsAvailable)
-            .ToList();
 
         await Send.OkAsync(result, ct);
     }

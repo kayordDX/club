@@ -1027,19 +1027,12 @@
           "startDatetime",
           "booked",
           "total",
-          "canBookForGuests",
-          "requiresLogin",
           "isAvailable"
         ],
         "properties": {
           "id": {
             "type": "string",
             "format": "guid"
-          },
-          "groupId": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
           },
           "facilityId": {
             "type": "integer",
@@ -1072,12 +1065,6 @@
             "type": "integer",
             "format": "int32"
           },
-          "canBookForGuests": {
-            "type": "boolean"
-          },
-          "requiresLogin": {
-            "type": "boolean"
-          },
           "isAvailable": {
             "type": "boolean"
           }
@@ -1087,17 +1074,12 @@
         "type": "object",
         "additionalProperties": false,
         "required": [
-          "id",
-          "typeId"
+          "id"
         ],
         "properties": {
           "id": {
             "type": "string",
             "format": "guid"
-          },
-          "typeId": {
-            "type": "integer",
-            "format": "int32"
           },
           "slotCount": {
             "type": "integer",
@@ -1666,8 +1648,7 @@
           "created",
           "id",
           "startDatetime",
-          "canPayLater",
-          "requiresLogin",
+          "maxBookings",
           "slotContracts",
           "extraBookings"
         ],
@@ -1730,16 +1711,9 @@
             "format": "date-time",
             "nullable": true
           },
-          "groupId": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "canPayLater": {
-            "type": "boolean"
-          },
-          "requiresLogin": {
-            "type": "boolean"
+          "maxBookings": {
+            "type": "integer",
+            "format": "int32"
           },
           "slotContracts": {
             "type": "array",

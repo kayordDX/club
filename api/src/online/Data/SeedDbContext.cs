@@ -109,22 +109,17 @@ public static class SeedDbContext
 
                     if (resource.Name == "1st" || resource.Name == "10th")
                     {
-                        var groupId = Guid.CreateVersion7();
-                        // Loop 4 times
-                        for (int i = 0; i < 4; i++)
-                        {
-                            var id = Guid.CreateVersion7();
-                            await dbContext.Slot.AddAsync(new Slot { Id = id, StartDatetime = startTime, EndDatetime = endTime, Resource = resource, Facility = resource.Facility, GroupId = groupId }, ct);
-                            await dbContext.SlotContract.AddAsync(new SlotContract { Contract = contract1, Price = 50, SlotId = id, Validation = validation2, Description = "9 Holes" }, ct);
-                            await dbContext.SlotContract.AddAsync(new SlotContract { Contract = contract1, Price = 100, SlotId = id, Validation = validation2, Description = "18 Holes" }, ct);
-                        }
+                        var id = Guid.CreateVersion7();
+                        await dbContext.Slot.AddAsync(new Slot { Id = id, StartDatetime = startTime, EndDatetime = endTime, Resource = resource, Facility = resource.Facility, MaxBookings = 4 }, ct);
+                        await dbContext.SlotContract.AddAsync(new SlotContract { Contract = contract1, Price = 50, SlotId = id, Validation = validation2, Description = "9 Holes" }, ct);
+                        await dbContext.SlotContract.AddAsync(new SlotContract { Contract = contract1, Price = 100, SlotId = id, Validation = validation2, Description = "18 Holes" }, ct);
                     }
                     else
                     {
                         var id = Guid.CreateVersion7();
                         await dbContext.Slot.AddAsync(new Slot { Id = id, StartDatetime = startTime, EndDatetime = endTime, Resource = resource, Facility = resource.Facility }, ct);
-                        await dbContext.SlotContract.AddAsync(new SlotContract { Contract = contract2, Price = 40, SlotId = id, Validation = validation1, Description = "9 Holes" }, ct);
-                        await dbContext.SlotContract.AddAsync(new SlotContract { Contract = contract2, Price = 100, SlotId = id, Validation = validation1, Description = "18 Holes" }, ct);
+                        await dbContext.SlotContract.AddAsync(new SlotContract { Contract = contract2, Price = 40, SlotId = id, Validation = validation1, Description = "Member" }, ct);
+                        await dbContext.SlotContract.AddAsync(new SlotContract { Contract = contract2, Price = 100, SlotId = id, Validation = validation1, Description = "Guest" }, ct);
                     }
                 }
             }
