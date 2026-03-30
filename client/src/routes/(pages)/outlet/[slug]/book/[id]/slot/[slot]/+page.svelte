@@ -2,11 +2,10 @@
 	import { goto } from "$app/navigation";
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
-	import {
-		bookingFlow,
-		type BookingPaymentMethod,
-		type BookingPlayer,
-	} from "$lib/stores/booking-flow.svelte";
+	import { createBookingCreate } from "$lib/api";
+
+	const bookingMutation = createBookingCreate();
+
 	import { createSlotGetAll, createSlotGetContracts, type SlotGetAllResponse } from "$lib/api";
 	import Query from "$lib/components/Query.svelte";
 	import { Badge, Button, Card, Empty, Input, ToggleGroup } from "@kayord/ui";
@@ -16,9 +15,15 @@
 		Clock3Icon,
 		CreditCardIcon,
 		UserRoundIcon,
-		WalletIcon,
 	} from "@lucide/svelte";
+	import { toast } from "svelte-sonner";
 	import { z } from "zod";
+
+	type BookingPlayer = {
+		name: string;
+		cellNo: string;
+		email: string;
+	};
 
 	type PlayerFieldErrors = Partial<Record<keyof BookingPlayer, string>>;
 
@@ -54,41 +59,11 @@
 	let players = $state<BookingPlayer[]>([]);
 	let playerErrors = $state<Record<number, PlayerFieldErrors>>({});
 	let selectedContractId = $state<number | null>(null);
-	let paymentMethod = $state<BookingPaymentMethod>("credit-card");
 
 	const selectedContract = $derived(
 		contracts.find((contract) => contract.id === selectedContractId) ?? contracts[0] ?? null
 	);
 	const totalPrice = $derived((selectedContract?.price ?? 0) * slotCount);
-	const paymentOptions = $derived.by(() => {
-		const options: Array<{
-			value: BookingPaymentMethod;
-			label: string;
-			description: string;
-			icon: typeof CreditCardIcon;
-			disabled: boolean;
-		}> = [
-			{
-				value: "credit-card",
-				label: "Credit card",
-				description: "Pay online and secure the booking instantly.",
-				icon: CreditCardIcon,
-				disabled: false,
-			},
-			{
-				value: "pay-later",
-				label: "Pay later",
-				description: "Reserve now and settle payment at the outlet.",
-				icon: WalletIcon,
-				disabled: selectedContract ? !selectedContract.canPayLater : false,
-			},
-		];
-
-		return options;
-	});
-	const selectedPayment = $derived(
-		paymentOptions.find((option) => option.value === paymentMethod) ?? paymentOptions[0]
-	);
 
 	const syncPlayers = (count: number) => {
 		const nextPlayers = createPlayers(count, players);
@@ -116,12 +91,6 @@
 		}
 	});
 
-	$effect(() => {
-		if (paymentMethod === "pay-later" && selectedPayment?.disabled) {
-			paymentMethod = "credit-card";
-		}
-	});
-
 	const formatCurrency = (value: number) =>
 		new Intl.NumberFormat("en-ZA", {
 			style: "currency",
@@ -135,13 +104,6 @@
 			minute: "2-digit",
 			hour12: false,
 		});
-	};
-
-	const createLabel = (slotData?: SlotGetAllResponse) => {
-		if (!slotData) return "Selected slot";
-		const start = formatTime(slotData.startDatetime);
-		const end = formatTime(slotData.endDatetime);
-		return `${slotData.resourceName} - ${start} to ${end}`;
 	};
 
 	function createPlayers(count: number, existing: BookingPlayer[] = []) {
@@ -185,26 +147,32 @@
 	};
 
 	const book = async () => {
-		if (!selectedContract || !slot) return;
+		try {
+			if (!selectedContractId || !slot) {
+				toast.warning("Invalid selection");
+				return;
+			}
 
-		bookingFlow.set({
-			bookingId: 0,
-			slotId,
-			facilityId,
-			outletSlug: slug,
-			quantity: slotCount,
-			selectedDate,
-			selectedSlotLabel: createLabel(slot),
-			selectedContract,
-			players: players.map((player) => ({ ...player })),
-			paymentMethod,
-			contactEmail: players[0]?.email ?? "",
-			totalPrice,
-			createdAt: new Date().toISOString(),
-			updatedAt: new Date().toISOString(),
-		});
+			const bookings = players.map((player) => ({
+				slotId,
+				slotContractId: selectedContractId!,
+				name: player.name,
+				cellphone: player.cellNo,
+				email: player.email,
+			}));
 
-		await goto(resolve(`/outlet/${slug}/book/${facilityId}/booking/0/pay`));
+			const bookingResponse = await bookingMutation.mutateAsync({
+				data: {
+					bookings: bookings,
+				},
+			});
+
+			await goto(resolve(`/outlet/${slug}/book/${facilityId}/booking/${bookingResponse.id}/pay`));
+		} catch {
+			toast.error("Failed to create booking. Please try again.");
+		} finally {
+			toast.info("Created booking");
+		}
 	};
 </script>
 
@@ -303,13 +271,14 @@
 							<div class="w-full">
 								<ToggleGroup.Root
 									type="single"
+									orientation="vertical"
 									class="w-full border"
 									onValueChange={(value) => (selectedContractId = Number(value))}
 								>
 									{#each contracts as contract (contract.id)}
 										<ToggleGroup.Item
 											value={contract.id.toString()}
-											class="flex h-fit flex-1 flex-col p-2"
+											class="border-b-muted flex h-fit flex-1 flex-col border-b p-4"
 										>
 											<div class="text-muted-foreground text-xs">
 												{contract.contractName}
