@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
-	import { bookingFlow } from "$lib/stores/booking-flow.svelte";
-	import { Badge, Button, Card, Table, ToggleGroup } from "@kayord/ui";
+
+	import { Badge, Button, Card, Table, ToggleGroup, RadioGroup, Label } from "@kayord/ui";
 	import {
 		CalendarDaysIcon,
 		ChevronLeftIcon,
@@ -98,6 +98,24 @@
 						</p>
 					</div>
 				</div>
+				<RadioGroup.Root value="comfortable">
+					<div class="flex items-center space-x-2">
+						<RadioGroup.Item value="default" id="r1">
+							<div class="text-muted-foreground text-xs">Credit</div>
+							<div>Credit Card</div>
+							<Badge>Credit Icon</Badge>
+						</RadioGroup.Item>
+						<Label for="r1">Default</Label>
+					</div>
+					<div class="flex items-center space-x-2">
+						<RadioGroup.Item value="comfortable" id="r2" />
+						<Label for="r2">Comfortable</Label>
+					</div>
+					<div class="flex items-center space-x-2">
+						<RadioGroup.Item value="compact" id="r3" />
+						<Label for="r3">Compact</Label>
+					</div>
+				</RadioGroup.Root>
 				<ToggleGroup.Root type="single" class="w-full border">
 					<ToggleGroup.Item value="credit" class="flex h-fit flex-1 flex-col p-2">
 						<div class="text-muted-foreground text-xs">Credit</div>

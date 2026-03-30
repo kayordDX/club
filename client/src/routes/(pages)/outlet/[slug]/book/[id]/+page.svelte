@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Breadcrumb, Popover, ButtonGroup } from "@kayord/ui";
+	import { Button, Popover, ButtonGroup } from "@kayord/ui";
 	import { Calendar } from "@kayord/ui/calendar";
 	import { CalendarIcon, ChevronRightIcon, ChevronLeftIcon, BuildingIcon } from "@lucide/svelte";
 	import {
