@@ -11,5 +11,6 @@ public class BookingDTO
     public bool IsPaid { get; set; }
     public decimal AmountOutstanding { get; set; }
     public decimal AmountPaid { get; set; }
+    public DateTime ExpiresAt { get; set; }
     public List<SlotContractBookingDTO> SlotContractBookings { get; set; } = [];
 }

@@ -83,6 +83,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingCreateRequest, B
             IsPaid = false,
             AmountOutstanding = totalPrice,
             AmountPaid = 0,
+            ExpiresAt = now.AddMinutes(10)
         };
 
         await _dbContext.Booking.AddAsync(booking, ct);

@@ -299,6 +299,7 @@ export interface Booking {
 	isPaid: boolean;
 	amountOutstanding: number;
 	amountPaid: number;
+	expiresAt: string;
 	slotContractBookings: SlotContractBooking[];
 }
 
@@ -566,6 +567,7 @@ export interface BookingDTO {
 	isPaid: boolean;
 	amountOutstanding: number;
 	amountPaid: number;
+	expiresAt: string;
 	slotContractBookings: SlotContractBookingDTO[];
 }
 

@@ -1918,6 +1918,7 @@
           "isPaid",
           "amountOutstanding",
           "amountPaid",
+          "expiresAt",
           "slotContractBookings"
         ],
         "properties": {
@@ -1978,6 +1979,10 @@
           "amountPaid": {
             "type": "number",
             "format": "decimal"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
           },
           "slotContractBookings": {
             "type": "array",
@@ -2620,6 +2625,7 @@
           "isPaid",
           "amountOutstanding",
           "amountPaid",
+          "expiresAt",
           "slotContractBookings"
         ],
         "properties": {
@@ -2661,6 +2667,10 @@
           "amountPaid": {
             "type": "number",
             "format": "decimal"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
           },
           "slotContractBookings": {
             "type": "array",

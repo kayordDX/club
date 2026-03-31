@@ -1,4 +1,5 @@
 ﻿using Online.Common.Extensions;
+using TickerQ.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,7 @@ builder.Services.ConfigureHealth(builder.Configuration);
 builder.Services.ConfigureCors(builder.Configuration);
 
 builder.Services.ConfigureEF(builder.Configuration, builder.Environment);
+builder.Services.ConfigureTickerQ(builder.Configuration);
 builder.Services.ConfigureGeneral(builder.Configuration);
 builder.Services.ConfigureAuth(builder.Configuration);
 
@@ -27,5 +29,5 @@ app.UseAuthorization();
 app.UseDetection();
 app.UseApi();
 app.UseHealth();
-
+app.UseTickerQ();
 app.Run();

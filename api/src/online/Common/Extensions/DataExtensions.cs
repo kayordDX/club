@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Online.Data;
 using Online.Entities;
+using TickerQ.EntityFrameworkCore.DbContextFactory;
 
 namespace Online.Common.Extensions;
 
@@ -50,9 +51,14 @@ public static class DataExtensions
     {
         using var scope = serviceProvider.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var tickerDb = scope.ServiceProvider.GetRequiredService<TickerQDbContext>();
         if (db.Database.IsNpgsql())
         {
             await db.Database.MigrateAsync(ct);
+        }
+        if (tickerDb.Database.IsNpgsql())
+        {
+            await tickerDb.Database.MigrateAsync(ct);
         }
 
         if (env.IsDevelopment() || env.IsEnvironment("Testing"))

@@ -13,6 +13,7 @@
 	} from "@lucide/svelte";
 	import { createBookingGet } from "$lib/api";
 	import Query from "$lib/components/Query.svelte";
+	import CountdownTimer from "$lib/components/CountdownTimer.svelte";
 
 	const slug = $derived(page.params.slug ?? "");
 	const facilityId = $derived(Number(page.params.id) || 0);
@@ -29,9 +30,9 @@
 					<div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
 						<div class="space-y-2">
 							<Card.Title class="text-2xl">Payment details</Card.Title>
-							<Card.Description class="max-w-2xl text-sm leading-6">
-								Select payment method to make booking
-							</Card.Description>
+							{#if query.data?.expiresAt}
+								<CountdownTimer expiresAt={query.data.expiresAt} />
+							{/if}
 						</div>
 					</div>
 				</Card.Header>
