@@ -8,10 +8,12 @@ public class FunctionJob(AppDbContext dbContext)
 {
     private readonly AppDbContext _dbContext = dbContext;
 
-    [TickerFunction("Test")]
-    public async Task StockThreshold(CancellationToken ct)
+    [TickerFunction("Sql")]
+    public async Task RawSql(TickerFunctionContext<string> tickerContext, CancellationToken ct)
     {
-        // _dbContext.Database.SetCommandTimeout(TimeSpan.FromMinutes(2));
-        await _dbContext.Database.ExecuteSqlAsync($"SELECT update_stock_threshold();", ct);
+        _dbContext.Database.SetCommandTimeout(TimeSpan.FromMinutes(2));
+        var sql = tickerContext.Request;
+        if (sql == null) return;
+        await _dbContext.Database.ExecuteSqlRawAsync(sql, ct);
     }
 }
