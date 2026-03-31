@@ -25,6 +25,15 @@ public static class TickerExtensions
                 });
             });
 
+            services.AddDbContext<TickerQDbContext>(options =>
+            {
+                options.UseSnakeCaseNamingConvention();
+                options.UseNpgsql(
+                    configuration.GetConnectionString("DefaultConnection"),
+                    b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)
+                );
+            });
+
             opt.AddDashboard(o =>
             {
                 o.WithBasicAuth(configuration["TickerQBasicAuth:Username"]!, configuration["TickerQBasicAuth:Password"]!);

@@ -21,6 +21,12 @@ dotnet ef migrations remove --project src/online/online.csproj
 # remove
 dotnet ef migrations remove --project src/online/online.csproj
 
+# list dbContexts
+dotnet ef dbcontext list --project src/online/online.csproj --startup-project src/online/online.csproj
+
+# TickerQ
+dotnet ef migrations add TickerQInit --project src/online/online.csproj -c TickerQDbContext -o ./Data/TickerQMigrations
+
 # squash migrations
 dotnet steward squash api/src/online/Data/Migrations
 ```
