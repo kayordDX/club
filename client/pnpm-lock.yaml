@@ -38,6 +38,9 @@ importers:
       '@tailwindcss/vite':
         specifier: ^4.2.2
         version: 4.2.2(vite@8.0.3(@emnapi/core@1.9.0)(@emnapi/runtime@1.9.0)(@types/node@25.0.1)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.3))
+      '@tanstack/svelte-form':
+        specifier: ^1.28.6
+        version: 1.28.6(svelte@5.55.1)
       '@tanstack/svelte-query':
         specifier: ^6.1.10
         version: 6.1.10(svelte@5.55.1)
@@ -98,9 +101,6 @@ importers:
       svelte-sonner:
         specifier: ^1.1.0
         version: 1.1.0(svelte@5.55.1)
-      sveltekit-superforms:
-        specifier: ^2.30.1
-        version: 2.30.1(@sveltejs/kit@2.55.0(@sveltejs/vite-plugin-svelte@7.0.0(svelte@5.55.1)(vite@8.0.3(@emnapi/core@1.9.0)(@emnapi/runtime@1.9.0)(@types/node@25.0.1)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.3)))(svelte@5.55.1)(typescript@6.0.2)(vite@8.0.3(@emnapi/core@1.9.0)(@emnapi/runtime@1.9.0)(@types/node@25.0.1)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.3)))(@types/json-schema@7.0.15)(svelte@5.55.1)(typescript@6.0.2)
       tailwindcss:
         specifier: ^4.2.2
         version: 4.2.2
@@ -842,13 +842,38 @@ packages:
     peerDependencies:
       vite: ^5.2.0 || ^6 || ^7 || ^8
 
+  '@tanstack/devtools-event-client@0.4.3':
+    resolution: {integrity: sha512-OZI6QyULw0FI0wjgmeYzCIfbgPsOEzwJtCpa69XrfLMtNXLGnz3d/dIabk7frg0TmHo+Ah49w5I4KC7Tufwsvw==}
+    engines: {node: '>=18'}
+    hasBin: true
+
+  '@tanstack/form-core@1.28.6':
+    resolution: {integrity: sha512-4zroxL6VDj5O+w7l3dYZnUeL/h30KtNSV7UWzKAL7cl+8clMFdISPDlDlluS37As7oqvPVKo8B83VlIBvgmRog==}
+
+  '@tanstack/pacer-lite@0.1.1':
+    resolution: {integrity: sha512-y/xtNPNt/YeyoVxE/JCx+T7yjEzpezmbb+toK8DDD1P4m7Kzs5YR956+7OKexG3f8aXgC3rLZl7b1V+yNUSy5w==}
+    engines: {node: '>=18'}
+
   '@tanstack/query-core@5.95.2':
     resolution: {integrity: sha512-o4T8vZHZET4Bib3jZ/tCW9/7080urD4c+0/AUaYVpIqOsr7y0reBc1oX3ttNaSW5mYyvZHctiQ/UOP2PfdmFEQ==}
+
+  '@tanstack/store@0.9.3':
+    resolution: {integrity: sha512-8reSzl/qGWGGVKhBoxXPMWzATSbZLZFWhwBAFO9NAyp0TxzfBP0mIrGb8CP8KrQTmvzXlR/vFPPUrHTLBGyFyw==}
+
+  '@tanstack/svelte-form@1.28.6':
+    resolution: {integrity: sha512-SdR6rfRSQ5H3WZBxW8CStvOC5w0dv1ew0+UB/mNsb06WDTpabEqKEkoA8fLvo8LOQ2XGplC3R0h1g2So1fBOTQ==}
+    peerDependencies:
+      svelte: ^5.0.0
 
   '@tanstack/svelte-query@6.1.10':
     resolution: {integrity: sha512-YrRIIlTfmkkCiLwQ+bxFg/Ltil9RoRjiBlJHx0CBh5+9ZRbvKzBqYBncpGTEwW2AdSJfYimgoBABFmCa5q+6qw==}
     peerDependencies:
       svelte: ^5.25.0
+
+  '@tanstack/svelte-store@0.10.3':
+    resolution: {integrity: sha512-9gM4mc+a42PQtydeFvq+BYqO1NYp85YocKFybV1mis9kCg8XbpwVfwbTkiiKDPdtnSMCc5nUqzcxmvvNJAVF8A==}
+    peerDependencies:
+      svelte: ^5.0.0
 
   '@tanstack/table-core@8.21.3':
     resolution: {integrity: sha512-ldZXEhOBb8Is7xLs01fR3YEc3DERiz5silj8tnGkFZytt1abEvl/GhUmCE0PMLaMPTa3Jk4HbKmRlHmu+gCftg==}
@@ -3208,11 +3233,34 @@ snapshots:
       tailwindcss: 4.2.2
       vite: 8.0.3(@emnapi/core@1.9.0)(@emnapi/runtime@1.9.0)(@types/node@25.0.1)(esbuild@0.27.4)(jiti@2.6.1)(yaml@2.8.3)
 
+  '@tanstack/devtools-event-client@0.4.3': {}
+
+  '@tanstack/form-core@1.28.6':
+    dependencies:
+      '@tanstack/devtools-event-client': 0.4.3
+      '@tanstack/pacer-lite': 0.1.1
+      '@tanstack/store': 0.9.3
+
+  '@tanstack/pacer-lite@0.1.1': {}
+
   '@tanstack/query-core@5.95.2': {}
+
+  '@tanstack/store@0.9.3': {}
+
+  '@tanstack/svelte-form@1.28.6(svelte@5.55.1)':
+    dependencies:
+      '@tanstack/form-core': 1.28.6
+      '@tanstack/svelte-store': 0.10.3(svelte@5.55.1)
+      svelte: 5.55.1
 
   '@tanstack/svelte-query@6.1.10(svelte@5.55.1)':
     dependencies:
       '@tanstack/query-core': 5.95.2
+      svelte: 5.55.1
+
+  '@tanstack/svelte-store@0.10.3(svelte@5.55.1)':
+    dependencies:
+      '@tanstack/store': 0.9.3
       svelte: 5.55.1
 
   '@tanstack/table-core@8.21.3': {}
@@ -4208,7 +4256,8 @@ snapshots:
 
   mdurl@2.0.0: {}
 
-  memoize-weak@1.0.2: {}
+  memoize-weak@1.0.2:
+    optional: true
 
   memoize@10.1.0:
     dependencies:
@@ -4647,6 +4696,7 @@ snapshots:
     transitivePeerDependencies:
       - '@types/json-schema'
       - typescript
+    optional: true
 
   tabbable@6.4.0: {}
 
@@ -4694,7 +4744,8 @@ snapshots:
     dependencies:
       typescript: 6.0.2
 
-  ts-deepmerge@7.0.3: {}
+  ts-deepmerge@7.0.3:
+    optional: true
 
   tsconfck@3.1.6(typescript@6.0.2):
     optionalDependencies:
