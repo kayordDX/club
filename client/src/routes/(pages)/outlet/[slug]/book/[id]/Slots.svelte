@@ -30,7 +30,7 @@
 			<Empty.Content></Empty.Content>
 		</Empty.Root>
 	{/if}
-	{#each availableSlots as slot (slot.id)}
+	{#each slots as slot (slot.id)}
 		<Slot {slot} {selectedDate} {refetch} />
 	{/each}
 </div>

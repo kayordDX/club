@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Button, Input, Popover, StatusDot, Table } from "@kayord/ui";
 	import { page } from "$app/state";
+	import { cn } from "@kayord/ui/utils";
 	import { resolve } from "$app/paths";
 	import { type SlotGetAllResponse, createSlotGetContracts, createSlotAvailable } from "$lib/api";
 	import { Card } from "@kayord/ui";
@@ -19,6 +20,7 @@
 	let slotCount = $state(1);
 	let slotContractEnabled = $state(false);
 	const available = $derived(slot.total - slot.booked);
+	const isUnavailable = $derived(available <= 0);
 
 	const availableMutation = createSlotAvailable();
 
@@ -60,7 +62,13 @@
 	};
 </script>
 
-<Card.Root class="flex h-full w-full flex-row items-center gap-6 p-4">
+<Card.Root
+	class={cn(
+		"flex h-full w-full flex-row items-center gap-6 p-4",
+		isUnavailable && "pointer-events-none opacity-50"
+	)}
+	aria-disabled={isUnavailable}
+>
 	<div class="flex h-full flex-col justify-between gap-2">
 		<div class="text-muted-foreground text-xs">Resource</div>
 		<div class="font-bold">
