@@ -45,7 +45,6 @@
 				{/if}
 			</Card.Content>
 			<Card.Footer class="flex flex-col items-center gap-2">
-				<Separator />
 				<p class="text-muted-foreground text-xs">
 					We use Google to keep your account secure. No password needed.
 				</p>

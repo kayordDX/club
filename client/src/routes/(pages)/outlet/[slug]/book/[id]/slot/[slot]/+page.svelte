@@ -6,9 +6,10 @@
 
 	const bookingMutation = createBookingCreate();
 
-	import { createSlotGetAll, createSlotGetContracts, type SlotGetAllResponse } from "$lib/api";
+	import { createSlotGetAll, createSlotGetContracts } from "$lib/api";
+	import { createAppForm, Form } from "$lib/components/Form";
 	import Query from "$lib/components/Query.svelte";
-	import { Badge, Button, Card, Empty, Input, ToggleGroup } from "@kayord/ui";
+	import { Badge, Button, Card, Empty } from "@kayord/ui";
 	import {
 		CalendarDaysIcon,
 		ChevronLeftIcon,
@@ -23,9 +24,8 @@
 		name: string;
 		cellNo: string;
 		email: string;
+		contractId: string;
 	};
-
-	type PlayerFieldErrors = Partial<Record<keyof BookingPlayer, string>>;
 
 	const slug = $derived(page.params.slug ?? "");
 	const facilityId = $derived(Number(page.params.id) || 0);
@@ -45,6 +45,12 @@
 
 	const slot = $derived(slotQuery.data?.find((item) => item.id === slotId));
 	const contracts = $derived(contractsQuery.data ?? []);
+	const contractItems = $derived(
+		contracts.map((contract) => ({
+			value: contract.id.toString(),
+			label: `${contract.contractName} ${contract.description} - R ${contract.price.toFixed(2)}`,
+		}))
+	);
 
 	const playerSchema = z.object({
 		name: z.string().trim().min(1, "Name is required"),
@@ -54,41 +60,13 @@
 			.min(1, "Cell No is required")
 			.refine((value) => /[0-9]/.test(value), "Cell No must contain digits"),
 		email: z.email("Enter a valid email address"),
+		contractId: z.string().min(1, "Contract ID is required"),
 	});
 
-	let players = $state<BookingPlayer[]>([]);
-	let playerErrors = $state<Record<number, PlayerFieldErrors>>({});
-	let selectedContractId = $state<number | null>(null);
-
-	const selectedContract = $derived(
-		contracts.find((contract) => contract.id === selectedContractId) ?? contracts[0] ?? null
-	);
-	const totalPrice = $derived((selectedContract?.price ?? 0) * slotCount);
-
-	const syncPlayers = (count: number) => {
-		const nextPlayers = createPlayers(count, players);
-		players.length = 0;
-		players.push(...nextPlayers);
-
-		const nextErrors: Record<number, PlayerFieldErrors> = {};
-		for (let index = 0; index < count; index += 1) {
-			if (playerErrors[index]) {
-				nextErrors[index] = playerErrors[index];
-			}
-		}
-		playerErrors = nextErrors;
-	};
-
-	$effect(() => {
-		if (players.length !== slotCount) {
-			syncPlayers(slotCount);
-		}
-	});
-
-	$effect(() => {
-		if (!selectedContractId && contracts.length > 0) {
-			selectedContractId = contracts[0].id;
-		}
+	const playersSchema = z.object({
+		players: z
+			.array(playerSchema)
+			.refine((arr) => arr.length > 0, "At least one player is required"),
 	});
 
 	const formatCurrency = (value: number) =>
@@ -106,74 +84,58 @@
 		});
 	};
 
-	function createPlayers(count: number, existing: BookingPlayer[] = []) {
-		return Array.from({ length: count }, (_, index) => ({
-			name: existing[index]?.name ?? "",
-			cellNo: existing[index]?.cellNo ?? "",
-			email: existing[index]?.email ?? "",
+	function createPlayers(count: number) {
+		return Array.from({ length: count }, () => ({
+			name: "",
+			cellNo: "",
+			email: "",
+			contractId: "",
 		}));
 	}
 
-	const updatePlayer = (index: number, field: keyof BookingPlayer, value: string) => {
-		players[index][field] = value;
-		if (playerErrors[index]?.[field]) {
-			playerErrors[index] = {
-				...playerErrors[index],
-				[field]: undefined,
-			};
-		}
-	};
+	const form = createAppForm(() => ({
+		defaultValues: {
+			players: createPlayers(slotCount) as BookingPlayer[],
+		},
+		validators: {
+			onChange: playersSchema,
+		},
+		onSubmit: async ({ value }) => {
+			try {
+				const bookings = value.players.map((player) => ({
+					slotId,
+					slotContractId: Number(player.contractId),
+					name: player.name,
+					cellphone: player.cellNo,
+					email: player.email,
+				}));
 
-	const validatePlayers = () => {
-		const nextErrors: Record<number, PlayerFieldErrors> = {};
-		let hasErrors = false;
+				const bookingResponse = await bookingMutation.mutateAsync({
+					data: {
+						bookings: bookings,
+					},
+				});
 
-		players.forEach((player, index) => {
-			const result = playerSchema.safeParse(player);
-			if (!result.success) {
-				hasErrors = true;
-				nextErrors[index] = {};
-				for (const issue of result.error.issues) {
-					const field = issue.path[0];
-					if (typeof field === "string" && !(field in nextErrors[index])) {
-						nextErrors[index][field as keyof BookingPlayer] = issue.message;
-					}
-				}
+				await goto(resolve(`/outlet/${slug}/book/${facilityId}/booking/${bookingResponse.id}/pay`));
+			} catch {
+				toast.error("Failed to create booking. Please try again.");
+			} finally {
+				toast.info("Created booking");
 			}
-		});
+		},
+	}));
 
-		playerErrors = nextErrors;
-		return !hasErrors;
-	};
+	const getPriceFromContractId = (contractId: string) =>
+		contracts.find((c) => c.id === Number(contractId))?.price ?? 0;
 
-	const book = async () => {
-		try {
-			if (!selectedContractId || !slot) {
-				toast.warning("Invalid selection");
-				return;
-			}
+	// Form reactivity
+	const players = form.useStore((state) => state.values.players);
 
-			const bookings = players.map((player) => ({
-				slotId,
-				slotContractId: selectedContractId!,
-				name: player.name,
-				cellphone: player.cellNo,
-				email: player.email,
-			}));
-
-			const bookingResponse = await bookingMutation.mutateAsync({
-				data: {
-					bookings: bookings,
-				},
-			});
-
-			await goto(resolve(`/outlet/${slug}/book/${facilityId}/booking/${bookingResponse.id}/pay`));
-		} catch {
-			toast.error("Failed to create booking. Please try again.");
-		} finally {
-			toast.info("Created booking");
-		}
-	};
+	const totalPrice = $derived(
+		(players.current ?? [])
+			.map((c) => getPriceFromContractId(c.contractId))
+			.reduce((sum, price) => sum + price, 0)
+	);
 </script>
 
 <div class="mx-auto flex w-full flex-col gap-6">
@@ -213,176 +175,123 @@
 						</Empty.Root>
 					</Card.Content>
 				{:else}
-					<Card.Content class="space-y-6 p-6">
-						<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-							<div class="rounded-2xl border p-4">
-								<div
-									class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase"
-								>
-									<CalendarDaysIcon class="size-4" />
-									Date
+					<Form {form}>
+						<Card.Content class="space-y-6 p-6">
+							<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+								<div class="rounded-2xl border p-4">
+									<div
+										class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase"
+									>
+										<CalendarDaysIcon class="size-4" />
+										Date
+									</div>
+									<p class="mt-3 text-sm font-semibold">{selectedDate}</p>
 								</div>
-								<p class="mt-3 text-sm font-semibold">{selectedDate}</p>
-							</div>
-							<div class="rounded-2xl border p-4">
-								<div
-									class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase"
-								>
-									<Clock3Icon class="size-4" />
-									Time
-								</div>
-								<p class="mt-3 text-sm font-semibold">
-									{slot
-										? `${formatTime(slot.startDatetime)} - ${formatTime(slot.endDatetime)}`
-										: "Selected slot"}
-								</p>
-							</div>
-							<div class="rounded-2xl border p-4">
-								<div
-									class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase"
-								>
-									<UserRoundIcon class="size-4" />
-									Players
-								</div>
-								<p class="mt-3 text-sm font-semibold">{slotCount} total</p>
-							</div>
-							<div class="rounded-2xl border p-4">
-								<div
-									class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase"
-								>
-									<CreditCardIcon class="size-4" />
-									Total
-								</div>
-								<p class="mt-3 text-sm font-semibold">
-									{formatCurrency(totalPrice)}
-								</p>
-							</div>
-						</div>
-
-						<div class="space-y-4">
-							<div class="flex items-center justify-between gap-4">
-								<div>
-									<h2 class="text-lg font-semibold">Choose a rate</h2>
-									<p class="text-muted-foreground text-sm">
-										Pick the contract that matches this booking before continuing.
+								<div class="rounded-2xl border p-4">
+									<div
+										class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase"
+									>
+										<Clock3Icon class="size-4" />
+										Time
+									</div>
+									<p class="mt-3 text-sm font-semibold">
+										{slot
+											? `${formatTime(slot.startDatetime)} - ${formatTime(slot.endDatetime)}`
+											: "Selected slot"}
 									</p>
 								</div>
-							</div>
-							<div class="w-full">
-								<ToggleGroup.Root
-									type="single"
-									orientation="vertical"
-									class="w-full border"
-									onValueChange={(value) => (selectedContractId = Number(value))}
-								>
-									{#each contracts as contract (contract.id)}
-										<ToggleGroup.Item
-											value={contract.id.toString()}
-											class="border-b-muted flex h-fit flex-1 flex-col border-b p-4"
-										>
-											<div class="text-muted-foreground text-xs">
-												{contract.contractName}
-											</div>
-											<div>
-												{contract.description}
-											</div>
-											<Badge>
-												R {contract.price.toFixed(2)}
-											</Badge>
-										</ToggleGroup.Item>
-									{/each}
-								</ToggleGroup.Root>
-							</div>
-						</div>
-
-						<div class="space-y-4">
-							<div class="flex items-center justify-between gap-4">
-								<div class="mt-4">
-									<h2 class="text-lg font-semibold">User information</h2>
-									<p class="text-muted-foreground text-sm">
-										Add the contact details for each user included in this booking.
+								<div class="rounded-2xl border p-4">
+									<div
+										class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase"
+									>
+										<UserRoundIcon class="size-4" />
+										Players
+									</div>
+									<p class="mt-3 text-sm font-semibold">{slotCount} total</p>
+								</div>
+								<div class="rounded-2xl border p-4">
+									<div
+										class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase"
+									>
+										<CreditCardIcon class="size-4" />
+										Total
+									</div>
+									<p class="mt-3 text-sm font-semibold">
+										{formatCurrency(totalPrice)}
 									</p>
 								</div>
-								<Badge variant="outline">{slotCount} users</Badge>
 							</div>
 
 							<div class="space-y-4">
-								{#each players as player, index (index)}
-									<Card.Root>
-										<Card.Header class="pb-4">
-											<div class="flex items-center justify-between gap-4">
-												<div>
-													<Card.Title class="text-base">User {index + 1}</Card.Title>
-													<Card.Description>Enter the details for this player.</Card.Description>
-												</div>
-												<Badge variant="secondary">Required</Badge>
+								<div class="flex items-center justify-between gap-4">
+									<div class="mt-4">
+										<h2 class="text-lg font-semibold">User information</h2>
+										<p class="text-muted-foreground text-sm">
+											Add the contact details for each user included in this booking.
+										</p>
+									</div>
+									<Badge variant="outline">{slotCount} users</Badge>
+								</div>
+
+								<div class="space-y-4">
+									<form.Field name="players">
+										{#snippet children(field)}
+											<div class="flex flex-col gap-4">
+												{#each field.state.value as _, index (index)}
+													<Card.Root>
+														<Card.Header class="pb-4">
+															<div class="flex items-center justify-between gap-4">
+																<div>
+																	<Card.Title class="text-base">User {index + 1}</Card.Title>
+																	<Card.Description
+																		>Enter the details for this player.</Card.Description
+																	>
+																</div>
+																<Badge variant="secondary">Required</Badge>
+															</div>
+														</Card.Header>
+														<Card.Content class="grid gap-4 md:grid-cols-2">
+															<form.AppField name={`players[${index}].contractId`}>
+																{#snippet children(field)}
+																	<field.Select label="Contract" items={contractItems} />
+																{/snippet}
+															</form.AppField>
+															<form.AppField name={`players[${index}].name`}>
+																{#snippet children(field)}
+																	<field.Input label="Name" placeholder="Player full name" />
+																{/snippet}
+															</form.AppField>
+															<form.AppField name={`players[${index}].cellNo`}>
+																{#snippet children(field)}
+																	<field.Input label="Cell No" placeholder="e.g. 082 123 4567" />
+																{/snippet}
+															</form.AppField>
+															<form.AppField name={`players[${index}].email`}>
+																{#snippet children(field)}
+																	<field.Input
+																		label="Email"
+																		type="email"
+																		placeholder="player@email.com"
+																	/>
+																{/snippet}
+															</form.AppField>
+														</Card.Content>
+													</Card.Root>
+												{/each}
 											</div>
-										</Card.Header>
-										<Card.Content class="grid gap-4 md:grid-cols-3">
-											<label class="space-y-2">
-												<span class="text-sm font-medium">Name</span>
-												<Input
-													placeholder="Player full name"
-													value={player.name}
-													oninput={(event) =>
-														updatePlayer(
-															index,
-															"name",
-															(event.currentTarget as HTMLInputElement).value
-														)}
-												/>
-												{#if playerErrors[index]?.name}
-													<p class="text-destructive text-sm">{playerErrors[index]?.name}</p>
-												{/if}
-											</label>
-
-											<label class="space-y-2">
-												<span class="text-sm font-medium">Cell No</span>
-												<Input
-													placeholder="e.g. 082 123 4567"
-													value={player.cellNo}
-													oninput={(event) =>
-														updatePlayer(
-															index,
-															"cellNo",
-															(event.currentTarget as HTMLInputElement).value
-														)}
-												/>
-												{#if playerErrors[index]?.cellNo}
-													<p class="text-destructive text-sm">{playerErrors[index]?.cellNo}</p>
-												{/if}
-											</label>
-
-											<label class="space-y-2">
-												<span class="text-sm font-medium">Email</span>
-												<Input
-													type="email"
-													placeholder="player@email.com"
-													value={player.email}
-													oninput={(event) =>
-														updatePlayer(
-															index,
-															"email",
-															(event.currentTarget as HTMLInputElement).value
-														)}
-												/>
-												{#if playerErrors[index]?.email}
-													<p class="text-destructive text-sm">{playerErrors[index]?.email}</p>
-												{/if}
-											</label>
-										</Card.Content>
-									</Card.Root>
-								{/each}
+										{/snippet}
+									</form.Field>
+								</div>
 							</div>
-						</div>
-					</Card.Content>
-					<Card.Footer class=" flex justify-between border-t">
-						<Button href={resolve(`/outlet/${slug}/book/${facilityId}`)} variant="ghost">
-							<ChevronLeftIcon class="size-4" />
-							Back to slots
-						</Button>
-						<Button onclick={book} disabled={!selectedContract}>Book</Button>
-					</Card.Footer>
+						</Card.Content>
+						<Card.Footer class=" flex justify-between border-t">
+							<Button href={resolve(`/outlet/${slug}/book/${facilityId}`)} variant="ghost">
+								<ChevronLeftIcon class="size-4" />
+								Back to slots
+							</Button>
+							<Button type="submit">Book</Button>
+						</Card.Footer>
+					</Form>
 				{/if}
 			</Query>
 		</Card.Root>
