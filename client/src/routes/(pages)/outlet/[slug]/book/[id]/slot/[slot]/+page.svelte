@@ -18,14 +18,8 @@
 		UserRoundIcon,
 	} from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
-	import { z } from "zod";
-
-	type BookingPlayer = {
-		name: string;
-		cellNo: string;
-		email: string;
-		contractId: string;
-	};
+	import { playersSchema, type Players } from "./schema";
+	import ExampleField from "./ExampleField.svelte";
 
 	const slug = $derived(page.params.slug ?? "");
 	const facilityId = $derived(Number(page.params.id) || 0);
@@ -51,23 +45,6 @@
 			label: `${contract.contractName} ${contract.description} - R ${contract.price.toFixed(2)}`,
 		}))
 	);
-
-	const playerSchema = z.object({
-		name: z.string().trim().min(1, "Name is required"),
-		cellNo: z
-			.string()
-			.trim()
-			.min(1, "Cell No is required")
-			.refine((value) => /[0-9]/.test(value), "Cell No must contain digits"),
-		email: z.email("Enter a valid email address"),
-		contractId: z.string().min(1, "Contract ID is required"),
-	});
-
-	const playersSchema = z.object({
-		players: z
-			.array(playerSchema)
-			.refine((arr) => arr.length > 0, "At least one player is required"),
-	});
 
 	const formatCurrency = (value: number) =>
 		new Intl.NumberFormat("en-ZA", {
@@ -95,8 +72,8 @@
 
 	const form = createAppForm(() => ({
 		defaultValues: {
-			players: createPlayers(slotCount) as BookingPlayer[],
-		},
+			players: createPlayers(slotCount),
+		} satisfies Players,
 		validators: {
 			onChange: playersSchema,
 		},
@@ -270,7 +247,7 @@
 																{#snippet children(field)}
 																	<field.Input
 																		label="Email"
-																		type="email"
+																		type="text"
 																		placeholder="player@email.com"
 																	/>
 																{/snippet}
