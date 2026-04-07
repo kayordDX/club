@@ -4,6 +4,13 @@
  * online
  * OpenAPI spec version: v1
  */
+export type TickerType = (typeof TickerType)[keyof typeof TickerType];
+
+export const TickerType = {
+	CronTickerOccurrence: 0,
+	TimeTicker: 1,
+} as const;
+
 /**
  * the dto used to send an error response to the client when an unhandled exception occurs on the server
  */
@@ -182,9 +189,14 @@ export interface SlotContract {
 
 export interface Extra {
 	id: number;
-	name: string;
+	facilityId: number;
+	facility: Facility;
 	outletId: number;
-	outlet: Outlet;
+	name: string;
+	code: string;
+	price: number;
+	isAvailable: boolean;
+	isOnline: boolean;
 }
 
 export interface BookingStatus {
@@ -349,33 +361,6 @@ export interface Resource {
 	slots: Slot[];
 }
 
-export interface FacilityExtra {
-	created: string;
-	/** @nullable */
-	createdBy?: string | null;
-	/** @nullable */
-	lastModified?: string | null;
-	/** @nullable */
-	lastModifiedBy?: string | null;
-	id: number;
-	facilityId: number;
-	facility: Facility;
-	extraId: number;
-	extra: Extra;
-	name: string;
-	code: string;
-	price: number;
-	startDate: string;
-	/** @nullable */
-	endDate?: string | null;
-	bookingStatusId: number;
-	bookingStatus: BookingStatus;
-	isAvailable: boolean;
-	isOnline: boolean;
-	userId: string;
-	user: User;
-}
-
 export interface Facility {
 	created: string;
 	/** @nullable */
@@ -394,7 +379,6 @@ export interface Facility {
 	facilityType: FacilityType;
 	resources: Resource[];
 	slots: Slot[];
-	facilityExtras: FacilityExtra[];
 }
 
 export interface ContractOutlet {
@@ -502,6 +486,20 @@ export interface OutletDTO {
 	outletType: OutletTypeDTO;
 	isActive: boolean;
 	facilities: FacilityDTO[];
+}
+
+export type BookingStatusEnum = (typeof BookingStatusEnum)[keyof typeof BookingStatusEnum];
+
+export const BookingStatusEnum = {
+	Pending: 1,
+	Confirmed: 2,
+	Cancelled: 3,
+	Expired: 4,
+} as const;
+
+export interface BookingUpdateStatusRequest {
+	bookingId: number;
+	status: BookingStatusEnum;
 }
 
 export interface BookingStatusDTO {
@@ -640,6 +638,80 @@ export interface LoginRequest {
 	/** @nullable */
 	twoFactorRecoveryCode?: string | null;
 }
+
+export type GetTimeTickersPaginatedParams = {
+	pageNumber?: number;
+	pageSize?: number;
+};
+
+export type GetTimeTickersGraphDataRangeParams = {
+	pastDays?: number;
+	futureDays?: number;
+};
+
+export type CreateChainJobsParams = {
+	timeZoneId: string;
+};
+
+export type UpdateTimeTickerParams = {
+	id: string;
+	timeZoneId: string;
+};
+
+export type DeleteTimeTickerParams = {
+	id: string;
+};
+
+export type GetCronTickersPaginatedParams = {
+	pageNumber?: number;
+	pageSize?: number;
+};
+
+export type GetCronTickersGraphDataRangeParams = {
+	pastDays?: number;
+	futureDays?: number;
+};
+
+export type GetCronTickersByIdGraphDataRangeParams = {
+	id: string;
+	pastDays?: number;
+	futureDays?: number;
+};
+
+export type GetCronTickerOccurrencesPaginatedParams = {
+	pageNumber?: number;
+	pageSize?: number;
+};
+
+export type UpdateCronTickerParams = {
+	id: string;
+};
+
+export type ToggleCronTickerParams = {
+	id: string;
+	isEnabled: boolean;
+};
+
+export type RunCronTickerOnDemandParams = {
+	id: string;
+};
+
+export type DeleteCronTickerParams = {
+	id: string;
+};
+
+export type DeleteCronTickerOccurrenceParams = {
+	id: string;
+};
+
+export type CancelTickerParams = {
+	id: string;
+};
+
+export type GetTickerRequestParams = {
+	tickerId: string;
+	tickerType: TickerType;
+};
 
 export type TestParams = {
 	name: string;

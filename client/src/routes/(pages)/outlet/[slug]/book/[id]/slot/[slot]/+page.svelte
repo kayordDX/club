@@ -18,14 +18,16 @@
 		UserRoundIcon,
 	} from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
-	import { playersSchema, type Players } from "./schema";
-	import ExampleField from "./ExampleField.svelte";
+	import { playersSchema, type Players, type SelectedExtra } from "./schema";
+	import Extras from "./Extras.svelte";
 
 	const slug = $derived(page.params.slug ?? "");
 	const facilityId = $derived(Number(page.params.id) || 0);
 	const slotId = $derived(page.params.slot ?? "");
 	const slotCount = $derived(Math.max(1, Number(page.url.searchParams.get("slotCount")) || 1));
 	const selectedDate = $derived(page.url.searchParams.get("date") ?? "");
+
+	let selectedExtras: Array<SelectedExtra> = $state([]);
 
 	const slotQuery = createSlotGetAll(
 		() => ({
@@ -227,31 +229,34 @@
 																<Badge variant="secondary">Required</Badge>
 															</div>
 														</Card.Header>
-														<Card.Content class="grid gap-4 md:grid-cols-2">
-															<form.AppField name={`players[${index}].contractId`}>
-																{#snippet children(field)}
-																	<field.Select label="Contract" items={contractItems} />
-																{/snippet}
-															</form.AppField>
-															<form.AppField name={`players[${index}].name`}>
-																{#snippet children(field)}
-																	<field.Input label="Name" placeholder="Player full name" />
-																{/snippet}
-															</form.AppField>
-															<form.AppField name={`players[${index}].cellNo`}>
-																{#snippet children(field)}
-																	<field.Input label="Cell No" placeholder="e.g. 082 123 4567" />
-																{/snippet}
-															</form.AppField>
-															<form.AppField name={`players[${index}].email`}>
-																{#snippet children(field)}
-																	<field.Input
-																		label="Email"
-																		type="text"
-																		placeholder="player@email.com"
-																	/>
-																{/snippet}
-															</form.AppField>
+														<Card.Content>
+															<div class="grid gap-4 md:grid-cols-2">
+																<form.AppField name={`players[${index}].contractId`}>
+																	{#snippet children(field)}
+																		<field.Select label="Contract" items={contractItems} />
+																	{/snippet}
+																</form.AppField>
+																<form.AppField name={`players[${index}].name`}>
+																	{#snippet children(field)}
+																		<field.Input label="Name" placeholder="Player full name" />
+																	{/snippet}
+																</form.AppField>
+																<form.AppField name={`players[${index}].cellNo`}>
+																	{#snippet children(field)}
+																		<field.Input label="Cell No" placeholder="e.g. 082 123 4567" />
+																	{/snippet}
+																</form.AppField>
+																<form.AppField name={`players[${index}].email`}>
+																	{#snippet children(field)}
+																		<field.Input
+																			label="Email"
+																			type="text"
+																			placeholder="player@email.com"
+																		/>
+																	{/snippet}
+																</form.AppField>
+															</div>
+															<Extras {facilityId} {selectedExtras} />
 														</Card.Content>
 													</Card.Root>
 												{/each}

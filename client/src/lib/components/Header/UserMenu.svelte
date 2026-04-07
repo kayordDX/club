@@ -4,7 +4,7 @@
 	import { getInitials } from "$lib/util";
 	import { Avatar, DropdownMenu } from "@kayord/ui";
 	import { createLogout } from "$lib/api";
-	import { LogOutIcon, WalletIcon, SettingsIcon } from "@lucide/svelte";
+	import { LogOutIcon, WalletIcon, SettingsIcon, BookIcon } from "@lucide/svelte";
 	import { user } from "$lib/stores/user.svelte";
 	import { LoginButton } from "../LoginButton";
 	import { resolve } from "$app/paths";
@@ -36,6 +36,9 @@
 			<DropdownMenu.Label>{user.value.name}</DropdownMenu.Label>
 			<DropdownMenu.Separator />
 			<DropdownMenu.Group>
+				<DropdownMenu.Item onclick={() => goto(resolve("/bookings"))}>
+					<BookIcon />Bookings
+				</DropdownMenu.Item>
 				<DropdownMenu.Item onclick={() => goto(resolve("/settings/session"))}>
 					<SettingsIcon />Settings
 				</DropdownMenu.Item>

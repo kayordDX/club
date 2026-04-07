@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Online.Common;
+using Online.Common.Enums;
 using Online.Entities;
 
 namespace Online.Data;
@@ -18,6 +19,7 @@ public static class SeedDbContext
         await dbContext.Database.ExecuteSqlRawAsync("delete from slot_contract_booking;", ct);
         await dbContext.Database.ExecuteSqlRawAsync("delete from extra_booking;", ct);
         await dbContext.Database.ExecuteSqlRawAsync("delete from slot;", ct);
+        await dbContext.Database.ExecuteSqlRawAsync("delete from extra;", ct);
         await dbContext.Database.ExecuteSqlRawAsync("delete from resource;", ct);
         await dbContext.Database.ExecuteSqlRawAsync("delete from contract;", ct);
         await dbContext.Database.ExecuteSqlRawAsync("delete from contract_field;", ct);
@@ -30,15 +32,17 @@ public static class SeedDbContext
         await dbContext.Database.ExecuteSqlRawAsync("ALTER SEQUENCE resource_id_seq RESTART WITH 1;", ct);
         await dbContext.Database.ExecuteSqlRawAsync("ALTER SEQUENCE facility_type_id_seq RESTART WITH 1;", ct);
         await dbContext.Database.ExecuteSqlRawAsync("ALTER SEQUENCE outlet_id_seq RESTART WITH 1;", ct);
+        await dbContext.Database.ExecuteSqlRawAsync("ALTER SEQUENCE extra_id_seq RESTART WITH 1;", ct);
 
         await dbContext.Database.ExecuteSqlRawAsync("delete from booking_status;", ct);
         await dbContext.Database.ExecuteSqlRawAsync("ALTER SEQUENCE booking_status_id_seq RESTART WITH 4;", ct);
 
         await dbContext.BookingStatus.AddRangeAsync(
         [
-            new BookingStatus { Id = BookingStatuses.PendingId, Name = BookingStatuses.PendingName },
-            new BookingStatus { Id = BookingStatuses.ConfirmedId, Name = BookingStatuses.ConfirmedName },
-            new BookingStatus { Id = BookingStatuses.CancelledId, Name = BookingStatuses.CancelledName }
+            new BookingStatus { Id = (int)BookingStatusEnum.Pending, Name = BookingStatusEnum.Pending.ToString() },
+            new BookingStatus { Id = (int)BookingStatusEnum.Confirmed, Name = BookingStatusEnum.Confirmed.ToString() },
+            new BookingStatus { Id = (int)BookingStatusEnum.Cancelled, Name = BookingStatusEnum.Cancelled.ToString() },
+            new BookingStatus { Id = (int)BookingStatusEnum.Expired, Name = BookingStatusEnum.Expired.ToString() }
         ], ct);
 
         var paymentTypes = await dbContext.PaymentType
@@ -66,8 +70,8 @@ public static class SeedDbContext
             await dbContext.Outlet.AddAsync(outlet, ct);
             var facilityTypeGolf = new FacilityType { Name = "Golf Course" };
             var facilityTypePaddle = new FacilityType { Name = "Paddle" };
-            var facility1 = new Facility { Name = "Ruimsig Golf Course", IsActive = true, OutletId = 1, FacilityType = facilityTypeGolf, Outlet = outlet };
-            var facility2 = new Facility { Name = "Ruimsig Paddle Court", IsActive = true, OutletId = 1, FacilityType = facilityTypePaddle, Outlet = outlet };
+            var facility1 = new Facility { Name = "Ruimsig Golf Course", IsActive = true, FacilityType = facilityTypeGolf, Outlet = outlet };
+            var facility2 = new Facility { Name = "Ruimsig Paddle Court", IsActive = true, FacilityType = facilityTypePaddle, Outlet = outlet };
 
             var resource1 = new Resource { Name = "1st", Facility = facility1 };
             var resource2 = new Resource { Name = "10th", Facility = facility1 };
@@ -76,6 +80,13 @@ public static class SeedDbContext
 
             await dbContext.Facility.AddAsync(facility1, ct);
             await dbContext.Facility.AddAsync(facility2, ct);
+
+            await dbContext.SaveChangesAsync(ct);
+
+            await dbContext.Extra.AddAsync(new Extra { Name = "Golf Cart", Code = "GOLF_CART", FacilityId = facility1.Id, IsAvailable = true, IsOnline = true, OutletId = outlet.Id, Price = 300 }, ct);
+            await dbContext.Extra.AddAsync(new Extra { Name = "Push Cart", Code = "PUSH_CART", FacilityId = facility1.Id, IsAvailable = true, IsOnline = true, OutletId = outlet.Id, Price = 100 }, ct);
+            await dbContext.Extra.AddAsync(new Extra { Name = "Racket", Code = "Racket", FacilityId = facility2.Id, IsAvailable = true, IsOnline = true, OutletId = outlet.Id, Price = 70 }, ct);
+            await dbContext.Extra.AddAsync(new Extra { Name = "Kids Racket", Code = "Kids", FacilityId = facility2.Id, IsAvailable = true, IsOnline = true, OutletId = outlet.Id, Price = 30 }, ct);
 
             await dbContext.Resource.AddAsync(resource1, ct);
             await dbContext.Resource.AddAsync(resource2, ct);
@@ -123,6 +134,7 @@ public static class SeedDbContext
                     }
                 }
             }
+
             await dbContext.SaveChangesAsync(ct);
         }
     }

@@ -15,7 +15,7 @@ dotnet list package --outdated
 dotnet package update
 
 # ef
-dotnet ef migrations add InitTables --project src/online/online.csproj -o ./Data/Migrations
+dotnet ef migrations add InitTables --project src/online/online.csproj -c AppDbContext -o ./Data/Migrations
 dotnet ef migrations remove --project src/online/online.csproj
 
 # remove

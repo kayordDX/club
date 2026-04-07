@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Online.Common;
 using Online.Common.Config;
+using Online.Common.Enums;
 using Online.Data;
 
 namespace Online.Features.Booking.Create;
@@ -51,7 +52,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingCreateRequest, B
         var existingCounts = await _dbContext.SlotContractBooking
             .Where(scb =>
                 slotIds.Contains(scb.SlotContract.SlotId) &&
-                scb.Booking.BookingStatusId != BookingStatuses.CancelledId)
+                scb.Booking.BookingStatusId != (int)BookingStatusEnum.Cancelled)
             .GroupBy(scb => scb.SlotContract.SlotId)
             .Select(g => new { SlotId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.SlotId, x => x.Count, ct);
@@ -78,7 +79,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingCreateRequest, B
 
         var booking = new Entities.Booking
         {
-            BookingStatusId = BookingStatuses.PendingId,
+            BookingStatusId = (int)BookingStatusEnum.Pending,
             BookingStatusDate = now,
             IsPaid = false,
             AmountOutstanding = totalPrice,

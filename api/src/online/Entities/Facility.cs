@@ -11,5 +11,4 @@ public class Facility : AuditableEntity
     public FacilityType FacilityType { get; set; } = default!;
     public ICollection<Resource> Resources { get; set; } = [];
     public ICollection<Slot> Slots { get; set; } = [];
-    public ICollection<FacilityExtra> FacilityExtras { get; set; } = [];
 }

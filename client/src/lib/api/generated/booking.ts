@@ -21,6 +21,7 @@ import type {
 	BookingCreateRequest,
 	BookingCreateResponse,
 	BookingDTO,
+	BookingUpdateStatusRequest,
 	InternalErrorResponse,
 } from "./api.schemas";
 
@@ -29,6 +30,89 @@ import type { ErrorType, BodyType } from "../mutator/customInstance.svelte";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
+export const getBookingUpdateStatusUrl = () => {
+	return `/booking/status`;
+};
+
+export const bookingUpdateStatus = async (
+	bookingUpdateStatusRequest: BookingUpdateStatusRequest,
+	options?: RequestInit
+): Promise<void> => {
+	return customInstance<void>(getBookingUpdateStatusUrl(), {
+		...options,
+		method: "PUT",
+		headers: { "Content-Type": "application/json", ...options?.headers },
+		body: JSON.stringify(bookingUpdateStatusRequest),
+	});
+};
+
+export const getBookingUpdateStatusMutationOptions = <
+	TError = ErrorType<InternalErrorResponse>,
+	TContext = unknown,
+>(options?: {
+	mutation?: CreateMutationOptions<
+		Awaited<ReturnType<typeof bookingUpdateStatus>>,
+		TError,
+		{ data: BodyType<BookingUpdateStatusRequest> },
+		TContext
+	>;
+	request?: SecondParameter<typeof customInstance>;
+}): CreateMutationOptions<
+	Awaited<ReturnType<typeof bookingUpdateStatus>>,
+	TError,
+	{ data: BodyType<BookingUpdateStatusRequest> },
+	TContext
+> => {
+	const mutationKey = ["bookingUpdateStatus"];
+	const { mutation: mutationOptions, request: requestOptions } = options
+		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+			? options
+			: { ...options, mutation: { ...options.mutation, mutationKey } }
+		: { mutation: { mutationKey }, request: undefined };
+
+	const mutationFn: MutationFunction<
+		Awaited<ReturnType<typeof bookingUpdateStatus>>,
+		{ data: BodyType<BookingUpdateStatusRequest> }
+	> = (props) => {
+		const { data } = props ?? {};
+
+		return bookingUpdateStatus(data, requestOptions);
+	};
+
+	return { mutationFn, ...mutationOptions };
+};
+
+export type BookingUpdateStatusMutationResult = NonNullable<
+	Awaited<ReturnType<typeof bookingUpdateStatus>>
+>;
+export type BookingUpdateStatusMutationBody = BodyType<BookingUpdateStatusRequest>;
+export type BookingUpdateStatusMutationError = ErrorType<InternalErrorResponse>;
+
+export const createBookingUpdateStatus = <
+	TError = ErrorType<InternalErrorResponse>,
+	TContext = unknown,
+>(
+	options?: () => {
+		mutation?: CreateMutationOptions<
+			Awaited<ReturnType<typeof bookingUpdateStatus>>,
+			TError,
+			{ data: BodyType<BookingUpdateStatusRequest> },
+			TContext
+		>;
+		request?: SecondParameter<typeof customInstance>;
+	},
+	queryClient?: () => QueryClient
+): CreateMutationResult<
+	Awaited<ReturnType<typeof bookingUpdateStatus>>,
+	TError,
+	{ data: BodyType<BookingUpdateStatusRequest> },
+	TContext
+> => {
+	return createMutation(
+		() => ({ ...getBookingUpdateStatusMutationOptions(options?.()) }),
+		queryClient
+	);
+};
 export const getBookingGetUrl = (id: number) => {
 	return `/booking/${id}`;
 };

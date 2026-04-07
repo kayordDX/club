@@ -9,7 +9,7 @@ const playerSchema = z.object({
 		.trim()
 		.min(1, "Cell No is required")
 		.refine((value) => /[0-9]/.test(value), "Cell No must contain digits"),
-	email: z.string().min(1, "Enter a valid email address"),
+	email: z.email("Enter a valid email address"),
 	contractId: z.string().min(1, "Contract ID is required"),
 });
 
@@ -26,8 +26,11 @@ const formType = () =>
 
 type FormApi = ReturnType<typeof formType>;
 
-type AppField<T extends DeepKeys<z.infer<typeof playersSchema>>> = ReturnType<
-	FormApi["FieldContentOnly" & keyof FormApi]
-> & { name: T };
+type SelectedExtra = {
+	id: number;
+	name: string;
+	price: number;
+	amount: number;
+};
 
-export { playersSchema, type Players, type FormApi, type AppField };
+export { playersSchema, type Players, type FormApi, type SelectedExtra };

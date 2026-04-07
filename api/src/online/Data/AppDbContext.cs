@@ -27,7 +27,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IHttpContextAc
     public DbSet<Extra> Extra { get; set; }
     public DbSet<ExtraBooking> ExtraBooking { get; set; }
     public DbSet<Facility> Facility { get; set; }
-    public DbSet<FacilityExtra> FacilityExtra { get; set; }
     public DbSet<Outlet> Outlet { get; set; }
     public DbSet<OutletType> OutletType { get; set; }
     public DbSet<Payment> Payment { get; set; }

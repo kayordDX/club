@@ -7,19 +7,34 @@
 		CalendarDaysIcon,
 		ChevronLeftIcon,
 		Clock3Icon,
+		CoinsIcon,
 		CreditCardIcon,
-		Ear,
 		UserRoundIcon,
+		WalletMinimalIcon,
 	} from "@lucide/svelte";
-	import { createBookingGet } from "$lib/api";
+	import { createBookingGet, createBookingUpdateStatus, BookingStatusEnum } from "$lib/api";
 	import Query from "$lib/components/Query.svelte";
 	import CountdownTimer from "$lib/components/CountdownTimer.svelte";
+	import { toast } from "svelte-sonner";
+	import { goto } from "$app/navigation";
 
 	const slug = $derived(page.params.slug ?? "");
 	const facilityId = $derived(Number(page.params.id) || 0);
 
 	const bookingId = $derived(Number(page.params.bookingId) || 0);
 	const query = createBookingGet(() => bookingId);
+
+	const updateStatusMut = createBookingUpdateStatus();
+	const updateStatus = async (status: BookingStatusEnum) => {
+		try {
+			await updateStatusMut.mutateAsync({ data: { bookingId, status } });
+			toast.info("Confirmed booking");
+			goto(resolve(`/outlet/${slug}/book/${facilityId}`));
+		} catch (error) {
+			console.error("Failed to update booking status:", error);
+			toast.error("Failed to update booking status. Please try again.");
+		}
+	};
 </script>
 
 <Query {query} emptyText="Booking not found">
@@ -30,6 +45,9 @@
 					<div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
 						<div class="space-y-2">
 							<Card.Title class="text-2xl">Payment details</Card.Title>
+							<Card.Description>
+								Your booking is pending. Please proceed to complete booking
+							</Card.Description>
 							{#if query.data?.expiresAt}
 								<CountdownTimer expiresAt={query.data.expiresAt} />
 							{/if}
@@ -122,24 +140,22 @@
 						</div>
 					</div>
 					<ToggleGroup.Root type="single" class="w-full border" orientation="vertical">
-						<ToggleGroup.Item value="credit" class="flex h-fit flex-1 flex-col p-4">
-							<div class="text-muted-foreground text-xs">Credit</div>
-							<div>Credit Card</div>
-							<Badge>Credit Icon</Badge>
+						<ToggleGroup.Item value="credit" class="flex h-fit flex-1 p-4">
+							<WalletMinimalIcon />
+							<div>Wallet</div>
 						</ToggleGroup.Item>
-						<ToggleGroup.Item value="cash" class="flex h-fit flex-1 flex-col p-4">
-							<div class="text-muted-foreground text-xs">Cash</div>
-							<div>Pay cash</div>
-							<Badge>Cash Icon</Badge>
+						<ToggleGroup.Item value="cash" class="flex h-fit flex-1 border-t-1 p-4">
+							<CoinsIcon />
+							<div>Pay Later</div>
 						</ToggleGroup.Item>
 					</ToggleGroup.Root>
 				</Card.Content>
 				<Card.Footer class=" flex justify-between border-t">
-					<Button href={resolve(`/outlet/${slug}/book/${facilityId}`)} variant="destructive">
+					<Button onclick={() => updateStatus(BookingStatusEnum.Cancelled)} variant="destructive">
 						<ChevronLeftIcon class="size-4" />
 						Cancel
 					</Button>
-					<Button>Proceed</Button>
+					<Button onclick={() => updateStatus(BookingStatusEnum.Confirmed)}>Complete</Button>
 				</Card.Footer>
 			</Card.Root>
 		</div>
