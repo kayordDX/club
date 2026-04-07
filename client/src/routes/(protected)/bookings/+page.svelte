@@ -1,66 +1,115 @@
 <script lang="ts">
-	import { Badge, Button, Card } from "@kayord/ui";
 	import PageHeading from "../settings/PageHeading.svelte";
+	import { BookIcon } from "@lucide/svelte";
+	import { createBookingGetUser, type BookingDTO } from "$lib/api";
 	import {
-		BookIcon,
-		BanknoteArrowUpIcon,
-		BanknoteArrowDownIcon,
-		WalletMinimalIcon,
-	} from "@lucide/svelte";
+		type ColumnDef,
+		type Updater,
+		type PaginationState,
+		type SortingState,
+		getPaginationRowModel,
+		getFilteredRowModel,
+		getSortedRowModel,
+	} from "@tanstack/table-core";
+	import { DataTable, createShadTable, renderSnippet } from "@kayord/ui/data-table";
+	import { Actions } from "@kayord/ui";
+	import { goto } from "$app/navigation";
+	import { resolve } from "$app/paths";
+
+	const bookingQuery = createBookingGetUser();
+	let data = $derived(bookingQuery.data?.items ?? []);
+	let rowCount = $derived(bookingQuery.data?.totalCount ?? 0);
+
+	const columns: ColumnDef<BookingDTO>[] = [
+		{
+			header: "Booking Date",
+			accessorKey: "bookingStatusDate",
+			size: 1000,
+		},
+		{
+			header: "Status",
+			accessorKey: "bookingStatus.name",
+			size: 1000,
+		},
+		{
+			header: "Amount Outstanding",
+			accessorKey: "amountOutstanding",
+			size: 1000,
+		},
+		{
+			header: "",
+			accessorKey: "name",
+			cell: (item) => renderSnippet(viewBooking, item.row.original),
+			size: 10,
+			enableSorting: false,
+		},
+	];
+
+	let pagination: PaginationState = $state({ pageIndex: 0, pageSize: 10 });
+	const setPagination = (updater: Updater<PaginationState>) => {
+		if (updater instanceof Function) {
+			pagination = updater(pagination);
+		} else pagination = updater;
+	};
+
+	let sorting: SortingState = $state([]);
+	const setSorting = (updater: Updater<SortingState>) => {
+		if (updater instanceof Function) {
+			sorting = updater(sorting);
+		} else sorting = updater;
+	};
+
+	const table = createShadTable({
+		columns,
+		get data() {
+			return data;
+		},
+		getFilteredRowModel: getFilteredRowModel(),
+		manualPagination: true,
+		manualFiltering: true,
+		manualSorting: true,
+		getSortedRowModel: getSortedRowModel(),
+		getPaginationRowModel: getPaginationRowModel(),
+		state: {
+			get pagination() {
+				return pagination;
+			},
+			get sorting() {
+				return sorting;
+			},
+		},
+		get rowCount() {
+			return rowCount;
+		},
+		onPaginationChange: setPagination,
+		onSortingChange: setSorting,
+		enableRowSelection: false,
+	});
+
+	const openBooking = (bookingId: number) => {
+		goto(resolve(`/bookings/${bookingId}`));
+	};
 </script>
+
+{#snippet viewBooking(booking: BookingDTO)}
+	<Actions
+		actions={[
+			{
+				icon: BookIcon,
+				text: "View Booking",
+				class: "truncate",
+				action: () => openBooking(booking.id),
+			},
+		]}
+	/>
+{/snippet}
 
 <div class="m-4">
 	<PageHeading title="Bookings" description="My Bookings" icon={BookIcon} />
-	<Card.Root class="mt-6">
-		<Card.Header class="flex items-center gap-2">
-			<div class="bg-background text-foreground rounded-md p-2"><BookIcon /></div>
-			<div>
-				<Card.Title>Bookings</Card.Title>
-				<Card.Description>Manage your balance</Card.Description>
-			</div>
-		</Card.Header>
-		<Card.Content>
-			<div class="text-muted-foreground text-xs">Current balance</div>
-			<div class="text-2xl font-bold">R100.00</div>
-		</Card.Content>
-		<Card.Footer>
-			<Button><BanknoteArrowUpIcon /> Load Money</Button>
-		</Card.Footer>
-	</Card.Root>
-
-	<Card.Root class="mt-6">
-		<Card.Header class="flex items-center gap-2">
-			<div class="bg-background text-foreground rounded-md p-2"><WalletMinimalIcon /></div>
-			<div>
-				<Card.Title>Transaction History</Card.Title>
-				<Card.Description>Your recent wallet transactions</Card.Description>
-			</div>
-		</Card.Header>
-		<Card.Content class="flex flex-col gap-4">
-			<Card.Root class="flex w-full flex-row items-center gap-4 rounded-md border p-4">
-				<div class="w-fit rounded-md bg-green-300 p-2 text-shadow-green-950">
-					<BanknoteArrowUpIcon class="text-green-950" />
-				</div>
-				<div class="flex-1">
-					<div class="text-2xl font-bold">Loaded R100</div>
-					<div class="text-muted-foreground text-xs">01/03/2026 16:56</div>
-				</div>
-				<div>
-					<Badge class="bg-green-300 text-green-950">+ R100</Badge>
-				</div>
-			</Card.Root>
-			<Card.Root class="flex w-full flex-row items-center gap-4 rounded-md border p-4">
-				<div class="bg-destructive dark:bg-destructive/70 w-fit rounded-md p-2 text-white">
-					<BanknoteArrowDownIcon />
-				</div>
-				<div class="flex-1">
-					<div class="text-2xl font-bold">Loaded R100</div>
-					<div class="text-muted-foreground text-xs">01/03/2026 16:56</div>
-				</div>
-				<div>
-					<Badge variant="destructive">+ R100</Badge>
-				</div>
-			</Card.Root>
-		</Card.Content>
-	</Card.Root>
+	<DataTable
+		{table}
+		headerClass="pb-2"
+		isLoading={bookingQuery.isPending}
+		noDataMessage="No bookings"
+	/>
 </div>

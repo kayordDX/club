@@ -21,8 +21,10 @@ import type {
 	BookingCreateRequest,
 	BookingCreateResponse,
 	BookingDTO,
+	BookingGetUserParams,
 	BookingUpdateStatusRequest,
 	InternalErrorResponse,
+	PaginatedListOfBookingDTO,
 } from "./api.schemas";
 
 import { customInstance } from "../mutator/customInstance.svelte";
@@ -113,6 +115,80 @@ export const createBookingUpdateStatus = <
 		queryClient
 	);
 };
+export const getBookingGetUserUrl = (params?: BookingGetUserParams) => {
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : value.toString());
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0 ? `/booking/user?${stringifiedParams}` : `/booking/user`;
+};
+
+export const bookingGetUser = async (
+	params?: BookingGetUserParams,
+	options?: RequestInit
+): Promise<PaginatedListOfBookingDTO> => {
+	return customInstance<PaginatedListOfBookingDTO>(getBookingGetUserUrl(params), {
+		...options,
+		method: "GET",
+	});
+};
+
+export const getBookingGetUserQueryKey = (params?: BookingGetUserParams) => {
+	return [`/booking/user`, ...(params ? [params] : [])] as const;
+};
+
+export const getBookingGetUserQueryOptions = <
+	TData = Awaited<ReturnType<typeof bookingGetUser>>,
+	TError = ErrorType<void | InternalErrorResponse>,
+>(
+	params?: BookingGetUserParams,
+	options?: {
+		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof bookingGetUser>>, TError, TData>>;
+		request?: SecondParameter<typeof customInstance>;
+	}
+) => {
+	const { query: queryOptions, request: requestOptions } = options ?? {};
+
+	const queryKey = queryOptions?.queryKey ?? getBookingGetUserQueryKey(params);
+
+	const queryFn: QueryFunction<Awaited<ReturnType<typeof bookingGetUser>>> = ({ signal }) =>
+		bookingGetUser(params, { signal, ...requestOptions });
+
+	return { queryKey, queryFn, ...queryOptions } as CreateQueryOptions<
+		Awaited<ReturnType<typeof bookingGetUser>>,
+		TError,
+		TData
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type BookingGetUserQueryResult = NonNullable<Awaited<ReturnType<typeof bookingGetUser>>>;
+export type BookingGetUserQueryError = ErrorType<void | InternalErrorResponse>;
+
+export function createBookingGetUser<
+	TData = Awaited<ReturnType<typeof bookingGetUser>>,
+	TError = ErrorType<void | InternalErrorResponse>,
+>(
+	params?: () => BookingGetUserParams,
+	options?: () => {
+		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof bookingGetUser>>, TError, TData>>;
+		request?: SecondParameter<typeof customInstance>;
+	},
+	queryClient?: () => QueryClient
+): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+	const query = createQuery(
+		() => getBookingGetUserQueryOptions(params?.(), options?.()),
+		queryClient
+	) as CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+	return query;
+}
+
 export const getBookingGetUrl = (id: number) => {
 	return `/booking/${id}`;
 };

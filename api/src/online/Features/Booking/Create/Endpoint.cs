@@ -77,6 +77,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingCreateRequest, B
         var totalPrice = req.Bookings.Sum(br =>
             slotContracts.First(sc => sc.Id == br.SlotContractId && sc.SlotId == br.SlotId).Price);
 
+        var userId = Helpers.GetCurrentUserId(HttpContext);
         var booking = new Entities.Booking
         {
             BookingStatusId = (int)BookingStatusEnum.Pending,
@@ -84,7 +85,8 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingCreateRequest, B
             IsPaid = false,
             AmountOutstanding = totalPrice,
             AmountPaid = 0,
-            ExpiresAt = now.AddMinutes(10)
+            ExpiresAt = now.AddMinutes(10),
+            UserId = userId,
         };
 
         await _dbContext.Booking.AddAsync(booking, ct);

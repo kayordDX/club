@@ -569,6 +569,15 @@ export interface BookingDTO {
 	slotContractBookings: SlotContractBookingDTO[];
 }
 
+export interface PaginatedListOfBookingDTO {
+	items: BookingDTO[];
+	pageNumber: number;
+	totalPages: number;
+	totalCount: number;
+	hasPreviousPage: boolean;
+	hasNextPage: boolean;
+}
+
 export interface BookingCreateResponse {
 	id: number;
 }
@@ -743,6 +752,25 @@ export type OutletGetAllParams = {
 
 export type ExampleVerifyParams = {
 	code: string;
+};
+
+export type BookingGetUserParams = {
+	/**
+	 * @nullable
+	 */
+	sorts?: string | null;
+	/**
+	 * @nullable
+	 */
+	filters?: string | null;
+	/**
+	 * @nullable
+	 */
+	page?: number | null;
+	/**
+	 * @nullable
+	 */
+	pageSize?: number | null;
 };
 
 export type LoginGoogleParams = {

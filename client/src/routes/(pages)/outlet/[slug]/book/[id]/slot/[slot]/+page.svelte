@@ -256,7 +256,7 @@
 																	{/snippet}
 																</form.AppField>
 															</div>
-															<Extras {facilityId} {selectedExtras} />
+															<Extras {facilityId} bind:selectedExtras />
 														</Card.Content>
 													</Card.Root>
 												{/each}
