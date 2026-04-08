@@ -12,4 +12,5 @@ public class JwtOptions
 
     // Refresh Token valid for 7 days by default
     public int RefreshTokenExpirationTimeInMinutes { get; set; } = 10080;
+    public string DomainName { get; set; } = "aviatesoft.com";
 }

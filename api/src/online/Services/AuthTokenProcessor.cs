@@ -81,6 +81,7 @@ public class AuthTokenProcessor(IOptions<JwtOptions> jwtOptions, IHttpContextAcc
     {
         _httpContextAccessor.HttpContext?.Response.Cookies.Append(cookieName, value, new CookieOptions
         {
+            Domain = _environment.IsDevelopment() ? null : _jwtOptions.DomainName,
             HttpOnly = false,
             Expires = expiration,
             IsEssential = true,
