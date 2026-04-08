@@ -21,14 +21,17 @@ jobs:
         with:
           node-version: latest
           cache: pnpm
+          cache-dependency-path: client/pnpm-lock.yaml
 
       - name: Install Dependencies
         run: pnpm i
+        working-directory: ./client
 
       - name: Build
         env:
           NODE_OPTIONS: "--max_old_space_size=4096"
         run: pnpm build
+        working-directory: ./client
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
