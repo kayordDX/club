@@ -61,7 +61,8 @@ public static class DataExtensions
             await tickerDb.Database.MigrateAsync(ct);
         }
 
-        if (env.IsDevelopment() || env.IsEnvironment("Testing"))
+        // Bypassing for now and always seeding during testing
+        if (env.IsDevelopment() || env.IsEnvironment("Testing") || true)
         {
             await SeedDbContext.SeedData(db, ct);
         }
