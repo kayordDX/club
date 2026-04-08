@@ -30,4 +30,4 @@ jobs:
           context: ./api
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: ghcr.io/kayordDX/online-api:latest, ghcr.io/kayordDX/online-api:${{ github.sha }}
+          tags: ghcr.io/kayorddx/online-api:latest, ghcr.io/kayorddx/online-api:${{ github.sha }}
