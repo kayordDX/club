@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -30,4 +30,4 @@ jobs:
           context: ./api
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: kayordDX/online-api:latest, kayordDX/online-api:${{ github.sha }}
+          tags: ghcr.io/kayordDX/online-api:latest, ghcr.io/kayordDX/online-api:${{ github.sha }}
