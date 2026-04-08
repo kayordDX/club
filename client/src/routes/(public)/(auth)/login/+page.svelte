@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Card, Loader, Separator } from "@kayord/ui";
+	import { Button, Card, Loader } from "@kayord/ui";
 	import { PUBLIC_API_URL, PUBLIC_APP_URL } from "$env/static/public";
 	import { user } from "$lib/stores/user.svelte";
 	import LogoButton from "$lib/components/LogoButton.svelte";

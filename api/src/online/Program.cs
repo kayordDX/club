@@ -1,4 +1,5 @@
-﻿using Online.Common.Extensions;
+﻿using Microsoft.AspNetCore.HttpOverrides;
+using Online.Common.Extensions;
 using TickerQ.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +16,12 @@ builder.Services.ConfigureTickerQ(builder.Configuration);
 builder.Services.ConfigureGeneral(builder.Configuration);
 builder.Services.ConfigureAuth(builder.Configuration);
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+});
+
 builder.Logging.ConfigureLogging();
 builder.Services.ConfigureTelemetry(builder.Configuration);
 
@@ -22,6 +29,7 @@ var app = builder.Build();
 
 await app.Services.ApplyMigrations(app.Environment, app.Lifetime.ApplicationStopping);
 
+app.UseForwardedHeaders();
 app.UseCorsKayord();
 app.UseAuthentication();
 app.UseAuthorization();
