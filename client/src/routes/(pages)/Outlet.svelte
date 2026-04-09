@@ -15,7 +15,7 @@
 	<Card.Root class="flex w-full cursor-pointer pt-0 transition-all duration-200 hover:shadow-lg">
 		<div class="relative aspect-video overflow-hidden rounded-t-lg">
 			<img
-				src={`https://picsum.photos/seed/${outlet.id}/200/300`}
+				src="https://ruimsigcc.co.za/wp-content/uploads/2024/08/image0031.jpg"
 				alt={outlet.name}
 				class="h-full w-full object-cover"
 			/>
