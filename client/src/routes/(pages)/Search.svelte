@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Card, Input, Button, Badge } from "@kayord/ui";
+	import { Card, Input, Button, Badge, InputGroup } from "@kayord/ui";
 	import { CalendarIcon, ClockIcon, MapPinIcon, SearchIcon } from "@lucide/svelte";
 
 	const handleSearch = () => console.log("searching");
@@ -27,21 +27,17 @@
 	<Card.Root class="bg-card/50 border-border/50 backdrop-blur-sm">
 		<Card.Content class="p-8">
 			<form onsubmit={handleSearch} class="mb-6">
-				<div class="relative">
-					<SearchIcon
-						class="text-muted-foreground absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 transform"
-					/>
-					<Input
-						type="text"
-						placeholder="Search clubs, locations, or sports..."
-						bind:value={searchQuery}
-						class="bg-background/50 border-border/50 focus:border-primary/50 py-6 pr-4 pl-12 text-lg"
-					/>
-					<Button type="submit" class="absolute top-1/2 right-2 -translate-y-1/2 transform px-6">
+				<InputGroup.Root class="min-h-12">
+					<InputGroup.Input placeholder="Search..." bind:value={searchQuery} />
+					<InputGroup.Addon>
 						<SearchIcon />
-						Search
-					</Button>
-				</div>
+					</InputGroup.Addon>
+					<InputGroup.Addon align="inline-end">
+						<InputGroup.Button type="submit" variant="default" class="min-h-10">
+							<SearchIcon />Search
+						</InputGroup.Button>
+					</InputGroup.Addon>
+				</InputGroup.Root>
 			</form>
 
 			<div class="mb-6">

@@ -18,7 +18,7 @@
 </script>
 
 <div class="flex h-screen w-full flex-col items-center">
-	<div class="flex h-full max-w-2xl flex-col items-center justify-center gap-6">
+	<div class="flex h-full max-w-2xl flex-col items-center justify-center gap-6 p-2">
 		<LogoButton />
 		<Card.Root>
 			<Card.Header>

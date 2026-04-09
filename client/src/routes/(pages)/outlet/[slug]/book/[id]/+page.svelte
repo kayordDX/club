@@ -1,7 +1,13 @@
 <script lang="ts">
 	import { Button, Popover, ButtonGroup } from "@kayord/ui";
 	import { Calendar } from "@kayord/ui/calendar";
-	import { CalendarIcon, ChevronRightIcon, ChevronLeftIcon, BuildingIcon } from "@lucide/svelte";
+	import {
+		CalendarIcon,
+		ChevronRightIcon,
+		ChevronLeftIcon,
+		BuildingIcon,
+		InfoIcon,
+	} from "@lucide/svelte";
 	import {
 		parseDate,
 		today,
@@ -34,7 +40,7 @@
 	const slotsData = $derived(slotsQuery.data ?? []);
 </script>
 
-<div class="flex flex-row gap-2">
+<div class="flex flex-row items-center gap-2">
 	<div class="flex w-full flex-col gap-2">
 		<div class="flex flex-row gap-4 p-4">
 			<div>
@@ -74,7 +80,7 @@
 	<div>
 		<Button href={resolve(`/outlet/${page.params.slug}/book/${page.params.id}/facility`)}>
 			<BuildingIcon />
-			Facility Information
+			<span class="hidden sm:inline"> Facility </span>
 		</Button>
 	</div>
 </div>

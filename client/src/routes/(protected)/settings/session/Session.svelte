@@ -46,7 +46,7 @@
 
 <Card.Root class="flex flex-row items-center px-2 py-4">
 	<div
-		class="bg-muted text-muted-foreground flex size-5 size-10 items-center justify-center rounded-md"
+		class="bg-muted text-muted-foreground flex size-10 shrink-0 items-center justify-center rounded-md"
 	>
 		{#if session.device == "Mobile"}
 			<PhoneIcon />
