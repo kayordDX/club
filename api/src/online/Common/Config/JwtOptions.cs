@@ -3,7 +3,9 @@ namespace Online.Common.Config;
 public class JwtOptions
 {
     public const string JwtOptionsKey = "JwtOptions";
-    public required string Secret { get; set; }
+    public required string SigningCertPath { get; set; }
+    public required string SigningCertPassword { get; set; }
+    public required string EncryptionKey { get; set; }
     public required string Issuer { get; set; }
     public required string Audience { get; set; }
 

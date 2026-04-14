@@ -19,7 +19,7 @@ public class AuthTokenProcessor(IOptions<JwtOptions> jwtOptions, IHttpContextAcc
 
     public async Task<(string jwtToken, DateTime expiresAtUtc)> GenerateJwtTokenAsync(User user)
     {
-        var signinKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Secret));
+        var signinKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("_jwtOptions.SigningKey"));
         var credentials = new SigningCredentials(signinKey, SecurityAlgorithms.HmacSha256);
 
         var claims = new List<Claim>

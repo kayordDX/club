@@ -11,8 +11,9 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<TestRequest, TestRespon
     {
         Get("/test");
         Description(x => x.WithName("Test"));
+        // AllowAnonymous();
         // Policies(Constants.Policy.SuperAdmin);
-        Policies(Constants.Policy.OutletAdmin);
+        // Policies(Constants.Policy.OutletAdmin);
     }
 
     public override async Task HandleAsync(TestRequest req, CancellationToken ct)

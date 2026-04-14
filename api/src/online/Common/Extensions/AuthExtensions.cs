@@ -1,11 +1,9 @@
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
-using Online.Common.Auth;
 using Online.Common.Config;
+using OpenIddict.Validation.AspNetCore;
 
 namespace Online.Common.Extensions;
 
@@ -13,55 +11,52 @@ public static class AuthExtensions
 {
     public static IServiceCollection ConfigureAuth(this IServiceCollection services, IConfiguration configuration)
     {
+        var jwtOptions = configuration.GetSection(JwtOptions.JwtOptionsKey).Get<JwtOptions>()
+            ?? throw new InvalidOperationException("JwtOptions configuration is missing.");
+
+        services.AddOpenIddict()
+            .AddValidation(options =>
+            {
+
+                var corsSection = configuration.GetSection("App");
+                options.AddEncryptionKey(new SymmetricSecurityKey(Convert.FromBase64String(jwtOptions.EncryptionKey)));
+                var pfx = X509CertificateLoader.LoadPkcs12FromFile(jwtOptions.SigningCertPath, jwtOptions.SigningCertPassword);
+                options.AddSigningCertificate(pfx);
+
+                // var signinKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Secret));
+                // options.AddEncryptionKey(signinKey);
+                // options.AddEncryptionKey(new SymmetricSecurityKey(Convert.FromBase64String("eGztWK7NMvHAqUZrczQgLKjH8oFSg0ovnknlfahXxGg=")));
+                // options.AddEphemeralEncryptionKey()
+                //        .AddEphemeralSigningKey();
+
+                // options.AddEncryptionKey(new SymmetricSecurityKey(Convert.FromBase64String(jwtOptions.EncryptionKey)));
+                // options.AddSigningKey(new SymmetricSecurityKey(Convert.FromBase64String(jwtOptions.SigningKey)));
+                // Use the OpenIddict server as the token authority.
+                // The validation handler will use the discovery endpoint at
+                // {Issuer}/.well-known/openid-configuration to fetch the JWKS
+                // signing keys and validate bearer tokens locally.
+                options.SetIssuer(jwtOptions.Issuer);
+
+                // Allow the validation handler to call the issuer over HTTP
+                // to retrieve the discovery document and JWKS.
+                options.UseSystemNetHttp();
+
+                // Register the ASP.NET Core host so bearer tokens in the
+                // Authorization header are picked up automatically.
+                options.UseAspNetCore();
+            });
+
         services.AddAuthentication(o =>
         {
-            o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            o.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
-        })
-        .AddCookie()
-        .AddGoogle(options =>
-        {
-            options.ClientId = configuration["Authentication:Google:ClientId"] ?? throw new ArgumentException("Google ClientId is not configured");
-            options.ClientSecret = configuration["Authentication:Google:ClientSecret"] ?? throw new ArgumentException("Google ClientSecret is not configured");
-            options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-            // Added below to get profile info like picture
-            options.Scope.Add("profile");
-            options.ClaimActions.MapJsonKey("picture", "picture", "url"); // Map the 'picture' claim
-        })
-        .AddJwtBearer(options =>
-        {
-            var jwtOptions = configuration.GetSection(JwtOptions.JwtOptionsKey)
-                .Get<JwtOptions>() ?? throw new ArgumentException(nameof(JwtOptions));
-
-            options.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = jwtOptions.Issuer,
-                ValidAudience = jwtOptions.Audience,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Secret))
-            };
-
-            options.Events = new JwtBearerEvents
-            {
-                OnMessageReceived = context =>
-                {
-                    context.Token = context.Request.Cookies["ACCESS_TOKEN"];
-                    return Task.CompletedTask;
-                }
-            };
+            // Override the schemes Identity registered so bearer-token endpoints
+            // get a proper 401/403 instead of a cookie redirect to /Account/Login.
+            // DefaultSignInScheme is intentionally left alone so Identity's
+            // SignInManager can still create cookies for account flows.
+            o.DefaultAuthenticateScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
+            o.DefaultChallengeScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
+            o.DefaultForbidScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme;
         });
-
-        services.AddAuthorizationBuilder()
-            .AddPolicy(Constants.Policy.SuperAdmin, b => b.Requirements.Add(new RoleTypeRequirement(Constants.Policy.SuperAdmin)))
-            .AddPolicy(Constants.Policy.OutletAdmin, b => b.Requirements.Add(new OutletRoleTypeRequirement(Constants.Policy.OutletAdmin)));
-
-        // Register authorization handlers
-        services.AddScoped<IAuthorizationHandler, RoleTypeHandler>();
-        services.AddScoped<IAuthorizationHandler, OutletRoleTypeHandler>();
+        services.AddAuthorization();
 
         return services;
     }
