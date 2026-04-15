@@ -4,6 +4,14 @@ using TickerQ.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// OIDC nonce/correlation cookies accumulate (path=/signin-oidc) when the auth flow fails
+// repeatedly. Raise the Kestrel header limit so those accumulated cookies don't cause HTTP 431
+// before the flow can succeed and clean them up.
+builder.WebHost.ConfigureKestrel(kestrel =>
+{
+    kestrel.Limits.MaxRequestHeadersTotalSize = 128 * 1024; // 128 KB (default is 32 KB)
+});
+
 builder.Services.ConfigureApi();
 builder.Services.ConfigureConfig(builder.Configuration);
 builder.Services.ConfigureRedis(builder.Configuration);
