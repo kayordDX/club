@@ -1,8 +1,13 @@
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
 using Online.Common.Config;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Online.Data;
+using OpenIddict.Client;
+using System.Security.Cryptography.X509Certificates;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace Online.Common.Extensions;
 
@@ -13,111 +18,70 @@ public static class AuthExtensions
         var jwtOptions = configuration.GetSection(JwtOptions.JwtOptionsKey).Get<JwtOptions>()
             ?? throw new InvalidOperationException("JwtOptions configuration is missing.");
 
-        // Persist Data Protection keys so that auth cookies and OIDC nonce/correlation
-        // cookies survive API restarts. Without persistence, every restart generates new
-        // keys and all existing cookies become invalid ("Unprotect ticket failed"), which
-        // breaks the OIDC callback flow and requires users to re-login.
-        var dpKeysDir = new DirectoryInfo(Path.Combine(AppContext.BaseDirectory, ".dp-keys"));
-        dpKeysDir.Create();
-        services.AddDataProtection()
-            .PersistKeysToFileSystem(dpKeysDir)
-            .SetApplicationName("online");
-
-        // AddIdentity() (called in ConfigureEF) sets DefaultAuthenticateScheme="Identity.Application"
-        // and DefaultSignInScheme="Identity.External". We must explicitly override ALL scheme
-        // defaults here so that:
-        //   - Requests are authenticated against our ".AspNetCore.Cookies" session cookie.
-        //   - The OpenIdConnect handler signs the user into the Cookie scheme (not Identity.External).
-        //   - Unauthenticated requests are challenged via OpenIdConnect (OIDC redirect to IdP).
         services.AddAuthentication(options =>
         {
-            options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-            options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-            options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-            options.DefaultSignOutScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-            options.DefaultForbidScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            options.DefaultScheme = IdentityConstants.ApplicationScheme;
+            options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
+            options.DefaultSignInScheme = IdentityConstants.ApplicationScheme;
         })
-        .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
-        {
-            options.Cookie.SameSite = SameSiteMode.Lax;
-            options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-            options.Events = new CookieAuthenticationEvents
-            {
-                OnSignedIn = context =>
-                {
-                    // After OIDC sign-in, write a client-readable HAS_TOKEN cookie so the
-                    // frontend can detect the session. The legacy JWT login flow sets this
-                    // same cookie name, so no frontend changes are needed.
-                    var expiresAtStr = context.Properties.GetTokenValue("expires_at");
-                    DateTime tokenExpiry;
-                    if (!string.IsNullOrEmpty(expiresAtStr) &&
-                        DateTimeOffset.TryParse(expiresAtStr, null,
-                            System.Globalization.DateTimeStyles.RoundtripKind, out var parsedExpiry))
-                    {
-                        tokenExpiry = parsedExpiry.UtcDateTime;
-                    }
-                    else
-                    {
-                        tokenExpiry = DateTime.UtcNow.AddMinutes(15);
-                    }
-
-                    context.Response.Cookies.Append("HAS_TOKEN", tokenExpiry.ToString("o"), new CookieOptions
-                    {
-                        HttpOnly = false,
-                        Expires = context.Properties.ExpiresUtc?.UtcDateTime ?? DateTime.UtcNow.AddDays(1),
-                        IsEssential = true,
-                        Secure = false,
-                        SameSite = SameSiteMode.Lax,
-                    });
-                    return Task.CompletedTask;
-                }
-            };
-        })
-        .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
+        .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
         {
             options.Authority = jwtOptions.Issuer;
-            options.ClientId = "web_client";
-            options.ResponseType = "code";
-            options.SaveTokens = true;
-            options.GetClaimsFromUserInfoEndpoint = true;
-            options.TokenValidationParameters.NameClaimType = "name";
+            options.Audience = jwtOptions.Audience;
             options.RequireHttpsMetadata = false;
-            options.Events = new OpenIdConnectEvents
-            {
-                OnRedirectToIdentityProvider = context =>
-                {
-                    // Cross-origin requests are fetch/XHR calls from the SPA (e.g. localhost:5173
-                    // calling localhost:5000). Redirecting them to the identity server causes a
-                    // CORS failure because the browser follows the 302 cross-origin and the
-                    // identity server does not add CORS headers on those endpoints.
-                    // Return 401 so the SPA can handle the unauthenticated state gracefully.
-                    var origin = context.Request.Headers.Origin.FirstOrDefault();
-                    var currentOrigin = $"{context.Request.Scheme}://{context.Request.Host}";
-                    if (!string.IsNullOrEmpty(origin) && origin != currentOrigin)
-                    {
-                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                        context.HandleResponse(); // suppress the redirect
-                        return Task.CompletedTask;
-                    }
-
-                    context.ProtocolMessage.RedirectUri = "http://localhost:5000/signin-oidc";
-                    return Task.CompletedTask;
-                },
-
-                OnRemoteFailure = context =>
-                {
-                    // Redirect back to the frontend with an error indicator instead of
-                    // showing the default ASP.NET Core remote failure page.
-                    context.Response.Redirect("http://localhost:5173?auth_error=1");
-                    context.HandleResponse();
-                    return Task.CompletedTask;
-                }
-            };
         });
 
-        services.AddAuthorization();
+        services.AddOptions<CookieAuthenticationOptions>(IdentityConstants.ApplicationScheme)
+            .Configure<ITicketStore>((options, ticketStore) =>
+            {
+                options.Cookie.SameSite = SameSiteMode.Lax;
+                options.SessionStore = ticketStore;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+                options.Events.OnRedirectToLogin = context =>
+                {
+                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                    return Task.CompletedTask;
+                };
+            });
 
+        services.AddOpenIddict()
+            .AddCore(options =>
+            {
+                options.UseEntityFrameworkCore().UseDbContext<AppDbContext>();
+            })
+            .AddClient(options =>
+            {
+                options.AllowAuthorizationCodeFlow();
+                options.UseSystemNetHttp();
+
+                options.AddEncryptionKey(new SymmetricSecurityKey(Convert.FromBase64String(jwtOptions.EncryptionKey)));
+                var pfx = X509CertificateLoader.LoadPkcs12FromFile(jwtOptions.SigningCertPath, jwtOptions.SigningCertPassword);
+                options.AddSigningCertificate(pfx);
+
+                options.UseAspNetCore()
+                       .EnableRedirectionEndpointPassthrough()
+                       .DisableTransportSecurityRequirement();
+
+                options.AddRegistration(new OpenIddictClientRegistration
+                {
+                    Issuer = new Uri(jwtOptions.Issuer),
+                    ClientId = "web_client",
+                    ResponseModes = { ResponseModes.Query },
+                    ResponseTypes = { ResponseTypes.Code },
+                    Scopes = { Scopes.Email, Scopes.Profile, Scopes.OfflineAccess },
+                    RedirectUri = new Uri("http://localhost:5000/auth/login/callback")
+                });
+            });
+
+        services.AddAuthorization(ConfigureAuthorization);
         return services;
+    }
+
+    static void ConfigureAuthorization(AuthorizationOptions options)
+    {
+        options.DefaultPolicy = new AuthorizationPolicyBuilder()
+            .AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, JwtBearerDefaults.AuthenticationScheme)
+            .RequireAuthenticatedUser()
+            .Build();
     }
 }

@@ -8,7 +8,7 @@
 
 	const handleLoginWithGoogle = () => {
 		isLoading = true;
-		window.location.href = `${PUBLIC_API_URL}/account/login/google?returnUrl=${redirect}`;
+		window.location.href = `${PUBLIC_API_URL}/auth/login?returnUrl=${redirect}`;
 	};
 
 	let isLoading = $state(false);

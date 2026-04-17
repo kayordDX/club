@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Online.Data;
@@ -11,9 +12,11 @@ using Online.Data;
 namespace Online.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260415153140_Iddict")]
+    partial class Iddict
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1519,13 +1522,13 @@ namespace Online.Data.Migrations
                         .HasColumnName("settings");
 
                     b.HasKey("Id")
-                        .HasName("pk_openiddict_application");
+                        .HasName("pk_open_iddict_applications");
 
                     b.HasIndex("ClientId")
                         .IsUnique()
-                        .HasDatabaseName("ix_openiddict_application_client_id");
+                        .HasDatabaseName("ix_open_iddict_applications_client_id");
 
-                    b.ToTable("openiddict_application", (string)null);
+                    b.ToTable("OpenIddictApplications", (string)null);
                 });
 
             modelBuilder.Entity("OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreAuthorization", b =>
@@ -1573,12 +1576,12 @@ namespace Online.Data.Migrations
                         .HasColumnName("type");
 
                     b.HasKey("Id")
-                        .HasName("pk_openiddict_authorization");
+                        .HasName("pk_open_iddict_authorizations");
 
                     b.HasIndex("ApplicationId", "Status", "Subject", "Type")
-                        .HasDatabaseName("ix_openiddict_authorization_application_id_status_subject_type");
+                        .HasDatabaseName("ix_open_iddict_authorizations_application_id_status_subject_type");
 
-                    b.ToTable("openiddict_authorization", (string)null);
+                    b.ToTable("OpenIddictAuthorizations", (string)null);
                 });
 
             modelBuilder.Entity("OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreScope", b =>
@@ -1624,13 +1627,13 @@ namespace Online.Data.Migrations
                         .HasColumnName("resources");
 
                     b.HasKey("Id")
-                        .HasName("pk_openiddict_scope");
+                        .HasName("pk_open_iddict_scopes");
 
                     b.HasIndex("Name")
                         .IsUnique()
-                        .HasDatabaseName("ix_openiddict_scope_name");
+                        .HasDatabaseName("ix_open_iddict_scopes_name");
 
-                    b.ToTable("openiddict_scope", (string)null);
+                    b.ToTable("OpenIddictScopes", (string)null);
                 });
 
             modelBuilder.Entity("OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreToken", b =>
@@ -1695,19 +1698,19 @@ namespace Online.Data.Migrations
                         .HasColumnName("type");
 
                     b.HasKey("Id")
-                        .HasName("pk_openiddict_token");
+                        .HasName("pk_open_iddict_tokens");
 
                     b.HasIndex("AuthorizationId")
-                        .HasDatabaseName("ix_openiddict_token_authorization_id");
+                        .HasDatabaseName("ix_open_iddict_tokens_authorization_id");
 
                     b.HasIndex("ReferenceId")
                         .IsUnique()
-                        .HasDatabaseName("ix_openiddict_token_reference_id");
+                        .HasDatabaseName("ix_open_iddict_tokens_reference_id");
 
                     b.HasIndex("ApplicationId", "Status", "Subject", "Type")
-                        .HasDatabaseName("ix_openiddict_token_application_id_status_subject_type");
+                        .HasDatabaseName("ix_open_iddict_tokens_application_id_status_subject_type");
 
-                    b.ToTable("openiddict_token", (string)null);
+                    b.ToTable("OpenIddictTokens", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -2160,7 +2163,7 @@ namespace Online.Data.Migrations
                     b.HasOne("OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreApplication", "Application")
                         .WithMany("Authorizations")
                         .HasForeignKey("ApplicationId")
-                        .HasConstraintName("fk_openiddict_authorization_openiddict_application_application");
+                        .HasConstraintName("fk_open_iddict_authorizations_open_iddict_applications_application");
 
                     b.Navigation("Application");
                 });
@@ -2170,12 +2173,12 @@ namespace Online.Data.Migrations
                     b.HasOne("OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreApplication", "Application")
                         .WithMany("Tokens")
                         .HasForeignKey("ApplicationId")
-                        .HasConstraintName("fk_openiddict_token_openiddict_application_application_id");
+                        .HasConstraintName("fk_open_iddict_tokens_open_iddict_applications_application_id");
 
                     b.HasOne("OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreAuthorization", "Authorization")
                         .WithMany("Tokens")
                         .HasForeignKey("AuthorizationId")
-                        .HasConstraintName("fk_openiddict_token_openiddict_authorization_authorization_id");
+                        .HasConstraintName("fk_open_iddict_tokens_open_iddict_authorizations_authorization_id");
 
                     b.Navigation("Application");
 

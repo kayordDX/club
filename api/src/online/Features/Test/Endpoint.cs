@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Online.Common;
 using Online.Data;
@@ -18,10 +20,16 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<TestRequest, TestRespon
 
     public override async Task HandleAsync(TestRequest req, CancellationToken ct)
     {
-        var users = await dbContext.Users.ToListAsync(ct);
+        var accessToken = await HttpContext.GetTokenAsync(
+            IdentityConstants.ApplicationScheme,
+            "backchannel_access_token"
+        );
+
+        // var users = await dbContext.Users.ToListAsync(ct);
         var response = new TestResponse
         {
-            Success = true
+            Success = true,
+            Token = accessToken
         };
         await Send.OkAsync(response, ct);
     }

@@ -7,7 +7,9 @@ using Online.Common.Config;
 using Online.Data;
 using Online.Entities;
 using Online.Models;
+using OpenIddict.Abstractions;
 using Wangkanai.Detection.Services;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace Online.Services;
 
@@ -214,5 +216,75 @@ public class AccountService(UserManager<User> userManager, AuthTokenProcessor au
         }
 
         await LoginShared(user, null);
+    }
+
+    public async Task SyncUserAsync(ClaimsPrincipal? claimsPrincipal)
+    {
+        if (claimsPrincipal == null)
+        {
+            throw new Exception($"External login provider: Google error occurred: ClaimsPrincipal is null");
+        }
+
+        var subString = claimsPrincipal.GetClaim(Claims.Subject);
+        // Parse the string 'sub' into a Guid
+        if (!Guid.TryParse(subString, out var sub))
+        {
+            throw new Exception("Subject is not a valid GUID");
+        }
+        var email = claimsPrincipal.GetClaim(Claims.Email);
+        var picture = claimsPrincipal.FindFirstValue("picture");
+
+        if (email == null)
+        {
+            throw new Exception($"External login provider: Google error occurred: Email is null");
+        }
+
+        var user = await _userManager.FindByEmailAsync(email);
+
+        if (user == null)
+        {
+            var newUser = new User
+            {
+                Id = sub,
+                UserName = email,
+                Email = email,
+                FirstName = claimsPrincipal.FindFirstValue(ClaimTypes.GivenName) ?? string.Empty,
+                LastName = claimsPrincipal.FindFirstValue(ClaimTypes.Surname) ?? string.Empty,
+                EmailConfirmed = true,
+                Picture = picture
+            };
+
+            var result = await _userManager.CreateAsync(newUser);
+
+            if (!result.Succeeded)
+            {
+                throw new Exception($"External login provider: Google error occurred: Unable to create user: {string.Join(", ",
+                    result.Errors.Select(x => x.Description))}");
+            }
+
+            user = newUser;
+
+            var info = new UserLoginInfo("Identity",
+                claimsPrincipal.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty,
+                "Identity");
+
+            var loginResult = await _userManager.AddLoginAsync(user, info);
+
+            if (!loginResult.Succeeded)
+            {
+                throw new Exception($"External login provider: Google error occurred: Unable to login user {string.Join(", ",
+                    loginResult.Errors.Select(x => x.Description))}");
+            }
+        }
+        else
+        {
+            // Update picture if changed
+            if (user.Picture != picture)
+            {
+                user.Picture = picture;
+                await _userManager.UpdateAsync(user);
+            }
+        }
+        await _dbContext.SaveChangesAsync();
     }
 }
