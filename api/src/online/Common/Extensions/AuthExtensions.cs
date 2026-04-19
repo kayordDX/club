@@ -2,12 +2,16 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Online.Common.Config;
 using Online.Data;
+using Online.Services;
 using OpenIddict.Client;
 using System.Security.Cryptography.X509Certificates;
 using static OpenIddict.Abstractions.OpenIddictConstants;
+using Online.Entities;
 
 namespace Online.Common.Extensions;
 
@@ -17,6 +21,8 @@ public static class AuthExtensions
     {
         var jwtOptions = configuration.GetSection(JwtOptions.JwtOptionsKey).Get<JwtOptions>()
             ?? throw new InvalidOperationException("JwtOptions configuration is missing.");
+
+        services.AddScoped<TokenRefreshService>();
 
         services.AddAuthentication(options =>
         {
@@ -32,7 +38,7 @@ public static class AuthExtensions
         });
 
         services.AddOptions<CookieAuthenticationOptions>(IdentityConstants.ApplicationScheme)
-            .Configure<ITicketStore>((options, ticketStore) =>
+            .Configure<ITicketStore, IServiceScopeFactory>((options, ticketStore, scopeFactory) =>
             {
                 options.Cookie.SameSite = SameSiteMode.Lax;
                 options.SessionStore = ticketStore;
@@ -41,6 +47,12 @@ public static class AuthExtensions
                 {
                     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                     return Task.CompletedTask;
+                };
+                options.SlidingExpiration = true;
+                options.Events.OnValidatePrincipal = async context =>
+                {
+                    var refreshService = context.HttpContext.RequestServices.GetRequiredService<TokenRefreshService>();
+                    await refreshService.RefreshIfExpiredAsync(context);
                 };
             });
 

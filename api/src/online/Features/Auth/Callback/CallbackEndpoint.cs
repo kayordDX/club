@@ -1,9 +1,9 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Http.Extensions;
+using OpenIddict.Client.AspNetCore;
 using Online.Entities;
 using Online.Services;
-using OpenIddict.Client.AspNetCore;
 
 namespace Online.Features.Auth.Callback;
 
@@ -20,7 +20,6 @@ public class CallbackEndpoint(AccountService accountService, SignInManager<User>
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        // 1. Validate the OIDC response from the Identity Server
         var result = await HttpContext.AuthenticateAsync(OpenIddictClientAspNetCoreDefaults.AuthenticationScheme);
 
         if (!result.Succeeded || result.Principal is null)
@@ -31,45 +30,46 @@ public class CallbackEndpoint(AccountService accountService, SignInManager<User>
 
         await _accountService.SyncUserAsync(result.Principal);
 
-        var email = result.Principal.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
-        if (string.IsNullOrWhiteSpace(email))
+        var props = new AuthenticationProperties();
+        props.StoreTokens(result.Properties.GetTokens());
+
+        var backchannelExpiry = result.Properties.GetTokenValue("backchannel_access_token_expiration_date");
+        if (!string.IsNullOrEmpty(backchannelExpiry))
         {
-            await Send.UnauthorizedAsync(ct);
-            return;
+            props.UpdateTokenValue("expires_at", backchannelExpiry);
         }
 
-        var user = await _signInManager.UserManager.FindByEmailAsync(email);
-        if (user is null)
+        var accessToken = result.Properties.GetTokenValue("backchannel_access_token");
+        if (!string.IsNullOrEmpty(accessToken))
         {
-            await Send.UnauthorizedAsync(ct);
-            return;
+            props.UpdateTokenValue("access_token", accessToken);
         }
+        props.IsPersistent = true;
 
-        // 2. Issue the registered Identity application cookie through Identity so only
-        // the configured application cookie is created.
-        // await _signInManager.SignInAsync(user, isPersistent: false);
+        var tokens = result.Properties.GetTokens();
 
         await HttpContext.SignInAsync(
             IdentityConstants.ApplicationScheme,
             result.Principal,
-            result.Properties);
+            props);
 
-        // 3. Clear any temporary external cookie after the callback flow completes.
-        // await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+        var expiresAtString = result.Properties.GetTokenValue("backchannel_access_token_expiration_date");
+        if (!DateTimeOffset.TryParse(expiresAtString, out var expiresAt))
+        {
+            expiresAt = DateTimeOffset.UtcNow.AddMinutes(30);
+        }
 
-        // 3. Issue a frontend-visible marker cookie so the SPA can detect the session.
-        var expiresAt = result.Properties?.ExpiresUtc?.UtcDateTime ?? DateTime.UtcNow.AddHours(1);
-        HttpContext.Response.Cookies.Append("HAS_TOKEN", expiresAt.ToString("o"), new CookieOptions
+        var hasTokenExpires = expiresAt.UtcDateTime;
+        HttpContext.Response.Cookies.Append("HAS_TOKEN", hasTokenExpires.ToString("o"), new CookieOptions
         {
             HttpOnly = false,
-            Expires = expiresAt,
+            Expires = hasTokenExpires,
             IsEssential = true,
             Secure = HttpContext.Request.IsHttps,
             SameSite = SameSiteMode.Lax
         });
 
-        string redirectUrl = result.Properties?.RedirectUri ?? "/";
-
+        var redirectUrl = result.Properties?.RedirectUri ?? "/";
         HttpContext.Response.Redirect(redirectUrl);
         ResponseStarted = true;
         return;
