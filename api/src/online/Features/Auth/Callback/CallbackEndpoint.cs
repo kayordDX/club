@@ -33,6 +33,7 @@ public class CallbackEndpoint(AccountService accountService, SignInManager<User>
         var props = new AuthenticationProperties();
         props.StoreTokens(result.Properties.GetTokens());
 
+
         var backchannelExpiry = result.Properties.GetTokenValue("backchannel_access_token_expiration_date");
         if (!string.IsNullOrEmpty(backchannelExpiry))
         {
@@ -46,8 +47,6 @@ public class CallbackEndpoint(AccountService accountService, SignInManager<User>
         }
         props.IsPersistent = true;
 
-        var tokens = result.Properties.GetTokens();
-
         await HttpContext.SignInAsync(
             IdentityConstants.ApplicationScheme,
             result.Principal,
@@ -58,6 +57,7 @@ public class CallbackEndpoint(AccountService accountService, SignInManager<User>
         {
             expiresAt = DateTimeOffset.UtcNow.AddMinutes(30);
         }
+        props.ExpiresUtc = expiresAt;
 
         var hasTokenExpires = expiresAt.UtcDateTime;
         HttpContext.Response.Cookies.Append("HAS_TOKEN", hasTokenExpires.ToString("o"), new CookieOptions

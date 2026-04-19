@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using OpenIddict.Client;
 
 namespace Online.Services;
@@ -47,7 +48,7 @@ public class TokenRefreshService(OpenIddictClientService clientService)
         {
             // If refresh fails (e.g. user revoked, password changed), kill the session
             context.RejectPrincipal();
-            await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await context.HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
         }
     }
 }

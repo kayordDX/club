@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Online.Entities;
 
@@ -18,7 +20,10 @@ public class Endpoint(SignInManager<User> signInManager, IHttpContextAccessor ht
     public override async Task HandleAsync(CancellationToken ct)
     {
         _httpContextAccessor.HttpContext?.Response.Cookies.Delete("HAS_TOKEN");
-        await _signInManager.SignOutAsync();
+        if (_httpContextAccessor.HttpContext is not null)
+        {
+            await _httpContextAccessor.HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
+        }
         await Send.OkAsync(true, ct);
     }
 }
