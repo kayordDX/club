@@ -61,7 +61,7 @@ public class TokenRefreshService(OpenIddictClientService clientService)
 
     private static void WriteHasTokenCookie(CookieValidatePrincipalContext context, DateTimeOffset expiresAt)
     {
-        context.HttpContext.Response.Cookies.Append(HasTokenCookieName, "", new CookieOptions
+        context.HttpContext.Response.Cookies.Append(HasTokenCookieName, "true", new CookieOptions
         {
             HttpOnly = false,
             Expires = expiresAt.UtcDateTime,

@@ -7,10 +7,9 @@ using Online.Services;
 
 namespace Online.Features.Auth.Callback;
 
-public class CallbackEndpoint(AccountService accountService, SignInManager<User> signInManager) : EndpointWithoutRequest
+public class CallbackEndpoint(AccountService accountService) : EndpointWithoutRequest
 {
     private readonly AccountService _accountService = accountService;
-    private readonly SignInManager<User> _signInManager = signInManager;
 
     public override void Configure()
     {
@@ -40,7 +39,7 @@ public class CallbackEndpoint(AccountService accountService, SignInManager<User>
             result.Properties);
 
         var expiry = result.Properties.ExpiresUtc ?? DateTimeOffset.UtcNow.AddDays(14);
-        HttpContext.Response.Cookies.Append("HAS_TOKEN", "", new CookieOptions
+        HttpContext.Response.Cookies.Append("HAS_TOKEN", "true", new CookieOptions
         {
             HttpOnly = false,
             Expires = expiry,

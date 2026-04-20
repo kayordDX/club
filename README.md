@@ -117,3 +117,11 @@ Payment Options?
 - Pay before
 - Pay on arrival
 - Deposit %
+
+
+### Auth Plan
+
+Sync user accounts with identity
+Call /users endpoint in identity and sync
+Add column lastSync to users table.
+Only update if lastUpdate is older than 24 hours.
