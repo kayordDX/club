@@ -63,7 +63,7 @@ public static class AuthExtensions
             })
             .AddClient(options =>
             {
-                options.AllowAuthorizationCodeFlow();
+                options.AllowAuthorizationCodeFlow().AllowRefreshTokenFlow();
                 options.UseSystemNetHttp();
 
                 options.AddEncryptionKey(new SymmetricSecurityKey(Convert.FromBase64String(jwtOptions.EncryptionKey)));
