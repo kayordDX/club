@@ -5,9 +5,10 @@ using OpenIddict.Client;
 
 namespace Online.Services;
 
-public class TokenRefreshService(OpenIddictClientService clientService)
+public class TokenRefreshService(OpenIddictClientService clientService, ILogger<TokenRefreshService> logger)
 {
     private readonly OpenIddictClientService _clientService = clientService;
+    private readonly ILogger<TokenRefreshService> _logger = logger;
 
     public async Task RefreshIfExpiredAsync(CookieValidatePrincipalContext context)
     {
@@ -18,7 +19,7 @@ public class TokenRefreshService(OpenIddictClientService clientService)
         var expiresAt = DateTimeOffset.Parse(expiresAtClaim);
 
         // If the access token has more than 2 minutes of life, we are fine.
-        if (expiresAt > DateTimeOffset.UtcNow.AddMinutes(2)) return;
+        if (expiresAt > DateTimeOffset.UtcNow.AddMinutes(5)) return;
 
         var refreshToken = context.Properties.GetTokenValue("refresh_token");
         if (string.IsNullOrEmpty(refreshToken)) return;
@@ -30,22 +31,18 @@ public class TokenRefreshService(OpenIddictClientService clientService)
             {
                 RefreshToken = refreshToken
             });
-
-            // Update the Access Token and the Refresh Token (Identity might rotate it)
-            context.Properties.UpdateTokenValue("access_token", result.AccessToken);
+            context.Properties.UpdateTokenValue("backchannel_access_token", result.AccessToken);
             context.Properties.UpdateTokenValue("refresh_token", result.RefreshToken);
-
-            // OpenIddict's refresh result doesn't expose the raw token response here,
-            // so keep the expiry in sync using the same lifetime as the issued access token.
-            var newExpiresAt = DateTimeOffset.UtcNow.AddSeconds(3600);
-
-            context.Properties.UpdateTokenValue("expires_at", newExpiresAt.ToString("o"));
-
-            // CRITICAL: Tells the Cookie Middleware to write the updated tokens back to the browser
+            if (!result.AccessTokenExpirationDate.HasValue)
+            {
+                throw new InvalidOperationException("Token response is missing 'AccessTokenExpirationDate' information.");
+            }
+            context.Properties.UpdateTokenValue("backchannel_access_token_expiration_date", result.AccessTokenExpirationDate.Value.ToString("o"));
             context.ShouldRenew = true;
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Failed to refresh access token. User will be signed out.");
             // If refresh fails (e.g. user revoked, password changed), kill the session
             context.RejectPrincipal();
             await context.HttpContext.SignOutAsync(IdentityConstants.ApplicationScheme);
