@@ -30,40 +30,20 @@ public class CallbackEndpoint(AccountService accountService, SignInManager<User>
 
         await _accountService.SyncUserAsync(result.Principal);
 
-        var props = new AuthenticationProperties();
-        props.StoreTokens(result.Properties.GetTokens());
-
-
-        var backchannelExpiry = result.Properties.GetTokenValue("backchannel_access_token_expiration_date");
-        if (!string.IsNullOrEmpty(backchannelExpiry))
-        {
-            props.UpdateTokenValue("expires_at", backchannelExpiry);
-        }
-
-        var accessToken = result.Properties.GetTokenValue("backchannel_access_token");
-        if (!string.IsNullOrEmpty(accessToken))
-        {
-            props.UpdateTokenValue("access_token", accessToken);
-        }
-        props.IsPersistent = true;
+        // var props = new AuthenticationProperties();
+        // props.StoreTokens(result.Properties.GetTokens());
+        // props.IsPersistent = true;
 
         await HttpContext.SignInAsync(
             IdentityConstants.ApplicationScheme,
             result.Principal,
-            props);
+            result.Properties);
 
-        var expiresAtString = result.Properties.GetTokenValue("backchannel_access_token_expiration_date");
-        if (!DateTimeOffset.TryParse(expiresAtString, out var expiresAt))
-        {
-            expiresAt = DateTimeOffset.UtcNow.AddMinutes(30);
-        }
-        props.ExpiresUtc = expiresAt;
-
-        var hasTokenExpires = expiresAt.UtcDateTime;
-        HttpContext.Response.Cookies.Append("HAS_TOKEN", hasTokenExpires.ToString("o"), new CookieOptions
+        var expiry = result.Properties.ExpiresUtc ?? DateTimeOffset.UtcNow.AddDays(14);
+        HttpContext.Response.Cookies.Append("HAS_TOKEN", "", new CookieOptions
         {
             HttpOnly = false,
-            Expires = hasTokenExpires,
+            Expires = expiry,
             IsEssential = true,
             Secure = HttpContext.Request.IsHttps,
             SameSite = SameSiteMode.Lax
