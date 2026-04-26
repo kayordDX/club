@@ -35,6 +35,7 @@ public static class AuthExtensions
             options.Authority = jwtOptions.Issuer;
             options.Audience = jwtOptions.Audience;
             options.RequireHttpsMetadata = false;
+            options.MetadataAddress = "http://localhost:18080/realms/kayord/.well-known/openid-configuration";
         });
 
         services.AddOptions<CookieAuthenticationOptions>(IdentityConstants.ApplicationScheme)

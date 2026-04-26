@@ -1,4 +1,5 @@
 using FastEndpoints.Swagger;
+using NSwag;
 using Scalar.AspNetCore;
 
 namespace Online.Common.Extensions;
@@ -23,6 +24,23 @@ public static class ApiExtensions
                 s.Title = AppDomain.CurrentDomain.FriendlyName;
                 s.Version = "v1";
                 s.MarkNonNullablePropsAsRequired();
+                s.AddAuth("Keycloak", new OpenApiSecurityScheme
+                {
+                    Type = OpenApiSecuritySchemeType.OAuth2,
+                    Flows = new OpenApiOAuthFlows
+                    {
+                        Implicit = new OpenApiOAuthFlow
+                        {
+                            AuthorizationUrl = "http://localhost:18080/realms/kayord/protocol/openid-connect/auth",
+                            Scopes = new Dictionary<string, string>
+                            {
+                                { "openid", "OpenID Connect scope" },
+                                { "profile", "Profile scope" },
+                                { "email", "Email scope" }
+                            }
+                        },
+                    }
+                });
             };
         });
     }

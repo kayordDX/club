@@ -48,3 +48,4 @@
 
 {auth.isLoading}
 {auth.isAuthenticated}
+{JSON.stringify(auth.user)}

@@ -44,6 +44,23 @@ services:
       - 18888:18888
       - 18889:18889
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    ports:
+      - "18080:8080"
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: online
+      KC_DB_PASSWORD: online
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME: http://localhost:18080
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+    command: start-dev
+    volumes:
+      - ./keycloak-theme.jar:/opt/keycloak/providers/keycloak-theme.jar
+
 volumes:
   pgdata:
   redis:
