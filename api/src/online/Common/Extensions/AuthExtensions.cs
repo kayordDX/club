@@ -2,18 +2,15 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Online.Common.Config;
 using Keycloak.AuthServices.Common;
 using Duende.AccessTokenManagement;
-using Keycloak.AuthServices.Sdk;
 
 namespace Online.Common.Extensions;
 
 public static class AuthExtensions
 {
-    public static IServiceCollection ConfigureAuth(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection ConfigureAuth(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment env)
     {
-        var jwtOptions = configuration.GetSection(JwtOptions.JwtOptionsKey).Get<JwtOptions>()
-            ?? throw new InvalidOperationException("JwtOptions configuration is missing.");
-
-        // services.AddScoped<TokenRefreshService>();
+        var keycloakConfig = configuration.GetSection(KeycloakConfig.Key).Get<KeycloakConfig>()
+            ?? throw new InvalidOperationException("Keycloak configuration is missing.");
 
         services.AddAuthentication(options =>
         {
@@ -23,16 +20,35 @@ public static class AuthExtensions
         })
         .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
         {
-            options.Authority = jwtOptions.Issuer;
-            options.Audience = jwtOptions.Audience;
-            options.RequireHttpsMetadata = false;
-            options.MetadataAddress = "http://localhost:18080/realms/kayord/.well-known/openid-configuration";
+            options.Authority = keycloakConfig.Issuer;
+            options.Audience = keycloakConfig.Audience;
+            options.RequireHttpsMetadata = !env.IsDevelopment();
+            options.MetadataAddress = keycloakConfig.MetadataAddress;
         });
 
-        var options = configuration.GetKeycloakOptions<KeycloakAdminClientOptions>()!;
-        // options.AuthServerUrl = "http://localhost:18080/realms/kayord";
+        Keycloak.AuthServices.Sdk.KeycloakAdminClientOptions options = new()
+        {
+            Realm = keycloakConfig.Realm,
+            Resource = keycloakConfig.AdminClientId,
+            AuthServerUrl = keycloakConfig.AuthServerUrl,
+            Credentials = new KeycloakClientInstallationCredentials
+            {
+                Secret = keycloakConfig.AdminClientSecret
+            },
+        };
 
-        var tokenClientName = ClientCredentialsClientName.Parse("admin-client");
+        Keycloak.AuthServices.Sdk.Kiota.KeycloakAdminClientOptions kiotaOptions = new()
+        {
+            Realm = keycloakConfig.Realm,
+            Resource = keycloakConfig.AdminClientId,
+            AuthServerUrl = keycloakConfig.AuthServerUrl,
+            Credentials = new KeycloakClientInstallationCredentials
+            {
+                Secret = keycloakConfig.AdminClientSecret
+            },
+        };
+
+        var tokenClientName = ClientCredentialsClientName.Parse(keycloakConfig.AdminClientId);
 
         services.AddDistributedMemoryCache();
         services
@@ -52,19 +68,8 @@ public static class AuthExtensions
             .AddClientCredentialsTokenHandler(tokenClientName);
 
         Keycloak.AuthServices.Sdk.Kiota.ServiceCollectionExtensions
-            .AddKiotaKeycloakAdminHttpClient(services, configuration)
+            .AddKeycloakAdminHttpClient(services, kiotaOptions)
             .AddClientCredentialsTokenHandler(tokenClientName);
-
-
-        // services.AddClientCredentialsTokenHandler(tokenClientName);
-
-        // var keycloakOptions = new KeycloakAdminClientOptions
-        // {
-        //     AuthServerUrl = "http://localhost:18080/realms/kayord",
-        //     Realm = "kayord",
-        //     Resource = "admin-client",
-        // };
-        // services.AddKeycloakAdminHttpClient(keycloakOptions);
 
         services.AddAuthorization();
         return services;

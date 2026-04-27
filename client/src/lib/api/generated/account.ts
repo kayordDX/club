@@ -18,6 +18,8 @@ import type {
 } from "@tanstack/svelte-query";
 
 import type {
+	AccountSessionResponse,
+	AccountSessionRevokeRequest,
 	InternalErrorResponse,
 	LoginGoogleParams,
 	LoginRequest,
@@ -33,6 +35,222 @@ import type { ErrorType, BodyType } from "../mutator/customInstance.svelte";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
+export const getAccountSessionUrl = () => {
+	return `/account/session`;
+};
+
+export const accountSession = async (options?: RequestInit): Promise<AccountSessionResponse[]> => {
+	return customInstance<AccountSessionResponse[]>(getAccountSessionUrl(), {
+		...options,
+		method: "GET",
+	});
+};
+
+export const getAccountSessionQueryKey = () => {
+	return [`/account/session`] as const;
+};
+
+export const getAccountSessionQueryOptions = <
+	TData = Awaited<ReturnType<typeof accountSession>>,
+	TError = ErrorType<void | InternalErrorResponse>,
+>(options?: {
+	query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof accountSession>>, TError, TData>>;
+	request?: SecondParameter<typeof customInstance>;
+}) => {
+	const { query: queryOptions, request: requestOptions } = options ?? {};
+
+	const queryKey = queryOptions?.queryKey ?? getAccountSessionQueryKey();
+
+	const queryFn: QueryFunction<Awaited<ReturnType<typeof accountSession>>> = ({ signal }) =>
+		accountSession({ signal, ...requestOptions });
+
+	return { queryKey, queryFn, ...queryOptions } as CreateQueryOptions<
+		Awaited<ReturnType<typeof accountSession>>,
+		TError,
+		TData
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type AccountSessionQueryResult = NonNullable<Awaited<ReturnType<typeof accountSession>>>;
+export type AccountSessionQueryError = ErrorType<void | InternalErrorResponse>;
+
+export function createAccountSession<
+	TData = Awaited<ReturnType<typeof accountSession>>,
+	TError = ErrorType<void | InternalErrorResponse>,
+>(
+	options?: () => {
+		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof accountSession>>, TError, TData>>;
+		request?: SecondParameter<typeof customInstance>;
+	},
+	queryClient?: () => QueryClient
+): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+	const query = createQuery(
+		() => getAccountSessionQueryOptions(options?.()),
+		queryClient
+	) as CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+	return query;
+}
+
+export const getAccountSessionRevokeAllUrl = () => {
+	return `/account/session/revokeAll`;
+};
+
+export const accountSessionRevokeAll = async (options?: RequestInit): Promise<void> => {
+	return customInstance<void>(getAccountSessionRevokeAllUrl(), {
+		...options,
+		method: "POST",
+	});
+};
+
+export const getAccountSessionRevokeAllMutationOptions = <
+	TError = ErrorType<void | InternalErrorResponse>,
+	TContext = unknown,
+>(options?: {
+	mutation?: CreateMutationOptions<
+		Awaited<ReturnType<typeof accountSessionRevokeAll>>,
+		TError,
+		void,
+		TContext
+	>;
+	request?: SecondParameter<typeof customInstance>;
+}): CreateMutationOptions<
+	Awaited<ReturnType<typeof accountSessionRevokeAll>>,
+	TError,
+	void,
+	TContext
+> => {
+	const mutationKey = ["accountSessionRevokeAll"];
+	const { mutation: mutationOptions, request: requestOptions } = options
+		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+			? options
+			: { ...options, mutation: { ...options.mutation, mutationKey } }
+		: { mutation: { mutationKey }, request: undefined };
+
+	const mutationFn: MutationFunction<
+		Awaited<ReturnType<typeof accountSessionRevokeAll>>,
+		void
+	> = () => {
+		return accountSessionRevokeAll(requestOptions);
+	};
+
+	return { mutationFn, ...mutationOptions };
+};
+
+export type AccountSessionRevokeAllMutationResult = NonNullable<
+	Awaited<ReturnType<typeof accountSessionRevokeAll>>
+>;
+
+export type AccountSessionRevokeAllMutationError = ErrorType<void | InternalErrorResponse>;
+
+export const createAccountSessionRevokeAll = <
+	TError = ErrorType<void | InternalErrorResponse>,
+	TContext = unknown,
+>(
+	options?: () => {
+		mutation?: CreateMutationOptions<
+			Awaited<ReturnType<typeof accountSessionRevokeAll>>,
+			TError,
+			void,
+			TContext
+		>;
+		request?: SecondParameter<typeof customInstance>;
+	},
+	queryClient?: () => QueryClient
+): CreateMutationResult<
+	Awaited<ReturnType<typeof accountSessionRevokeAll>>,
+	TError,
+	void,
+	TContext
+> => {
+	return createMutation(
+		() => ({ ...getAccountSessionRevokeAllMutationOptions(options?.()) }),
+		queryClient
+	);
+};
+export const getAccountSessionRevokeUrl = () => {
+	return `/account/session/revoke`;
+};
+
+export const accountSessionRevoke = async (
+	accountSessionRevokeRequest: AccountSessionRevokeRequest,
+	options?: RequestInit
+): Promise<void> => {
+	return customInstance<void>(getAccountSessionRevokeUrl(), {
+		...options,
+		method: "POST",
+		headers: { "Content-Type": "application/json", ...options?.headers },
+		body: JSON.stringify(accountSessionRevokeRequest),
+	});
+};
+
+export const getAccountSessionRevokeMutationOptions = <
+	TError = ErrorType<void | InternalErrorResponse>,
+	TContext = unknown,
+>(options?: {
+	mutation?: CreateMutationOptions<
+		Awaited<ReturnType<typeof accountSessionRevoke>>,
+		TError,
+		{ data: BodyType<AccountSessionRevokeRequest> },
+		TContext
+	>;
+	request?: SecondParameter<typeof customInstance>;
+}): CreateMutationOptions<
+	Awaited<ReturnType<typeof accountSessionRevoke>>,
+	TError,
+	{ data: BodyType<AccountSessionRevokeRequest> },
+	TContext
+> => {
+	const mutationKey = ["accountSessionRevoke"];
+	const { mutation: mutationOptions, request: requestOptions } = options
+		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+			? options
+			: { ...options, mutation: { ...options.mutation, mutationKey } }
+		: { mutation: { mutationKey }, request: undefined };
+
+	const mutationFn: MutationFunction<
+		Awaited<ReturnType<typeof accountSessionRevoke>>,
+		{ data: BodyType<AccountSessionRevokeRequest> }
+	> = (props) => {
+		const { data } = props ?? {};
+
+		return accountSessionRevoke(data, requestOptions);
+	};
+
+	return { mutationFn, ...mutationOptions };
+};
+
+export type AccountSessionRevokeMutationResult = NonNullable<
+	Awaited<ReturnType<typeof accountSessionRevoke>>
+>;
+export type AccountSessionRevokeMutationBody = BodyType<AccountSessionRevokeRequest>;
+export type AccountSessionRevokeMutationError = ErrorType<void | InternalErrorResponse>;
+
+export const createAccountSessionRevoke = <
+	TError = ErrorType<void | InternalErrorResponse>,
+	TContext = unknown,
+>(
+	options?: () => {
+		mutation?: CreateMutationOptions<
+			Awaited<ReturnType<typeof accountSessionRevoke>>,
+			TError,
+			{ data: BodyType<AccountSessionRevokeRequest> },
+			TContext
+		>;
+		request?: SecondParameter<typeof customInstance>;
+	},
+	queryClient?: () => QueryClient
+): CreateMutationResult<
+	Awaited<ReturnType<typeof accountSessionRevoke>>,
+	TError,
+	{ data: BodyType<AccountSessionRevokeRequest> },
+	TContext
+> => {
+	return createMutation(
+		() => ({ ...getAccountSessionRevokeMutationOptions(options?.()) }),
+		queryClient
+	);
+};
 export const getRegisterUrl = () => {
 	return `/account/register`;
 };

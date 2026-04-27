@@ -6,6 +6,7 @@
 	import LogoutButton from "$lib/components/LogoutButton/LogoutButton.svelte";
 	import GoogleIcon from "$lib/svg/icons/GoogleIcon.svelte";
 	import { page } from "$app/state";
+	import LoginButton from "$lib/components/LoginButton/LoginButton.svelte";
 
 	// const redirect = $derived(`${PUBLIC_APP_URL}${page.url.searchParams.get("redirect") ?? ""}`);
 </script>
@@ -21,21 +22,8 @@
 				</Card.Description>
 			</Card.Header>
 			<Card.Content class="flex flex-col items-center">
-				{#if auth.isAuthenticated}
-					Logged in as {auth.user?.profile.firstName}
-					<div class="mt-4">
-						<LogoutButton />
-					</div>
-				{:else}
-					<Button onclick={auth.login} variant="outline">
-						{#if auth.isLoading}
-							<Loader class="mr-2" />
-						{:else}
-							<GoogleIcon class="fill-white" />
-						{/if}
-						Google
-					</Button>
-				{/if}
+				<LoginButton />
+				<LogoutButton />
 			</Card.Content>
 			<Card.Footer class="flex flex-col items-center gap-2">
 				<p class="text-muted-foreground text-xs">

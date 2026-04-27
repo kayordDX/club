@@ -4,7 +4,7 @@ using TickerQ.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.ConfigureApi();
+builder.Services.ConfigureApi(builder.Configuration);
 builder.Services.ConfigureConfig(builder.Configuration);
 builder.Services.ConfigureRedis(builder.Configuration);
 
@@ -14,7 +14,7 @@ builder.Services.ConfigureCors(builder.Configuration);
 builder.Services.ConfigureEF(builder.Configuration, builder.Environment);
 builder.Services.ConfigureTickerQ(builder.Configuration);
 builder.Services.ConfigureGeneral(builder.Configuration);
-builder.Services.ConfigureAuth(builder.Configuration);
+builder.Services.ConfigureAuth(builder.Configuration, builder.Environment);
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {

@@ -1,37 +1,23 @@
 <script lang="ts">
-	import type { RefreshListResponse } from "$lib/api";
-	import { createRefreshRevoke } from "$lib/api";
-	import { Badge, Button, Card, Tooltip } from "@kayord/ui";
-	import {
-		ClockIcon,
-		GamepadIcon,
-		MonitorIcon,
-		MonitorSmartphoneIcon,
-		PhoneIcon,
-		ShieldXIcon,
-		TabletIcon,
-		TvIcon,
-		WatchIcon,
-	} from "@lucide/svelte";
+	import type { AccountSessionResponse } from "$lib/api";
+	import { createAccountSessionRevoke } from "$lib/api";
+	import { Button, Card, Tooltip } from "@kayord/ui";
+	import { ClockCheckIcon, NetworkIcon, ShieldXIcon, TimerIcon } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
 
 	type Props = {
-		session: RefreshListResponse;
+		session: AccountSessionResponse;
 		refetch: () => void;
 	};
 
 	let { session, refetch }: Props = $props();
 
-	const getShortenedBrowserVersion = (version: string) => {
-		const parts = version.split(".");
-		return parts.slice(0, 1).join(".");
-	};
-
-	const mutation = createRefreshRevoke();
+	const mutation = createAccountSessionRevoke();
 
 	let isRevoking = $state(false);
 	const revoke = async () => {
 		try {
+			if (session.id == null) return;
 			isRevoking = true;
 			await mutation.mutateAsync({ data: { id: session.id } });
 			refetch();
@@ -45,49 +31,33 @@
 </script>
 
 <Card.Root class="flex flex-row items-center px-2 py-4">
-	<div
-		class="bg-muted text-muted-foreground flex size-10 shrink-0 items-center justify-center rounded-md"
-	>
-		{#if session.device == "Mobile"}
-			<PhoneIcon />
-		{:else if session.device == "Tablet"}
-			<TabletIcon />
-		{:else if session.device == "Desktop"}
-			<MonitorIcon />
-		{:else if session.device == "Watch"}
-			<WatchIcon />
-		{:else if session.device == "TV"}
-			<TvIcon />
-		{:else if session.device == "Console"}
-			<GamepadIcon />
-		{:else}
-			<MonitorSmartphoneIcon />
-		{/if}
-	</div>
 	<div class="w-full">
-		<div class="flex w-full items-center justify-between">
-			<div class="flex items-center gap-1">
-				{session.browser}
-				<Tooltip.Root>
-					<Tooltip.Trigger>{getShortenedBrowserVersion(session.browserVersion)}</Tooltip.Trigger>
-					<Tooltip.Content>
-						<p>{session.browserVersion}</p>
-					</Tooltip.Content>
-				</Tooltip.Root>
-				on {session.platform}
-			</div>
+		<div class="text-muted-foreground flex items-center gap-2 text-xs">
+			<NetworkIcon class="size-3" />
+			{session.ipAddress}
 		</div>
 		<div class="text-muted-foreground flex items-center gap-2 text-xs">
-			<ClockIcon class="size-3" /> Expires at {new Date(session.expiresAtUtc).toLocaleString()}
+			<Tooltip.Root>
+				<Tooltip.Trigger class="flex items-center gap-1">
+					<ClockCheckIcon class="size-3" />
+				</Tooltip.Trigger>
+				<Tooltip.Content>Last Access</Tooltip.Content>
+			</Tooltip.Root>
+			{new Date(session.lastAccess ?? 0).toLocaleString()}
+		</div>
+		<div class="text-muted-foreground flex items-center gap-2 text-xs">
+			<Tooltip.Root>
+				<Tooltip.Trigger class="flex items-center gap-1">
+					<TimerIcon class="size-3" />
+				</Tooltip.Trigger>
+				<Tooltip.Content>Start</Tooltip.Content>
+			</Tooltip.Root>
+			{new Date(session.start ?? 0).toLocaleString()}
 		</div>
 	</div>
 	<div class="flex items-center">
-		{#if session.isCurrent}
-			<Badge>Current</Badge>
-		{:else}
-			<Button variant="destructive" size="sm" disabled={isRevoking} onclick={revoke}>
-				<ShieldXIcon /> Revoke
-			</Button>
-		{/if}
+		<Button variant="destructive" size="sm" disabled={isRevoking} onclick={revoke}>
+			<ShieldXIcon /> Revoke
+		</Button>
 	</div>
 </Card.Root>

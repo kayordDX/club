@@ -1,13 +1,17 @@
 using FastEndpoints.Swagger;
 using NSwag;
+using Online.Common.Config;
 using Scalar.AspNetCore;
 
 namespace Online.Common.Extensions;
 
 public static class ApiExtensions
 {
-    public static void ConfigureApi(this IServiceCollection services)
+    public static void ConfigureApi(this IServiceCollection services, IConfiguration configuration)
     {
+        var keycloakConfig = configuration.GetSection(KeycloakConfig.Key).Get<KeycloakConfig>()
+            ?? throw new InvalidOperationException("Keycloak configuration is missing.");
+
         services.AddResponseCompression(o =>
         {
             o.EnableForHttps = true;
@@ -31,7 +35,7 @@ public static class ApiExtensions
                     {
                         Implicit = new OpenApiOAuthFlow
                         {
-                            AuthorizationUrl = "http://localhost:18080/realms/kayord/protocol/openid-connect/auth",
+                            AuthorizationUrl = keycloakConfig.AuthorizationUrl,
                             Scopes = new Dictionary<string, string>
                             {
                                 { "openid", "OpenID Connect scope" },

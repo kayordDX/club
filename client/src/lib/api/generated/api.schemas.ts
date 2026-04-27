@@ -27,6 +27,9 @@ export interface InternalErrorResponse {
 
 export interface TestResponse {
 	success: boolean;
+	/** @nullable */
+	token?: string | null;
+	other?: unknown | null;
 }
 
 export interface SlotGetContractsResponse {
@@ -597,6 +600,23 @@ export interface BookingCreateRequest {
 	bookings: BookingRequest[];
 }
 
+export interface AccountSessionResponse {
+	/** @nullable */
+	id?: string | null;
+	/** @nullable */
+	ipAddress?: string | null;
+	/** @nullable */
+	lastAccess?: number | null;
+	/** @nullable */
+	start?: number | null;
+	/** @nullable */
+	username?: string | null;
+}
+
+export interface AccountSessionRevokeRequest {
+	id: string;
+}
+
 export interface UserRoleRequest {
 	/** @minLength 1 */
 	name: string;
@@ -772,6 +792,8 @@ export type BookingGetUserParams = {
 	 */
 	pageSize?: number | null;
 };
+
+export type Me200 = { [key: string]: string };
 
 export type LoginGoogleParams = {
 	returnUrl: string;

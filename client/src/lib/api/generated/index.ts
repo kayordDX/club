@@ -6,5 +6,7 @@ export * from "./outlet";
 export * from "./extra";
 export * from "./example";
 export * from "./booking";
-export * from "./user";
+export * from "./me";
+export * from "./auth";
 export * from "./account";
+export * from "./user";

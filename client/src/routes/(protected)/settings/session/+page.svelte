@@ -1,19 +1,15 @@
 <script lang="ts">
-	import { createRefreshList } from "$lib/api";
+	import { createAccountSession, createAccountSessionRevokeAll } from "$lib/api";
 	import { ShieldBanIcon, ShieldIcon } from "@lucide/svelte";
 	import PageHeading from "../PageHeading.svelte";
 	import Query from "$lib/components/Query.svelte";
 	import Session from "./Session.svelte";
 	import { Button } from "@kayord/ui";
-	import { createRefreshRevokeAll } from "$lib/api";
 	import { toast } from "svelte-sonner";
 
-	const query = createRefreshList();
+	const query = createAccountSession();
 
-	const activeSession = $derived(query.data?.find((x) => x.isCurrent == true));
-	const otherSessions = $derived(query.data?.filter((x) => x.isCurrent == false));
-
-	const mutation = createRefreshRevokeAll();
+	const mutation = createAccountSessionRevokeAll();
 
 	let isRevoking = $state(false);
 	const revokeAll = async () => {
@@ -38,16 +34,11 @@
 	/>
 	<Query {query} emptyText="No sessions found">
 		<div class="space-y-2">
-			{#if activeSession}
-				<div class="text-muted-foreground mt-6 text-sm">Current Session</div>
-				<Session session={activeSession} refetch={query.refetch} />
-			{/if}
-
 			<div class="flex items-center justify-between">
 				<div class="text-muted-foreground mt-6 text-sm">
-					Other Sessions ({otherSessions?.length})
+					Sessions ({query.data?.length})
 				</div>
-				{#if (otherSessions?.length ?? 0) > 0}
+				{#if (query.data?.length ?? 0) > 0}
 					<Button
 						variant="ghost"
 						size="sm"
@@ -60,7 +51,7 @@
 					</Button>
 				{/if}
 			</div>
-			{#each otherSessions as session (session.id)}
+			{#each query.data as session (session.id)}
 				<Session {session} refetch={query.refetch} />
 			{/each}
 		</div>

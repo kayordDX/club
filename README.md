@@ -130,8 +130,8 @@ Only update if lastUpdate is older than 24 hours.
 
 - [x] open-id-ts client setup. 
 - [x] Bearer instead of cookie
+- [X] Keycloak client auth backend services
 - [ ] Add user sync with identity service
-- [ ] Keycloak client auth backend services
 - [ ] Session management
 - [ ] Verify email address
 - [ ] Verify phone number

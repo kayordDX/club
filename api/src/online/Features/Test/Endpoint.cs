@@ -1,14 +1,8 @@
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Online.Common;
-using Online.Data;
-using Online.Entities;
+using Keycloak.AuthServices.Sdk.Admin;
 
 namespace Online.Features.Test;
 
-// public class Endpoint(IKeycloakUserClient keycloakUserClient) : Endpoint<TestRequest, TestResponse>
-public class Endpoint() : Endpoint<TestRequest, TestResponse>
+public class Endpoint(IKeycloakUserClient keycloakUserClient) : Endpoint<TestRequest, TestResponse>
 {
     public override void Configure()
     {
@@ -21,7 +15,7 @@ public class Endpoint() : Endpoint<TestRequest, TestResponse>
 
     public override async Task HandleAsync(TestRequest req, CancellationToken ct)
     {
-        // var userCount = await keycloakUserClient.GetUserCountAsync("kayord", cancellationToken: ct);
+        var userCount = await keycloakUserClient.GetUserCountAsync("kayord", cancellationToken: ct);
         // var user = await keycloakUserClient.GetUserAsync("kayord", "ec35e6d3-d258-427a-a1e9-bc0ecab0aca2", cancellationToken: ct);
 
         // var accessToken = await HttpContext.GetTokenAsync(
