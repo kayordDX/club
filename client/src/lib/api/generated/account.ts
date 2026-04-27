@@ -20,6 +20,7 @@ import type {
 import type {
 	AccountSessionResponse,
 	AccountSessionRevokeRequest,
+	AccountSyncRequest,
 	InternalErrorResponse,
 	LoginGoogleParams,
 	LoginRequest,
@@ -35,6 +36,84 @@ import type { ErrorType, BodyType } from "../mutator/customInstance.svelte";
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
+export const getAccountSyncUrl = () => {
+	return `/account/sync`;
+};
+
+export const accountSync = async (
+	accountSyncRequest: AccountSyncRequest,
+	options?: RequestInit
+): Promise<void> => {
+	return customInstance<void>(getAccountSyncUrl(), {
+		...options,
+		method: "POST",
+		headers: { "Content-Type": "application/json", ...options?.headers },
+		body: JSON.stringify(accountSyncRequest),
+	});
+};
+
+export const getAccountSyncMutationOptions = <
+	TError = ErrorType<void | InternalErrorResponse>,
+	TContext = unknown,
+>(options?: {
+	mutation?: CreateMutationOptions<
+		Awaited<ReturnType<typeof accountSync>>,
+		TError,
+		{ data: BodyType<AccountSyncRequest> },
+		TContext
+	>;
+	request?: SecondParameter<typeof customInstance>;
+}): CreateMutationOptions<
+	Awaited<ReturnType<typeof accountSync>>,
+	TError,
+	{ data: BodyType<AccountSyncRequest> },
+	TContext
+> => {
+	const mutationKey = ["accountSync"];
+	const { mutation: mutationOptions, request: requestOptions } = options
+		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+			? options
+			: { ...options, mutation: { ...options.mutation, mutationKey } }
+		: { mutation: { mutationKey }, request: undefined };
+
+	const mutationFn: MutationFunction<
+		Awaited<ReturnType<typeof accountSync>>,
+		{ data: BodyType<AccountSyncRequest> }
+	> = (props) => {
+		const { data } = props ?? {};
+
+		return accountSync(data, requestOptions);
+	};
+
+	return { mutationFn, ...mutationOptions };
+};
+
+export type AccountSyncMutationResult = NonNullable<Awaited<ReturnType<typeof accountSync>>>;
+export type AccountSyncMutationBody = BodyType<AccountSyncRequest>;
+export type AccountSyncMutationError = ErrorType<void | InternalErrorResponse>;
+
+export const createAccountSync = <
+	TError = ErrorType<void | InternalErrorResponse>,
+	TContext = unknown,
+>(
+	options?: () => {
+		mutation?: CreateMutationOptions<
+			Awaited<ReturnType<typeof accountSync>>,
+			TError,
+			{ data: BodyType<AccountSyncRequest> },
+			TContext
+		>;
+		request?: SecondParameter<typeof customInstance>;
+	},
+	queryClient?: () => QueryClient
+): CreateMutationResult<
+	Awaited<ReturnType<typeof accountSync>>,
+	TError,
+	{ data: BodyType<AccountSyncRequest> },
+	TContext
+> => {
+	return createMutation(() => ({ ...getAccountSyncMutationOptions(options?.()) }), queryClient);
+};
 export const getAccountSessionUrl = () => {
 	return `/account/session`;
 };

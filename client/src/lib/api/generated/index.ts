@@ -1,6 +1,5 @@
-export * from "./tickerq-dashboard";
-export * from "./api.schemas";
 export * from "./test";
+export * from "./api.schemas";
 export * from "./slot";
 export * from "./outlet";
 export * from "./extra";

@@ -4,13 +4,6 @@
  * online
  * OpenAPI spec version: v1
  */
-export type TickerType = (typeof TickerType)[keyof typeof TickerType];
-
-export const TickerType = {
-	CronTickerOccurrence: 0,
-	TimeTicker: 1,
-} as const;
-
 /**
  * the dto used to send an error response to the client when an unhandled exception occurs on the server
  */
@@ -278,6 +271,7 @@ export interface User {
 	picture?: string | null;
 	userContracts: UserContract[];
 	userRoles: UserRole[];
+	lastSync: string;
 }
 
 export interface SlotContractBooking {
@@ -600,6 +594,10 @@ export interface BookingCreateRequest {
 	bookings: BookingRequest[];
 }
 
+export interface AccountSyncRequest {
+	force: boolean;
+}
+
 export interface AccountSessionResponse {
 	/** @nullable */
 	id?: string | null;
@@ -667,80 +665,6 @@ export interface LoginRequest {
 	/** @nullable */
 	twoFactorRecoveryCode?: string | null;
 }
-
-export type GetTimeTickersPaginatedParams = {
-	pageNumber?: number;
-	pageSize?: number;
-};
-
-export type GetTimeTickersGraphDataRangeParams = {
-	pastDays?: number;
-	futureDays?: number;
-};
-
-export type CreateChainJobsParams = {
-	timeZoneId: string;
-};
-
-export type UpdateTimeTickerParams = {
-	id: string;
-	timeZoneId: string;
-};
-
-export type DeleteTimeTickerParams = {
-	id: string;
-};
-
-export type GetCronTickersPaginatedParams = {
-	pageNumber?: number;
-	pageSize?: number;
-};
-
-export type GetCronTickersGraphDataRangeParams = {
-	pastDays?: number;
-	futureDays?: number;
-};
-
-export type GetCronTickersByIdGraphDataRangeParams = {
-	id: string;
-	pastDays?: number;
-	futureDays?: number;
-};
-
-export type GetCronTickerOccurrencesPaginatedParams = {
-	pageNumber?: number;
-	pageSize?: number;
-};
-
-export type UpdateCronTickerParams = {
-	id: string;
-};
-
-export type ToggleCronTickerParams = {
-	id: string;
-	isEnabled: boolean;
-};
-
-export type RunCronTickerOnDemandParams = {
-	id: string;
-};
-
-export type DeleteCronTickerParams = {
-	id: string;
-};
-
-export type DeleteCronTickerOccurrenceParams = {
-	id: string;
-};
-
-export type CancelTickerParams = {
-	id: string;
-};
-
-export type GetTickerRequestParams = {
-	tickerId: string;
-	tickerType: TickerType;
-};
 
 export type TestParams = {
 	name: string;

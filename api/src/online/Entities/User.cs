@@ -13,4 +13,5 @@ public class User : IdentityUser<Guid>
     {
         return FirstName + " " + LastName;
     }
+    public DateTime LastSync { get; set; }
 }

@@ -15,8 +15,8 @@ public class Endpoint(IKeycloakUserClient keycloakUserClient) : Endpoint<TestReq
 
     public override async Task HandleAsync(TestRequest req, CancellationToken ct)
     {
-        var userCount = await keycloakUserClient.GetUserCountAsync("kayord", cancellationToken: ct);
-        // var user = await keycloakUserClient.GetUserAsync("kayord", "ec35e6d3-d258-427a-a1e9-bc0ecab0aca2", cancellationToken: ct);
+        // var userCount = await keycloakUserClient.GetUserCountAsync("kayord", cancellationToken: ct);
+        var user = await keycloakUserClient.GetUserAsync("kayord", "ec35e6d3-d258-427a-a1e9-bc0ecab0aca2", cancellationToken: ct);
 
         // var accessToken = await HttpContext.GetTokenAsync(
         //     IdentityConstants.ApplicationScheme,
@@ -28,7 +28,7 @@ public class Endpoint(IKeycloakUserClient keycloakUserClient) : Endpoint<TestReq
         {
             Success = true,
             Token = "test",
-            // Other = user
+            Other = user
         };
         await Send.OkAsync(response, ct);
     }

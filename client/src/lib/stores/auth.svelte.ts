@@ -1,11 +1,12 @@
 import { UserManager, type UserManagerSettings, User } from "oidc-client-ts";
-import { PUBLIC_IDENTITY_URL, PUBLIC_APP_URL } from "$env/static/public";
+import { PUBLIC_IDENTITY_URL, PUBLIC_APP_URL, PUBLIC_API_URL } from "$env/static/public";
 
 class Auth {
 	private userManager: UserManager;
 
 	#user = $state<User | null>(null);
 	#isLoading = $state(true);
+	#isSyncing = $state(false);
 
 	constructor(settings: UserManagerSettings) {
 		this.userManager = new UserManager(settings);
@@ -25,9 +26,35 @@ class Auth {
 		}
 	}
 
+	public async syncUser(force = false) {
+		if (!this.accessToken || this.#isSyncing) return;
+
+		this.#isSyncing = true;
+		try {
+			// Replace with your actual .NET API URL
+			const response = await fetch(`${PUBLIC_API_URL}/account/sync`, {
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${this.accessToken}`,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ force }),
+			});
+
+			if (!response.ok) {
+				console.error("User sync failed", await response.text());
+			}
+		} catch (err) {
+			console.error("Network error during JIT sync:", err);
+		} finally {
+			this.#isSyncing = false;
+		}
+	}
+
 	private setupEventListeners() {
-		this.userManager.events.addUserLoaded((user) => {
+		this.userManager.events.addUserLoaded(async (user) => {
 			this.#user = user;
+			await this.syncUser();
 		});
 
 		this.userManager.events.addUserUnloaded(() => {
@@ -90,4 +117,5 @@ export const auth = new Auth({
 	response_type: "code",
 	scope: "openid profile email offline_access",
 	automaticSilentRenew: true,
+	prompt: "select_account",
 });
