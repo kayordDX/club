@@ -125,3 +125,14 @@ Sync user accounts with identity
 Call /users endpoint in identity and sync
 Add column lastSync to users table.
 Only update if lastUpdate is older than 24 hours.
+
+### TODO
+
+- [x] open-id-ts client setup. 
+- [x] Bearer instead of cookie
+- [ ] Add user sync with identity service
+- [ ] Keycloak client auth backend services
+- [ ] Session management
+- [ ] Verify email address
+- [ ] Verify phone number
+- [ ] Update profile

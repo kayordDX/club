@@ -1,20 +1,13 @@
 <script lang="ts">
 	import { Button, Card, Loader } from "@kayord/ui";
-	import { PUBLIC_API_URL, PUBLIC_APP_URL } from "$env/static/public";
-	import { user } from "$lib/stores/user.svelte";
+	import { PUBLIC_APP_URL } from "$env/static/public";
+	import { auth } from "$lib/stores/auth.svelte";
 	import LogoButton from "$lib/components/LogoButton.svelte";
 	import LogoutButton from "$lib/components/LogoutButton/LogoutButton.svelte";
 	import GoogleIcon from "$lib/svg/icons/GoogleIcon.svelte";
 	import { page } from "$app/state";
 
-	const redirect = $derived(`${PUBLIC_APP_URL}${page.url.searchParams.get("redirect") ?? ""}`);
-
-	const handleLoginWithGoogle = () => {
-		isLoading = true;
-		window.location.href = `${PUBLIC_API_URL}/account/login/google?returnUrl=${redirect}`;
-	};
-
-	let isLoading = $state(false);
+	// const redirect = $derived(`${PUBLIC_APP_URL}${page.url.searchParams.get("redirect") ?? ""}`);
 </script>
 
 <div class="flex h-screen w-full flex-col items-center">
@@ -24,18 +17,18 @@
 			<Card.Header>
 				<Card.Title class="text-center">Welcome back</Card.Title>
 				<Card.Description class="text-center">
-					{user.isLoggedIn ? "You are already logged in" : "Sign in to book your next game"}
+					{auth.isAuthenticated ? "You are already logged in" : "Sign in to book your next game"}
 				</Card.Description>
 			</Card.Header>
 			<Card.Content class="flex flex-col items-center">
-				{#if user.isLoggedIn}
-					Logged in as {user.value?.firstName}
+				{#if auth.isAuthenticated}
+					Logged in as {auth.user?.profile.firstName}
 					<div class="mt-4">
 						<LogoutButton />
 					</div>
 				{:else}
-					<Button onclick={handleLoginWithGoogle} variant="outline">
-						{#if isLoading}
+					<Button onclick={auth.login} variant="outline">
+						{#if auth.isLoading}
 							<Loader class="mr-2" />
 						{:else}
 							<GoogleIcon class="fill-white" />

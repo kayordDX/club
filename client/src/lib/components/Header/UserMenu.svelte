@@ -3,28 +3,20 @@
 	import { networkInformation } from "$lib/stores/network.svelte";
 	import { getInitials } from "$lib/util";
 	import { Avatar, DropdownMenu } from "@kayord/ui";
-	import { createLogout } from "$lib/api";
 	import { LogOutIcon, WalletIcon, SettingsIcon, BookIcon } from "@lucide/svelte";
-	import { user } from "$lib/stores/user.svelte";
+	import { auth } from "$lib/stores/auth.svelte";
 	import { LoginButton } from "../LoginButton";
 	import { resolve } from "$app/paths";
-
-	const logoutMut = createLogout();
-	const logout = async () => {
-		await logoutMut.mutateAsync();
-		user.clear();
-		goto(resolve("/"));
-	};
 </script>
 
-{#if user.value}
+{#if auth.isAuthenticated}
 	<DropdownMenu.Root>
 		<DropdownMenu.Trigger>
 			<div class="relative">
 				<Avatar.Root>
-					<Avatar.Image src={user.value.picture} alt="profile" />
+					<Avatar.Image src={auth.user?.profile.picture} alt="profile" />
 					<Avatar.Fallback class="bg-primary text-primary-foreground">
-						{getInitials(`${user.value.name}`)}
+						{getInitials(`${auth.user?.profile.name}`)}
 					</Avatar.Fallback>
 				</Avatar.Root>
 				<div
@@ -33,13 +25,13 @@
 			</div>
 		</DropdownMenu.Trigger>
 		<DropdownMenu.Content>
-			<DropdownMenu.Label>{user.value.name}</DropdownMenu.Label>
+			<DropdownMenu.Label>{auth.user?.profile.name}</DropdownMenu.Label>
 			<DropdownMenu.Separator />
 			<DropdownMenu.Group>
 				<DropdownMenu.Item onclick={() => goto(resolve("/bookings"))}>
 					<BookIcon />Bookings
 				</DropdownMenu.Item>
-				<DropdownMenu.Item onclick={() => goto(resolve("/settings/session"))}>
+				<DropdownMenu.Item onclick={() => goto(resolve("/settings/profile"))}>
 					<SettingsIcon />Settings
 				</DropdownMenu.Item>
 				<DropdownMenu.Item onclick={() => goto(resolve("/wallet"))}>
@@ -47,7 +39,7 @@
 				</DropdownMenu.Item>
 			</DropdownMenu.Group>
 			<DropdownMenu.Separator />
-			<DropdownMenu.Item onclick={logout}>
+			<DropdownMenu.Item onclick={auth.logout}>
 				<LogOutIcon />Log out
 			</DropdownMenu.Item>
 		</DropdownMenu.Content>

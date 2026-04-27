@@ -85,7 +85,7 @@ class Auth {
 export const auth = new Auth({
 	authority: PUBLIC_IDENTITY_URL,
 	client_id: "public-client",
-	redirect_uri: `${PUBLIC_APP_URL}/test/callback`,
+	redirect_uri: `${PUBLIC_APP_URL}/callback`,
 	post_logout_redirect_uri: `${PUBLIC_APP_URL}/`,
 	response_type: "code",
 	scope: "openid profile email offline_access",

@@ -1,17 +1,8 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Online.Common.Config;
-using Online.Data;
-using Online.Services;
-using OpenIddict.Client;
-using System.Security.Cryptography.X509Certificates;
-using static OpenIddict.Abstractions.OpenIddictConstants;
-using Online.Entities;
+using Keycloak.AuthServices.Common;
+using Duende.AccessTokenManagement;
+using Keycloak.AuthServices.Sdk;
 
 namespace Online.Common.Extensions;
 
@@ -22,13 +13,13 @@ public static class AuthExtensions
         var jwtOptions = configuration.GetSection(JwtOptions.JwtOptionsKey).Get<JwtOptions>()
             ?? throw new InvalidOperationException("JwtOptions configuration is missing.");
 
-        services.AddScoped<TokenRefreshService>();
+        // services.AddScoped<TokenRefreshService>();
 
         services.AddAuthentication(options =>
         {
-            options.DefaultScheme = IdentityConstants.ApplicationScheme;
-            options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
-            options.DefaultSignInScheme = IdentityConstants.ApplicationScheme;
+            options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
         })
         .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
         {
@@ -38,63 +29,44 @@ public static class AuthExtensions
             options.MetadataAddress = "http://localhost:18080/realms/kayord/.well-known/openid-configuration";
         });
 
-        services.AddOptions<CookieAuthenticationOptions>(IdentityConstants.ApplicationScheme)
-            .Configure<ITicketStore, IServiceScopeFactory>((options, ticketStore, scopeFactory) =>
-            {
-                options.Cookie.SameSite = SameSiteMode.Lax;
-                options.SessionStore = ticketStore;
-                options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-                options.Events.OnRedirectToLogin = context =>
+        var options = configuration.GetKeycloakOptions<KeycloakAdminClientOptions>()!;
+        // options.AuthServerUrl = "http://localhost:18080/realms/kayord";
+
+        var tokenClientName = ClientCredentialsClientName.Parse("admin-client");
+
+        services.AddDistributedMemoryCache();
+        services
+            .AddClientCredentialsTokenManagement()
+            .AddClient(
+                tokenClientName,
+                client =>
                 {
-                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                    return Task.CompletedTask;
-                };
-                options.SlidingExpiration = true;
-                options.Events.OnValidatePrincipal = async context =>
-                {
-                    var refreshService = context.HttpContext.RequestServices.GetRequiredService<TokenRefreshService>();
-                    await refreshService.RefreshIfExpiredAsync(context);
-                };
-            });
+                    client.ClientId = ClientId.Parse(options.Resource);
+                    client.ClientSecret = ClientSecret.Parse(options.Credentials.Secret);
+                    client.TokenEndpoint = new Uri(options.KeycloakTokenEndpoint);
+                }
+            );
 
-        services.AddOpenIddict()
-            .AddCore(options =>
-            {
-                options.UseEntityFrameworkCore().UseDbContext<AppDbContext>();
-            })
-            .AddClient(options =>
-            {
-                options.AllowAuthorizationCodeFlow().AllowRefreshTokenFlow();
-                options.UseSystemNetHttp();
+        Keycloak.AuthServices.Sdk.ServiceCollectionExtensions
+            .AddKeycloakAdminHttpClient(services, options)
+            .AddClientCredentialsTokenHandler(tokenClientName);
 
-                options.AddEncryptionKey(new SymmetricSecurityKey(Convert.FromBase64String(jwtOptions.EncryptionKey)));
-                var pfx = X509CertificateLoader.LoadPkcs12FromFile(jwtOptions.SigningCertPath, jwtOptions.SigningCertPassword);
-                options.AddSigningCertificate(pfx);
+        Keycloak.AuthServices.Sdk.Kiota.ServiceCollectionExtensions
+            .AddKiotaKeycloakAdminHttpClient(services, configuration)
+            .AddClientCredentialsTokenHandler(tokenClientName);
 
-                options.UseAspNetCore()
-                       .EnableRedirectionEndpointPassthrough()
-                       .DisableTransportSecurityRequirement();
 
-                options.AddRegistration(new OpenIddictClientRegistration
-                {
-                    Issuer = new Uri(jwtOptions.Issuer),
-                    ClientId = "web_client",
-                    ResponseModes = { ResponseModes.Query },
-                    ResponseTypes = { ResponseTypes.Code },
-                    Scopes = { Scopes.Email, Scopes.Profile, Scopes.OfflineAccess },
-                    RedirectUri = new Uri("http://localhost:5000/auth/login/callback")
-                });
-            });
+        // services.AddClientCredentialsTokenHandler(tokenClientName);
 
-        services.AddAuthorization(ConfigureAuthorization);
+        // var keycloakOptions = new KeycloakAdminClientOptions
+        // {
+        //     AuthServerUrl = "http://localhost:18080/realms/kayord",
+        //     Realm = "kayord",
+        //     Resource = "admin-client",
+        // };
+        // services.AddKeycloakAdminHttpClient(keycloakOptions);
+
+        services.AddAuthorization();
         return services;
-    }
-
-    static void ConfigureAuthorization(AuthorizationOptions options)
-    {
-        options.DefaultPolicy = new AuthorizationPolicyBuilder()
-            .AddAuthenticationSchemes(IdentityConstants.ApplicationScheme, JwtBearerDefaults.AuthenticationScheme)
-            .RequireAuthenticatedUser()
-            .Build();
     }
 }

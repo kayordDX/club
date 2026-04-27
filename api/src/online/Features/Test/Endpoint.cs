@@ -7,7 +7,8 @@ using Online.Entities;
 
 namespace Online.Features.Test;
 
-public class Endpoint(AppDbContext dbContext) : Endpoint<TestRequest, TestResponse>
+// public class Endpoint(IKeycloakUserClient keycloakUserClient) : Endpoint<TestRequest, TestResponse>
+public class Endpoint() : Endpoint<TestRequest, TestResponse>
 {
     public override void Configure()
     {
@@ -20,16 +21,20 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<TestRequest, TestRespon
 
     public override async Task HandleAsync(TestRequest req, CancellationToken ct)
     {
-        var accessToken = await HttpContext.GetTokenAsync(
-            IdentityConstants.ApplicationScheme,
-            "backchannel_access_token"
-        );
+        // var userCount = await keycloakUserClient.GetUserCountAsync("kayord", cancellationToken: ct);
+        // var user = await keycloakUserClient.GetUserAsync("kayord", "ec35e6d3-d258-427a-a1e9-bc0ecab0aca2", cancellationToken: ct);
+
+        // var accessToken = await HttpContext.GetTokenAsync(
+        //     IdentityConstants.ApplicationScheme,
+        //     "backchannel_access_token"
+        // );
 
         // var users = await dbContext.Users.ToListAsync(ct);
         var response = new TestResponse
         {
             Success = true,
-            Token = accessToken
+            Token = "test",
+            // Other = user
         };
         await Send.OkAsync(response, ct);
     }

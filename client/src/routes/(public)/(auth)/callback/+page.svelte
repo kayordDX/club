@@ -9,7 +9,7 @@
 	onMount(async () => {
 		try {
 			await auth.handleCallback();
-			goto("/test");
+			goto("/");
 		} catch (err) {
 			console.error("Authentication callback failed:", err);
 			error = (err as Error).message;

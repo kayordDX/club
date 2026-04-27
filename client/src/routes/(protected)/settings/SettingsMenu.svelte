@@ -6,15 +6,15 @@
 
 	const menuItems = [
 		{
+			title: "Profile",
+			url: "/settings/profile",
+			icon: UserIcon,
+		},
+		{
 			title: "Session",
 			url: "/settings/session",
 			icon: ShieldIcon,
 			isActive: true,
-		},
-		{
-			title: "Profile",
-			url: "/settings/profile",
-			icon: UserIcon,
 		},
 	];
 
@@ -31,7 +31,7 @@
 
 <Sidebar.Group>
 	<Sidebar.GroupLabel>Settings</Sidebar.GroupLabel>
-	<Sidebar.Menu>
+	<Sidebar.Menu class="gap-1">
 		{#each menuItems as item (item.title)}
 			<Sidebar.MenuItem>
 				<Sidebar.MenuButton

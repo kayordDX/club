@@ -1,6 +1,6 @@
 import { getError, isValidationError } from "$lib/types";
 import { PUBLIC_API_URL } from "$env/static/public";
-import { user } from "$lib/stores/user.svelte";
+import { auth } from "$lib/stores/auth.svelte";
 
 const getUrl = (contextUrl: string): string => {
 	const baseUrl = PUBLIC_API_URL;
@@ -44,12 +44,27 @@ const getBody = async <T>(resp: Response): Promise<T> => {
 	}
 };
 
+const getHeaders = (token: string, headers?: HeadersInit): HeadersInit => {
+	if (headers == undefined) {
+		if (auth.isAuthenticated) {
+			headers = {
+				Authorization: `Bearer ${token}`,
+			};
+		}
+	}
+	return {
+		...headers,
+		Authorization: `Bearer ${token}`,
+	};
+};
+
 export const customInstance = async <T>(url: string, options: RequestInit): Promise<T> => {
-	await user.checkCookie();
 	const requestUrl = getUrl(url);
+	const token = auth.accessToken ?? "";
+	const requestHeaders = getHeaders(token, options.headers);
 	const requestInit: RequestInit = {
 		...options,
-		credentials: "include",
+		headers: requestHeaders,
 	};
 
 	const request = new Request(requestUrl, requestInit);
