@@ -1,10 +1,14 @@
 using Keycloak.AuthServices.Sdk.Kiota.Admin;
+using Microsoft.Extensions.Options;
 using Online.Common;
+using Online.Common.Config;
 
 namespace Online.Features.Account.Session.Revoke;
 
-public class Endpoint(KeycloakAdminApiClient keycloakAdminClient) : Endpoint<AccountSessionRevokeRequest>
+public class Endpoint(KeycloakAdminApiClient keycloakAdminClient, IOptions<KeycloakConfig> keycloakConfig) : Endpoint<AccountSessionRevokeRequest>
 {
+    private readonly KeycloakConfig keycloakConfig = keycloakConfig.Value;
+
     public override void Configure()
     {
         Post("/account/session/revoke");
@@ -20,7 +24,7 @@ public class Endpoint(KeycloakAdminApiClient keycloakAdminClient) : Endpoint<Acc
             return;
         }
 
-        await keycloakAdminClient.Admin.Realms["kayord"]
+        await keycloakAdminClient.Admin.Realms[keycloakConfig.Realm]
             .Sessions[req.Id]
             .DeleteAsync(o => o.QueryParameters.IsOffline = true, cancellationToken: ct);
 

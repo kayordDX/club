@@ -1,11 +1,14 @@
 using Keycloak.AuthServices.Sdk.Kiota.Admin;
-using Keycloak.AuthServices.Sdk.Kiota.Admin.Models;
+using Microsoft.Extensions.Options;
 using Online.Common;
+using Online.Common.Config;
 
 namespace Online.Features.Account.Session;
 
-public class Endpoint(KeycloakAdminApiClient keycloakAdminClient) : EndpointWithoutRequest<List<AccountSessionResponse>>
+public class Endpoint(KeycloakAdminApiClient keycloakAdminClient, IOptions<KeycloakConfig> keycloakConfig) : EndpointWithoutRequest<List<AccountSessionResponse>>
 {
+    private readonly KeycloakConfig keycloakConfig = keycloakConfig.Value;
+
     public override void Configure()
     {
         Get("/account/session");
@@ -21,9 +24,9 @@ public class Endpoint(KeycloakAdminApiClient keycloakAdminClient) : EndpointWith
             return;
         }
 
-        var clients = await keycloakAdminClient.Admin.Realms["kayord"].Clients.GetAsync(config =>
+        var clients = await keycloakAdminClient.Admin.Realms[keycloakConfig.Realm].Clients.GetAsync(config =>
         {
-            config.QueryParameters.ClientId = "public-client";
+            config.QueryParameters.ClientId = keycloakConfig.PublicClientId;
         }, cancellationToken: ct);
 
         var client = clients?.FirstOrDefault();
@@ -34,7 +37,7 @@ public class Endpoint(KeycloakAdminApiClient keycloakAdminClient) : EndpointWith
             return;
         }
 
-        var sessions = await keycloakAdminClient.Admin.Realms["kayord"]
+        var sessions = await keycloakAdminClient.Admin.Realms[keycloakConfig.Realm]
             .Users[userId.ToString()]
             .OfflineSessions[client.Id.ToString()]
             .GetAsync(cancellationToken: ct) ?? [];

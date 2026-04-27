@@ -6,6 +6,7 @@
 	import Session from "./Session.svelte";
 	import { Button } from "@kayord/ui";
 	import { toast } from "svelte-sonner";
+	import { auth } from "$lib/stores/auth.svelte";
 
 	const query = createAccountSession();
 
@@ -18,6 +19,7 @@
 			await mutation.mutateAsync();
 			toast.info("Successfully revoked all sessions");
 			query.refetch();
+			auth.logout();
 		} catch {
 			toast.error("Error revoking all sessions");
 		} finally {
