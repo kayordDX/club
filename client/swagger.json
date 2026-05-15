@@ -1335,6 +1335,44 @@
           }
         }
       }
+    },
+    "/account/credential": {
+      "get": {
+        "tags": [
+          "Account"
+        ],
+        "operationId": "AccountCredential",
+        "responses": {
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalErrorResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountCredentialResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "Keycloak": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -3527,6 +3565,23 @@
           "twoFactorRecoveryCode": {
             "type": "string",
             "nullable": true
+          }
+        }
+      },
+      "AccountCredentialResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "lastPasswordChangedAt",
+          "isTwoFactorEnabled"
+        ],
+        "properties": {
+          "lastPasswordChangedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "isTwoFactorEnabled": {
+            "type": "boolean"
           }
         }
       }

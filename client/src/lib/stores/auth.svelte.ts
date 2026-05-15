@@ -1,6 +1,15 @@
 import { UserManager, type UserManagerSettings, User } from "oidc-client-ts";
 import { PUBLIC_IDENTITY_URL, PUBLIC_APP_URL, PUBLIC_API_URL } from "$env/static/public";
 
+export type KeycloakAction =
+	| "UPDATE_PASSWORD"
+	| "CONFIGURE_TOTP"
+	| "UPDATE_PROFILE"
+	| "UPDATE_EMAIL"
+	| "VERIFY_EMAIL"
+	| "TERMS_AND_CONDITIONS"
+	| "delete_account";
+
 class Auth {
 	private userManager: UserManager;
 
@@ -95,6 +104,17 @@ class Auth {
 	logout = async () => {
 		console.log("logging out", this.userManager);
 		await this.userManager.signoutRedirect();
+	};
+
+	keycloakAction = async (action: KeycloakAction) => {
+		try {
+			await this.userManager.signinRedirect({
+				extraQueryParams: { kc_action: action },
+			});
+		} catch (error) {
+			console.error(`Failed to redirect for action: ${action}`, error);
+			throw error;
+		}
 	};
 
 	async handleCallback() {
