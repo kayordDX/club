@@ -26,6 +26,9 @@ class Auth {
 		try {
 			if (!this.userManager) return;
 			const user = await this.userManager.getUser();
+			console.log(user?.id_token);
+			console.log("--------------");
+			console.log(user?.access_token);
 			this.#user = user;
 			this.setupEventListeners();
 		} catch (error) {
@@ -115,6 +118,15 @@ class Auth {
 			console.error(`Failed to redirect for action: ${action}`, error);
 			throw error;
 		}
+	};
+
+	otpLevel = async () => {
+		await this.userManager.signinRedirect({
+			extraQueryParams: {
+				prompt: "login", // Override global select_account; force full re-auth
+			},
+			state: { returnUrl: window.location.pathname },
+		});
 	};
 
 	async handleCallback() {

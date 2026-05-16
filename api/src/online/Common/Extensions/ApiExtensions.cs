@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using System.Threading.RateLimiting;
 using FastEndpoints.Swagger;
 using NSwag;
 using Online.Common.Config;
@@ -47,6 +49,28 @@ public static class ApiExtensions
                 });
             };
         });
+
+        services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+            options.AddPolicy("OnlyOnePerMinutePerUser", context =>
+            {
+                var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                             ?? context.Connection.RemoteIpAddress?.ToString()
+                             ?? "anonymous";
+
+                return RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: userId,
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 1,
+                        Window = TimeSpan.FromMinutes(1),
+                        QueueLimit = 0,
+                        AutoReplenishment = true
+                    });
+            });
+        });
     }
 
     public static IApplicationBuilder UseApi(this WebApplication app)
@@ -71,6 +95,9 @@ public static class ApiExtensions
                 options.TagSorter = TagSorter.Alpha;
             });
         }
+
+        app.UseRateLimiter();
+
         return app;
     }
 }

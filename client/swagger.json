@@ -1373,6 +1373,81 @@
           }
         ]
       }
+    },
+    "/account/credential/disableToken": {
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "operationId": "AccountCredentialDisableToken",
+        "responses": {
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalErrorResponse"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "Keycloak": []
+          }
+        ]
+      }
+    },
+    "/account/credential/disable": {
+      "post": {
+        "tags": [
+          "Account"
+        ],
+        "operationId": "AccountCredentialDisable",
+        "requestBody": {
+          "x-name": "CredentialDisableRequest",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CredentialDisableRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalErrorResponse"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "Keycloak": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -3572,16 +3647,27 @@
         "type": "object",
         "additionalProperties": false,
         "required": [
-          "lastPasswordChangedAt",
-          "isTwoFactorEnabled"
+          "isTwoFactorEnabled",
+          "hasCredential"
         ],
         "properties": {
-          "lastPasswordChangedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
           "isTwoFactorEnabled": {
             "type": "boolean"
+          },
+          "hasCredential": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CredentialDisableRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "token"
+        ],
+        "properties": {
+          "token": {
+            "type": "string"
           }
         }
       }

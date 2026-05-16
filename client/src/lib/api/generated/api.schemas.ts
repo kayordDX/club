@@ -668,8 +668,12 @@ export interface LoginRequest {
 }
 
 export interface AccountCredentialResponse {
-  lastPasswordChangedAt: string;
   isTwoFactorEnabled: boolean;
+  hasCredential: boolean;
+}
+
+export interface CredentialDisableRequest {
+  token: string;
 }
 
 export type TestParams = {

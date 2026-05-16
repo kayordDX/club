@@ -12,6 +12,7 @@ public static class GeneralExtensions
         services.AddDetection();
         services.AddScoped<AccountService>();
         services.AddScoped<EncryptionService>();
+        services.AddScoped<IEmailService, EmailService>();
         return services;
     }
 }

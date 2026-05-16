@@ -24,6 +24,9 @@ const getBody = async <T>(resp: Response): Promise<T> => {
 			// TODO: Possibly refresh token from lib/firebase
 			throw new Error("Unauthorized", { cause: "401" });
 		}
+		if (resp.status == 429) {
+			throw new Error("Too Many Requests", { cause: "429" });
+		}
 		if (resp.status == 403) {
 			throw new Error("Forbidden", { cause: "403" });
 		}

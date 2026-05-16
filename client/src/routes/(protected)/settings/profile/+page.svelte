@@ -1,11 +1,12 @@
 <script lang="ts">
-	import { CircleCheckIcon, UserIcon } from "@lucide/svelte";
+	import { UserIcon } from "@lucide/svelte";
 	import PageHeading from "../PageHeading.svelte";
 	import { Avatar, Button, Card, Item, Table } from "@kayord/ui";
 	import { auth } from "$lib/stores/auth.svelte";
 	import { getInitials } from "$lib/util";
 	import { createAccountCredential } from "$lib/api";
 	import Query from "$lib/components/Query.svelte";
+	import TwoFactor from "./TwoFactor.svelte";
 
 	const query = createAccountCredential();
 </script>
@@ -80,21 +81,10 @@
 	</Item.Root>
 
 	<Query {query} emptyText="No data found">
-		<Item.Root variant="muted">
-			<Item.Content>
-				<Item.Title>Two-Factor Authentication</Item.Title>
-				<Item.Description>Add an extra layer of security to your account</Item.Description>
-			</Item.Content>
-			<Item.Actions>
-				{#if query.data?.isTwoFactorEnabled}
-					<CircleCheckIcon class="text-green-500 dark:text-green-300" />
-				{:else}
-					<Button onclick={() => auth.keycloakAction("CONFIGURE_TOTP")} variant="outline">
-						Configure TOTP
-					</Button>
-				{/if}
-			</Item.Actions>
-		</Item.Root>
+		<TwoFactor
+			isTwoFactorEnabled={query.data?.isTwoFactorEnabled ?? false}
+			refetch={query.refetch}
+		/>
 	</Query>
 
 	<Item.Root variant="muted" class="border-destructive border-2">
@@ -109,5 +99,3 @@
 		</Item.Actions>
 	</Item.Root>
 </div>
-
-{JSON.stringify(query.data)}

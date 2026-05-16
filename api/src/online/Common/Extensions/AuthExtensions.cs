@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Online.Common.Config;
 using Keycloak.AuthServices.Common;
 using Duende.AccessTokenManagement;
+using Online.Services;
 
 namespace Online.Common.Extensions;
 
@@ -72,6 +73,9 @@ public static class AuthExtensions
             .AddClientCredentialsTokenHandler(tokenClientName);
 
         services.AddAuthorization();
+
+        services.AddScoped<ICustomKeycloakService, CustomKeycloakService>();
+
         return services;
     }
 }

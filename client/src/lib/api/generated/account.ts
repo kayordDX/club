@@ -25,6 +25,7 @@ import type {
   AccountSessionResponse,
   AccountSessionRevokeRequest,
   AccountSyncRequest,
+  CredentialDisableRequest,
   InternalErrorResponse,
   LoginGoogleParams,
   LoginRequest,
@@ -1037,3 +1038,130 @@ export function createAccountCredential<TData = Awaited<ReturnType<typeof accoun
 
 
 
+export const getAccountCredentialDisableTokenUrl = () => {
+
+
+
+
+  return `/account/credential/disableToken`
+}
+
+export const accountCredentialDisableToken = async ( options?: RequestInit): Promise<void> => {
+
+  return customInstance<void>(getAccountCredentialDisableTokenUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getAccountCredentialDisableTokenMutationOptions = <TError = ErrorType<void | InternalErrorResponse>,
+    TContext = unknown>(options?: { mutation?:CreateMutationOptions<Awaited<ReturnType<typeof accountCredentialDisableToken>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+): CreateMutationOptions<Awaited<ReturnType<typeof accountCredentialDisableToken>>, TError,void, TContext> => {
+
+const mutationKey = ['accountCredentialDisableToken'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof accountCredentialDisableToken>>, void> = () => {
+
+
+          return  accountCredentialDisableToken(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AccountCredentialDisableTokenMutationResult = NonNullable<Awaited<ReturnType<typeof accountCredentialDisableToken>>>
+
+    export type AccountCredentialDisableTokenMutationError = ErrorType<void | InternalErrorResponse>
+
+    export const createAccountCredentialDisableToken = <TError = ErrorType<void | InternalErrorResponse>,
+    TContext = unknown>(options?: () => { mutation?:CreateMutationOptions<Awaited<ReturnType<typeof accountCredentialDisableToken>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: () => QueryClient): CreateMutationResult<
+        Awaited<ReturnType<typeof accountCredentialDisableToken>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return createMutation(() => ({ ...getAccountCredentialDisableTokenMutationOptions(options?.()) }), queryClient);
+    }
+    export const getAccountCredentialDisableUrl = () => {
+
+
+
+
+  return `/account/credential/disable`
+}
+
+export const accountCredentialDisable = async (credentialDisableRequest: CredentialDisableRequest, options?: RequestInit): Promise<void> => {
+
+  return customInstance<void>(getAccountCredentialDisableUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      credentialDisableRequest,)
+  }
+);}
+
+
+
+
+export const getAccountCredentialDisableMutationOptions = <TError = ErrorType<void | InternalErrorResponse>,
+    TContext = unknown>(options?: { mutation?:CreateMutationOptions<Awaited<ReturnType<typeof accountCredentialDisable>>, TError,{data: BodyType<CredentialDisableRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+): CreateMutationOptions<Awaited<ReturnType<typeof accountCredentialDisable>>, TError,{data: BodyType<CredentialDisableRequest>}, TContext> => {
+
+const mutationKey = ['accountCredentialDisable'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof accountCredentialDisable>>, {data: BodyType<CredentialDisableRequest>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  accountCredentialDisable(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AccountCredentialDisableMutationResult = NonNullable<Awaited<ReturnType<typeof accountCredentialDisable>>>
+    export type AccountCredentialDisableMutationBody = BodyType<CredentialDisableRequest>
+    export type AccountCredentialDisableMutationError = ErrorType<void | InternalErrorResponse>
+
+    export const createAccountCredentialDisable = <TError = ErrorType<void | InternalErrorResponse>,
+    TContext = unknown>(options?: () => { mutation?:CreateMutationOptions<Awaited<ReturnType<typeof accountCredentialDisable>>, TError,{data: BodyType<CredentialDisableRequest>}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: () => QueryClient): CreateMutationResult<
+        Awaited<ReturnType<typeof accountCredentialDisable>>,
+        TError,
+        {data: BodyType<CredentialDisableRequest>},
+        TContext
+      > => {
+      return createMutation(() => ({ ...getAccountCredentialDisableMutationOptions(options?.()) }), queryClient);
+    }

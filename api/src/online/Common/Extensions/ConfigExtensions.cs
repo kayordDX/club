@@ -8,6 +8,7 @@ public static class ConfigExtensions
     {
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.JwtOptionsKey));
         services.Configure<KeycloakConfig>(configuration.GetSection(KeycloakConfig.Key));
+        services.Configure<EmailConfig>(configuration.GetSection("Email"));
         services.Configure<AppConfig>(configuration.GetSection("App"));
         return services;
     }

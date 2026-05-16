@@ -25,6 +25,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IHttpContextAc
     public DbSet<ContractField> ContractField { get; set; }
     public DbSet<ContractFieldConfig> ContractFieldConfig { get; set; }
     public DbSet<ContractOutlet> ContractOutlet { get; set; }
+    public DbSet<EmailLog> EmailLog { get; set; }
     public DbSet<Extra> Extra { get; set; }
     public DbSet<ExtraBooking> ExtraBooking { get; set; }
     public DbSet<Facility> Facility { get; set; }
