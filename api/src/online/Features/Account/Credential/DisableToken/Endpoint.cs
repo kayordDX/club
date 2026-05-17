@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Online.Common;
 using Online.Entities;
 using Online.Models;
 using Online.Services;
@@ -22,11 +23,23 @@ public class Endpoint(UserManager<User> userManager, IEmailService emailService)
         {
             throw new Exception("User does not have an email");
         }
+
+        string template = """
+        <p>Hi {{name}},</p>
+        <p>You have requested to disable your TOTP credential. Please use the following OTP code to confirm this action:</p>
+        <h2>{{otpCode}}</h2>
+        """
+        .Replace("{{name}}", user.FirstName)
+        .Replace("{{otpCode}}", otpCode);
+
+        string message = EmailHelpers.EmailBody(template);
+
+
         await emailService.EnqueueEmailAsync(
             [new(user.Email, user.UserName ?? "")],
             "Your OTP code for disabling credential",
-            $"Your OTP code for disabling credential is: {otpCode}",
-            isHtml: false,
+           message,
+            isHtml: true,
             cancellationToken: ct
         );
         await Send.NoContentAsync(ct);
