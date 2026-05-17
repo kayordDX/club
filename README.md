@@ -73,32 +73,6 @@ architecture-beta
     redis:R -- L:api
 ```
 
-### Todo Phase 1
-
-- [x] Register - Google oauth
-- [ ] ~~View Account~~ - Profile Details
-- [x] Log in - Google auth
-- [ ] Roles and Policies
-- [ ] View Time sheet
-- [ ] Book slots - booking per day
-- [ ] Cancel booking
-- [ ] View other players in slot
-- [ ] Book a guest
-- [ ] View Bookings
-- [ ] Book Extras
-- [ ] Extra Equipment Agreement
-- [ ] Notification Email/SMS
-- [ ] Payments - Account per club or 1 account managed by Aviate - Create accounts. Link accounts to club or multiple clubs.
-
-### Temp Planning
-
-- [x] Add Players + and - button with client validation
-  - [ ] Validate on book button before showing next page
-  - [ ] On booking page you should be able to reload and still continue where you left off with time remaining if applicable.
-  - [ ] You decide before how many players you are booking for. This will get validated. Start over if you want to change it.
-- [ ] my Bookings
-
-
 ### Temp Booking validation types?
 
 Types of validation checks
@@ -125,14 +99,3 @@ Sync user accounts with identity
 Call /users endpoint in identity and sync
 Add column lastSync to users table.
 Only update if lastUpdate is older than 24 hours.
-
-### TODO
-
-- [x] open-id-ts client setup. 
-- [x] Bearer instead of cookie
-- [x] Keycloak client auth backend services
-- [x] Add user sync with identity service
-- [x] Session management
-- [ ] Verify email address
-- [ ] Verify phone number
-- [ ] Update profile
