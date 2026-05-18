@@ -6,7 +6,10 @@
 	import { Breadcrumb } from "@kayord/ui";
 	let { children } = $props();
 
-	const query = createOutletGet(() => page.params.slug ?? "");
+	const query = createOutletGet(
+		() => page.params.slug ?? "",
+		() => ({ query: { staleTime: 1000 * 60 * 5 } })
+	);
 	const outlet = $derived(query.data);
 
 	const facility = $derived(outlet?.facilities.find((x) => x.id == Number(page.params.id)));

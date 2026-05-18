@@ -26,9 +26,6 @@ class Auth {
 		try {
 			if (!this.userManager) return;
 			const user = await this.userManager.getUser();
-			console.log(user?.id_token);
-			console.log("--------------");
-			console.log(user?.access_token);
 			this.#user = user;
 			this.setupEventListeners();
 		} catch (error) {

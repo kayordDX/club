@@ -6,7 +6,10 @@
 	import FacilityFilter from "./FacilityFilter.svelte";
 	import Query from "$lib/components/Query.svelte";
 
-	const query = createOutletGet(() => page.params.slug ?? "");
+	const query = createOutletGet(
+		() => page.params.slug ?? "",
+		() => ({ query: { staleTime: 1000 * 60 * 5 } })
+	);
 	const outlet = $derived(query.data);
 
 	let facilityTypeIdFilter = $state("0");
