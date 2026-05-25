@@ -1,4 +1,5 @@
 using Keycloak.AuthServices.Sdk.Admin;
+using Online.Common;
 
 namespace Online.Features.Test;
 
@@ -8,15 +9,21 @@ public class Endpoint(IKeycloakUserClient keycloakUserClient) : Endpoint<TestReq
     {
         Get("/test");
         Description(x => x.WithName("Test"));
-        // AllowAnonymous();
+        AllowAnonymous();
         // Policies(Constants.Policy.SuperAdmin);
         // Policies(Constants.Policy.OutletAdmin);
     }
 
     public override async Task HandleAsync(TestRequest req, CancellationToken ct)
     {
+        var userId = Helpers.GetCurrentUserId(HttpContext);
+        if (userId == null)
+        {
+            await Send.UnauthorizedAsync(ct);
+            return;
+        }
         // var userCount = await keycloakUserClient.GetUserCountAsync("kayord", cancellationToken: ct);
-        var user = await keycloakUserClient.GetUserAsync("kayord", "ec35e6d3-d258-427a-a1e9-bc0ecab0aca2", cancellationToken: ct);
+        var user = await keycloakUserClient.GetUserAsync("kayord", userId?.ToString() ?? "", cancellationToken: ct);
 
         // var accessToken = await HttpContext.GetTokenAsync(
         //     IdentityConstants.ApplicationScheme,

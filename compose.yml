@@ -1,6 +1,21 @@
 services:
+  traefik:
+    image: traefik:v3
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.websecure.address=:443"
+      - "--providers.file.directory=/config"
+      - "--providers.file.watch=true"
+    ports:
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./container/traefik/certs:/certs:ro"
+      - "./container/traefik/config:/config:ro"
+
   postgres:
-    build: ./db
+    build: ./container/db
     # image: postgres:18
     ports:
       - 5432:5432
@@ -28,14 +43,20 @@ services:
     #       memory: 256M
 
   redis:
-    image: docker.io/bitnami/redis
+    image: redis:latest
     restart: unless-stopped
     environment:
       REDIS_PASSWORD: online
     volumes:
-      - redis:/bitnami
+      - redis:/data
     ports:
       - "6379:6379"
+    command: >
+      redis-server
+      --save 60 1
+      --appendonly yes
+      --appendfsync everysec
+      --requirepass online
 
   aspire-dashboard:
     image: "mcr.microsoft.com/dotnet/nightly/aspire-dashboard:latest"
@@ -47,22 +68,30 @@ services:
       - 18889:18889
 
   keycloak:
-    image: quay.io/keycloak/keycloak:latest
-    ports:
-      - "18080:8080"
+    image: quay.io/keycloak/keycloak:26.6
+    # build: ./container/keycloak
+    # ports:
+    #   - "18080:8080"
     restart: unless-stopped
     environment:
+      KC_HOSTNAME: https://auth.localhost
+      KC_PROXY: traefik
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
       KC_DB_USERNAME: online
       KC_DB_PASSWORD: online
       KC_HTTP_ENABLED: "true"
-      KC_HOSTNAME: http://localhost:18080
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin
     command: start-dev
     volumes:
       - ./other/keycloakThemes:/opt/keycloak/providers/
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.keycloak.rule=Host(`auth.localhost`)"
+      - "traefik.http.routers.keycloak.entrypoints=websecure"
+      - "traefik.http.routers.keycloak.tls=true"
+      - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
 
   mailpit:
     image: axllent/mailpit

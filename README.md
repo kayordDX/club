@@ -2,6 +2,16 @@
 
 The public site to book and login as member.
 
+## Setup
+
+```bash
+mkcert -install
+mkdir -p ./container/traefik/certs
+# rm -rf ./container/traefik/certs
+mkcert -cert-file ./container/traefik/certs/local-cert.pem -key-file ./container/traefik/certs/local-key.pem "localhost" "*.localhost" "auth.localhost"
+# copy certs to ./container/traefik/certs
+```
+
 ## API (Backend)
 
 ```bash

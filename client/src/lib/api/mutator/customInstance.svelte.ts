@@ -21,7 +21,6 @@ const getBody = async <T>(resp: Response): Promise<T> => {
 		return resp.json() as T;
 	} else {
 		if (resp.status == 401) {
-			// TODO: Possibly refresh token from lib/firebase
 			throw new Error("Unauthorized", { cause: "401" });
 		}
 		if (resp.status == 429) {
