@@ -144,7 +144,7 @@ export const auth = new Auth({
 	redirect_uri: `${PUBLIC_APP_URL}/callback`,
 	post_logout_redirect_uri: `${PUBLIC_APP_URL}/`,
 	response_type: "code",
-	scope: "openid profile email offline_access",
+	scope: "openid profile email phone offline_access",
 	automaticSilentRenew: true,
 	prompt: "select_account",
 });

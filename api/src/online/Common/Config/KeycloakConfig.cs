@@ -17,7 +17,7 @@ public class KeycloakConfig
     {
         get
         {
-            return AuthServerUrl + "realms/" + Realm + "/";
+            return BuildRealmUrl();
         }
     }
 
@@ -25,7 +25,7 @@ public class KeycloakConfig
     {
         get
         {
-            return KeycloakUrlRealm + "protocol/openid-connect/token";
+            return BuildRealmUrl("protocol/openid-connect/token");
         }
     }
 
@@ -33,7 +33,7 @@ public class KeycloakConfig
     {
         get
         {
-            return KeycloakUrlRealm + "protocol/openid-connect/auth";
+            return BuildRealmUrl("protocol/openid-connect/auth");
         }
     }
 
@@ -41,8 +41,20 @@ public class KeycloakConfig
     {
         get
         {
-            return KeycloakUrlRealm + ".well-known/openid-configuration";
+            return BuildRealmUrl(".well-known/openid-configuration");
         }
     }
 
+    private string BuildRealmUrl(string relativePath = "")
+    {
+        var authServerUri = new Uri($"{AuthServerUrl.TrimEnd('/')}/", UriKind.Absolute);
+        var realmPath = $"realms/{Realm.Trim('/')}/";
+
+        if (!string.IsNullOrWhiteSpace(relativePath))
+        {
+            realmPath += relativePath.TrimStart('/');
+        }
+
+        return new Uri(authServerUri, realmPath).ToString();
+    }
 }
