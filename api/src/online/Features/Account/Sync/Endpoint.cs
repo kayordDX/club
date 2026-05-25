@@ -72,7 +72,7 @@ public class Endpoint(IKeycloakUserClient keycloakUserClient, IOptions<KeycloakC
     {
         var picture = keycloakUser.Attributes?.FirstOrDefault(x => x.Key == "picture").Value?.FirstOrDefault();
         var phoneNumber = keycloakUser.Attributes?.FirstOrDefault(x => x.Key == "phoneNumber").Value?.FirstOrDefault();
-        var phoneNumberVerified = keycloakUser.Attributes?.FirstOrDefault(x => x.Key == "phoneNumberVerified").Value?.FirstOrDefault() == "true";
+        var phoneNumberVerified = keycloakUser.Attributes?.FirstOrDefault(x => x.Key == "phoneNumberVerified").Value?.FirstOrDefault() == "false";
 
         user ??= new User
         {
