@@ -8,6 +8,10 @@ public class Facility : AuditableEntity
     public required Outlet Outlet { get; set; }
     public bool? IsActive { get; set; }
     public int FacilityTypeId { get; set; }
+    public string? Contact { get; set; }
+    public string? Email { get; set; }
+    public string? Rules { get; set; }
+    public string? OperatingHours { get; set; }
     public FacilityType FacilityType { get; set; } = default!;
     public ICollection<Resource> Resources { get; set; } = [];
     public ICollection<Slot> Slots { get; set; } = [];
