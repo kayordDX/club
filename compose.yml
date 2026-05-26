@@ -16,7 +16,6 @@ services:
 
   postgres:
     build: ./container/db
-    # image: postgres:18
     ports:
       - 5432:5432
     restart: unless-stopped
@@ -36,11 +35,6 @@ services:
       -c effective_io_concurrency=2
       -c min_wal_size=1GB
       -c max_wal_size=3GB
-    # deploy:
-    #   resources:
-    #     limits:
-    #       cpus: "0.2"
-    #       memory: 256M
 
   redis:
     image: redis:latest
@@ -68,10 +62,7 @@ services:
       - 18889:18889
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.6
-    # build: ./container/keycloak
-    # ports:
-    #   - "18080:8080"
+    build: ./container/keycloak
     restart: unless-stopped
     environment:
       KC_HOSTNAME: https://auth.localhost
@@ -83,9 +74,6 @@ services:
       KC_HTTP_ENABLED: "true"
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin
-    command: start-dev
-    volumes:
-      - ./other/keycloakThemes:/opt/keycloak/providers/
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.keycloak.rule=Host(`auth.localhost`)"
