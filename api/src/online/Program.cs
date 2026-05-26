@@ -15,6 +15,7 @@ builder.Services.ConfigureEF(builder.Configuration, builder.Environment);
 builder.Services.ConfigureTickerQ(builder.Configuration);
 builder.Services.ConfigureGeneral(builder.Configuration);
 builder.Services.ConfigureAuth(builder.Configuration, builder.Environment);
+builder.Services.ConfigureAWS(builder.Configuration);
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {

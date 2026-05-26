@@ -7,6 +7,8 @@
     <PackageVersion Include="AspNetCore.HealthChecks.System" Version="9.0.0" />
     <PackageVersion Include="AspNetCore.HealthChecks.Redis" Version="9.0.0" />
     <PackageVersion Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
+    <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.4.1" />
+    <PackageVersion Include="AWSSDK.S3" Version="4.0.23.4" />
     <PackageVersion Include="Duende.AccessTokenManagement" Version="4.2.0" />
     <PackageVersion Include="EFCore.NamingConventions" Version="10.0.1" />
     <PackageVersion Include="FastEndpoints" Version="8.1.0" />
