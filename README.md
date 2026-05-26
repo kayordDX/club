@@ -47,6 +47,10 @@ dotnet steward squash api/src/online/Data/Migrations
 dotnet user-secrets init --project api/src/online
 dotnet user-secrets set "Authentication:Google:ClientId" "secret" --project api/src/online
 dotnet user-secrets set "Authentication:Google:ClientSecret" "secret" --project api/src/online
+
+dotnet user-secrets set "AWS:AccessKeyId" "secret" --project api/src/online
+dotnet user-secrets set "AWS:SecretAccessKey" "secret" --project api/src/online
+
 dotnet user-secrets list --project api/src/online
 ```
 
