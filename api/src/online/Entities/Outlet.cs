@@ -11,7 +11,12 @@ public class Outlet : AuditableEntity
     public string? Logo { get; set; }
     public string? Address { get; set; }
     public string? Company { get; set; }
+    public string? Description { get; set; }
     public string? Registration { get; set; }
+    public string? Tags { get; set; }
+    public string? Contact { get; set; }
+    public string? Email { get; set; }
+    public string? OperatingHours { get; set; }
     public required string DisplayName { get; set; }
     public int OutletTypeId { get; set; }
     public OutletType OutletType { get; set; } = default!;
