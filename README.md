@@ -29,7 +29,7 @@ dotnet ef migrations add InitTables --project src/online/online.csproj -c AppDbC
 dotnet ef migrations remove --project src/online/online.csproj
 
 # remove
-dotnet ef migrations remove --project src/online/online.csproj
+dotnet ef migrations remove --project src/online/online.csproj -c AppDbContext -o ./Data/Migrations
 
 # list dbContexts
 dotnet ef dbcontext list --project src/online/online.csproj --startup-project src/online/online.csproj
@@ -131,3 +131,8 @@ Email Address
 
 Operating Hours
 Rule
+
+## Clean up
+
+- Remove old code
+- UserManager.FindByEmailAsync() remove all these type of references
