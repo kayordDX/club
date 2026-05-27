@@ -18,7 +18,7 @@ public static class DataExtensions
             opt.Password.RequireNonAlphanumeric = true;
             opt.Password.RequireUppercase = true;
             opt.Password.RequiredLength = 8;
-            opt.User.RequireUniqueEmail = true;
+            opt.User.RequireUniqueEmail = false;
         })
         .AddEntityFrameworkStores<AppDbContext>()
         .AddDefaultTokenProviders()
