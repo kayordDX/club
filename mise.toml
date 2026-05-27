@@ -4,20 +4,31 @@ run = "dotnet run --project api/src/online/online.csproj --no-restore"
 
 [tasks.efadd]
 description = "Add EF Core migration"
-usage = 'arg "<name>" help="Migration name"'
+usage = '''
+arg "<name>" help="Migration name"
+flag "-c --context <context>" {
+  help "Context"
+  choices "AppDbContext" "TickerQDbContext"
+  default "AppDbContext"
+}
+'''
 run = """
 #!/usr/bin/env bash
-set -e
-
-# Native Bash regex matching is the recommended way to enforce content constraints
+# efadd: Add EF Core migration
 if [[ ! "$usage_name" =~ ^[A-Z].{4,}$ ]]; then
     echo "Error: Migration name must start with an uppercase letter and be > 4 characters."
     exit 1
 fi
-
-dotnet ef migrations add $usage_name --project api/src/online/online.csproj -c AppDbContext -o ./Data/Migrations
+dotnet ef migrations add $usage_name --project api/src/online/online.csproj -c ${usage_context?} -o ./Data/Migrations
 """
 
 [tasks.efrm]
 description = "Remove EF Core migration"
-run = "dotnet ef migrations remove --project api/src/online/online.csproj -c AppDbContext"
+usage = '''
+flag "-c --context <context>" {
+  help "Context"
+  choices "AppDbContext" "TickerQDbContext"
+  default "AppDbContext"
+}
+'''
+run = "dotnet ef migrations remove --project api/src/online/online.csproj -c ${usage_context?}"
