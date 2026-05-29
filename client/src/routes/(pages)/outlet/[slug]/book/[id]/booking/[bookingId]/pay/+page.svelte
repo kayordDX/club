@@ -39,7 +39,7 @@
 
 <Query {query} emptyText="Booking not found">
 	<div class="mx-auto flex w-full flex-col gap-6">
-		<div class="grid gap-4">
+		<div class="grid gap-4 pt-4">
 			<Card.Root class="border-border/60 overflow-hidden border shadow-sm">
 				<Card.Header class="border-border/60  border-b">
 					<div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">

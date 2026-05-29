@@ -5,6 +5,7 @@
 	import Facility from "./Facility.svelte";
 	import FacilityFilter from "./FacilityFilter.svelte";
 	import Query from "$lib/components/Query.svelte";
+	import { HouseIcon } from "@lucide/svelte";
 
 	const query = createOutletGet(
 		() => page.params.slug ?? "",
@@ -22,16 +23,18 @@
 	);
 </script>
 
-<div class="m-4">
+<div class="m-2">
 	<Query {query} emptyText="Unable to load outlet">
 		<Breadcrumb.Root class="mb-4">
 			<Breadcrumb.List>
 				<Breadcrumb.Item>
-					<Breadcrumb.Link href="/">Home</Breadcrumb.Link>
+					<Breadcrumb.Link href="/">
+						<HouseIcon class="size-3" />
+					</Breadcrumb.Link>
 				</Breadcrumb.Item>
 				<Breadcrumb.Separator />
 				<Breadcrumb.Item>
-					<Breadcrumb.Page>{outlet!.name}</Breadcrumb.Page>
+					<Breadcrumb.Page class="text-xs">{outlet!.name}</Breadcrumb.Page>
 				</Breadcrumb.Item>
 			</Breadcrumb.List>
 		</Breadcrumb.Root>
