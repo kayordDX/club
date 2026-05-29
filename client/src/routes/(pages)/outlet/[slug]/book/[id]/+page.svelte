@@ -36,15 +36,15 @@
 
 <div class="flex flex-row items-center gap-2">
 	<div class="flex w-full flex-col gap-2">
-		<div class="flex flex-row gap-4 p-4">
-			<div>
+		<div class="flex-row gap-4 py-4 sm:flex">
+			<div class="hidden flex-col sm:flex">
 				<div class="font-bold">Select Date</div>
 				<div class="text-muted-foreground text-xs">Pick a day</div>
 			</div>
 			<Popover.Root>
 				<Popover.Trigger>
 					{#snippet child({ props })}
-						<ButtonGroup.Root class="hidden sm:flex">
+						<ButtonGroup.Root>
 							<Button size="icon" variant="outline" onclick={() => incrementDate(-1)}>
 								<ChevronLeftIcon />
 							</Button>

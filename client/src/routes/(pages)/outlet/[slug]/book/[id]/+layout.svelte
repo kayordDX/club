@@ -4,6 +4,7 @@
 	import { createOutletGet } from "$lib/api";
 	import Query from "$lib/components/Query.svelte";
 	import { Breadcrumb } from "@kayord/ui";
+	import { HouseIcon } from "@lucide/svelte";
 	let { children } = $props();
 
 	const query = createOutletGet(
@@ -17,20 +18,24 @@
 
 <div class="m-4">
 	<Query {query} emptyText="Unable to load outlet">
-		<Breadcrumb.Root class="mb-4">
+		<Breadcrumb.Root>
 			<Breadcrumb.List>
 				<Breadcrumb.Item>
-					<Breadcrumb.Link href="/">Home</Breadcrumb.Link>
+					<Breadcrumb.Link href="/">
+						<HouseIcon class="size-3" />
+					</Breadcrumb.Link>
 				</Breadcrumb.Item>
 				<Breadcrumb.Separator />
 				<Breadcrumb.Item>
-					<Breadcrumb.Link href={resolve(`/outlet/${page.params.slug}/book`)}>
+					<Breadcrumb.Link href={resolve(`/outlet/${page.params.slug}/book`)} class="text-xs">
 						{outlet!.name}
 					</Breadcrumb.Link>
 				</Breadcrumb.Item>
 				<Breadcrumb.Separator />
 				<Breadcrumb.Item>
-					<Breadcrumb.Page>{facility?.name}</Breadcrumb.Page>
+					<Breadcrumb.Page class="text-xs">
+						{facility?.name}
+					</Breadcrumb.Page>
 				</Breadcrumb.Item>
 			</Breadcrumb.List>
 		</Breadcrumb.Root>
