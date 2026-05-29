@@ -14,7 +14,7 @@
 		location: "123 Fairway Rd, Cityville",
 		description:
 			"A premier club offering world-class golf and paddle facilities. Book your slot and enjoy a great experience!",
-		image: "/club-image.png",
+		image: "https://picsum.photos/300",
 		amenities: ["18-hole Golf Course", "4 Paddle Courts", "Clubhouse", "Pro Shop", "Restaurant"],
 		contact: {
 			phone: "(555) 123-4567",
