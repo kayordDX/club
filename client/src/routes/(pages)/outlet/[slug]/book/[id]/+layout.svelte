@@ -16,7 +16,7 @@
 	const facility = $derived(outlet?.facilities.find((x) => x.id == Number(page.params.id)));
 </script>
 
-<div class="m-4">
+<div class="m-2">
 	<Query {query} emptyText="Unable to load outlet">
 		<Breadcrumb.Root>
 			<Breadcrumb.List>

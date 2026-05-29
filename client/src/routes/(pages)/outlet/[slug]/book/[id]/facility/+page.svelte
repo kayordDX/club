@@ -29,12 +29,12 @@
 </script>
 
 <div>
-	<div class="flex flex-col gap-2">
+	<div class="flex flex-col gap-2 pt-4">
 		<Card.Root>
 			<Card.Header>
 				<Card.Title class="text-3xl font-bold">Bookings</Card.Title>
-				<Card.Description class="text-gray-500"
-					>Book your slot at {facility?.name}
+				<Card.Description class="text-gray-500">
+					Book your slot at {facility?.name}
 				</Card.Description>
 			</Card.Header>
 			<Card.Footer>
