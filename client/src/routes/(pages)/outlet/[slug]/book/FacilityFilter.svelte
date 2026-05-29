@@ -1,11 +1,11 @@
 <script lang="ts">
-	import type { FacilityDTO } from "$lib/api";
+	import type { FacilityBasicDTO } from "$lib/api";
 	import { Badge, ToggleGroup } from "@kayord/ui";
 	import FacilityIcon from "$lib/components/Icons/FacilityIcon.svelte";
 	import { Grid2x2Icon } from "@lucide/svelte";
 
 	type Props = {
-		facilities: Array<FacilityDTO>;
+		facilities: Array<FacilityBasicDTO>;
 		facilityTypeIdFilter: string;
 	};
 
@@ -13,7 +13,7 @@
 
 	// Get count of facilities for a specific type
 	const getFacilityTypeCount = $derived(
-		(typeId: number) => facilities.filter((f) => f.facilityType.id === typeId).length
+		(typeId: number) => facilities.filter((f) => f.facilityTypeId === typeId).length
 	);
 </script>
 
@@ -34,13 +34,13 @@
 		</ToggleGroup.Item>
 		{#each facilities as facility (facility.id)}
 			<ToggleGroup.Item
-				value={facility.facilityType.id.toString()}
-				aria-label={`Toggle ${facility.facilityType.name}`}
+				value={facility.facilityTypeId.toString()}
+				aria-label={`Toggle ${facility.facilityTypeName}`}
 			>
-				<FacilityIcon typeId={facility.facilityType.id} />
-				{facility.facilityType.name}
+				<FacilityIcon typeId={facility.facilityTypeId} />
+				{facility.facilityTypeName}
 				<Badge variant="outline" class="hidden md:flex">
-					{getFacilityTypeCount(facility.facilityType.id)}
+					{getFacilityTypeCount(facility.facilityTypeId)}
 				</Badge>
 			</ToggleGroup.Item>
 		{/each}

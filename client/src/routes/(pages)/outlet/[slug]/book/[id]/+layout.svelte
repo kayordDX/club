@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
-	import { createOutletGet } from "$lib/api";
+	import { createOutletGetBasic } from "$lib/api";
 	import Query from "$lib/components/Query.svelte";
 	import { Breadcrumb } from "@kayord/ui";
 	import { HouseIcon } from "@lucide/svelte";
 	let { children } = $props();
 
-	const query = createOutletGet(
+	const query = createOutletGetBasic(
 		() => page.params.slug ?? "",
 		() => ({ query: { staleTime: 1000 * 60 * 5 } })
 	);
