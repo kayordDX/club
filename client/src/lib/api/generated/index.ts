@@ -2,6 +2,7 @@ export * from './test';
 export * from './api.schemas';
 export * from './slot';
 export * from './outlet';
+export * from './facility';
 export * from './extra';
 export * from './example';
 export * from './booking';

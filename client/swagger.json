@@ -11,6 +11,29 @@
     }
   ],
   "paths": {
+    "/test/another": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "operationId": "TestAnother",
+        "responses": {
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalErrorResponse"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
     "/test": {
       "get": {
         "tags": [
@@ -48,9 +71,6 @@
               }
             }
           },
-          "401": {
-            "description": "Unauthorized"
-          },
           "500": {
             "description": "Server Error",
             "content": {
@@ -61,12 +81,7 @@
               }
             }
           }
-        },
-        "security": [
-          {
-            "Keycloak": []
-          }
-        ]
+        }
       }
     },
     "/slot/contracts/{id}": {
@@ -229,6 +244,46 @@
         }
       }
     },
+    "/outlet/basic/{slug}": {
+      "get": {
+        "tags": [
+          "Outlet"
+        ],
+        "operationId": "OutletGetBasic",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalErrorResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OutletBasicDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/outlet": {
       "get": {
         "tags": [
@@ -368,6 +423,47 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OutletDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/facility/{id}": {
+      "get": {
+        "tags": [
+          "Facility"
+        ],
+        "operationId": "FacilityGet",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InternalErrorResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FacilityDTO"
                 }
               }
             }
@@ -1652,6 +1748,106 @@
           }
         }
       },
+      "OutletBasicDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "businessName",
+          "displayName",
+          "outletTypeId",
+          "outletType",
+          "isActive",
+          "facilities"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "businessName": {
+            "type": "string"
+          },
+          "logo": {
+            "type": "string",
+            "nullable": true
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "outletTypeId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "outletType": {
+            "$ref": "#/components/schemas/OutletTypeDTO"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "facilities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FacilityBasicDTO"
+            }
+          }
+        }
+      },
+      "OutletTypeDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "FacilityBasicDTO": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "facilityTypeId",
+          "facilityTypeName"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "facilityTypeId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "facilityTypeName": {
+            "type": "string"
+          }
+        }
+      },
       "PaginatedListOfOutlet": {
         "type": "object",
         "additionalProperties": false,
@@ -1761,7 +1957,27 @@
             "type": "string",
             "nullable": true
           },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
           "registration": {
+            "type": "string",
+            "nullable": true
+          },
+          "tags": {
+            "type": "string",
+            "nullable": true
+          },
+          "contact": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "operatingHours": {
             "type": "string",
             "nullable": true
           },
@@ -2106,6 +2322,22 @@
           "facilityTypeId": {
             "type": "integer",
             "format": "int32"
+          },
+          "contact": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "rules": {
+            "type": "string",
+            "nullable": true
+          },
+          "operatingHours": {
+            "type": "string",
+            "nullable": true
           },
           "facilityType": {
             "$ref": "#/components/schemas/FacilityType"
@@ -2998,23 +3230,6 @@
           }
         }
       },
-      "OutletTypeDTO": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "id",
-          "name"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "name": {
-            "type": "string"
-          }
-        }
-      },
       "FacilityDTO": {
         "type": "object",
         "additionalProperties": false,
@@ -3677,7 +3892,7 @@
         "type": "oauth2",
         "flows": {
           "implicit": {
-            "authorizationUrl": "http://localhost:18080/realms/kayord/protocol/openid-connect/auth",
+            "authorizationUrl": "https://auth.localhost/realms/kayord/protocol/openid-connect/auth",
             "scopes": {
               "openid": "OpenID Connect scope",
               "profile": "Profile scope",
