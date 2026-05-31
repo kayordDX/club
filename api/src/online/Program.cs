@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.HttpOverrides;
-using Online.Common.Extensions;
+﻿using Online.Common.Extensions;
 using TickerQ.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,17 +15,7 @@ builder.Services.ConfigureTickerQ(builder.Configuration);
 builder.Services.ConfigureGeneral(builder.Configuration);
 builder.Services.ConfigureAuth(builder.Configuration, builder.Environment);
 builder.Services.ConfigureAWS(builder.Configuration);
-
-builder.Services.Configure<ForwardedHeadersOptions>(options =>
-{
-    options.ForwardedHeaders =
-        ForwardedHeaders.XForwardedFor |
-        ForwardedHeaders.XForwardedProto |
-        ForwardedHeaders.XForwardedHost;
-
-    options.KnownIPNetworks.Clear();
-    options.KnownProxies.Clear();
-});
+builder.Services.ConfigureNetwork(builder.Configuration);
 
 builder.Logging.ConfigureLogging();
 builder.Services.ConfigureTelemetry(builder.Configuration);
