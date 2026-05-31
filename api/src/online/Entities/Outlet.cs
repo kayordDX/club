@@ -10,7 +10,6 @@ public class Outlet : AuditableEntity
     public required string VatNumber { get; set; }
     public string? Logo { get; set; }
     public string? Address { get; set; }
-    public string? Company { get; set; }
     public string? Description { get; set; }
     public string? Registration { get; set; }
     public string? Tags { get; set; }

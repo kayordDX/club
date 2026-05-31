@@ -66,7 +66,38 @@ public static class SeedDbContext
         {
             var business = new Business { Name = "Business" };
             var outletType = new OutletType { Name = "Golf Course" };
-            var outlet = new Outlet { Name = "Ruimsig Country Club", Slug = "ruimsig-country-club", DisplayName = "RCC", Business = business, OutletType = outletType, VatNumber = "1234567", IsActive = true };
+            var outlet = new Outlet
+            {
+                Name = "Ruimsig Country Club",
+                Slug = "ruimsig-country-club",
+                DisplayName = "RCC",
+                Business = business,
+                OutletType = outletType,
+                VatNumber = "1234567",
+                IsActive = true,
+                Description = """
+                An exclusive 18hole course with many more facilities
+
+                ### Features
+                - Fastest service
+                - Nicest golf course
+                """,
+                Address = "Hole-In-One Ave, Ruimsig, Muldersdrift, 1732",
+                Contact = "011 958 1905",
+                Email = "cc@ruimsigcc.co.za",
+                Tags = "18hole,Paddle,Restaurant",
+                OperatingHours = """
+                | Day | Hours |
+                | --- | --- |
+                | Monday | Closed |
+                | Tuesday | 6:30 am–8 pm |
+                | Wednesday | 6:30 am–8 pm |
+                | Thursday | 6:30 am–8 pm |
+                | Friday | 6:30 am–8 pm |
+                | Saturday | 6:30 am–8 pm |
+                | Sunday | 6:30 am–8 pm |
+                """
+            };
             await dbContext.Outlet.AddAsync(outlet, ct);
             var facilityTypeGolf = new FacilityType { Name = "Golf Course" };
             var facilityTypePaddle = new FacilityType { Name = "Paddle" };
