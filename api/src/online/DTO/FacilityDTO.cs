@@ -8,4 +8,8 @@ public class FacilityDTO
     public bool? IsActive { get; set; }
     public int FacilityTypeId { get; set; }
     public FacilityTypeDTO FacilityType { get; set; } = default!;
+    public string? Contact { get; set; }
+    public string? Email { get; set; }
+    public string? Rules { get; set; }
+    public string? OperatingHours { get; set; }
 }

@@ -1559,10 +1559,6 @@
             "type": "string",
             "nullable": true
           },
-          "company": {
-            "type": "string",
-            "nullable": true
-          },
           "description": {
             "type": "string",
             "nullable": true
@@ -2888,6 +2884,22 @@
           },
           "facilityType": {
             "$ref": "#/components/schemas/FacilityTypeDTO"
+          },
+          "contact": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "rules": {
+            "type": "string",
+            "nullable": true
+          },
+          "operatingHours": {
+            "type": "string",
+            "nullable": true
           }
         }
       },
