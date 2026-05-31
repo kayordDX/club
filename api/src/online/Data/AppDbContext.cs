@@ -14,7 +14,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IHttpContextAc
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        modelBuilder.UseOpenIddict();
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
     }
 
@@ -41,7 +40,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IHttpContextAc
     public DbSet<SlotContract> SlotContract { get; set; }
     public DbSet<SlotContractBooking> SlotContractBooking { get; set; }
     public DbSet<UserContract> UserContract { get; set; }
-    public DbSet<UserRefreshToken> UserRefreshToken { get; set; }
     public DbSet<Validation> Validation { get; set; }
 
     public override async Task<int> SaveChangesAsync(CancellationToken ct = new CancellationToken())
