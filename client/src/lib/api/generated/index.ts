@@ -6,7 +6,5 @@ export * from './facility';
 export * from './extra';
 export * from './example';
 export * from './booking';
-export * from './me';
-export * from './auth';
 export * from './account';
 export * from './user';

@@ -779,93 +779,6 @@
         }
       }
     },
-    "/me": {
-      "get": {
-        "tags": [
-          "Me"
-        ],
-        "operationId": "Me",
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
-        },
-        "security": [
-          {
-            "Keycloak": []
-          }
-        ]
-      }
-    },
-    "/auth/login": {
-      "get": {
-        "tags": [
-          "Auth"
-        ],
-        "operationId": "OnlineFeaturesAuthLoginEndpoint",
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "204": {
-            "description": "No Content"
-          }
-        }
-      }
-    },
-    "/auth/login/callback": {
-      "get": {
-        "tags": [
-          "Auth"
-        ],
-        "operationId": "OnlineFeaturesAuthCallbackCallbackEndpoint",
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "204": {
-            "description": "No Content"
-          }
-        }
-      }
-    },
     "/account/sync": {
       "post": {
         "tags": [
@@ -1087,207 +1000,6 @@
         ]
       }
     },
-    "/account/register": {
-      "post": {
-        "tags": [
-          "Account"
-        ],
-        "operationId": "Register",
-        "requestBody": {
-          "x-name": "UserRegisterRequest",
-          "description": "",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserRegisterRequest"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 1
-        },
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "204": {
-            "description": "No Content"
-          }
-        }
-      }
-    },
-    "/account/refresh": {
-      "post": {
-        "tags": [
-          "Account"
-        ],
-        "operationId": "Refresh",
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserModel"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/account/refresh/revokeAll": {
-      "post": {
-        "tags": [
-          "Account"
-        ],
-        "operationId": "RefreshRevokeAll",
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "204": {
-            "description": "No Content"
-          }
-        }
-      }
-    },
-    "/account/refresh/revoke": {
-      "post": {
-        "tags": [
-          "Account"
-        ],
-        "operationId": "RefreshRevoke",
-        "requestBody": {
-          "x-name": "RefreshRevokeRequest",
-          "description": "",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RefreshRevokeRequest"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 1
-        },
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "204": {
-            "description": "No Content"
-          }
-        }
-      }
-    },
-    "/account/refresh/list": {
-      "get": {
-        "tags": [
-          "Account"
-        ],
-        "operationId": "RefreshList",
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/RefreshListResponse"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/account/passkey": {
-      "post": {
-        "tags": [
-          "Account"
-        ],
-        "operationId": "Passkey",
-        "requestBody": {
-          "x-name": "PasskeyRequest",
-          "description": "",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PasskeyRequest"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 1
-        },
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/account/me": {
       "get": {
         "tags": [
@@ -1324,112 +1036,6 @@
             "Keycloak": []
           }
         ]
-      }
-    },
-    "/account/logout": {
-      "post": {
-        "tags": [
-          "Account"
-        ],
-        "operationId": "Logout",
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/account/login": {
-      "post": {
-        "tags": [
-          "Account"
-        ],
-        "operationId": "Login",
-        "requestBody": {
-          "x-name": "LoginRequest",
-          "description": "",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LoginRequest"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 1
-        },
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/account/login/google": {
-      "get": {
-        "tags": [
-          "Account"
-        ],
-        "operationId": "LoginGoogle",
-        "parameters": [
-          {
-            "name": "returnUrl",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "204": {
-            "description": "No Content"
-          }
-        }
       }
     },
     "/account/credential": {
@@ -3188,7 +2794,27 @@
             "type": "string",
             "nullable": true
           },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
           "registration": {
+            "type": "string",
+            "nullable": true
+          },
+          "tags": {
+            "type": "string",
+            "nullable": true
+          },
+          "contact": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "operatingHours": {
             "type": "string",
             "nullable": true
           },
@@ -3707,30 +3333,6 @@
           }
         }
       },
-      "UserRegisterRequest": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "firstName",
-          "lastName",
-          "email",
-          "password"
-        ],
-        "properties": {
-          "firstName": {
-            "type": "string"
-          },
-          "lastName": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "password": {
-            "type": "string"
-          }
-        }
-      },
       "UserModel": {
         "type": "object",
         "additionalProperties": false,
@@ -3762,97 +3364,6 @@
             "type": "string"
           },
           "picture": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "RefreshRevokeRequest": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "id"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "guid"
-          }
-        }
-      },
-      "RefreshListResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "id",
-          "expiresAtUtc",
-          "browser",
-          "browserVersion",
-          "device",
-          "platform",
-          "processor",
-          "isCurrent"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "guid"
-          },
-          "expiresAtUtc": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "browser": {
-            "type": "string"
-          },
-          "browserVersion": {
-            "type": "string"
-          },
-          "device": {
-            "type": "string"
-          },
-          "platform": {
-            "type": "string"
-          },
-          "processor": {
-            "type": "string"
-          },
-          "isCurrent": {
-            "type": "boolean"
-          }
-        }
-      },
-      "PasskeyRequest": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "name"
-        ],
-        "properties": {
-          "name": {
-            "type": "string"
-          }
-        }
-      },
-      "LoginRequest": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "email",
-          "password"
-        ],
-        "properties": {
-          "email": {
-            "type": "string"
-          },
-          "password": {
-            "type": "string"
-          },
-          "twoFactorCode": {
-            "type": "string",
-            "nullable": true
-          },
-          "twoFactorRecoveryCode": {
             "type": "string",
             "nullable": true
           }

@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { page } from "$app/state";
 	import { createOutletGetBasic } from "$lib/api";
-	import { Breadcrumb, Button } from "@kayord/ui";
+	import { Button } from "@kayord/ui";
 	import Facility from "./Facility.svelte";
 	import FacilityFilter from "./FacilityFilter.svelte";
 	import Query from "$lib/components/Query.svelte";
-	import { Building2Icon, HouseIcon } from "@lucide/svelte";
+	import { Building2Icon } from "@lucide/svelte";
 	import { resolve } from "$app/paths";
 	import Breadcrumbs from "../Breadcrumbs.svelte";
 

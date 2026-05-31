@@ -518,7 +518,17 @@ export interface OutletDTO {
   /** @nullable */
   company?: string | null;
   /** @nullable */
+  description?: string | null;
+  /** @nullable */
   registration?: string | null;
+  /** @nullable */
+  tags?: string | null;
+  /** @nullable */
+  contact?: string | null;
+  /** @nullable */
+  email?: string | null;
+  /** @nullable */
+  operatingHours?: string | null;
   displayName: string;
   outletTypeId: number;
   outletType: OutletTypeDTO;
@@ -662,13 +672,6 @@ export interface UserRoleRequest {
   name: string;
 }
 
-export interface UserRegisterRequest {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-}
-
 export interface UserModel {
   id: string;
   email: string;
@@ -678,34 +681,6 @@ export interface UserModel {
   name: string;
   /** @nullable */
   picture?: string | null;
-}
-
-export interface RefreshRevokeRequest {
-  id: string;
-}
-
-export interface RefreshListResponse {
-  id: string;
-  expiresAtUtc: string;
-  browser: string;
-  browserVersion: string;
-  device: string;
-  platform: string;
-  processor: string;
-  isCurrent: boolean;
-}
-
-export interface PasskeyRequest {
-  name: string;
-}
-
-export interface LoginRequest {
-  email: string;
-  password: string;
-  /** @nullable */
-  twoFactorCode?: string | null;
-  /** @nullable */
-  twoFactorRecoveryCode?: string | null;
 }
 
 export interface AccountCredentialResponse {
@@ -766,11 +741,5 @@ page?: number | null;
  * @nullable
  */
 pageSize?: number | null;
-};
-
-export type Me200 = {[key: string]: string};
-
-export type LoginGoogleParams = {
-returnUrl: string;
 };
 

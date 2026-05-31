@@ -1,8 +1,13 @@
 <script lang="ts">
 	import SvelteMarkdown, { type SvelteMarkdownProps } from "@humanspeak/svelte-markdown";
 	import { Checkbox } from "@kayord/ui";
+	import { cn } from "@kayord/ui/utils";
 
-	let props: SvelteMarkdownProps = $props();
+	interface Props extends SvelteMarkdownProps {
+		class?: string;
+	}
+
+	let props: Props = $props();
 </script>
 
 <article
@@ -15,6 +20,7 @@
 		"prose-blockquote:border-border prose-blockquote:text-muted-foreground",
 		"prose-th:text-card-foreground prose-td:text-card-foreground prose-th:font-bold prose-th:p-2 prose-td:p-2",
 		"prose-li:text-foreground",
+		cn(props.class),
 	]}
 >
 	<SvelteMarkdown {...props}>
