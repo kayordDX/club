@@ -10,7 +10,6 @@ public static class GeneralExtensions
         services.AddScoped<CurrentUserService>();
         services.AddScoped<AuthTokenProcessor>();
         services.AddDetection();
-        services.AddScoped<AccountService>();
         services.AddScoped<EncryptionService>();
         services.AddScoped<IEmailService, EmailService>();
         return services;

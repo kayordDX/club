@@ -98,7 +98,9 @@ class Auth {
 	}
 
 	login = async () => {
-		await this.userManager.signinRedirect();
+		await this.userManager.signinRedirect({
+			prompt: "select_account",
+		});
 	};
 
 	logout = async () => {
@@ -128,7 +130,10 @@ class Auth {
 
 	async handleCallback() {
 		try {
-			const user = await this.userManager.signinRedirectCallback();
+			const user = await this.userManager.signinCallback();
+			if (user == undefined) {
+				throw new Error("No user returned from callback");
+			}
 			this.#user = user;
 			return user;
 		} catch (error) {
@@ -142,9 +147,9 @@ export const auth = new Auth({
 	authority: PUBLIC_IDENTITY_URL,
 	client_id: "public-client",
 	redirect_uri: `${PUBLIC_APP_URL}/callback`,
+	silent_redirect_uri: `${PUBLIC_APP_URL}/callback`,
 	post_logout_redirect_uri: `${PUBLIC_APP_URL}/`,
 	response_type: "code",
 	scope: "openid profile email phone offline_access",
 	automaticSilentRenew: true,
-	prompt: "select_account",
 });
