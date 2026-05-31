@@ -29,7 +29,7 @@ public class Endpoint(IKeycloakUserClient keycloakUserClient, IOptions<KeycloakC
 
         var user = await userManager.FindByIdAsync(userId.Value.ToString());
 
-        bool shouldSync = user == null || user.LastSync.AddHours(1) < DateTime.Now;
+        bool shouldSync = user == null || req.Force || user.LastSync.AddHours(1) < DateTime.UtcNow;
 
         if (!shouldSync)
         {

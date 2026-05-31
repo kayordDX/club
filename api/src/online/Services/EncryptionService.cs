@@ -23,9 +23,9 @@ public class EncryptionService
         return Rfc2898DeriveBytes.Pbkdf2(
             passwordBytes,
             salt,
-            10000,
+            600_000,
             HashAlgorithmName.SHA512,
-            16
+            32
         );
     }
 
