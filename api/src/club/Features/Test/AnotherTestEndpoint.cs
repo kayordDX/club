@@ -1,9 +1,9 @@
 using Amazon.S3;
 using Amazon.S3.Model;
 using Microsoft.Extensions.Options;
-using Online.Common.Config;
+using Club.Common.Config;
 
-namespace Online.Features.Test;
+namespace Club.Features.Test;
 
 public class AnotherTestEndpoint(IAmazonS3 s3Client, IOptions<AWSConfig> awsConfig) : EndpointWithoutRequest<object>
 {

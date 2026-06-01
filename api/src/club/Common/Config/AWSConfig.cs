@@ -1,4 +1,4 @@
-namespace Online.Common.Config;
+namespace Club.Common.Config;
 
 public class AWSConfig
 {

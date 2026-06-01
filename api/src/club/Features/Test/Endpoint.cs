@@ -1,7 +1,7 @@
 using Keycloak.AuthServices.Sdk.Admin;
-using Online.Common;
+using Club.Common;
 
-namespace Online.Features.Test;
+namespace Club.Features.Test;
 
 public class Endpoint(IKeycloakUserClient keycloakUserClient) : Endpoint<TestRequest, TestResponse>
 {

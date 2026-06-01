@@ -8,7 +8,7 @@ using TickerQ.EntityFrameworkCore.DbContextFactory;
 
 #nullable disable
 
-namespace Online.Data.TickerQMigrations
+namespace Club.Data.TickerQMigrations
 {
     [DbContext(typeof(TickerQDbContext))]
     partial class TickerQDbContextModelSnapshot : ModelSnapshot

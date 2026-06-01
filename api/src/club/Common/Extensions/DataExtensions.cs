@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Online.Data;
-using Online.Entities;
+using Club.Data;
+using Club.Entities;
 using TickerQ.EntityFrameworkCore.DbContextFactory;
 
-namespace Online.Common.Extensions;
+namespace Club.Common.Extensions;
 
 public static class DataExtensions
 {

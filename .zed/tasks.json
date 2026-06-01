@@ -7,7 +7,7 @@
   },
   {
     "label": "Run",
-    "command": "dotnet run --project ./api/src/online/online.csproj",
+    "command": "dotnet run --project ./api/src/club/club.csproj",
     "tags": ["test"],
     "hide": "on_success",
   },

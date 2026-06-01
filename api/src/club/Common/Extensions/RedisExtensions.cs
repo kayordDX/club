@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Caching.Hybrid;
-using Online.Data;
+using Club.Data;
 using StackExchange.Redis;
 
-namespace Online.Common.Extensions;
+namespace Club.Common.Extensions;
 
 public static class RedisExtensions
 {
@@ -24,7 +24,7 @@ public static class RedisExtensions
         });
 
         services.AddDataProtection()
-            .SetApplicationName("online")
+            .SetApplicationName("club")
             .PersistKeysToStackExchangeRedis(multiplexer, "DataProtection-Keys");
 
         services.AddHybridCache(options =>

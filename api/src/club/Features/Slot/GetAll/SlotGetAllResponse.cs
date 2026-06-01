@@ -1,6 +1,6 @@
-using Online.Entities;
+using Club.Entities;
 
-namespace Online.Features.Slot.GetAll;
+namespace Club.Features.Slot.GetAll;
 
 public class SlotGetAllResponse
 {

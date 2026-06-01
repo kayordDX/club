@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Online.Entities;
+using Club.Entities;
 
-namespace Online.Data.Config;
+namespace Club.Data.Config;
 
 public class IdentityUserRoleConfig : IEntityTypeConfiguration<UserRole>
 {

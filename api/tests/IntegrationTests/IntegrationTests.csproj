@@ -22,7 +22,7 @@
     <PackageReference Include="Testcontainers.PostgreSql" />
 
     <!-- Project Reference -->
-    <ProjectReference Include="../../src/online/online.csproj" />
+    <ProjectReference Include="../../src/club/club.csproj" />
   </ItemGroup>
 
   <ItemGroup>

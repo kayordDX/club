@@ -1,4 +1,4 @@
-namespace Online.Features.Extra.GetFacility;
+namespace Club.Features.Extra.GetFacility;
 
 public class ExtraGetFacilityRequest
 {

@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace Online.Features.Test;
+namespace Club.Features.Test;
 
 public class TestRequest
 {

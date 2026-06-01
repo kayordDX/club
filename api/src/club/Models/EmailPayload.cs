@@ -1,4 +1,4 @@
-namespace Online.Models;
+namespace Club.Models;
 
 public record EmailPayload(
     List<EmailTarget> To,

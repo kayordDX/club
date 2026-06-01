@@ -1,6 +1,6 @@
-using Online.Common.Models;
+using Club.Common.Models;
 
-namespace Online.Features.Booking.GetUser;
+namespace Club.Features.Booking.GetUser;
 
 public class BookingGetUserRequest : QueryModel
 {

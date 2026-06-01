@@ -9,7 +9,7 @@ using TickerQ.EntityFrameworkCore.DbContextFactory;
 
 #nullable disable
 
-namespace Online.Data.TickerQMigrations
+namespace Club.Data.TickerQMigrations
 {
     [DbContext(typeof(TickerQDbContext))]
     [Migration("20260331201513_TickerQInit")]

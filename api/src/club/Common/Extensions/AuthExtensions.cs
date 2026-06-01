@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Online.Common.Config;
+using Club.Common.Config;
 using Keycloak.AuthServices.Common;
 using Duende.AccessTokenManagement;
-using Online.Services;
+using Club.Services;
 
-namespace Online.Common.Extensions;
+namespace Club.Common.Extensions;
 
 public static class AuthExtensions
 {

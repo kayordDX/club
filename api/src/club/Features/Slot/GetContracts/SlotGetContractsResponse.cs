@@ -1,6 +1,6 @@
-using Online.Entities;
+using Club.Entities;
 
-namespace Online.Features.Slot.GetContracts;
+namespace Club.Features.Slot.GetContracts;
 
 public class SlotGetContractsResponse
 {

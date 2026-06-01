@@ -1,4 +1,4 @@
-namespace Online.Common;
+namespace Club.Common;
 
 public static class EmailHelpers
 {

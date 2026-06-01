@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace Online.Features.Slot.GetAll;
+namespace Club.Features.Slot.GetAll;
 
 public class SlotGetAllRequest
 {

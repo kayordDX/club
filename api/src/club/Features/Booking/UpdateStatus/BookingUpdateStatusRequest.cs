@@ -1,6 +1,6 @@
-using Online.Common.Enums;
+using Club.Common.Enums;
 
-namespace Online.Features.Booking.UpdateStatus;
+namespace Club.Features.Booking.UpdateStatus;
 
 public class BookingUpdateStatusRequest
 {

@@ -1,7 +1,7 @@
 using Amazon.S3;
 using Amazon.S3.Transfer;
 
-namespace Online.Common.Utilities;
+namespace Club.Common.Utilities;
 
 public class ImageUploader(ITransferUtility transferUtility, IConfiguration configuration)
 {

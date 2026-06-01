@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Cors.Infrastructure;
 
-namespace Online.Common.Extensions;
+namespace Club.Common.Extensions;
 
 public static class CorsExtensions
 {
-    private static readonly string _allowedOrigins = "OnlineOrigins";
+    private static readonly string _allowedOrigins = "ClubOrigins";
 
     public static void ConfigureCors(this IServiceCollection services, IConfiguration configuration)
     {

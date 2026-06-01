@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using Online.Data;
+using Club.Data;
 
-namespace Online.Features.Slot.GetContracts;
+namespace Club.Features.Slot.GetContracts;
 
 public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetContractsRequest, List<SlotGetContractsResponse>>
 {

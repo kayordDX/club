@@ -1,6 +1,6 @@
 # Integration Tests
 
-This directory contains comprehensive integration tests for the Online API using xUnit v3, TestContainers, and FastEndpoints.Testing.
+This directory contains comprehensive integration tests for the Club API using xUnit v3, TestContainers, and FastEndpoints.Testing.
 
 ## Overview
 
@@ -93,7 +93,7 @@ Test configuration is in `appsettings.Testing.json`:
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5432;Database=online_test;Username=postgres;Password=postgres;"
+    "DefaultConnection": "Host=localhost;Port=5432;Database=club_test;Username=postgres;Password=postgres;"
   },
   "Authentication": {
     "Google": {
@@ -103,8 +103,8 @@ Test configuration is in `appsettings.Testing.json`:
   },
   "JwtOptions": {
     "Secret": "super-secret-key-for-testing-purposes-only-min-32-chars",
-    "Issuer": "online-test",
-    "Audience": "online-test-audience"
+    "Issuer": "club-test",
+    "Audience": "club-test-audience"
   }
 }
 ```

@@ -1,6 +1,6 @@
-using Online.Entities;
+using Club.Entities;
 
-namespace Online.Features.Booking.Create;
+namespace Club.Features.Booking.Create;
 
 public class BookingCreateResponse
 {

@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace Online.Features.Account.Role;
+namespace Club.Features.Account.Role;
 
 public class UserRoleRequest
 {

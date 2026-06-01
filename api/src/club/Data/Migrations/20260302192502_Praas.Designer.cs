@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using Online.Data;
+using Club.Data;
 
 #nullable disable
 
-namespace Online.Data.Migrations
+namespace Club.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
     [Migration("20260302192502_Praas")]
@@ -160,7 +160,7 @@ namespace Online.Data.Migrations
                     b.ToTable("user_token", (string)null);
                 });
 
-            modelBuilder.Entity("Online.Entities.Bill", b =>
+            modelBuilder.Entity("Club.Entities.Bill", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -224,7 +224,7 @@ namespace Online.Data.Migrations
                     b.ToTable("bill", (string)null);
                 });
 
-            modelBuilder.Entity("Online.Entities.BookingStatus", b =>
+            modelBuilder.Entity("Club.Entities.BookingStatus", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -245,7 +245,7 @@ namespace Online.Data.Migrations
                     b.ToTable("booking_status", (string)null);
                 });
 
-            modelBuilder.Entity("Online.Entities.Business", b =>
+            modelBuilder.Entity("Club.Entities.Business", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -282,7 +282,7 @@ namespace Online.Data.Migrations
                     b.ToTable("business", (string)null);
                 });
 
-            modelBuilder.Entity("Online.Entities.Contract", b =>
+            modelBuilder.Entity("Club.Entities.Contract", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -328,7 +328,7 @@ namespace Online.Data.Migrations
                     b.ToTable("contract", (string)null);
                 });
 
-            modelBuilder.Entity("Online.Entities.ContractField", b =>
+            modelBuilder.Entity("Club.Entities.ContractField", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -379,7 +379,7 @@ namespace Online.Data.Migrations
                     b.ToTable("contract_field", (string)null);
                 });
 
-            modelBuilder.Entity("Online.Entities.ContractFieldConfig", b =>
+            modelBuilder.Entity("Club.Entities.ContractFieldConfig", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -434,7 +434,7 @@ namespace Online.Data.Migrations
                     b.ToTable("contract_field_config", (string)null);
                 });
 
-            modelBuilder.Entity("Online.Entities.ContractOutlet", b =>
+            modelBuilder.Entity("Club.Entities.ContractOutlet", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -491,7 +491,7 @@ namespace Online.Data.Migrations
                     b.ToTable("contract_outlet", (string)null);
                 });
 
-            modelBuilder.Entity("Online.Entities.Extra", b =>
+            modelBuilder.Entity("Club.Entities.Extra", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -518,7 +518,7 @@ namespace Online.Data.Migrations
                     b.ToTable("extra", (string)null);
                 });
 
-            modelBuilder.Entity("Online.Entities.ExtraBooking", b =>
+            modelBuilder.Entity("Club.Entities.ExtraBooking", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -572,7 +572,7 @@ namespace Online.Data.Migrations
                     b.ToTable("extra_booking", (string)null);
                 });
 
-            modelBuilder.Entity("Online.Entities.Facility", b =>
+            modelBuilder.Entity("Club.Entities.Facility", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -627,7 +627,7 @@ namespace Online.Data.Migrations
                     b.ToTable("facility", (string)null);
                 });
 
-            modelBuilder.Entity("Online.Entities.FacilityExtra", b =>
+            modelBuilder.Entity("Club.Entities.FacilityExtra", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -720,7 +720,7 @@ namespace Online.Data.Migrations
                     b.ToTable("facility_extra", (string)null);
                 });
 
-            modelBuilder.Entity("Online.Entities.FacilityType", b =>
+            modelBuilder.Entity("Club.Entities.FacilityType", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -740,7 +740,7 @@ namespace Online.Data.Migrations
                     b.ToTable("facility_type", (string)null);
                 });
 
-            modelBuilder.Entity("Online.Entities.Outlet", b =>
+            modelBuilder.Entity("Club.Entities.Outlet", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -829,7 +829,7 @@ namespace Online.Data.Migrations
                     b.ToTable("outlet", (string)null);
                 });
 
-            modelBuilder.Entity("Online.Entities.OutletType", b =>
+            modelBuilder.Entity("Club.Entities.OutletType", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -866,7 +866,7 @@ namespace Online.Data.Migrations
                     b.ToTable("outlet_type", (string)null);
                 });
 
-            modelBuilder.Entity("Online.Entities.Payment", b =>
+            modelBuilder.Entity("Club.Entities.Payment", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -896,7 +896,7 @@ namespace Online.Data.Migrations
                     b.ToTable("payment", (string)null);
                 });
 
-            modelBuilder.Entity("Online.Entities.PaymentStatus", b =>
+            modelBuilder.Entity("Club.Entities.PaymentStatus", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -917,7 +917,7 @@ namespace Online.Data.Migrations
                     b.ToTable("payment_status", (string)null);
                 });
 
-            modelBuilder.Entity("Online.Entities.PaymentType", b =>
+            modelBuilder.Entity("Club.Entities.PaymentType", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -938,7 +938,7 @@ namespace Online.Data.Migrations
                     b.ToTable("payment_type", (string)null);
                 });
 
-            modelBuilder.Entity("Online.Entities.Resource", b =>
+            modelBuilder.Entity("Club.Entities.Resource", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -987,7 +987,7 @@ namespace Online.Data.Migrations
                     b.ToTable("resource", (string)null);
                 });
 
-            modelBuilder.Entity("Online.Entities.Role", b =>
+            modelBuilder.Entity("Club.Entities.Role", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -1019,7 +1019,7 @@ namespace Online.Data.Migrations
                     b.ToTable("role", (string)null);
                 });
 
-            modelBuilder.Entity("Online.Entities.RoleType", b =>
+            modelBuilder.Entity("Club.Entities.RoleType", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1064,7 +1064,7 @@ namespace Online.Data.Migrations
                     b.ToTable("role_type", (string)null);
                 });
 
-            modelBuilder.Entity("Online.Entities.Slot", b =>
+            modelBuilder.Entity("Club.Entities.Slot", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -1123,7 +1123,7 @@ namespace Online.Data.Migrations
                     b.ToTable("slot", (string)null);
                 });
 
-            modelBuilder.Entity("Online.Entities.SlotBooking", b =>
+            modelBuilder.Entity("Club.Entities.SlotBooking", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1193,7 +1193,7 @@ namespace Online.Data.Migrations
                     b.ToTable("slot_booking", (string)null);
                 });
 
-            modelBuilder.Entity("Online.Entities.SlotContract", b =>
+            modelBuilder.Entity("Club.Entities.SlotContract", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1249,7 +1249,7 @@ namespace Online.Data.Migrations
                     b.ToTable("slot_contract", (string)null);
                 });
 
-            modelBuilder.Entity("Online.Entities.User", b =>
+            modelBuilder.Entity("Club.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -1345,7 +1345,7 @@ namespace Online.Data.Migrations
                     b.ToTable("user", (string)null);
                 });
 
-            modelBuilder.Entity("Online.Entities.UserContract", b =>
+            modelBuilder.Entity("Club.Entities.UserContract", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1406,7 +1406,7 @@ namespace Online.Data.Migrations
                     b.ToTable("user_contract", (string)null);
                 });
 
-            modelBuilder.Entity("Online.Entities.UserRefreshToken", b =>
+            modelBuilder.Entity("Club.Entities.UserRefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -1465,7 +1465,7 @@ namespace Online.Data.Migrations
                     b.ToTable("user_refresh_token", (string)null);
                 });
 
-            modelBuilder.Entity("Online.Entities.UserRole", b =>
+            modelBuilder.Entity("Club.Entities.UserRole", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1502,7 +1502,7 @@ namespace Online.Data.Migrations
                     b.ToTable("user_role", (string)null);
                 });
 
-            modelBuilder.Entity("Online.Entities.Validation", b =>
+            modelBuilder.Entity("Club.Entities.Validation", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1525,7 +1525,7 @@ namespace Online.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
-                    b.HasOne("Online.Entities.Role", null)
+                    b.HasOne("Club.Entities.Role", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1535,7 +1535,7 @@ namespace Online.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
-                    b.HasOne("Online.Entities.User", null)
+                    b.HasOne("Club.Entities.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1545,7 +1545,7 @@ namespace Online.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
                 {
-                    b.HasOne("Online.Entities.User", null)
+                    b.HasOne("Club.Entities.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1555,7 +1555,7 @@ namespace Online.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserPasskey<System.Guid>", b =>
                 {
-                    b.HasOne("Online.Entities.User", null)
+                    b.HasOne("Club.Entities.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1608,7 +1608,7 @@ namespace Online.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
                 {
-                    b.HasOne("Online.Entities.User", null)
+                    b.HasOne("Club.Entities.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1616,23 +1616,23 @@ namespace Online.Data.Migrations
                         .HasConstraintName("fk_user_token_asp_net_users_user_id");
                 });
 
-            modelBuilder.Entity("Online.Entities.Bill", b =>
+            modelBuilder.Entity("Club.Entities.Bill", b =>
                 {
-                    b.HasOne("Online.Entities.Payment", "Payment")
+                    b.HasOne("Club.Entities.Payment", "Payment")
                         .WithMany()
                         .HasForeignKey("PaymentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_bill_payment_payment_id");
 
-                    b.HasOne("Online.Entities.PaymentType", "PaymentType")
+                    b.HasOne("Club.Entities.PaymentType", "PaymentType")
                         .WithMany("Bills")
                         .HasForeignKey("PaymentTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_bill_payment_type_payment_type_id");
 
-                    b.HasOne("Online.Entities.User", "User")
+                    b.HasOne("Club.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1646,9 +1646,9 @@ namespace Online.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Online.Entities.Contract", b =>
+            modelBuilder.Entity("Club.Entities.Contract", b =>
                 {
-                    b.HasOne("Online.Entities.Business", "Business")
+                    b.HasOne("Club.Entities.Business", "Business")
                         .WithMany("Contracts")
                         .HasForeignKey("BusinessId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1658,9 +1658,9 @@ namespace Online.Data.Migrations
                     b.Navigation("Business");
                 });
 
-            modelBuilder.Entity("Online.Entities.ContractField", b =>
+            modelBuilder.Entity("Club.Entities.ContractField", b =>
                 {
-                    b.HasOne("Online.Entities.Business", "Business")
+                    b.HasOne("Club.Entities.Business", "Business")
                         .WithMany("ContractFields")
                         .HasForeignKey("BusinessId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1670,16 +1670,16 @@ namespace Online.Data.Migrations
                     b.Navigation("Business");
                 });
 
-            modelBuilder.Entity("Online.Entities.ContractFieldConfig", b =>
+            modelBuilder.Entity("Club.Entities.ContractFieldConfig", b =>
                 {
-                    b.HasOne("Online.Entities.ContractField", "ContractField")
+                    b.HasOne("Club.Entities.ContractField", "ContractField")
                         .WithMany("ContractFieldConfigs")
                         .HasForeignKey("ContractFieldId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_contract_field_config_contract_field_contract_field_id");
 
-                    b.HasOne("Online.Entities.Contract", "Contract")
+                    b.HasOne("Club.Entities.Contract", "Contract")
                         .WithMany()
                         .HasForeignKey("ContractId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1691,16 +1691,16 @@ namespace Online.Data.Migrations
                     b.Navigation("ContractField");
                 });
 
-            modelBuilder.Entity("Online.Entities.ContractOutlet", b =>
+            modelBuilder.Entity("Club.Entities.ContractOutlet", b =>
                 {
-                    b.HasOne("Online.Entities.Contract", "Contract")
+                    b.HasOne("Club.Entities.Contract", "Contract")
                         .WithMany()
                         .HasForeignKey("ContractId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_contract_outlet_contract_contract_id");
 
-                    b.HasOne("Online.Entities.Outlet", "Outlet")
+                    b.HasOne("Club.Entities.Outlet", "Outlet")
                         .WithMany("ContractOutlets")
                         .HasForeignKey("OutletId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1712,9 +1712,9 @@ namespace Online.Data.Migrations
                     b.Navigation("Outlet");
                 });
 
-            modelBuilder.Entity("Online.Entities.Extra", b =>
+            modelBuilder.Entity("Club.Entities.Extra", b =>
                 {
-                    b.HasOne("Online.Entities.Outlet", "Outlet")
+                    b.HasOne("Club.Entities.Outlet", "Outlet")
                         .WithMany("Extras")
                         .HasForeignKey("OutletId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1724,35 +1724,35 @@ namespace Online.Data.Migrations
                     b.Navigation("Outlet");
                 });
 
-            modelBuilder.Entity("Online.Entities.ExtraBooking", b =>
+            modelBuilder.Entity("Club.Entities.ExtraBooking", b =>
                 {
-                    b.HasOne("Online.Entities.BookingStatus", "BookingStatus")
+                    b.HasOne("Club.Entities.BookingStatus", "BookingStatus")
                         .WithMany()
                         .HasForeignKey("BookingStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_extra_booking_booking_status_booking_status_id");
 
-                    b.HasOne("Online.Entities.FacilityExtra", "FacilityExtra")
+                    b.HasOne("Club.Entities.FacilityExtra", "FacilityExtra")
                         .WithMany()
                         .HasForeignKey("FacilityExtraId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_extra_booking_facility_extra_facility_extra_id");
 
-                    b.HasOne("Online.Entities.Payment", "Payment")
+                    b.HasOne("Club.Entities.Payment", "Payment")
                         .WithMany()
                         .HasForeignKey("PaymentId")
                         .HasConstraintName("fk_extra_booking_payment_payment_id");
 
-                    b.HasOne("Online.Entities.Slot", "Slot")
+                    b.HasOne("Club.Entities.Slot", "Slot")
                         .WithMany("ExtraBookings")
                         .HasForeignKey("SlotId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_extra_booking_slot_slot_id");
 
-                    b.HasOne("Online.Entities.User", "User")
+                    b.HasOne("Club.Entities.User", "User")
                         .WithMany("ExtraBookings")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1770,16 +1770,16 @@ namespace Online.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Online.Entities.Facility", b =>
+            modelBuilder.Entity("Club.Entities.Facility", b =>
                 {
-                    b.HasOne("Online.Entities.FacilityType", "FacilityType")
+                    b.HasOne("Club.Entities.FacilityType", "FacilityType")
                         .WithMany()
                         .HasForeignKey("FacilityTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_facility_facility_type_facility_type_id");
 
-                    b.HasOne("Online.Entities.Outlet", "Outlet")
+                    b.HasOne("Club.Entities.Outlet", "Outlet")
                         .WithMany("Facilities")
                         .HasForeignKey("OutletId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1791,30 +1791,30 @@ namespace Online.Data.Migrations
                     b.Navigation("Outlet");
                 });
 
-            modelBuilder.Entity("Online.Entities.FacilityExtra", b =>
+            modelBuilder.Entity("Club.Entities.FacilityExtra", b =>
                 {
-                    b.HasOne("Online.Entities.BookingStatus", "BookingStatus")
+                    b.HasOne("Club.Entities.BookingStatus", "BookingStatus")
                         .WithMany()
                         .HasForeignKey("BookingStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_facility_extra_booking_status_booking_status_id");
 
-                    b.HasOne("Online.Entities.Extra", "Extra")
+                    b.HasOne("Club.Entities.Extra", "Extra")
                         .WithMany()
                         .HasForeignKey("ExtraId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_facility_extra_extra_extra_id");
 
-                    b.HasOne("Online.Entities.Facility", "Facility")
+                    b.HasOne("Club.Entities.Facility", "Facility")
                         .WithMany("FacilityExtras")
                         .HasForeignKey("FacilityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_facility_extra_facility_facility_id");
 
-                    b.HasOne("Online.Entities.User", "User")
+                    b.HasOne("Club.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1830,16 +1830,16 @@ namespace Online.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Online.Entities.Outlet", b =>
+            modelBuilder.Entity("Club.Entities.Outlet", b =>
                 {
-                    b.HasOne("Online.Entities.Business", "Business")
+                    b.HasOne("Club.Entities.Business", "Business")
                         .WithMany("Outlets")
                         .HasForeignKey("BusinessId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_outlet_business_business_id");
 
-                    b.HasOne("Online.Entities.OutletType", "OutletType")
+                    b.HasOne("Club.Entities.OutletType", "OutletType")
                         .WithMany()
                         .HasForeignKey("OutletTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1851,9 +1851,9 @@ namespace Online.Data.Migrations
                     b.Navigation("OutletType");
                 });
 
-            modelBuilder.Entity("Online.Entities.Payment", b =>
+            modelBuilder.Entity("Club.Entities.Payment", b =>
                 {
-                    b.HasOne("Online.Entities.PaymentStatus", "PaymentStatus")
+                    b.HasOne("Club.Entities.PaymentStatus", "PaymentStatus")
                         .WithMany()
                         .HasForeignKey("PaymentStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1863,9 +1863,9 @@ namespace Online.Data.Migrations
                     b.Navigation("PaymentStatus");
                 });
 
-            modelBuilder.Entity("Online.Entities.Resource", b =>
+            modelBuilder.Entity("Club.Entities.Resource", b =>
                 {
-                    b.HasOne("Online.Entities.Facility", "Facility")
+                    b.HasOne("Club.Entities.Facility", "Facility")
                         .WithMany("Resources")
                         .HasForeignKey("FacilityId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1875,14 +1875,14 @@ namespace Online.Data.Migrations
                     b.Navigation("Facility");
                 });
 
-            modelBuilder.Entity("Online.Entities.Slot", b =>
+            modelBuilder.Entity("Club.Entities.Slot", b =>
                 {
-                    b.HasOne("Online.Entities.Facility", "Facility")
+                    b.HasOne("Club.Entities.Facility", "Facility")
                         .WithMany("Slots")
                         .HasForeignKey("FacilityId")
                         .HasConstraintName("fk_slot_facility_facility_id");
 
-                    b.HasOne("Online.Entities.Resource", "Resource")
+                    b.HasOne("Club.Entities.Resource", "Resource")
                         .WithMany("Slots")
                         .HasForeignKey("ResourceId")
                         .HasConstraintName("fk_slot_resource_resource_id");
@@ -1892,33 +1892,33 @@ namespace Online.Data.Migrations
                     b.Navigation("Resource");
                 });
 
-            modelBuilder.Entity("Online.Entities.SlotBooking", b =>
+            modelBuilder.Entity("Club.Entities.SlotBooking", b =>
                 {
-                    b.HasOne("Online.Entities.BookingStatus", "BookingStatus")
+                    b.HasOne("Club.Entities.BookingStatus", "BookingStatus")
                         .WithMany()
                         .HasForeignKey("BookingStatusId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_slot_booking_booking_status_booking_status_id");
 
-                    b.HasOne("Online.Entities.Payment", "Payment")
+                    b.HasOne("Club.Entities.Payment", "Payment")
                         .WithMany()
                         .HasForeignKey("PaymentId")
                         .HasConstraintName("fk_slot_booking_payment_payment_id");
 
-                    b.HasOne("Online.Entities.SlotContract", "SlotContract")
+                    b.HasOne("Club.Entities.SlotContract", "SlotContract")
                         .WithMany()
                         .HasForeignKey("SlotContractId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_slot_booking_slot_contract_slot_contract_id");
 
-                    b.HasOne("Online.Entities.Slot", null)
+                    b.HasOne("Club.Entities.Slot", null)
                         .WithMany("SlotBookings")
                         .HasForeignKey("SlotId")
                         .HasConstraintName("fk_slot_booking_slot_slot_id");
 
-                    b.HasOne("Online.Entities.User", "User")
+                    b.HasOne("Club.Entities.User", "User")
                         .WithMany("SlotBookings")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1934,23 +1934,23 @@ namespace Online.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Online.Entities.SlotContract", b =>
+            modelBuilder.Entity("Club.Entities.SlotContract", b =>
                 {
-                    b.HasOne("Online.Entities.Contract", "Contract")
+                    b.HasOne("Club.Entities.Contract", "Contract")
                         .WithMany()
                         .HasForeignKey("ContractId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_slot_contract_contract_contract_id");
 
-                    b.HasOne("Online.Entities.Slot", "Slot")
+                    b.HasOne("Club.Entities.Slot", "Slot")
                         .WithMany("SlotContracts")
                         .HasForeignKey("SlotId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_slot_contract_slot_slot_id");
 
-                    b.HasOne("Online.Entities.Validation", "Validation")
+                    b.HasOne("Club.Entities.Validation", "Validation")
                         .WithMany()
                         .HasForeignKey("ValidationId")
                         .HasConstraintName("fk_slot_contract_validation_validation_id");
@@ -1962,16 +1962,16 @@ namespace Online.Data.Migrations
                     b.Navigation("Validation");
                 });
 
-            modelBuilder.Entity("Online.Entities.UserContract", b =>
+            modelBuilder.Entity("Club.Entities.UserContract", b =>
                 {
-                    b.HasOne("Online.Entities.Contract", "Contract")
+                    b.HasOne("Club.Entities.Contract", "Contract")
                         .WithMany()
                         .HasForeignKey("ContractId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_user_contract_contract_contract_id");
 
-                    b.HasOne("Online.Entities.User", "User")
+                    b.HasOne("Club.Entities.User", "User")
                         .WithMany("UserContracts")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1983,9 +1983,9 @@ namespace Online.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Online.Entities.UserRefreshToken", b =>
+            modelBuilder.Entity("Club.Entities.UserRefreshToken", b =>
                 {
-                    b.HasOne("Online.Entities.User", "User")
+                    b.HasOne("Club.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1995,22 +1995,22 @@ namespace Online.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Online.Entities.UserRole", b =>
+            modelBuilder.Entity("Club.Entities.UserRole", b =>
                 {
-                    b.HasOne("Online.Entities.Outlet", "Outlet")
+                    b.HasOne("Club.Entities.Outlet", "Outlet")
                         .WithMany()
                         .HasForeignKey("OutletId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_user_role_outlet_outlet_id");
 
-                    b.HasOne("Online.Entities.Role", "Role")
+                    b.HasOne("Club.Entities.Role", "Role")
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_user_role_asp_net_roles_role_id");
 
-                    b.HasOne("Online.Entities.User", null)
+                    b.HasOne("Club.Entities.User", null)
                         .WithMany("UserRoles")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2022,7 +2022,7 @@ namespace Online.Data.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("Online.Entities.Business", b =>
+            modelBuilder.Entity("Club.Entities.Business", b =>
                 {
                     b.Navigation("ContractFields");
 
@@ -2031,12 +2031,12 @@ namespace Online.Data.Migrations
                     b.Navigation("Outlets");
                 });
 
-            modelBuilder.Entity("Online.Entities.ContractField", b =>
+            modelBuilder.Entity("Club.Entities.ContractField", b =>
                 {
                     b.Navigation("ContractFieldConfigs");
                 });
 
-            modelBuilder.Entity("Online.Entities.Facility", b =>
+            modelBuilder.Entity("Club.Entities.Facility", b =>
                 {
                     b.Navigation("FacilityExtras");
 
@@ -2045,7 +2045,7 @@ namespace Online.Data.Migrations
                     b.Navigation("Slots");
                 });
 
-            modelBuilder.Entity("Online.Entities.Outlet", b =>
+            modelBuilder.Entity("Club.Entities.Outlet", b =>
                 {
                     b.Navigation("ContractOutlets");
 
@@ -2054,17 +2054,17 @@ namespace Online.Data.Migrations
                     b.Navigation("Facilities");
                 });
 
-            modelBuilder.Entity("Online.Entities.PaymentType", b =>
+            modelBuilder.Entity("Club.Entities.PaymentType", b =>
                 {
                     b.Navigation("Bills");
                 });
 
-            modelBuilder.Entity("Online.Entities.Resource", b =>
+            modelBuilder.Entity("Club.Entities.Resource", b =>
                 {
                     b.Navigation("Slots");
                 });
 
-            modelBuilder.Entity("Online.Entities.Slot", b =>
+            modelBuilder.Entity("Club.Entities.Slot", b =>
                 {
                     b.Navigation("ExtraBookings");
 
@@ -2073,7 +2073,7 @@ namespace Online.Data.Migrations
                     b.Navigation("SlotContracts");
                 });
 
-            modelBuilder.Entity("Online.Entities.User", b =>
+            modelBuilder.Entity("Club.Entities.User", b =>
                 {
                     b.Navigation("ExtraBookings");
 

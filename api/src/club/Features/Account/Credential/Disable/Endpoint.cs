@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Identity;
-using Online.Entities;
-using Online.Services;
+using Club.Entities;
+using Club.Services;
 
-namespace Online.Features.Account.Credential.Disable;
+namespace Club.Features.Account.Credential.Disable;
 
 public class Endpoint(ICustomKeycloakService keycloakService, UserManager<User> userManager) : Endpoint<CredentialDisableRequest>
 {

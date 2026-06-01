@@ -1,6 +1,6 @@
-using Online.Common.Models;
+using Club.Common.Models;
 
-namespace Online.Features.Outlet.GetAll;
+namespace Club.Features.Outlet.GetAll;
 
 public class OutletGetAllRequest : QueryModel
 {

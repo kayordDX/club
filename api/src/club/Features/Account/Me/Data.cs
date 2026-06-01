@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using Online.Data;
-using Online.Models;
+using Club.Data;
+using Club.Models;
 
-namespace Online.Features.Account.Me;
+namespace Club.Features.Account.Me;
 
 public static class Data
 {

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Caching.Hybrid;
 
-namespace Online.Data;
+namespace Club.Data;
 
 public class TicketStore(HybridCache cache) : ITicketStore
 {

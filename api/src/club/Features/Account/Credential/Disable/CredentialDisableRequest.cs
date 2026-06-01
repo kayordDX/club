@@ -1,4 +1,4 @@
-namespace Online.Features.Account.Credential.Disable;
+namespace Club.Features.Account.Credential.Disable;
 
 public class CredentialDisableRequest
 {

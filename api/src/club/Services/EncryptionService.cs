@@ -1,9 +1,9 @@
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Options;
-using Online.Common.Config;
+using Club.Common.Config;
 
-namespace Online.Services;
+namespace Club.Services;
 
 public class EncryptionService
 {

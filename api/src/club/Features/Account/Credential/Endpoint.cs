@@ -1,7 +1,7 @@
 using Keycloak.AuthServices.Sdk.Admin;
-using Online.Common;
+using Club.Common;
 
-namespace Online.Features.Account.Credential;
+namespace Club.Features.Account.Credential;
 
 public class Endpoint(IKeycloakUserClient keycloakUserClient) : EndpointWithoutRequest<AccountCredentialResponse>
 {

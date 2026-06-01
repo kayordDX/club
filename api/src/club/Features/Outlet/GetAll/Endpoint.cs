@@ -1,8 +1,8 @@
-using Online.Common.Extensions;
-using Online.Common.Models;
-using Online.Data;
+using Club.Common.Extensions;
+using Club.Common.Models;
+using Club.Data;
 
-namespace Online.Features.Outlet.GetAll;
+namespace Club.Features.Outlet.GetAll;
 
 public class Endpoint(AppDbContext dbContext) : Endpoint<OutletGetAllRequest, PaginatedList<Entities.Outlet>>
 {

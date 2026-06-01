@@ -1,4 +1,4 @@
-namespace Online.Features.Account.Sync;
+namespace Club.Features.Account.Sync;
 
 public class AccountSyncRequest
 {

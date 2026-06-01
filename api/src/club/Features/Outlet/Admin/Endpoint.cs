@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using Online.Data;
-using Online.DTO;
+using Club.Data;
+using Club.DTO;
 
-namespace Online.Features.Outlet.Admin;
+namespace Club.Features.Outlet.Admin;
 
 public class Endpoint(AppDbContext dbContext) : Endpoint<OutletAdminGetRequest, OutletDTO>
 {

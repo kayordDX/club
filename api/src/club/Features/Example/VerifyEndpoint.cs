@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Identity;
-using Online.Data;
-using Online.Entities;
+using Club.Data;
+using Club.Entities;
 
-namespace Online.Features.Example;
+namespace Club.Features.Example;
 
 public class VerifyEndpoint(AppDbContext dbContext, UserManager<User> userManager) : Endpoint<ExampleRequest, bool>
 {

@@ -1,4 +1,4 @@
-namespace Online.Features.Account.Session.Revoke;
+namespace Club.Features.Account.Session.Revoke;
 
 public class AccountSessionRevokeRequest
 {

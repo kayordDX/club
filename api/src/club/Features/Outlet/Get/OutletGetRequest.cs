@@ -1,4 +1,4 @@
-namespace Online.Features.Outlet.Get;
+namespace Club.Features.Outlet.Get;
 
 public class OutletGetRequest
 {

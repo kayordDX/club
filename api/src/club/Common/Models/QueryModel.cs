@@ -1,4 +1,4 @@
-namespace Online.Common.Models;
+namespace Club.Common.Models;
 
 public class QueryModel
 {

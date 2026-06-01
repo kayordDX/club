@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Online.Data;
+using Club.Data;
 using Testcontainers.PostgreSql;
 
 namespace IntegrationTests.Fixtures;
@@ -23,9 +23,9 @@ public class AppFixture : AppFixture<Program>, IAsyncLifetime
     protected override async ValueTask PreSetupAsync()
     {
         // Start PostgreSQL TestContainer
-        _dbContainer = new PostgreSqlBuilder("postgres:17")
-            .WithImage("postgres:17")
-            .WithDatabase("online_test")
+        _dbContainer = new PostgreSqlBuilder("postgres:18")
+            .WithImage("postgres:18")
+            .WithDatabase("club_test")
             .WithUsername("postgres")
             .WithPassword("postgres")
             .Build();

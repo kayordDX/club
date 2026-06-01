@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Identity;
-using Online.Entities;
+using Club.Entities;
 
-namespace Online.Services;
+namespace Club.Services;
 
 public class CurrentUserService(UserManager<User> userManager, IHttpContextAccessor httpContextAccessor)
 {

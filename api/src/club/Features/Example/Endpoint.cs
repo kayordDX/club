@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Online.Data;
-using Online.Entities;
+using Club.Data;
+using Club.Entities;
 
-namespace Online.Features.Example;
+namespace Club.Features.Example;
 
 public class Endpoint : EndpointWithoutRequest<string>
 {

@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Online.Data.Config;
+namespace Club.Data.Config;
 
 public class IdentityUserPasskeyConfig : IEntityTypeConfiguration<IdentityUserPasskey<Guid>>
 {

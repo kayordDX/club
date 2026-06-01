@@ -1,8 +1,8 @@
 using Keycloak.AuthServices.Sdk.Admin;
 using Microsoft.Extensions.Options;
-using Online.Common.Config;
+using Club.Common.Config;
 
-namespace Online.Services;
+namespace Club.Services;
 
 public interface ICustomKeycloakService
 {
