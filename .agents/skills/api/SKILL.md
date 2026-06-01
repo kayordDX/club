@@ -1,11 +1,11 @@
 ---
 name: api
-description: Use this skill for API and backend work in the Online project. Apply it when creating, editing, reviewing, or debugging FastEndpoints code under `api/src/online/Features/`, and whenever a request mentions the API, backend, endpoints, DTOs, EF, or client generation.
+description: Use this skill for API and backend work in the Club project. Apply it when creating, editing, reviewing, or debugging FastEndpoints code under `api/src/club/Features/`, and whenever a request mentions the API, backend, endpoints, DTOs, EF, or client generation.
 ---
 
 # API Skill
 
-Use this skill for Online API and backend work.
+Use this skill for Club API and backend work.
 
 Reach for it when the task mentions any of the following:
 
@@ -21,19 +21,19 @@ Reach for it when the task mentions any of the following:
 ## What This Project Uses
 
 - Backend framework: FastEndpoints on .NET 10
-- API code location: `api/src/online/Features/`
-- Shared DTO location: `api/src/online/DTO/`
-- Entities: `api/src/online/Entities/`
-- Service registration: `api/src/online/Common/Extensions/`
+- API code location: `api/src/club/Features/`
+- Shared DTO location: `api/src/club/DTO/`
+- Entities: `api/src/club/Entities/`
+- Service registration: `api/src/club/Common/Extensions/`
 - Dev API docs: `http://localhost:5000/scalar/v1`
 
 ## Core Rules
 
-- Keep API work feature-based under `api/src/online/Features/`
+- Keep API work feature-based under `api/src/club/Features/`
 - Use file-scoped namespaces
 - Name endpoint files `Endpoint.cs`
 - Put request models next to the endpoint in the same action folder
-- Keep DTOs in `api/src/online/DTO/` unless there is a clear local-only reason not to
+- Keep DTOs in `api/src/club/DTO/` unless there is a clear local-only reason not to
 - Pass `CancellationToken` through async database and service calls
 - Add `Description(x => x.WithName("FeatureAction"))` in `Configure()`
 - Prefer generated frontend clients over manual HTTP calls; regenerate after API changes
@@ -43,7 +43,7 @@ Reach for it when the task mentions any of the following:
 Use this structure for new endpoints:
 
 ```text
-api/src/online/Features/
+api/src/club/Features/
 └── FeatureName/
     └── ActionName/
         ├── Endpoint.cs
@@ -86,10 +86,10 @@ Choose the smallest FastEndpoints base type that fits:
 
 ```csharp
 using Microsoft.EntityFrameworkCore;
-using Online.Data;
-using Online.DTO;
+using Club.Data;
+using Club.DTO;
 
-namespace Online.Features.Outlet.Get;
+namespace Club.Features.Outlet.Get;
 
 public class Endpoint(AppDbContext dbContext) : Endpoint<OutletGetRequest, OutletDTO>
 {
@@ -122,7 +122,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<OutletGetRequest, Outle
 ## Request DTO Template
 
 ```csharp
-namespace Online.Features.Outlet.Get;
+namespace Club.Features.Outlet.Get;
 
 public class OutletGetRequest
 {
@@ -204,7 +204,7 @@ Use one or more of these checks:
 Useful commands:
 
 ```bash
-dotnet build api/src/online/online.csproj
+dotnet build api/src/club/club.csproj
 dotnet test api/tests/
 ```
 
@@ -245,7 +245,7 @@ public override void Configure()
 No-request endpoint:
 
 ```csharp
-namespace Online.Features.Account.Me;
+namespace Club.Features.Account.Me;
 
 public class Endpoint(AppDbContext dbContext) : EndpointWithoutRequest<UserModel?>
 {

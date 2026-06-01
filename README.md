@@ -25,33 +25,33 @@ dotnet list package --outdated
 dotnet package update
 
 # ef
-dotnet ef migrations add InitTables --project src/online/online.csproj -c AppDbContext -o ./Data/Migrations
-dotnet ef migrations remove --project src/online/online.csproj
+dotnet ef migrations add InitTables --project src/club/club.csproj -c AppDbContext -o ./Data/Migrations
+dotnet ef migrations remove --project src/club/club.csproj
 
 # remove
-dotnet ef migrations remove --project src/online/online.csproj -c AppDbContext -o ./Data/Migrations
+dotnet ef migrations remove --project src/club/club.csproj -c AppDbContext -o ./Data/Migrations
 
 # list dbContexts
-dotnet ef dbcontext list --project src/online/online.csproj --startup-project src/online/online.csproj
+dotnet ef dbcontext list --project src/club/club.csproj --startup-project src/club/club.csproj
 
 # TickerQ
-dotnet ef migrations add TickerQInit --project src/online/online.csproj -c TickerQDbContext -o ./Data/TickerQMigrations
+dotnet ef migrations add TickerQInit --project src/club/club.csproj -c TickerQDbContext -o ./Data/TickerQMigrations
 
 # squash migrations
-dotnet steward squash api/src/online/Data/Migrations
+dotnet steward squash api/src/club/Data/Migrations
 ```
 
 ### Secrets
 
 ```bash
-dotnet user-secrets init --project api/src/online
-dotnet user-secrets set "Authentication:Google:ClientId" "secret" --project api/src/online
-dotnet user-secrets set "Authentication:Google:ClientSecret" "secret" --project api/src/online
+dotnet user-secrets init --project api/src/club
+dotnet user-secrets set "Authentication:Google:ClientId" "secret" --project api/src/club
+dotnet user-secrets set "Authentication:Google:ClientSecret" "secret" --project api/src/club
 
-dotnet user-secrets set "AWS:AccessKeyId" "secret" --project api/src/online
-dotnet user-secrets set "AWS:SecretAccessKey" "secret" --project api/src/online
+dotnet user-secrets set "AWS:AccessKeyId" "secret" --project api/src/club
+dotnet user-secrets set "AWS:SecretAccessKey" "secret" --project api/src/club
 
-dotnet user-secrets list --project api/src/online
+dotnet user-secrets list --project api/src/club
 ```
 
 ## Client (Front End)
@@ -75,12 +75,12 @@ pnpm dev
 
 ```mermaid
 architecture-beta
-    group online(server)[Online]
+    group club(server)[Club]
 
-    service db(database)[Postgres] in online
-    service redis(database)[Redis] in online
-    service api(server)[api] in online
-    service svelte(internet)[Svelte] in online
+    service db(database)[Postgres] in club
+    service redis(database)[Redis] in club
+    service api(server)[api] in club
+    service svelte(internet)[Svelte] in club
 
     svelte:B -- T:api
     db:L -- R:api

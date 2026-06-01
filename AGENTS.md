@@ -3,14 +3,14 @@
 ## Project Overview
 
 - Monorepo with two main apps:
-  - `api/` - .NET 10 FastEndpoints backend in `api/src/online/`
+  - `api/` - .NET 10 FastEndpoints backend in `api/src/club/`
   - `client/` - SvelteKit 5 frontend with TypeScript in `client/src/`
 - Purpose: public booking and member login system with Google OAuth authentication
 
 ## Available Skills
 
 - `ui` - Use for `@kayord/ui` / shadcn-svelte components, trigger patterns, forms, inputs, dialogs, dropdowns, and related frontend UI composition.
-- `api` - Use for API and backend work including FastEndpoints, endpoint structure, backend conventions, service registration, EF patterns, and API debugging in `api/src/online/Features/`.
+- `api` - Use for API and backend work including FastEndpoints, endpoint structure, backend conventions, service registration, EF patterns, and API debugging in `api/src/club/Features/`.
 - `svelte-core-bestpractices` - Use for modern Svelte 5 patterns, reactivity, composition, styling, and performance guidance.
 - `svelte-code-writer` - Use for Svelte documentation lookup and code analysis whenever creating, editing, or reviewing `.svelte`, `.svelte.ts`, or `.svelte.js` files.
 
@@ -18,7 +18,7 @@ Prefer these skills instead of duplicating their detailed instructions here.
 
 ## Commands
 
-- See `api/src/online/online.csproj`, `api/tests/`, `client/package.json`, and VS Code tasks for available build, test, lint, preview, API generation, and migration commands.
+- See `api/src/club/club.csproj`, `api/tests/`, `client/package.json`, and VS Code tasks for available build, test, lint, preview, API generation, and migration commands.
 
 ## Code Style Guidelines
 
@@ -108,7 +108,7 @@ const usersQuery = createQuery({
 ### Backend (C# .NET)
 
 - Use file-scoped namespaces
-- Keep feature-based organization under `api/src/online/Features/`
+- Keep feature-based organization under `api/src/club/Features/`
 - Keep entities singular and PascalCase
 - Use DTOs from the dedicated `DTO/` area
 - For endpoint structure, service registration, EF conventions, and backend implementation details, use the `api` skill
@@ -123,7 +123,7 @@ const usersQuery = createQuery({
 
 ### Adding New API Endpoint
 
-1. Create the endpoint in `api/src/online/Features/{FeatureName}/`
+1. Create the endpoint in `api/src/club/Features/{FeatureName}/`
 2. Register any required services in `Common/Extensions/`
 3. Regenerate the frontend API client from `client/`
 4. Update frontend usage as needed
@@ -142,7 +142,7 @@ For `@kayord/ui` component work, use the `ui` skill.
 
 ### Database Changes
 
-1. Modify entities in `api/src/online/Entities/`
+1. Modify entities in `api/src/club/Entities/`
 2. Add a migration with the normal EF workflow
 3. Update the database
 

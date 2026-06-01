@@ -1,0 +1,28 @@
+using Microsoft.EntityFrameworkCore;
+using Club.Data;
+using Club.DTO;
+
+namespace Club.Features.Outlet.Get;
+
+public class Endpoint(AppDbContext dbContext) : Endpoint<OutletGetRequest, OutletDTO>
+{
+    private readonly AppDbContext _dbContext = dbContext;
+
+    public override void Configure()
+    {
+        Get("/outlet/{slug}");
+        Description(x => x.WithName("OutletGet"));
+        AllowAnonymous();
+    }
+
+    public override async Task HandleAsync(OutletGetRequest req, CancellationToken ct)
+    {
+        var results = await _dbContext.Outlet.ProjectToDto().FirstOrDefaultAsync(x => x.Slug == req.Slug, ct);
+        if (results == null)
+        {
+            await Send.NotFoundAsync(ct);
+            return;
+        }
+        await Send.OkAsync(results, ct);
+    }
+}

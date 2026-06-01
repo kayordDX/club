@@ -9,7 +9,7 @@ bin/
 Logs/
 .idea/
 .vs
-api/src/online/bin*
+api/src/club/bin*
 
 # Playwright screenshots
 **/__screenshots/

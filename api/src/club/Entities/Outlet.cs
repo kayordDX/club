@@ -1,0 +1,26 @@
+namespace Club.Entities;
+
+public class Outlet : AuditableEntity
+{
+    public int Id { get; set; }
+    public required string Slug { get; set; }
+    public required string Name { get; set; }
+    public int BusinessId { get; set; }
+    public required Business Business { get; set; }
+    public required string VatNumber { get; set; }
+    public string? Logo { get; set; }
+    public string? Address { get; set; }
+    public string? Description { get; set; }
+    public string? Registration { get; set; }
+    public string? Tags { get; set; }
+    public string? Contact { get; set; }
+    public string? Email { get; set; }
+    public string? OperatingHours { get; set; }
+    public required string DisplayName { get; set; }
+    public int OutletTypeId { get; set; }
+    public OutletType OutletType { get; set; } = default!;
+    public bool IsActive { get; set; }
+    public ICollection<Facility> Facilities { get; set; } = [];
+    public ICollection<Extra> Extras { get; set; } = [];
+    public ICollection<ContractOutlet> ContractOutlets { get; set; } = [];
+}

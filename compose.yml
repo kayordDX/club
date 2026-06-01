@@ -20,9 +20,9 @@ services:
       - 5432:5432
     restart: unless-stopped
     environment:
-      POSTGRES_DB: online
-      POSTGRES_USER: online
-      POSTGRES_PASSWORD: online
+      POSTGRES_DB: club
+      POSTGRES_USER: club
+      POSTGRES_PASSWORD: club
     volumes:
       - pgdata:/var/lib/postgresql/18/docker
     command: |
@@ -40,7 +40,7 @@ services:
     image: redis:latest
     restart: unless-stopped
     environment:
-      REDIS_PASSWORD: online
+      REDIS_PASSWORD: club
     volumes:
       - redis:/data
     ports:
@@ -50,7 +50,7 @@ services:
       --save 60 1
       --appendonly yes
       --appendfsync everysec
-      --requirepass online
+      --requirepass club
 
   aspire-dashboard:
     image: "mcr.microsoft.com/dotnet/nightly/aspire-dashboard:latest"
@@ -70,8 +70,8 @@ services:
       # KC_PROXY_HEADERS: xforwarded
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
-      KC_DB_USERNAME: online
-      KC_DB_PASSWORD: online
+      KC_DB_USERNAME: club
+      KC_DB_PASSWORD: club
       KC_HTTP_ENABLED: "true"
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin

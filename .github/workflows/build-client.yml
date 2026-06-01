@@ -52,4 +52,4 @@ jobs:
           context: ./client
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: ghcr.io/kayorddx/online:latest, ghcr.io/kayorddx/online:${{ github.sha }}
+          tags: ghcr.io/kayorddx/club:latest, ghcr.io/kayorddx/club:${{ github.sha }}

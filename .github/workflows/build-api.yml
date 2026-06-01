@@ -30,4 +30,4 @@ jobs:
           context: ./api
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: ghcr.io/kayorddx/online-api:latest, ghcr.io/kayorddx/online-api:${{ github.sha }}
+          tags: ghcr.io/kayorddx/club-api:latest, ghcr.io/kayorddx/club-api:${{ github.sha }}

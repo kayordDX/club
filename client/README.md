@@ -1,4 +1,4 @@
-# Online Front End
+# Club Front End
 
 ### Icons
 https://studio.lucide.dev/
