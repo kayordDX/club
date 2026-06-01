@@ -21,7 +21,7 @@ public static class NetworkExtensions
             // docker network inspect kayord_default | grep Subnet
             options.KnownIPNetworks.Clear();
             options.KnownProxies.Clear();
-            options.KnownIPNetworks.Add(new System.Net.IPNetwork(System.Net.IPAddress.Parse(appConfig.DockerSubnet), 12));
+            // options.KnownIPNetworks.Add(new System.Net.IPNetwork(System.Net.IPAddress.Parse(appConfig.DockerSubnet), 12));
             options.ForwardLimit = 1;
         });
 
