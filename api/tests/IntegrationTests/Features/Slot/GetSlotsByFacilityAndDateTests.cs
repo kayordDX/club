@@ -1,8 +1,8 @@
-using Online.Entities;
-using Online.Data;
+using Club.Entities;
+using Club.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Online.Features.Slot.GetAll;
+using Club.Features.Slot.GetAll;
 
 namespace IntegrationTests.Features.Slot;
 
@@ -62,7 +62,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             Date = new DateTime(today.Year, today.Month, today.Day, 0, 0, 0, DateTimeKind.Utc)
         };
 
-        var slot = new Online.Entities.Slot
+        var slot = new Club.Entities.Slot
         {
             Id = Guid.NewGuid(),
             FacilityId = facility.Id,
@@ -113,7 +113,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
         var tomorrow = today.AddDays(1);
 
         // Create slots for different dates
-        var slotToday = new Online.Entities.Slot
+        var slotToday = new Club.Entities.Slot
         {
             Id = Guid.NewGuid(),
             FacilityId = facility.Id,
@@ -121,7 +121,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             EndDatetime = new DateTime(today.Year, today.Month, today.Day, 11, 0, 0, DateTimeKind.Utc)
         };
 
-        var slotTomorrow = new Online.Entities.Slot
+        var slotTomorrow = new Club.Entities.Slot
         {
             Id = Guid.NewGuid(),
             FacilityId = facility.Id,
@@ -184,7 +184,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
         var today = DateTime.UtcNow.Date;
 
         // Create multiple slots for the same day
-        var slot1 = new Online.Entities.Slot
+        var slot1 = new Club.Entities.Slot
         {
             Id = Guid.NewGuid(),
             FacilityId = facility.Id,
@@ -192,7 +192,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             EndDatetime = new DateTime(today.Year, today.Month, today.Day, 11, 0, 0, DateTimeKind.Utc)
         };
 
-        var slot2 = new Online.Entities.Slot
+        var slot2 = new Club.Entities.Slot
         {
             Id = Guid.NewGuid(),
             FacilityId = facility.Id,
@@ -200,7 +200,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             EndDatetime = new DateTime(today.Year, today.Month, today.Day, 15, 0, 0, DateTimeKind.Utc)
         };
 
-        var slot3 = new Online.Entities.Slot
+        var slot3 = new Club.Entities.Slot
         {
             Id = Guid.NewGuid(),
             FacilityId = facility.Id,
@@ -260,7 +260,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
         await db.SaveChangesAsync(app.Context.CancellationToken);
 
         var today = DateTime.UtcNow.Date;
-        var slot = new Online.Entities.Slot
+        var slot = new Club.Entities.Slot
         {
             Id = Guid.NewGuid(),
             FacilityId = facility.Id,
@@ -341,7 +341,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
 
         var today = DateTime.UtcNow.Date;
 
-        var slot1 = new Online.Entities.Slot
+        var slot1 = new Club.Entities.Slot
         {
             Id = Guid.NewGuid(),
             FacilityId = facility1.Id,
@@ -349,7 +349,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             EndDatetime = new DateTime(today.Year, today.Month, today.Day, 11, 0, 0, DateTimeKind.Utc)
         };
 
-        var slot2 = new Online.Entities.Slot
+        var slot2 = new Club.Entities.Slot
         {
             Id = Guid.NewGuid(),
             FacilityId = facility2.Id,
