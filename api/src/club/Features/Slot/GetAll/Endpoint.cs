@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using Online.Data;
+using Club.Data;
 
-namespace Online.Features.Slot.GetAll;
+namespace Club.Features.Slot.GetAll;
 
 public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List<SlotGetAllResponse>>
 {

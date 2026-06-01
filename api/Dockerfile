@@ -8,17 +8,17 @@ USER app
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG configuration=Release
 WORKDIR /src
-COPY ["src/online/online.csproj", "Directory.Build.props", "Directory.Packages.props", "src/online/"]
-RUN dotnet restore "src/online/online.csproj"
+COPY ["src/club/club.csproj", "Directory.Build.props", "Directory.Packages.props", "src/club/"]
+RUN dotnet restore "src/club/club.csproj"
 COPY . .
-WORKDIR "/src/src/online"
-RUN dotnet build "online.csproj" -c $configuration -o /app/build
+WORKDIR "/src/src/club"
+RUN dotnet build "club.csproj" -c $configuration -o /app/build
 
 FROM build AS publish
 ARG configuration=Release
-RUN dotnet publish "online.csproj" -c $configuration -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "club.csproj" -c $configuration -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "online.dll"]
+ENTRYPOINT ["dotnet", "club.dll"]

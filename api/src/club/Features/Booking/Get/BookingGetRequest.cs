@@ -1,4 +1,4 @@
-namespace Online.Features.Booking.Get;
+namespace Club.Features.Booking.Get;
 
 public class BookingGetRequest
 {

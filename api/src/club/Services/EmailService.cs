@@ -1,11 +1,11 @@
 using System.Text.Json;
-using Online.Data;
-using Online.Entities;
-using Online.Models;
+using Club.Data;
+using Club.Entities;
+using Club.Models;
 using TickerQ.Utilities.Entities;
 using TickerQ.Utilities.Interfaces.Managers;
 
-namespace Online.Services;
+namespace Club.Services;
 
 public interface IEmailService
 {

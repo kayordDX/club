@@ -1,6 +1,6 @@
-using Online.Services;
+using Club.Services;
 
-namespace Online.Common.Extensions;
+namespace Club.Common.Extensions;
 
 public static class GeneralExtensions
 {

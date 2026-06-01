@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 
-namespace Online.Entities;
+namespace Club.Entities;
 
 public class UserRole : IdentityUserRole<Guid>
 {

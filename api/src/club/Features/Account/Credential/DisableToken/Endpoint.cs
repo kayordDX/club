@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Identity;
-using Online.Common;
-using Online.Entities;
-using Online.Models;
-using Online.Services;
+using Club.Common;
+using Club.Entities;
+using Club.Models;
+using Club.Services;
 
-namespace Online.Features.Account.Credential.DisableToken;
+namespace Club.Features.Account.Credential.DisableToken;
 
 public class Endpoint(UserManager<User> userManager, IEmailService emailService) : EndpointWithoutRequest
 {

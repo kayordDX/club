@@ -1,4 +1,4 @@
-namespace Online.Features.Outlet.Admin;
+namespace Club.Features.Outlet.Admin;
 
 public class OutletAdminGetRequest
 {

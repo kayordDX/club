@@ -4,12 +4,12 @@ using MailKit.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using Online.Common.Config;
-using Online.Data;
-using Online.Models;
+using Club.Common.Config;
+using Club.Data;
+using Club.Models;
 using TickerQ.Utilities.Base;
 
-namespace Online.Jobs;
+namespace Club.Jobs;
 
 public class EmailJob(AppDbContext dbContext, IOptions<EmailConfig> emailConfig)
 {

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.HttpOverrides;
-using Online.Common.Config;
+using Club.Common.Config;
 
-namespace Online.Common.Extensions;
+namespace Club.Common.Extensions;
 
 public static class NetworkExtensions
 {

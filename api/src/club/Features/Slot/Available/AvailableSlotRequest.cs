@@ -1,4 +1,4 @@
-namespace Online.Features.Slot.Available;
+namespace Club.Features.Slot.Available;
 
 public class AvailableSlotRequest
 {

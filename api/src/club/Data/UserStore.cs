@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Online.Entities;
+using Club.Entities;
 
-namespace Online.Data;
+namespace Club.Data;
 
 public class UserStore(AppDbContext context, IdentityErrorDescriber? describer = null) : UserStore<User, Role, AppDbContext, Guid, IdentityUserClaim<Guid>, UserRole, IdentityUserLogin<Guid>, IdentityUserToken<Guid>, IdentityRoleClaim<Guid>>(context, describer)
 {

@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using Online.Data;
-using Online.DTO;
+using Club.Data;
+using Club.DTO;
 
-namespace Online.Features.Outlet.Get;
+namespace Club.Features.Outlet.Get;
 
 public class Endpoint(AppDbContext dbContext) : Endpoint<OutletGetRequest, OutletDTO>
 {

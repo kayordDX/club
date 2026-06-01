@@ -1,4 +1,4 @@
-namespace Online.Features.Booking.Create;
+namespace Club.Features.Booking.Create;
 
 public class BookingCreateRequest
 {

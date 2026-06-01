@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using Online.Data;
-using Online.DTO;
+using Club.Data;
+using Club.DTO;
 
-namespace Online.Features.Facility.Get;
+namespace Club.Features.Facility.Get;
 
 public class Endpoint(AppDbContext dbContext) : Endpoint<FacilityGetRequest, FacilityDTO>
 {

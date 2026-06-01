@@ -2,11 +2,11 @@ using Keycloak.AuthServices.Sdk.Admin;
 using Keycloak.AuthServices.Sdk.Admin.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using Online.Common;
-using Online.Common.Config;
-using Online.Entities;
+using Club.Common;
+using Club.Common.Config;
+using Club.Entities;
 
-namespace Online.Features.Account.Sync;
+namespace Club.Features.Account.Sync;
 
 public class Endpoint(IKeycloakUserClient keycloakUserClient, IOptions<KeycloakConfig> keycloakConfig, UserManager<User> userManager) : Endpoint<AccountSyncRequest>
 {

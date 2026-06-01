@@ -1,9 +1,9 @@
 using Keycloak.AuthServices.Sdk.Kiota.Admin;
 using Microsoft.Extensions.Options;
-using Online.Common;
-using Online.Common.Config;
+using Club.Common;
+using Club.Common.Config;
 
-namespace Online.Features.Account.Session;
+namespace Club.Features.Account.Session;
 
 public class Endpoint(KeycloakAdminApiClient keycloakAdminClient, IOptions<KeycloakConfig> keycloakConfig) : EndpointWithoutRequest<List<AccountSessionResponse>>
 {

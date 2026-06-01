@@ -1,6 +1,6 @@
 using Riok.Mapperly.Abstractions;
 
-namespace Online.DTO;
+namespace Club.DTO;
 
 [Mapper]
 public static partial class Mapper

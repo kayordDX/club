@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using Online.Data;
+using Club.Data;
 
-namespace Online.Features.Extra.GetFacility;
+namespace Club.Features.Extra.GetFacility;
 
 public class Endpoint(AppDbContext dbContext) : Endpoint<ExtraGetFacilityRequest, List<Entities.Extra>>
 {

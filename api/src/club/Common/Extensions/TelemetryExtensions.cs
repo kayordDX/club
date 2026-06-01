@@ -4,7 +4,7 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
-namespace Online.Common.Extensions;
+namespace Club.Common.Extensions;
 
 public static class TelemetryExtensions
 {
@@ -20,7 +20,7 @@ public static class TelemetryExtensions
     public static void ConfigureTelemetry(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddOpenTelemetry()
-            .ConfigureResource(r => r.AddService("OnlineApi"))
+            .ConfigureResource(r => r.AddService("ClubApi"))
             .WithMetrics(metrics => metrics
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()

@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
-using Online.Data;
+using Club.Data;
 using TickerQ.Dashboard.DependencyInjection;
 using TickerQ.DependencyInjection;
 using TickerQ.EntityFrameworkCore.DbContextFactory;
 using TickerQ.EntityFrameworkCore.DependencyInjection;
 
-namespace Online.Common.Extensions;
+namespace Club.Common.Extensions;
 
 public static class TickerExtensions
 {

@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using Online.Common;
-using Online.Common.Enums;
-using Online.Entities;
+using Club.Common;
+using Club.Common.Enums;
+using Club.Entities;
 
-namespace Online.Data;
+namespace Club.Data;
 
 public static class SeedDbContext
 {

@@ -2,10 +2,10 @@ using System.Security.Claims;
 using System.Threading.RateLimiting;
 using FastEndpoints.Swagger;
 using NSwag;
-using Online.Common.Config;
+using Club.Common.Config;
 using Scalar.AspNetCore;
 
-namespace Online.Common.Extensions;
+namespace Club.Common.Extensions;
 
 public static class ApiExtensions
 {

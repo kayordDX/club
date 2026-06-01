@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace Online.Common.Models;
+namespace Club.Common.Models;
 
 public class PaginatedList<T>
 {

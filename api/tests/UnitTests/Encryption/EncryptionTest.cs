@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Options;
-using Online.Common.Config;
-using Online.Services;
+using Club.Common.Config;
+using Club.Services;
 
 namespace UnitTests.Encryption;
 

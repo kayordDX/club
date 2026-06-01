@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 
-namespace Online.Common.Auth;
+namespace Club.Common.Auth;
 
 public class OutletRoleTypeRequirement(string roleType) : IAuthorizationRequirement
 {

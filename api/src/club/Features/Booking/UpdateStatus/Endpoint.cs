@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using Online.Common.Enums;
-using Online.Data;
+using Club.Common.Enums;
+using Club.Data;
 
-namespace Online.Features.Booking.UpdateStatus;
+namespace Club.Features.Booking.UpdateStatus;
 
 public class Endpoint(AppDbContext dbContext) : Endpoint<BookingUpdateStatusRequest>
 {

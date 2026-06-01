@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace Online.Data.Migrations
+namespace Club.Data.Migrations
 {
     /// <inheritdoc />
     public partial class RenameOpenIddictTables : Migration

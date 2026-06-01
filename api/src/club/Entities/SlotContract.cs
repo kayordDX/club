@@ -1,4 +1,4 @@
-namespace Online.Entities;
+namespace Club.Entities;
 
 public class SlotContract : AuditableEntity
 {

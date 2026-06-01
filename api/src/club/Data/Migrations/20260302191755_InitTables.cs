@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Online.Data.Migrations
+namespace Club.Data.Migrations
 {
     /// <inheritdoc />
     public partial class InitTables : Migration

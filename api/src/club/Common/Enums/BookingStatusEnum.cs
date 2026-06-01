@@ -1,4 +1,4 @@
-namespace Online.Common.Enums;
+namespace Club.Common.Enums;
 
 public enum BookingStatusEnum
 {

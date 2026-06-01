@@ -1,4 +1,4 @@
-namespace Online.Features.Outlet.GetBasic;
+namespace Club.Features.Outlet.GetBasic;
 
 public class OutletGetBasicRequest
 {

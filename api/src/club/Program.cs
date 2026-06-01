@@ -1,4 +1,4 @@
-﻿using Online.Common.Extensions;
+﻿using Club.Common.Extensions;
 using TickerQ.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);

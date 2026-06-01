@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 
-namespace Online.Common.Auth;
+namespace Club.Common.Auth;
 
 public class RoleTypeHandler : AuthorizationHandler<RoleTypeRequirement>
 {

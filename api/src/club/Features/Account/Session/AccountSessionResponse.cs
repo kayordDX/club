@@ -1,7 +1,7 @@
 
 using Keycloak.AuthServices.Sdk.Kiota.Admin.Models;
 
-namespace Online.Features.Account.Session;
+namespace Club.Features.Account.Session;
 
 public class AccountSessionResponse
 {

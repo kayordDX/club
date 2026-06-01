@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using Online.Common.Enums;
-using Online.Data;
+using Club.Common.Enums;
+using Club.Data;
 using TickerQ.Utilities.Base;
 
-namespace Online.Jobs;
+namespace Club.Jobs;
 
 public class FunctionJob(AppDbContext dbContext)
 {

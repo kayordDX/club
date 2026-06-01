@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using Online.Data;
-using Online.Entities;
+using Club.Data;
+using Club.Entities;
 using Microsoft.AspNetCore.Identity;
 
-namespace Online.Features.Account.Role;
+namespace Club.Features.Account.Role;
 
 public class Endpoint(UserManager<User> userManager, UserStore userStore) : Endpoint<UserRoleRequest, bool>
 {

@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using Online.Common.Models;
+using Club.Common.Models;
 using QueryKit;
 using QueryKit.Configuration;
-namespace Online.Common.Extensions;
+namespace Club.Common.Extensions;
 
 public static class QueryKitExtensions
 {

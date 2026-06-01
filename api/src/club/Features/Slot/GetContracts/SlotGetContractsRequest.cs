@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace Online.Features.Slot.GetContracts;
+namespace Club.Features.Slot.GetContracts;
 
 public class SlotGetContractsRequest
 {

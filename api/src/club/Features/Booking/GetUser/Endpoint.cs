@@ -1,10 +1,10 @@
-using Online.Common;
-using Online.Common.Extensions;
-using Online.Common.Models;
-using Online.Data;
-using Online.DTO;
+using Club.Common;
+using Club.Common.Extensions;
+using Club.Common.Models;
+using Club.Data;
+using Club.DTO;
 
-namespace Online.Features.Booking.GetUser;
+namespace Club.Features.Booking.GetUser;
 
 public class Endpoint(AppDbContext dbContext) : Endpoint<BookingGetUserRequest, PaginatedList<BookingDTO>>
 {

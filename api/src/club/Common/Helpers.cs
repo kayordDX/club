@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using FluentValidation.Results;
 
-namespace Online.Common;
+namespace Club.Common;
 
 public static class Helpers
 {

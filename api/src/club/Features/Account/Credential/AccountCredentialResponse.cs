@@ -1,4 +1,4 @@
-namespace Online.Features.Account.Credential;
+namespace Club.Features.Account.Credential;
 
 public class AccountCredentialResponse
 {

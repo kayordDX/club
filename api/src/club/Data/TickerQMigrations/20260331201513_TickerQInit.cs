@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Online.Data.TickerQMigrations
+namespace Club.Data.TickerQMigrations
 {
     /// <inheritdoc />
     public partial class TickerQInit : Migration

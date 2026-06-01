@@ -1,8 +1,8 @@
-using Online.Common;
-using Online.Data;
-using Online.Models;
+using Club.Common;
+using Club.Data;
+using Club.Models;
 
-namespace Online.Features.Account.Me;
+namespace Club.Features.Account.Me;
 
 public class Endpoint(AppDbContext dbContext) : EndpointWithoutRequest<UserModel?>
 {

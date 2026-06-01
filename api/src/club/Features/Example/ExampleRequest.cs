@@ -1,4 +1,4 @@
-namespace Online.Features.Example;
+namespace Club.Features.Example;
 
 public class ExampleRequest
 {

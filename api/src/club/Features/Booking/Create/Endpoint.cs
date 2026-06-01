@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Online.Common;
-using Online.Common.Config;
-using Online.Common.Enums;
-using Online.Data;
+using Club.Common;
+using Club.Common.Config;
+using Club.Common.Enums;
+using Club.Data;
 
-namespace Online.Features.Booking.Create;
+namespace Club.Features.Booking.Create;
 
 public class Endpoint(AppDbContext dbContext) : Endpoint<BookingCreateRequest, BookingCreateResponse>
 {

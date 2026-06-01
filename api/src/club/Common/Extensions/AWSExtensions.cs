@@ -1,10 +1,10 @@
 using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Transfer;
-using Online.Common.Config;
-using Online.Common.Utilities;
+using Club.Common.Config;
+using Club.Common.Utilities;
 
-namespace Online.Common.Extensions;
+namespace Club.Common.Extensions;
 
 public static class AWSExtensions
 {

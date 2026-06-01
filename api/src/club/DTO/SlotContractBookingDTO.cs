@@ -1,4 +1,4 @@
-namespace Online.DTO;
+namespace Club.DTO;
 
 public class SlotContractBookingDTO
 {
