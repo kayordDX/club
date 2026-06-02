@@ -20,6 +20,8 @@
 {#if facilities.length > 0}
 	<ToggleGroup.Root
 		type="single"
+		onValueChange={(value) =>
+			value == "" ? (facilityTypeIdFilter = "0") : (facilityTypeIdFilter = value)}
 		spacing={2}
 		class="mb-2 flex-wrap"
 		bind:value={facilityTypeIdFilter}
