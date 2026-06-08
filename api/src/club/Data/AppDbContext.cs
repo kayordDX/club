@@ -35,7 +35,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IHttpContextAc
     public DbSet<PaymentStatus> PaymentStatus => Set<PaymentStatus>();
     public DbSet<PaymentType> PaymentType => Set<PaymentType>();
     public DbSet<Resource> Resource => Set<Resource>();
-    public DbSet<RoleType> RoleType => Set<RoleType>();
     public DbSet<Slot> Slot => Set<Slot>();
     public DbSet<SlotContract> SlotContract => Set<SlotContract>();
     public DbSet<SlotContractBooking> SlotContractBooking => Set<SlotContractBooking>();
