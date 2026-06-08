@@ -9,21 +9,22 @@ public class Endpoint(IKeycloakUserClient keycloakUserClient) : Endpoint<TestReq
     {
         Get("/test");
         Description(x => x.WithName("Test"));
-        AllowAnonymous();
+        // AllowAnonymous();
+        Policies(Constants.Policy.Manager);
         // Policies(Constants.Policy.SuperAdmin);
         // Policies(Constants.Policy.OutletAdmin);
     }
 
     public override async Task HandleAsync(TestRequest req, CancellationToken ct)
     {
-        var userId = Helpers.GetCurrentUserId(HttpContext);
-        if (userId == null)
-        {
-            await Send.UnauthorizedAsync(ct);
-            return;
-        }
+        // var userId = Helpers.GetCurrentUserId(HttpContext);
+        // if (userId == null)
+        // {
+        //     await Send.UnauthorizedAsync(ct);
+        //     return;
+        // }
         // var userCount = await keycloakUserClient.GetUserCountAsync("kayord", cancellationToken: ct);
-        var user = await keycloakUserClient.GetUserAsync("kayord", userId?.ToString() ?? "", cancellationToken: ct);
+        // var user = await keycloakUserClient.GetUserAsync("kayord", userId?.ToString() ?? "", cancellationToken: ct);
 
         // var accessToken = await HttpContext.GetTokenAsync(
         //     IdentityConstants.ApplicationScheme,
@@ -35,7 +36,7 @@ public class Endpoint(IKeycloakUserClient keycloakUserClient) : Endpoint<TestReq
         {
             Success = true,
             Token = "test",
-            Other = user
+            Other = "userId"
         };
         await Send.OkAsync(response, ct);
     }

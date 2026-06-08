@@ -81,14 +81,23 @@ public class UserStore(AppDbContext context, IdentityErrorDescriber? describer =
         ArgumentNullException.ThrowIfNull(user);
         ArgumentException.ThrowIfNullOrWhiteSpace(normalizedName);
 
-        var role = await FindRoleAsync(normalizedName, cancellationToken);
-        if (role == null)
-        {
-            return false;
-        }
+        return await IsInRoleAsync(user.Id, normalizedName, facilityId, cancellationToken);
+    }
 
-        return await _dbContext.Set<UserRole>()
-            .AnyAsync(ur => ur.UserId == user.Id && ur.RoleId == role.Id && ur.FacilityId == facilityId, cancellationToken);
+    public async Task<bool> IsInRoleAsync(Guid userId, string roleName, int facilityId, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        ThrowIfDisposed();
+        ArgumentException.ThrowIfNullOrWhiteSpace(roleName);
+
+        var normalizedRoleName = roleName.ToUpperInvariant();
+
+        return await _dbContext.UserRoles
+            .AnyAsync(
+                userRole => userRole.UserId == userId
+                    && userRole.FacilityId == facilityId
+                    && userRole.Role.NormalizedName == normalizedRoleName,
+                cancellationToken);
     }
 
     public async Task<IList<string>> GetRolesForFacilityAsync(User user, int facilityId, CancellationToken cancellationToken = default)
