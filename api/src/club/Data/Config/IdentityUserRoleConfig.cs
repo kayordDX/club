@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Club.Entities;
@@ -16,10 +15,10 @@ public class IdentityUserRoleConfig : IEntityTypeConfiguration<UserRole>
         builder.Property(ur => ur.Id)
             .ValueGeneratedOnAdd();
 
-        builder.HasIndex(ur => new { ur.UserId, ur.RoleId, ur.OutletId })
+        builder.HasIndex(ur => new { ur.UserId, ur.RoleId, ur.FacilityId })
             .IsUnique();
 
-        builder.HasIndex(ur => ur.OutletId);
+        builder.HasIndex(ur => ur.FacilityId);
 
         builder
             .HasOne<User>()
@@ -36,9 +35,9 @@ public class IdentityUserRoleConfig : IEntityTypeConfiguration<UserRole>
             .IsRequired();
 
         builder
-            .HasOne(ur => ur.Outlet)
+            .HasOne(ur => ur.Facility)
             .WithMany()
-            .HasForeignKey(ur => ur.OutletId)
+            .HasForeignKey(ur => ur.FacilityId)
             .OnDelete(DeleteBehavior.SetNull)
             .IsRequired(false);
     }

@@ -17,30 +17,30 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IHttpContextAc
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
     }
 
-    public DbSet<Booking>? Booking { get; set; }
-    public DbSet<BookingStatus>? BookingStatus { get; set; }
-    public DbSet<Business>? Business { get; set; }
-    public DbSet<Contract>? Contract { get; set; }
-    public DbSet<ContractField>? ContractField { get; set; }
-    public DbSet<ContractFieldConfig>? ContractFieldConfig { get; set; }
-    public DbSet<ContractOutlet>? ContractOutlet { get; set; }
-    public DbSet<EmailLog>? EmailLog { get; set; }
-    public DbSet<Extra>? Extra { get; set; }
-    public DbSet<ExtraBooking>? ExtraBooking { get; set; }
-    public DbSet<Facility>? Facility { get; set; }
-    public DbSet<Outlet>? Outlet { get; set; }
-    public DbSet<OutletType>? OutletType { get; set; }
-    public DbSet<Payment>? Payment { get; set; }
-    public DbSet<PaymentBooking>? PaymentBooking { get; set; }
-    public DbSet<PaymentStatus>? PaymentStatus { get; set; }
-    public DbSet<PaymentType>? PaymentType { get; set; }
-    public DbSet<Resource>? Resource { get; set; }
-    public DbSet<RoleType>? RoleType { get; set; }
-    public DbSet<Slot>? Slot { get; set; }
-    public DbSet<SlotContract>? SlotContract { get; set; }
-    public DbSet<SlotContractBooking>? SlotContractBooking { get; set; }
-    public DbSet<UserContract>? UserContract { get; set; }
-    public DbSet<Validation>? Validation { get; set; }
+    public DbSet<Booking> Booking => Set<Booking>();
+    public DbSet<BookingStatus> BookingStatus => Set<BookingStatus>();
+    public DbSet<Business> Business => Set<Business>();
+    public DbSet<Contract> Contract => Set<Contract>();
+    public DbSet<ContractField> ContractField => Set<ContractField>();
+    public DbSet<ContractFieldConfig> ContractFieldConfig => Set<ContractFieldConfig>();
+    public DbSet<ContractOutlet> ContractOutlet => Set<ContractOutlet>();
+    public DbSet<EmailLog> EmailLog => Set<EmailLog>();
+    public DbSet<Extra> Extra => Set<Extra>();
+    public DbSet<ExtraBooking> ExtraBooking => Set<ExtraBooking>();
+    public DbSet<Facility> Facility => Set<Facility>();
+    public DbSet<Outlet> Outlet => Set<Outlet>();
+    public DbSet<OutletType> OutletType => Set<OutletType>();
+    public DbSet<Payment> Payment => Set<Payment>();
+    public DbSet<PaymentBooking> PaymentBooking => Set<PaymentBooking>();
+    public DbSet<PaymentStatus> PaymentStatus => Set<PaymentStatus>();
+    public DbSet<PaymentType> PaymentType => Set<PaymentType>();
+    public DbSet<Resource> Resource => Set<Resource>();
+    public DbSet<RoleType> RoleType => Set<RoleType>();
+    public DbSet<Slot> Slot => Set<Slot>();
+    public DbSet<SlotContract> SlotContract => Set<SlotContract>();
+    public DbSet<SlotContractBooking> SlotContractBooking => Set<SlotContractBooking>();
+    public DbSet<UserContract> UserContract => Set<UserContract>();
+    public DbSet<Validation> Validation => Set<Validation>();
 
     public override async Task<int> SaveChangesAsync(CancellationToken ct = new CancellationToken())
     {
