@@ -72,7 +72,10 @@ public static class AuthExtensions
             .AddKeycloakAdminHttpClient(services, kiotaOptions)
             .AddClientCredentialsTokenHandler(tokenClientName);
 
-        services.AddAuthorization();
+        services.AddAuthorization(o =>
+        {
+            // o.AddPolicy(Constants.Policy.Manager, b => b.AddRequirements(new RoleTypeRequirement(Constants.Policy.Manager)).Build());
+        });
 
         services.AddScoped<ICustomKeycloakService, CustomKeycloakService>();
 

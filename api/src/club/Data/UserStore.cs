@@ -9,7 +9,7 @@ public class UserStore(AppDbContext context, IdentityErrorDescriber? describer =
 {
     private readonly AppDbContext _dbContext = context;
 
-    public async Task<IdentityResult> AddToRoleAsync(User user, string normalizedName, int? outletId, CancellationToken cancellationToken = default)
+    public async Task<IdentityResult> AddToRoleAsync(User user, string normalizedName, int? facilityId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
@@ -21,14 +21,14 @@ public class UserStore(AppDbContext context, IdentityErrorDescriber? describer =
             ?? throw new InvalidOperationException($"Role '{normalizedName}' not found.");
 
         var existing = await _dbContext.Set<UserRole>()
-            .AnyAsync(ur => ur.UserId == user.Id && ur.RoleId == role.Id && ur.OutletId == outletId, cancellationToken);
+            .AnyAsync(ur => ur.UserId == user.Id && ur.RoleId == role.Id && ur.FacilityId == facilityId, cancellationToken);
 
         if (existing)
         {
             return IdentityResult.Failed(new IdentityError
             {
                 Code = "UserAlreadyInRole",
-                Description = $"User is already in role '{normalizedName}' for outlet {outletId}."
+                Description = $"User is already in role '{normalizedName}' for facility {facilityId}."
             });
         }
 
@@ -36,7 +36,7 @@ public class UserStore(AppDbContext context, IdentityErrorDescriber? describer =
         {
             UserId = user.Id,
             RoleId = role.Id,
-            OutletId = outletId
+            FacilityId = facilityId
         });
 
         await _dbContext.SaveChangesAsync(cancellationToken);
@@ -44,7 +44,7 @@ public class UserStore(AppDbContext context, IdentityErrorDescriber? describer =
         return IdentityResult.Success;
     }
 
-    public async Task<IdentityResult> RemoveFromRoleAsync(User user, string normalizedName, int outletId, CancellationToken cancellationToken = default)
+    public async Task<IdentityResult> RemoveFromRoleAsync(User user, string normalizedName, int facilityId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
@@ -56,14 +56,14 @@ public class UserStore(AppDbContext context, IdentityErrorDescriber? describer =
             ?? throw new InvalidOperationException($"Role '{normalizedName}' not found.");
 
         var userRole = await _dbContext.Set<UserRole>()
-            .FirstOrDefaultAsync(ur => ur.UserId == user.Id && ur.RoleId == role.Id && ur.OutletId == outletId, cancellationToken);
+            .FirstOrDefaultAsync(ur => ur.UserId == user.Id && ur.RoleId == role.Id && ur.FacilityId == facilityId, cancellationToken);
 
         if (userRole == null)
         {
             return IdentityResult.Failed(new IdentityError
             {
                 Code = "UserNotInRole",
-                Description = $"User is not in role '{normalizedName}' for outlet {outletId}."
+                Description = $"User is not in role '{normalizedName}' for facility {facilityId}."
             });
         }
 
@@ -73,7 +73,7 @@ public class UserStore(AppDbContext context, IdentityErrorDescriber? describer =
         return IdentityResult.Success;
     }
 
-    public async Task<bool> IsInRoleAsync(User user, string normalizedName, int outletId, CancellationToken cancellationToken = default)
+    public async Task<bool> IsInRoleAsync(User user, string normalizedName, int facilityId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
@@ -88,10 +88,10 @@ public class UserStore(AppDbContext context, IdentityErrorDescriber? describer =
         }
 
         return await _dbContext.Set<UserRole>()
-            .AnyAsync(ur => ur.UserId == user.Id && ur.RoleId == role.Id && ur.OutletId == outletId, cancellationToken);
+            .AnyAsync(ur => ur.UserId == user.Id && ur.RoleId == role.Id && ur.FacilityId == facilityId, cancellationToken);
     }
 
-    public async Task<IList<string>> GetRolesForOutletAsync(User user, int outletId, CancellationToken cancellationToken = default)
+    public async Task<IList<string>> GetRolesForFacilityAsync(User user, int facilityId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
@@ -99,7 +99,7 @@ public class UserStore(AppDbContext context, IdentityErrorDescriber? describer =
         ArgumentNullException.ThrowIfNull(user);
 
         return await _dbContext.Set<UserRole>()
-            .Where(ur => ur.UserId == user.Id && ur.OutletId == outletId)
+            .Where(ur => ur.UserId == user.Id && ur.FacilityId == facilityId)
             .Join(
                 _dbContext.Roles,
                 ur => ur.RoleId,
@@ -114,38 +114,13 @@ public class UserStore(AppDbContext context, IdentityErrorDescriber? describer =
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
         return await _dbContext.UserRoles
-            .Where(x => x.UserId == user.Id && x.OutletId == null && !string.IsNullOrEmpty(x.Role.Name))
+            .Where(x => x.UserId == user.Id && !string.IsNullOrEmpty(x.Role.Name))
             .Select(ur => ur.Role.Name!)
             .Distinct()
             .ToListAsync(ct);
     }
 
-    public async Task<IList<string>> GetOutletRolesAsync(User user, CancellationToken ct = default)
-    {
-        ct.ThrowIfCancellationRequested();
-        ThrowIfDisposed();
-        ArgumentNullException.ThrowIfNull(user);
-        return await _dbContext.UserRoles
-            .Where(x => x.UserId == user.Id && x.OutletId > 0 && x.Role.Name != null && x.Outlet != null)
-            .Select(x => $"{x.Role.Name}:{x.Outlet!.Slug}")
-            .Distinct()
-            .ToListAsync(ct);
-    }
-
-    public async Task<IList<UserRole>> GetUserRolesWithOutletsAsync(User user, CancellationToken cancellationToken = default)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        ThrowIfDisposed();
-
-        ArgumentNullException.ThrowIfNull(user);
-
-        return await _dbContext.Set<UserRole>()
-            .Where(ur => ur.UserId == user.Id)
-            .Include(ur => ur.Outlet)
-            .ToListAsync(cancellationToken);
-    }
-
-    public async Task<IList<User>> GetUsersInRoleForOutletAsync(string normalizedName, int outletId, CancellationToken cancellationToken = default)
+    public async Task<IList<User>> GetUsersInRoleForFacilityAsync(string normalizedName, int facilityId, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
@@ -159,7 +134,7 @@ public class UserStore(AppDbContext context, IdentityErrorDescriber? describer =
         }
 
         return await _dbContext.Set<UserRole>()
-            .Where(ur => ur.RoleId == role.Id && ur.OutletId == outletId)
+            .Where(ur => ur.RoleId == role.Id && ur.FacilityId == facilityId)
             .Join(
                 _dbContext.Users,
                 ur => ur.UserId,
