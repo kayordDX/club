@@ -87,6 +87,24 @@ architecture-beta
     redis:R -- L:api
 ```
 
+```mermaid
+flowchart TB
+  subgraph club [Club]
+    direction BT
+    
+    %% Nodes with shapes matching their service types
+    svelte[Svelte]
+    api([api])
+    db[(Postgres)]
+    redis[(Redis)]
+    
+    %% Edge connections mimicking the original layout
+    svelte --> api
+    db <--> api
+    redis <--> api
+  end
+```
+
 ### Temp Booking validation types?
 
 Types of validation checks
