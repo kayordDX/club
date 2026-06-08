@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Club.Common.Auth;
 using Club.Common.Config;
 using Keycloak.AuthServices.Common;
 using Duende.AccessTokenManagement;
@@ -17,6 +19,8 @@ public static class AuthExtensions
         {
             options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultForbidScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
         })
         .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
@@ -25,6 +29,20 @@ public static class AuthExtensions
             options.Audience = keycloakConfig.Audience;
             options.RequireHttpsMetadata = !env.IsDevelopment();
             options.MetadataAddress = keycloakConfig.MetadataAddress;
+            options.Events = new JwtBearerEvents
+            {
+                OnChallenge = context =>
+                {
+                    context.HandleResponse();
+                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                    return Task.CompletedTask;
+                },
+                OnForbidden = context =>
+                {
+                    context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                    return Task.CompletedTask;
+                }
+            };
         });
 
         Keycloak.AuthServices.Sdk.KeycloakAdminClientOptions options = new()
@@ -72,9 +90,12 @@ public static class AuthExtensions
             .AddKeycloakAdminHttpClient(services, kiotaOptions)
             .AddClientCredentialsTokenHandler(tokenClientName);
 
+        services.AddScoped<ICurrentFacilityAccessor, CurrentFacilityAccessor>();
+        services.AddScoped<IAuthorizationHandler, FacilityRoleHandler>();
+
         services.AddAuthorization(o =>
         {
-            // o.AddPolicy(Constants.Policy.Manager, b => b.AddRequirements(new RoleTypeRequirement(Constants.Policy.Manager)).Build());
+            o.AddFacilityRolePolicy(global::Club.Constants.Policy.Manager);
         });
 
         services.AddScoped<ICustomKeycloakService, CustomKeycloakService>();

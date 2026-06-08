@@ -17,18 +17,14 @@ public class Endpoint(UserManager<User> userManager, UserStore userStore) : Endp
 
     public override async Task HandleAsync(UserRoleRequest req, CancellationToken ct)
     {
-        await Task.Delay(2000, ct);
         var user = await _userManager.GetUserAsync(HttpContext.User);
-
         if (user is null)
         {
             await Send.NotFoundAsync(ct);
             return;
         }
 
-        await _userStore.AddToRoleAsync(user, "test", 1, ct);
-        await _userStore.AddToRoleAsync(user, "superAdmin", null, ct);
-
+        await _userStore.AddToRoleAsync(user, req.Name, 1, ct);
         await Send.OkAsync(true, ct);
     }
 }
