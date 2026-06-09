@@ -27,7 +27,7 @@ import type {
   AccountSyncRequest,
   CredentialDisableRequest,
   InternalErrorResponse,
-  UserModel
+  UserRoleBasicDTO
 } from './api.schemas';
 
 import { customInstance } from '../mutator/customInstance.svelte';
@@ -306,9 +306,9 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   return `/account/me`
 }
 
-export const accountMe = async ( options?: RequestInit): Promise<UserModel> => {
+export const accountMe = async ( options?: RequestInit): Promise<UserRoleBasicDTO[]> => {
 
-  return customInstance<UserModel>(getAccountMeUrl(),
+  return customInstance<UserRoleBasicDTO[]>(getAccountMeUrl(),
   {
     ...options,
     method: 'GET'

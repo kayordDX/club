@@ -1,4 +1,5 @@
 import { UserManager, type UserManagerSettings, User } from "oidc-client-ts";
+import { type UserRoleBasicDTO } from "$lib/api";
 import { PUBLIC_IDENTITY_URL, PUBLIC_APP_URL, PUBLIC_API_URL } from "$env/static/public";
 
 export type KeycloakAction =
@@ -14,6 +15,7 @@ class Auth {
 	private userManager: UserManager;
 
 	#user = $state<User | null>(null);
+	#roles = $state<Array<UserRoleBasicDTO> | null>([]);
 	#isLoading = $state(true);
 	#isSyncing = $state(false);
 
@@ -28,6 +30,7 @@ class Auth {
 			const user = await this.userManager.getUser();
 			this.#user = user;
 			this.setupEventListeners();
+			this.getRoles();
 		} catch (error) {
 			console.error("OIDC Initialization failed:", error);
 		} finally {
@@ -40,7 +43,6 @@ class Auth {
 
 		this.#isSyncing = true;
 		try {
-			// Replace with your actual .NET API URL
 			const response = await fetch(`${PUBLIC_API_URL}/account/sync`, {
 				method: "POST",
 				headers: {
@@ -60,6 +62,27 @@ class Auth {
 		}
 	}
 
+	private async getRoles() {
+		try {
+			const response = await fetch(`${PUBLIC_API_URL}/account/me`, {
+				method: "GET",
+				headers: {
+					Authorization: `Bearer ${this.accessToken}`,
+				},
+			});
+			if (response.ok) {
+				const res = (await response.json()) as Array<UserRoleBasicDTO>;
+				this.#roles = res;
+			} else {
+				console.error("Get Roles failed", await response.text());
+			}
+		} catch (err) {
+			console.error("Network error during getRoles:", err);
+		} finally {
+			this.#isSyncing = false;
+		}
+	}
+
 	private setupEventListeners() {
 		this.userManager.events.addUserLoaded(async (user) => {
 			this.#user = user;
@@ -68,6 +91,7 @@ class Auth {
 
 		this.userManager.events.addUserUnloaded(() => {
 			this.#user = null;
+			this.#roles = null;
 		});
 
 		this.userManager.events.addAccessTokenExpiring(() => {
@@ -95,6 +119,9 @@ class Auth {
 	}
 	get accessToken() {
 		return this.#user?.access_token;
+	}
+	get roles() {
+		return this.#roles;
 	}
 
 	login = async () => {
