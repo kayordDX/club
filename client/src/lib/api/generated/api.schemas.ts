@@ -263,8 +263,8 @@ export interface UserRole {
   roleId: string;
   id: number;
   /** @nullable */
-  outletId?: number | null;
-  outlet?: Outlet | null;
+  facilityId?: number | null;
+  facility?: Facility | null;
   role: Role;
 }
 
@@ -678,15 +678,11 @@ export interface UserRoleRequest {
   name: string;
 }
 
-export interface UserModel {
-  id: string;
-  email: string;
-  emailConfirmed: boolean;
-  firstName: string;
-  lastName: string;
-  name: string;
+export interface UserRoleBasicDTO {
   /** @nullable */
-  picture?: string | null;
+  facilityId?: number | null;
+  /** @nullable */
+  normalizedName?: string | null;
 }
 
 export interface AccountCredentialResponse {

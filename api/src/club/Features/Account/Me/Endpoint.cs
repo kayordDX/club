@@ -1,10 +1,11 @@
 using Club.Common;
 using Club.Data;
-using Club.Models;
+using Club.DTO;
+using Microsoft.EntityFrameworkCore;
 
 namespace Club.Features.Account.Me;
 
-public class Endpoint(AppDbContext dbContext) : EndpointWithoutRequest<UserModel?>
+public class Endpoint(AppDbContext dbContext) : EndpointWithoutRequest<List<UserRoleBasicDTO>>
 {
     private readonly AppDbContext _dbContext = dbContext;
 
@@ -17,9 +18,17 @@ public class Endpoint(AppDbContext dbContext) : EndpointWithoutRequest<UserModel
     public override async Task HandleAsync(CancellationToken ct)
     {
         var userId = Helpers.GetCurrentUserId(HttpContext);
+        if (userId == null)
+        {
+            await Send.UnauthorizedAsync(ct);
+            return;
+        }
 
-        var user = await Data.Get(userId, _dbContext, ct);
+        var roles = await _dbContext.UserRoles
+            .Where(ur => ur.UserId == userId)
+            .Select(x => new UserRoleBasicDTO() { FacilityId = x.FacilityId, NormalizedName = x.Role.NormalizedName })
+            .ToListAsync(ct);
 
-        await Send.OkAsync(user, ct);
+        await Send.OkAsync(roles, ct);
     }
 }
