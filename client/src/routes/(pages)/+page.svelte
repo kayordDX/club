@@ -1,17 +1,12 @@
 <script>
-	import { Button } from "@kayord/ui";
 	import Search from "./Search.svelte";
-	import { createOutletGetAll, createTest } from "$lib/api";
+	import { createOutletGetAll } from "$lib/api";
 	import Outlet from "./Outlet.svelte";
 	import LoginButton from "$lib/components/LoginButton/LoginButton.svelte";
 
 	const query = createOutletGetAll();
 	let data = $derived(query.data?.items ?? []);
-
-	const test = createTest(() => ({ name: "test" }));
 </script>
-
-<Button onclick={() => test.refetch()}>Test</Button>
 
 <main class="container mx-auto px-4 py-8">
 	<div class="mb-12 text-center">
