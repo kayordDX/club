@@ -7,4 +7,3 @@ export * from './extra';
 export * from './example';
 export * from './booking';
 export * from './account';
-export * from './user';

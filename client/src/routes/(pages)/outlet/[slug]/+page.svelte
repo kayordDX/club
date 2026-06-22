@@ -7,7 +7,7 @@
 	import Query from "$lib/components/Query.svelte";
 	import { Building2Icon } from "@lucide/svelte";
 	import { resolve } from "$app/paths";
-	import Breadcrumbs from "../Breadcrumbs.svelte";
+	import Breadcrumbs from "./Breadcrumbs.svelte";
 
 	const query = createOutletGetBasic(
 		() => page.params.slug ?? "",

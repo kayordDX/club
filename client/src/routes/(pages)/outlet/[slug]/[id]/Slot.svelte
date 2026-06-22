@@ -42,7 +42,7 @@
 			if (isAvailable) {
 				goto(
 					resolve(
-						`/outlet/${page.params.slug}/book/${page.params.id}/slot/${slot.id}?slotCount=${slotCount ?? 1}&date=${selectedDate}`
+						`/outlet/${page.params.slug}/${page.params.id}/slot/${slot.id}?slotCount=${slotCount ?? 1}&date=${selectedDate}`
 					)
 				);
 			} else {

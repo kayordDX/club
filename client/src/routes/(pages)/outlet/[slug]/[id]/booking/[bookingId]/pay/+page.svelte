@@ -29,7 +29,7 @@
 		try {
 			await updateStatusMut.mutateAsync({ data: { bookingId, status } });
 			toast.info("Confirmed booking");
-			goto(resolve(`/outlet/${slug}/book/${facilityId}`));
+			goto(resolve(`/outlet/${slug}/${facilityId}`));
 		} catch (error) {
 			console.error("Failed to update booking status:", error);
 			toast.error("Failed to update booking status. Please try again.");

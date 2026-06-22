@@ -673,11 +673,6 @@ export interface AccountSessionRevokeRequest {
   id: string;
 }
 
-export interface UserRoleRequest {
-  /** @minLength 1 */
-  name: string;
-}
-
 export interface UserRoleBasicDTO {
   /** @nullable */
   facilityId?: number | null;

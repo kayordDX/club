@@ -72,7 +72,7 @@
 		</div>
 	</div>
 	<div>
-		<Button href={resolve(`/outlet/${page.params.slug}/book/${page.params.id}/facility`)}>
+		<Button href={resolve(`/outlet/${page.params.slug}/${page.params.id}/facility`)}>
 			<BuildingIcon />
 			<span class="hidden sm:inline"> Facility </span>
 		</Button>

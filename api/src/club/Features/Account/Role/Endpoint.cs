@@ -1,30 +1,34 @@
-using Microsoft.EntityFrameworkCore;
+using Club.Common;
 using Club.Data;
-using Club.Entities;
-using Microsoft.AspNetCore.Identity;
+using Club.DTO;
+using Microsoft.EntityFrameworkCore;
 
 namespace Club.Features.Account.Role;
 
-public class Endpoint(UserManager<User> userManager, UserStore userStore) : Endpoint<UserRoleRequest, bool>
+public class Endpoint(AppDbContext dbContext) : Endpoint<AccountRoleRequest, List<UserRoleBasicDTO>>
 {
-    private readonly UserManager<User> _userManager = userManager;
-    private readonly UserStore _userStore = userStore;
+    private readonly AppDbContext _dbContext = dbContext;
+
     public override void Configure()
     {
-        Post("/user/role");
-        Description(x => x.WithName("UserRole"));
+        Get("/account/role/{facilityId}");
+        Description(x => x.WithName("AccountRole"));
     }
 
-    public override async Task HandleAsync(UserRoleRequest req, CancellationToken ct)
+    public override async Task HandleAsync(AccountRoleRequest req, CancellationToken ct)
     {
-        var user = await _userManager.GetUserAsync(HttpContext.User);
-        if (user is null)
+        var userId = Helpers.GetCurrentUserId(HttpContext);
+        if (userId == null)
         {
-            await Send.NotFoundAsync(ct);
+            await Send.UnauthorizedAsync(ct);
             return;
         }
 
-        await _userStore.AddToRoleAsync(user, req.Name, 1, ct);
-        await Send.OkAsync(true, ct);
+        var roles = await _dbContext.UserRoles
+            .Where(ur => ur.UserId == userId && ur.FacilityId == req.FacilityId)
+            .Select(x => new UserRoleBasicDTO() { FacilityId = x.FacilityId, NormalizedName = x.Role.NormalizedName })
+            .ToListAsync(ct);
+
+        await Send.OkAsync(roles, ct);
     }
 }

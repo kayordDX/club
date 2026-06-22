@@ -31,7 +31,7 @@
 				<Tags tags={query.data?.tags ?? ""} />
 			</div>
 			<div class="shrink-0">
-				<Button href={resolve(`/outlet/${page.params.slug}/book`)} variant="outline">
+				<Button href={resolve(`/outlet/${page.params.slug}`)} variant="outline">
 					<Building2Icon /> Choose Facility
 				</Button>
 			</div>
