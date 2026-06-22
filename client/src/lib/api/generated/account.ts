@@ -26,6 +26,7 @@ import type {
   AccountSessionRevokeRequest,
   AccountSyncRequest,
   CredentialDisableRequest,
+  ErrorResponse,
   InternalErrorResponse,
   UserRoleBasicDTO
 } from './api.schemas';
@@ -298,17 +299,17 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return createMutation(() => ({ ...getAccountSessionRevokeMutationOptions(options?.()) }), queryClient);
     }
-    export const getAccountMeUrl = () => {
+    export const getAccountRoleUrl = (facilityId: number,) => {
 
 
 
 
-  return `/account/me`
+  return `/account/role/${facilityId}`
 }
 
-export const accountMe = async ( options?: RequestInit): Promise<UserRoleBasicDTO[]> => {
+export const accountRole = async (facilityId: number, options?: RequestInit): Promise<UserRoleBasicDTO[]> => {
 
-  return customInstance<UserRoleBasicDTO[]>(getAccountMeUrl(),
+  return customInstance<UserRoleBasicDTO[]>(getAccountRoleUrl(facilityId),
   {
     ...options,
     method: 'GET'
@@ -321,44 +322,44 @@ export const accountMe = async ( options?: RequestInit): Promise<UserRoleBasicDT
 
 
 
-export const getAccountMeQueryKey = () => {
+export const getAccountRoleQueryKey = (facilityId: number,) => {
     return [
-    `/account/me`
+    `/account/role/${facilityId}`
     ] as const;
     }
 
 
-export const getAccountMeQueryOptions = <TData = Awaited<ReturnType<typeof accountMe>>, TError = ErrorType<void | InternalErrorResponse>>( options?: { query?:Partial<CreateQueryOptions<Awaited<ReturnType<typeof accountMe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getAccountRoleQueryOptions = <TData = Awaited<ReturnType<typeof accountRole>>, TError = ErrorType<ErrorResponse | void | InternalErrorResponse>>(facilityId: number, options?: { query?:Partial<CreateQueryOptions<Awaited<ReturnType<typeof accountRole>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getAccountMeQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getAccountRoleQueryKey(facilityId);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof accountMe>>> = ({ signal }) => accountMe({ signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof accountRole>>> = ({ signal }) => accountRole(facilityId, { signal, ...requestOptions });
 
 
 
 
 
-   return  { queryKey, queryFn, ...queryOptions} as CreateQueryOptions<Awaited<ReturnType<typeof accountMe>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+   return  { queryKey, queryFn, enabled: facilityId !== null && facilityId !== undefined, ...queryOptions} as CreateQueryOptions<Awaited<ReturnType<typeof accountRole>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
-export type AccountMeQueryResult = NonNullable<Awaited<ReturnType<typeof accountMe>>>
-export type AccountMeQueryError = ErrorType<void | InternalErrorResponse>
+export type AccountRoleQueryResult = NonNullable<Awaited<ReturnType<typeof accountRole>>>
+export type AccountRoleQueryError = ErrorType<ErrorResponse | void | InternalErrorResponse>
 
 
 
-export function createAccountMe<TData = Awaited<ReturnType<typeof accountMe>>, TError = ErrorType<void | InternalErrorResponse>>(
-  options?: () => { query?:Partial<CreateQueryOptions<Awaited<ReturnType<typeof accountMe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export function createAccountRole<TData = Awaited<ReturnType<typeof accountRole>>, TError = ErrorType<ErrorResponse | void | InternalErrorResponse>>(
+ facilityId: () =>  number, options?: () => { query?:Partial<CreateQueryOptions<Awaited<ReturnType<typeof accountRole>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: () => QueryClient
  ): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
 
 
-  const query = createQuery(() => getAccountMeQueryOptions(options?.()), queryClient) as CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+  const query = createQuery(() => getAccountRoleQueryOptions(facilityId(),options?.()), queryClient) as CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   return query
 }

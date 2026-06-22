@@ -72,7 +72,7 @@
 				</Card.Description>
 			</Card.Header>
 			<Card.Footer>
-				<Button href={resolve(`/outlet/${page.params.slug}/book/${page.params.id}`)}>
+				<Button href={resolve(`/outlet/${page.params.slug}/${page.params.id}`)}>
 					<TicketIcon />
 					Book Now
 				</Button>

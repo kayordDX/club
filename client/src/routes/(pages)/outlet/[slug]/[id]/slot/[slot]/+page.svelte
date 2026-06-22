@@ -95,7 +95,7 @@
 					},
 				});
 
-				await goto(resolve(`/outlet/${slug}/book/${facilityId}/booking/${bookingResponse.id}/pay`));
+				await goto(resolve(`/outlet/${slug}/${facilityId}/booking/${bookingResponse.id}/pay`));
 			} catch {
 				toast.error("Failed to create booking. Please try again.");
 			} finally {
@@ -146,7 +146,7 @@
 								</Empty.Description>
 							</Empty.Header>
 							<Empty.Content>
-								<Button href={resolve(`/outlet/${slug}/book/${facilityId}`)} variant="outline">
+								<Button href={resolve(`/outlet/${slug}/${facilityId}`)} variant="outline">
 									<ChevronLeftIcon class="size-4" />
 									Back to slots
 								</Button>
@@ -267,7 +267,7 @@
 							</div>
 						</Card.Content>
 						<Card.Footer class=" flex justify-between border-t">
-							<Button href={resolve(`/outlet/${slug}/book/${facilityId}`)} variant="ghost">
+							<Button href={resolve(`/outlet/${slug}/${facilityId}`)} variant="ghost">
 								<ChevronLeftIcon class="size-4" />
 								Back to slots
 							</Button>

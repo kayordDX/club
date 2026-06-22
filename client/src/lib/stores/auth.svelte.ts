@@ -15,6 +15,7 @@ class Auth {
 	private userManager: UserManager;
 
 	#user = $state<User | null>(null);
+	#cachedFacilityId = $state<number | undefined>(undefined);
 	#roles = $state<Array<UserRoleBasicDTO> | null>([]);
 	#isLoading = $state(true);
 	#isSyncing = $state(false);
@@ -30,7 +31,6 @@ class Auth {
 			const user = await this.userManager.getUser();
 			this.#user = user;
 			this.setupEventListeners();
-			this.getRoles();
 		} catch (error) {
 			console.error("OIDC Initialization failed:", error);
 		} finally {
@@ -62,9 +62,15 @@ class Auth {
 		}
 	}
 
-	private async getRoles() {
+	public async getRoles(facilityId: number) {
 		try {
-			const response = await fetch(`${PUBLIC_API_URL}/account/me`, {
+			// Only get roles if authenticated
+			if (!this.isAuthenticated) return;
+
+			// Cache roles
+			if (this.#cachedFacilityId === facilityId) return;
+
+			const response = await fetch(`${PUBLIC_API_URL}/account/role/${facilityId}`, {
 				method: "GET",
 				headers: {
 					Authorization: `Bearer ${this.accessToken}`,
@@ -73,10 +79,12 @@ class Auth {
 			if (response.ok) {
 				const res = (await response.json()) as Array<UserRoleBasicDTO>;
 				this.#roles = res;
+				this.#cachedFacilityId = facilityId;
 			} else {
 				console.error("Get Roles failed", await response.text());
 			}
 		} catch (err) {
+			this.#cachedFacilityId = undefined;
 			console.error("Network error during getRoles:", err);
 		} finally {
 			this.#isSyncing = false;

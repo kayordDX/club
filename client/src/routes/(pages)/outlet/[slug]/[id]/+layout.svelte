@@ -5,6 +5,8 @@
 	import Query from "$lib/components/Query.svelte";
 	import { Breadcrumb } from "@kayord/ui";
 	import { HouseIcon } from "@lucide/svelte";
+	import { auth } from "$lib/stores/auth.svelte";
+	import { onMount } from "svelte";
 	let { children } = $props();
 
 	const query = createOutletGetBasic(
@@ -12,6 +14,12 @@
 		() => ({ query: { staleTime: 1000 * 60 * 5 } })
 	);
 	const outlet = $derived(query.data);
+
+	onMount(async () => {
+		if (auth.isAuthenticated) {
+			await auth.getRoles(Number(page.params.id));
+		}
+	});
 
 	const facility = $derived(outlet?.facilities.find((x) => x.id == Number(page.params.id)));
 </script>
@@ -27,7 +35,7 @@
 				</Breadcrumb.Item>
 				<Breadcrumb.Separator />
 				<Breadcrumb.Item>
-					<Breadcrumb.Link href={resolve(`/outlet/${page.params.slug}/book`)} class="text-xs">
+					<Breadcrumb.Link href={resolve(`/outlet/${page.params.slug}`)} class="text-xs">
 						{outlet!.name}
 					</Breadcrumb.Link>
 				</Breadcrumb.Item>

@@ -950,32 +950,33 @@
         ]
       }
     },
-    "/user/role": {
-      "post": {
+    "/account/role/{facilityId}": {
+      "get": {
         "tags": [
-          "User"
+          "Account"
         ],
-        "operationId": "UserRole",
-        "requestBody": {
-          "x-name": "UserRoleRequest",
-          "description": "",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserRoleRequest"
-              }
+        "operationId": "AccountRole",
+        "parameters": [
+          {
+            "name": "facilityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
-          },
-          "required": true,
-          "x-position": 1
-        },
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "boolean"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserRoleBasicDTO"
+                  }
                 }
               }
             }
@@ -1002,47 +1003,6 @@
                 }
               }
             }
-          }
-        },
-        "security": [
-          {
-            "Keycloak": []
-          }
-        ]
-      }
-    },
-    "/account/me": {
-      "get": {
-        "tags": [
-          "Account"
-        ],
-        "operationId": "AccountMe",
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/UserRoleBasicDTO"
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized"
           }
         },
         "security": [
@@ -3342,20 +3302,6 @@
         "properties": {
           "id": {
             "type": "string"
-          }
-        }
-      },
-      "UserRoleRequest": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "name"
-        ],
-        "properties": {
-          "name": {
-            "type": "string",
-            "minLength": 1,
-            "nullable": false
           }
         }
       },

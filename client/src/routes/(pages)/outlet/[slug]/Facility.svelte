@@ -12,7 +12,7 @@
 	let { facility }: Props = $props();
 </script>
 
-<a href={resolve(`/outlet/${page.params.slug}/book/${facility.id}`)}>
+<a href={resolve(`/outlet/${page.params.slug}/${facility.id}`)}>
 	<Card.Root class="flex flex-row items-center p-2">
 		<div class="bg-background flex size-10 items-center justify-center rounded-md">
 			<FacilityIcon typeId={facility.facilityTypeId} />
