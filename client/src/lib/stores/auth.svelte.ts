@@ -16,7 +16,7 @@ class Auth {
 
 	#user = $state<User | null>(null);
 	#cachedFacilityId = $state<number | undefined>(undefined);
-	#roles = $state<Array<UserRoleBasicDTO> | null>([]);
+	#roles = $state<Array<string> | null>([]);
 	#isLoading = $state(true);
 	#isSyncing = $state(false);
 
@@ -78,7 +78,7 @@ class Auth {
 			});
 			if (response.ok) {
 				const res = (await response.json()) as Array<UserRoleBasicDTO>;
-				this.#roles = res;
+				this.#roles = res.map((x) => x.normalizedName).filter((x): x is string => x !== null);
 				this.#cachedFacilityId = facilityId;
 			} else {
 				console.error("Get Roles failed", await response.text());
@@ -131,11 +131,18 @@ class Auth {
 	get roles() {
 		return this.#roles;
 	}
+	get isManager() {
+		return this.#roles?.includes("MANAGER") ?? false;
+	}
 
 	login = async () => {
 		await this.userManager.signinRedirect({
 			prompt: "select_account",
 		});
+	};
+
+	hasRoles = (roles: string[]) => {
+		return this.#roles?.some((role) => roles.includes(role)) ?? false;
 	};
 
 	logout = async () => {
