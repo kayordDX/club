@@ -1,7 +1,13 @@
 <script lang="ts">
 	import { Button, Popover, ButtonGroup } from "@kayord/ui";
 	import { Calendar } from "@kayord/ui/calendar";
-	import { CalendarIcon, ChevronRightIcon, ChevronLeftIcon, BuildingIcon } from "@lucide/svelte";
+	import {
+		CalendarIcon,
+		ChevronRightIcon,
+		ChevronLeftIcon,
+		BuildingIcon,
+		UserCogIcon,
+	} from "@lucide/svelte";
 	import {
 		parseDate,
 		today,
@@ -14,6 +20,7 @@
 	import { cn } from "@kayord/ui/utils";
 	import { createSlotGetAll } from "$lib/api";
 	import Slots from "./Slots.svelte";
+	import { auth } from "$lib/stores/auth.svelte";
 
 	const df = new DateFormatter("en-ZA", {
 		dateStyle: "long",
@@ -71,7 +78,16 @@
 			</Popover.Root>
 		</div>
 	</div>
-	<div>
+	<div class="flex items-center gap-2">
+		{#if auth.isManager}
+			<Button
+				variant="destructive"
+				href={resolve(`/outlet/${page.params.slug}/${page.params.id}/admin`)}
+			>
+				<UserCogIcon />
+				Admin
+			</Button>
+		{/if}
 		<Button href={resolve(`/outlet/${page.params.slug}/${page.params.id}/facility`)}>
 			<BuildingIcon />
 			<span class="hidden sm:inline"> Facility </span>
