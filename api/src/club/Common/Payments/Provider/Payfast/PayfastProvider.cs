@@ -2,47 +2,49 @@ using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web;
-using Microsoft.Extensions.Options;
+using Club.Common.Payments;
 using Club.Services;
 
 namespace Club.Common.Payments.Provider.Payfast;
 
-public class PayfastProvider(IOptions<PayfastOptions> options, HttpClient httpClient) : IPaymentProvider
+public class PayfastProvider(
+    IPaymentOptionsAccessor<PayfastOptions> optionsAccessor,
+    HttpClient httpClient) : IPaymentProvider
 {
-    private readonly PayfastOptions _options = options.Value;
     private readonly HttpClient _httpClient = httpClient;
 
     public string ProviderName => "payfast";
 
-    public Task<PaymentResponse> ProcessPaymentAsync(PaymentRequest request, CancellationToken ct)
+    public async Task<PaymentResponse> ProcessPaymentAsync(PaymentRequest request, CancellationToken ct)
     {
+        var options = await RequireOptionsAsync(ct);
         var parameters = new SortedDictionary<string, string>(StringComparer.Ordinal)
         {
-            ["merchant_id"] = _options.MerchantId,
-            ["merchant_key"] = _options.MerchantKey,
-            ["return_url"] = _options.ReturnUrl,
-            ["cancel_url"] = _options.CancelUrl,
-            ["notify_url"] = _options.NotifyUrl,
+            ["merchant_id"] = options.MerchantId,
+            ["merchant_key"] = options.MerchantKey,
+            ["return_url"] = options.ReturnUrl,
+            ["cancel_url"] = options.CancelUrl,
+            ["notify_url"] = options.NotifyUrl,
             ["m_payment_id"] = request.TransactionId,
             ["amount"] = request.Amount.ToString("F2", CultureInfo.InvariantCulture),
             ["item_name"] = request.Description ?? "Club payment",
         };
 
-        var signature = CalculateSignature(parameters);
+        var signature = CalculateSignature(parameters, options.Passphrase);
         parameters["signature"] = signature;
 
         var queryString = string.Join("&", parameters.Select(kvp =>
             $"{HttpUtility.UrlEncode(kvp.Key)}={HttpUtility.UrlEncode(kvp.Value)}"));
 
-        var redirectUrl = $"{_options.BaseUrl.TrimEnd('/')}/process?{queryString}";
+        var redirectUrl = $"{options.BaseUrl.TrimEnd('/')}/process?{queryString}";
 
-        return Task.FromResult(new PaymentResponse
+        return new PaymentResponse
         {
             Success = true,
             TransactionId = request.TransactionId,
             RedirectUrl = redirectUrl,
             Status = "pending"
-        });
+        };
     }
 
     public async Task<PaymentResult> ProcessResponseAsync(HttpContext context)
@@ -72,7 +74,8 @@ public class PayfastProvider(IOptions<PayfastOptions> options, HttpClient httpCl
                 .OrderBy(kvp => kvp.Key, StringComparer.Ordinal)
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value, StringComparer.Ordinal);
 
-            var expectedSignature = CalculateSignature(signatureParameters);
+            var options = await RequireOptionsAsync(context.RequestAborted);
+            var expectedSignature = CalculateSignature(signatureParameters, options.Passphrase);
 
             if (!string.Equals(receivedSignature, expectedSignature, StringComparison.OrdinalIgnoreCase))
             {
@@ -114,7 +117,7 @@ public class PayfastProvider(IOptions<PayfastOptions> options, HttpClient httpCl
         }
     }
 
-    private string CalculateSignature(IDictionary<string, string> parameters)
+    private string CalculateSignature(IDictionary<string, string> parameters, string passphrase)
     {
         var paramString = string.Join("&",
             parameters
@@ -122,7 +125,7 @@ public class PayfastProvider(IOptions<PayfastOptions> options, HttpClient httpCl
                 .OrderBy(kvp => kvp.Key, StringComparer.Ordinal)
                 .Select(kvp => $"{kvp.Key}={HttpUtility.UrlEncode(kvp.Value)}"));
 
-        var signatureString = $"{paramString}&passphrase={HttpUtility.UrlEncode(_options.Passphrase)}";
+        var signatureString = $"{paramString}&passphrase={HttpUtility.UrlEncode(passphrase)}";
         var hashBytes = MD5.HashData(Encoding.UTF8.GetBytes(signatureString));
 
         return Convert.ToHexStringLower(hashBytes);
@@ -161,6 +164,14 @@ public class PayfastProvider(IOptions<PayfastOptions> options, HttpClient httpCl
                 ["error"] = error
             }
         };
+    }
+
+    private async Task<PayfastOptions> RequireOptionsAsync(CancellationToken ct)
+    {
+        return await optionsAccessor.GetAsync(ct)
+            ?? throw new InvalidOperationException(
+                "No enabled Payfast provider configuration was found. " +
+                "Seed or configure payment provider settings before processing payments.");
     }
 
     private static string MapPaymentStatusToEvent(string paymentStatus)

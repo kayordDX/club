@@ -1,17 +1,16 @@
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Options;
+using Club.Common.Payments;
 using Club.Services;
 
 namespace Club.Common.Payments.Provider.Peach;
 
 public class PeachProvider(
-    IOptions<PeachOptions> options,
+    IPaymentOptionsAccessor<PeachOptions> optionsAccessor,
     HttpClient httpClient,
     IHttpContextAccessor httpContextAccessor) : IPaymentProvider
 {
-    private readonly PeachOptions _options = options.Value;
     private readonly HttpClient _httpClient = httpClient;
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
@@ -21,15 +20,16 @@ public class PeachProvider(
     {
         try
         {
+            var options = await RequireOptionsAsync(ct);
             var shopperResultUrl = BuildShopperResultUrl();
 
             var payload = new
             {
                 authentication = new
                 {
-                    userId = _options.UserId,
-                    password = _options.Password,
-                    entityId = _options.EntityId
+                    userId = options.UserId,
+                    password = options.Password,
+                    entityId = options.EntityId
                 },
                 merchantTransactionId = request.TransactionId,
                 amount = request.Amount.ToString("F2"),
@@ -39,7 +39,7 @@ public class PeachProvider(
                 shopperResultUrl
             };
 
-            var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"{_options.BaseUrl.TrimEnd('/')}/payments")
+            var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"{options.BaseUrl.TrimEnd('/')}/payments")
             {
                 Content = JsonContent.Create(payload)
             };
@@ -83,11 +83,13 @@ public class PeachProvider(
 
         try
         {
+            var options = await RequireOptionsAsync(context.RequestAborted);
+
             PeachPaymentPayload? payload;
 
             if (HasRedirectQuery(context.Request))
             {
-                payload = await QueryPaymentStatusAsync(context.Request, context.RequestAborted);
+                payload = await QueryPaymentStatusAsync(context.Request, options, context.RequestAborted);
             }
             else
             {
@@ -152,7 +154,10 @@ public class PeachProvider(
         return request.Query.ContainsKey("resourcePath") || request.Query.ContainsKey("id");
     }
 
-    private async Task<PeachPaymentPayload?> QueryPaymentStatusAsync(HttpRequest request, CancellationToken ct)
+    private async Task<PeachPaymentPayload?> QueryPaymentStatusAsync(
+        HttpRequest request,
+        PeachOptions options,
+        CancellationToken ct)
     {
         var resourcePath = request.Query["resourcePath"].ToString();
         var id = request.Query["id"].ToString();
@@ -168,12 +173,12 @@ public class PeachProvider(
         }
 
         var uri = QueryHelpers.AddQueryString(
-            $"{_options.BaseUrl.TrimEnd('/')}{resourcePath}",
+            $"{options.BaseUrl.TrimEnd('/')}{resourcePath}",
             new Dictionary<string, string?>
             {
-                ["authentication.entityId"] = _options.EntityId,
-                ["authentication.userId"] = _options.UserId,
-                ["authentication.password"] = _options.Password
+                ["authentication.entityId"] = options.EntityId,
+                ["authentication.userId"] = options.UserId,
+                ["authentication.password"] = options.Password
             });
 
         var response = await _httpClient.GetAsync(uri, ct);
@@ -199,6 +204,14 @@ public class PeachProvider(
             request.Host,
             request.PathBase,
             $"/payment/result/{ProviderName}");
+    }
+
+    private async Task<PeachOptions> RequireOptionsAsync(CancellationToken ct)
+    {
+        return await optionsAccessor.GetAsync(ct)
+            ?? throw new InvalidOperationException(
+                "No enabled Peach provider configuration was found. " +
+                "Seed or configure payment provider settings before processing payments.");
     }
 
     private sealed class PeachCheckoutResponse

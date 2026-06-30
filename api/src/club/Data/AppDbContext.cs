@@ -32,6 +32,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IHttpContextAc
     public DbSet<OutletType> OutletType => Set<OutletType>();
     public DbSet<Payment> Payment => Set<Payment>();
     public DbSet<PaymentBooking> PaymentBooking => Set<PaymentBooking>();
+    public DbSet<PaymentProviderConfig> PaymentProviderConfig => Set<PaymentProviderConfig>();
     public DbSet<PaymentStatus> PaymentStatus => Set<PaymentStatus>();
     public DbSet<PaymentType> PaymentType => Set<PaymentType>();
     public DbSet<Resource> Resource => Set<Resource>();
