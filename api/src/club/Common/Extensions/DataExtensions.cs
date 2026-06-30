@@ -1,8 +1,13 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Club.Common.Payments;
+using Club.Common.Payments.Provider.Payfast;
+using Club.Common.Payments.Provider.Peach;
 using Club.Data;
 using Club.Entities;
+using Club.Services;
 using TickerQ.EntityFrameworkCore.DbContextFactory;
 
 namespace Club.Common.Extensions;
@@ -81,6 +86,11 @@ public static class DataExtensions
         if (env.IsDevelopment() || env.IsEnvironment("Testing") || true)
         {
             await SeedDbContext.SeedData(db, ct);
+
+            var encryption = scope.ServiceProvider.GetRequiredService<EncryptionService>();
+            var peachOptions = scope.ServiceProvider.GetRequiredService<IOptions<PeachOptions>>();
+            var payfastOptions = scope.ServiceProvider.GetRequiredService<IOptions<PayfastOptions>>();
+            await PaymentProviderConfigSeeder.SeedAsync(db, encryption, peachOptions, payfastOptions, ct);
         }
     }
 }
