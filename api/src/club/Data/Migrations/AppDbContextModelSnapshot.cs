@@ -833,6 +833,12 @@ namespace Club.Data.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("provider_key");
 
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("type");
+
                     b.HasKey("Id")
                         .HasName("pk_payment_provider_config");
 
@@ -1904,7 +1910,7 @@ namespace Club.Data.Migrations
 
                             b1.HasKey("IdentityUserPasskeyCredentialId");
 
-                            b1.ToTable("user_passkey");
+                            b1.ToTable("user_passkey", (string)null);
 
                             b1
                                 .ToJson("data")

@@ -25,8 +25,8 @@ public static class PaymentProviderConfigSeeder
             return;
         }
 
-        await EnsureRowAsync(db, encryption, facility.Id, PayfastOptions.Key, payfastOptions.Value, ct);
-        await EnsureRowAsync(db, encryption, facility.Id, PeachOptions.Key, peachOptions.Value, ct);
+        await EnsureRowAsync(db, encryption, facility.Id, PayfastOptions.Key, PaymentProviderType.Payfast, payfastOptions.Value, ct);
+        await EnsureRowAsync(db, encryption, facility.Id, PeachOptions.Key, PaymentProviderType.Peach, peachOptions.Value, ct);
         await db.SaveChangesAsync(ct);
     }
 
@@ -35,6 +35,7 @@ public static class PaymentProviderConfigSeeder
         EncryptionService encryption,
         int facilityId,
         string providerKey,
+        PaymentProviderType type,
         T options,
         CancellationToken ct) where T : class
     {
@@ -54,6 +55,7 @@ public static class PaymentProviderConfigSeeder
         {
             FacilityId = facilityId,
             ProviderKey = providerKey,
+            Type = type,
             Iv = iv,
             EncryptedSettings = encrypted,
             Enabled = true,

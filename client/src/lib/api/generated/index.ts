@@ -1,6 +1,7 @@
 export * from './test';
 export * from './api.schemas';
 export * from './slot';
+export * from './payment';
 export * from './outlet';
 export * from './facility';
 export * from './extra';

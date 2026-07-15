@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Club.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260715104304_AddFacilityIdToPaymentProviderConfig")]
+    [Migration("20260715111832_AddFacilityIdToPaymentProviderConfig")]
     partial class AddFacilityIdToPaymentProviderConfig
     {
         /// <inheritdoc />
@@ -835,6 +835,12 @@ namespace Club.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("provider_key");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("type");
 
                     b.HasKey("Id")
                         .HasName("pk_payment_provider_config");

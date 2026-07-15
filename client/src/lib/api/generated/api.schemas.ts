@@ -77,6 +77,27 @@ export interface AvailableSlotRequest {
   slotCount?: number | null;
 }
 
+export interface PaymentCheckoutResponse {
+  success: boolean;
+  transactionId: string;
+  /** @nullable */
+  providerReference?: string | null;
+  /** @nullable */
+  redirectUrl?: string | null;
+  /** @nullable */
+  status?: string | null;
+  /** @nullable */
+  errorMessage?: string | null;
+}
+
+export interface PaymentCheckoutRequest {
+  amount: number;
+  currency: string;
+  transactionId: string;
+  /** @nullable */
+  description?: string | null;
+}
+
 export interface OutletTypeDTO {
   id: number;
   name: string;
@@ -386,6 +407,34 @@ export interface Resource {
   slots: Slot[];
 }
 
+export type PaymentProviderType = typeof PaymentProviderType[keyof typeof PaymentProviderType];
+
+
+export const PaymentProviderType = {
+  /** PeachPayments */
+  Peach: 0,
+  /** Payfast */
+  Payfast: 1,
+} as const;
+
+export interface PaymentProviderConfig {
+  created: string;
+  /** @nullable */
+  createdBy?: string | null;
+  /** @nullable */
+  lastModified?: string | null;
+  /** @nullable */
+  lastModifiedBy?: string | null;
+  id: number;
+  facilityId: number;
+  facility: Facility;
+  providerKey: string;
+  type: PaymentProviderType;
+  iv: string;
+  encryptedSettings: string;
+  enabled: boolean;
+}
+
 export interface Facility {
   created: string;
   /** @nullable */
@@ -412,6 +461,7 @@ export interface Facility {
   facilityType: FacilityType;
   resources: Resource[];
   slots: Slot[];
+  paymentProviderConfigs: PaymentProviderConfig[];
 }
 
 export interface ContractOutlet {
@@ -540,6 +590,11 @@ export interface OutletDTO {
   outletType: OutletTypeDTO;
   isActive: boolean;
   facilities: FacilityDTO[];
+}
+
+export interface FacilityPaymentMethodsResponse {
+  providerName: string;
+  type: string;
 }
 
 export type BookingStatusEnum = typeof BookingStatusEnum[keyof typeof BookingStatusEnum];

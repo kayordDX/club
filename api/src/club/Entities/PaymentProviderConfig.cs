@@ -6,6 +6,7 @@ public class PaymentProviderConfig : AuditableEntity
     public int FacilityId { get; set; }
     public Facility Facility { get; set; } = default!;
     public required string ProviderKey { get; set; }
+    public PaymentProviderType Type { get; set; }
     public byte[] Iv { get; set; } = [];
     public required string EncryptedSettings { get; set; }
     public bool Enabled { get; set; } = true;
