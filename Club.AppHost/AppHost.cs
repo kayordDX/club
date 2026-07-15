@@ -7,6 +7,14 @@ var clubDb = pg.AddDatabase("club");
 // Redis cache (Aspire manages TLS + credentials)
 var cache = builder.AddRedis("cache");
 
+// Mailpit — email testing SMTP + web UI
+var mailpit = builder.AddContainer("mailpit", "axllent/mailpit")
+    .WithEnvironment("MP_MAX_MESSAGES", "5000")
+    .WithEnvironment("MP_SMTP_AUTH_ACCEPT_ANY", "1")
+    .WithEnvironment("MP_SMTP_AUTH_ALLOW_INSECURE", "1")
+    .WithHttpEndpoint(port: 8025, targetPort: 8025, name: "http")
+    .WithEndpoint(port: 1025, targetPort: 1025, name: "smtp");
+
 // SvelteKit frontend — Vite dev mode, references API via service discovery
 // Declared early so API can reference its endpoint for CORS
 var web = builder.AddViteApp("web", "../client")
