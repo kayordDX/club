@@ -18,20 +18,28 @@ public static class PaymentProviderConfigSeeder
         IOptions<PayfastOptions> payfastOptions,
         CancellationToken ct)
     {
-        await EnsureRowAsync(db, encryption, PayfastOptions.Key, payfastOptions.Value, ct);
-        await EnsureRowAsync(db, encryption, PeachOptions.Key, peachOptions.Value, ct);
+        var facility = await db.Facility.FirstOrDefaultAsync(ct);
+
+        if (facility is null)
+        {
+            return;
+        }
+
+        await EnsureRowAsync(db, encryption, facility.Id, PayfastOptions.Key, payfastOptions.Value, ct);
+        await EnsureRowAsync(db, encryption, facility.Id, PeachOptions.Key, peachOptions.Value, ct);
         await db.SaveChangesAsync(ct);
     }
 
     private static async Task EnsureRowAsync<T>(
         AppDbContext db,
         EncryptionService encryption,
+        int facilityId,
         string providerKey,
         T options,
         CancellationToken ct) where T : class
     {
         var exists = await db.PaymentProviderConfig
-            .AnyAsync(c => c.ProviderKey == providerKey, ct);
+            .AnyAsync(c => c.FacilityId == facilityId && c.ProviderKey == providerKey, ct);
 
         if (exists)
         {
@@ -44,6 +52,7 @@ public static class PaymentProviderConfigSeeder
 
         db.PaymentProviderConfig.Add(new PaymentProviderConfig
         {
+            FacilityId = facilityId,
             ProviderKey = providerKey,
             Iv = iv,
             EncryptedSettings = encrypted,
