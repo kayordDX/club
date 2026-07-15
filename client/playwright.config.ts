@@ -20,9 +20,9 @@ export default defineConfig({
 		},
 		{
 			// Backend API
-			command: "dotnet run --project club.csproj --no-restore",
+			command: "dotnet run --project Club.Api/club.csproj --no-restore",
 			port: 5000,
-			cwd: "../api/src/club",
+			cwd: "../Club.Api",
 			timeout: 120000,
 			reuseExistingServer: true,
 		},
