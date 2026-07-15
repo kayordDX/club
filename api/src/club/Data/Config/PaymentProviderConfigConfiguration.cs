@@ -10,6 +10,7 @@ public class PaymentProviderConfigConfiguration : IEntityTypeConfiguration<Payme
     {
         builder.HasIndex(c => new { c.FacilityId, c.ProviderKey }).IsUnique();
         builder.Property(c => c.ProviderKey).HasMaxLength(100).IsRequired();
+        builder.Property(c => c.Type).HasConversion<string>().HasMaxLength(50).IsRequired();
         builder.Property(c => c.EncryptedSettings).IsRequired();
         builder.Property(c => c.Iv).IsRequired();
         builder.HasOne(c => c.Facility)

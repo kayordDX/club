@@ -80,6 +80,7 @@ public static class ApiExtensions
             .UseFastEndpoints(c =>
             {
                 c.Serializer.Options.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+                c.Serializer.Options.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.Never;
                 c.Endpoints.Configurator = ep =>
                 {
                     ep.Options(x => x.Produces<InternalErrorResponse>(500));

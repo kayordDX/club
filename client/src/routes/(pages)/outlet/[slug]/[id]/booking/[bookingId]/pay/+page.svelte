@@ -2,7 +2,7 @@
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
 
-	import { Badge, Button, Card, Table, ToggleGroup } from "@kayord/ui";
+	import { Alert, Badge, Button, Card, Table, ToggleGroup } from "@kayord/ui";
 	import {
 		CalendarDaysIcon,
 		ChevronLeftIcon,
@@ -12,7 +12,12 @@
 		UserRoundIcon,
 		WalletMinimalIcon,
 	} from "@lucide/svelte";
-	import { createBookingGet, createBookingUpdateStatus, BookingStatusEnum } from "$lib/api";
+	import {
+		createBookingGet,
+		createBookingUpdateStatus,
+		BookingStatusEnum,
+		createFacilityPaymentMethods,
+	} from "$lib/api";
 	import Query from "$lib/components/Query.svelte";
 	import CountdownTimer from "$lib/components/CountdownTimer.svelte";
 	import { toast } from "svelte-sonner";
@@ -23,6 +28,8 @@
 
 	const bookingId = $derived(Number(page.params.bookingId) || 0);
 	const query = createBookingGet(() => bookingId);
+
+	const paymentMethods = createFacilityPaymentMethods(() => facilityId);
 
 	const updateStatusMut = createBookingUpdateStatus();
 	const updateStatus = async (status: BookingStatusEnum) => {
@@ -139,16 +146,32 @@
 							</p>
 						</div>
 					</div>
-					<ToggleGroup.Root type="single" class="w-full border" orientation="vertical">
-						<ToggleGroup.Item value="credit" class="flex h-fit flex-1 p-4">
-							<WalletMinimalIcon />
-							<div>Wallet</div>
-						</ToggleGroup.Item>
-						<ToggleGroup.Item value="cash" class="flex h-fit flex-1 border-t-1 p-4">
-							<CoinsIcon />
-							<div>Pay Later</div>
-						</ToggleGroup.Item>
-					</ToggleGroup.Root>
+
+					{#if paymentMethods.data && (paymentMethods.data.length ?? 0) > 0}
+						<div class="text-muted-foreground mb-4 text-sm">Available payment methods</div>
+
+						<ToggleGroup.Root
+							variant="outline"
+							type="single"
+							class="w-full border"
+							orientation="vertical"
+							value={paymentMethods.data[0].providerName}
+						>
+							{#each paymentMethods.data as paymentMethod (paymentMethod.providerName)}
+								<ToggleGroup.Item value={paymentMethod.providerName} class="flex h-fit flex-1  p-4">
+									<CreditCardIcon />
+									<div>{paymentMethod.type}</div>
+								</ToggleGroup.Item>
+							{/each}
+						</ToggleGroup.Root>
+					{:else}
+						<Alert.Root variant="destructive">
+							<Alert.Title>No payment methods</Alert.Title>
+							<Alert.Description>
+								This facility do not have any available payment methods.
+							</Alert.Description>
+						</Alert.Root>
+					{/if}
 				</Card.Content>
 				<Card.Footer class=" flex justify-between border-t">
 					<Button onclick={() => updateStatus(BookingStatusEnum.Cancelled)} variant="destructive">

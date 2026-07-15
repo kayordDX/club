@@ -18,6 +18,7 @@ import type {
 
 import type {
   FacilityDTO,
+  FacilityPaymentMethodsResponse,
   InternalErrorResponse
 } from './api.schemas';
 
@@ -27,6 +28,76 @@ import type { ErrorType } from '../mutator/customInstance.svelte';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+
+
+
+export const getFacilityPaymentMethodsUrl = (facilityId: number,) => {
+
+
+
+
+  return `/facility/${facilityId}/payment-methods`
+}
+
+export const facilityPaymentMethods = async (facilityId: number, options?: RequestInit): Promise<FacilityPaymentMethodsResponse[]> => {
+
+  return customInstance<FacilityPaymentMethodsResponse[]>(getFacilityPaymentMethodsUrl(facilityId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getFacilityPaymentMethodsQueryKey = (facilityId: number,) => {
+    return [
+    `/facility/${facilityId}/payment-methods`
+    ] as const;
+    }
+
+
+export const getFacilityPaymentMethodsQueryOptions = <TData = Awaited<ReturnType<typeof facilityPaymentMethods>>, TError = ErrorType<InternalErrorResponse>>(facilityId: number, options?: { query?:Partial<CreateQueryOptions<Awaited<ReturnType<typeof facilityPaymentMethods>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getFacilityPaymentMethodsQueryKey(facilityId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof facilityPaymentMethods>>> = ({ signal }) => facilityPaymentMethods(facilityId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: facilityId !== null && facilityId !== undefined, ...queryOptions} as CreateQueryOptions<Awaited<ReturnType<typeof facilityPaymentMethods>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type FacilityPaymentMethodsQueryResult = NonNullable<Awaited<ReturnType<typeof facilityPaymentMethods>>>
+export type FacilityPaymentMethodsQueryError = ErrorType<InternalErrorResponse>
+
+
+
+export function createFacilityPaymentMethods<TData = Awaited<ReturnType<typeof facilityPaymentMethods>>, TError = ErrorType<InternalErrorResponse>>(
+ facilityId: () =>  number, options?: () => { query?:Partial<CreateQueryOptions<Awaited<ReturnType<typeof facilityPaymentMethods>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: () => QueryClient
+ ): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+
+
+  const query = createQuery(() => getFacilityPaymentMethodsQueryOptions(facilityId(),options?.()), queryClient) as CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return query
+}
+
+
+
 
 
 
