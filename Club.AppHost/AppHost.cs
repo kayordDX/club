@@ -1,13 +1,17 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-// Postgres with app database (Aspire manages credentials)
-var pg = builder.AddPostgres("pg");
-var clubDb = pg.AddDatabase("club");
+var postgres = builder.AddPostgres("postgres");
+var clubDb = postgres.AddDatabase("club");
 
-// Redis cache (Aspire manages TLS + credentials)
 var cache = builder.AddRedis("cache");
 
-// Mailpit — email testing SMTP + web UI
+var keycloak = builder.AddKeycloak("keycloak", 8088)
+    .WithDataVolume()
+    .WithBindMount("./keycloak/themes", "/opt/keycloak/providers")
+    .WithRealmImport("./keycloak/realms");
+// .WithEnvironment("KC_HTTP_ENABLED", "true")
+
+
 var mailpit = builder.AddContainer("mailpit", "axllent/mailpit")
     .WithEnvironment("MP_MAX_MESSAGES", "5000")
     .WithEnvironment("MP_SMTP_AUTH_ACCEPT_ANY", "1")
@@ -29,16 +33,20 @@ web = web.WithBrowserLogs();
 var api = builder.AddProject("api", "../Club.Api/club.csproj")
     .WithReference(clubDb)
     .WithReference(cache)
+    .WithReference(keycloak)
     .WithEnvironment("ConnectionStrings__DefaultConnection", clubDb)
     .WithEnvironment("ConnectionStrings__Redis", cache)
-    .WaitFor(pg)
+    .WaitFor(postgres)
     .WithEnvironment("Cors__0", web.GetEndpoint("http"))
+    .WithEnvironment("Keycloak__AuthServerUrl", keycloak.GetEndpoint("http"))
+    .WithEnvironment("Keycloak__Issuer", $"{keycloak.GetEndpoint("http")}/realms/kayord")
     .WithExternalHttpEndpoints()
     .WithHttpHealthCheck("/health");
 
-// Wire the frontend's reference to the API (after both are declared)
+// Wire the frontend's reference to the API and Keycloak (after both are declared)
 web = web.WithReference(api)
     .WaitFor(api)
-    .WithEnvironment("PUBLIC_API_URL", api.GetEndpoint("http"));
+    .WithEnvironment("PUBLIC_API_URL", api.GetEndpoint("http"))
+    .WithEnvironment("PUBLIC_IDENTITY_URL", $"{keycloak.GetEndpoint("http")}/realms/kayord");
 
 builder.Build().Run();
