@@ -7,7 +7,7 @@
   },
   {
     "label": "Run",
-    "command": "dotnet run --project ./Club.Api/club.csproj",
+    "command": "dotnet run --project ./Club.Api/Club.Api.csproj",
     "tags": ["test"],
     "hide": "on_success",
   },

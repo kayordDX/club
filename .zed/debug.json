@@ -13,7 +13,7 @@
       "command": "dotnet",
       "args": [
         "build",
-        "${ZED_WORKTREE_ROOT}/Club.Api/club.csproj",
+        "${ZED_WORKTREE_ROOT}/Club.Api/Club.Api.csproj",
         "-p:Configuration=Debug",
       ],
     },

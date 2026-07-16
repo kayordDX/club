@@ -25,33 +25,33 @@ dotnet list package --outdated
 dotnet package update
 
 # ef
-dotnet ef migrations add InitTables --project src/club/club.csproj -c AppDbContext -o ./Data/Migrations
-dotnet ef migrations remove --project src/club/club.csproj
+dotnet ef migrations add InitTables --project Club.Api/ -c AppDbContext -o ./Data/Migrations
+dotnet ef migrations remove --project Club.Api/
 
 # remove
-dotnet ef migrations remove --project src/club/club.csproj -c AppDbContext -o ./Data/Migrations
+dotnet ef migrations remove --project Club.Api/ -c AppDbContext -o ./Data/Migrations
 
 # list dbContexts
-dotnet ef dbcontext list --project src/club/club.csproj --startup-project src/club/club.csproj
+dotnet ef dbcontext list --project Club.Api/ --startup-project Club.Api/
 
 # TickerQ
-dotnet ef migrations add TickerQInit --project src/club/club.csproj -c TickerQDbContext -o ./Data/TickerQMigrations
+dotnet ef migrations add TickerQInit --project Club.Api/ -c TickerQDbContext -o ./Data/TickerQMigrations
 
 # squash migrations
-dotnet steward squash api/src/club/Data/Migrations
+dotnet steward squash Club.Api/Data/Migrations
 ```
 
 ### Secrets
 
 ```bash
-dotnet user-secrets init --project api/src/club
-dotnet user-secrets set "Authentication:Google:ClientId" "secret" --project api/src/club
-dotnet user-secrets set "Authentication:Google:ClientSecret" "secret" --project api/src/club
+dotnet user-secrets init --project Club.Api/
+dotnet user-secrets set "Authentication:Google:ClientId" "secret" --project Club.Api/
+dotnet user-secrets set "Authentication:Google:ClientSecret" "secret" --project Club.Api/
 
-dotnet user-secrets set "AWS:AccessKeyId" "secret" --project api/src/club
-dotnet user-secrets set "AWS:SecretAccessKey" "secret" --project api/src/club
+dotnet user-secrets set "AWS:AccessKeyId" "secret" --project Club.Api/
+dotnet user-secrets set "AWS:SecretAccessKey" "secret" --project Club.Api/
 
-dotnet user-secrets list --project api/src/club
+dotnet user-secrets list --project Club.Api/
 ```
 
 ## Client (Front End)
@@ -62,6 +62,7 @@ dotnet user-secrets list --project api/src/club
 # cd client
 pnpm dev
 ```
+
 ## Principles
 
 - Simplicity
@@ -91,13 +92,13 @@ architecture-beta
 flowchart TB
   subgraph club [Club]
     direction BT
-    
+
     %% Nodes with shapes matching their service types
     svelte[Svelte]
     api([api])
     db[(Postgres)]
     redis[(Redis)]
-    
+
     %% Edge connections mimicking the original layout
     svelte --> api
     db <--> api
@@ -108,6 +109,7 @@ flowchart TB
 ### Temp Booking validation types?
 
 Types of validation checks
+
 - Pre Check (This check happens before a booking is created) - Check if slots are available. Only allow if you lower price if you are part of it.
 - Check (This check happens before booking status can become confirmed)
 
@@ -120,10 +122,10 @@ Types of validation checks
 Payments can you allow no payment and accept payment on arrival?
 
 Payment Options?
+
 - Pay before
 - Pay on arrival
 - Deposit %
-
 
 ### Auth Plan
 
@@ -142,7 +144,7 @@ Tags
 Contact Number
 Email Address
 
-Facility 
+Facility
 Facility Name
 Contact Number
 Email Address

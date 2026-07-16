@@ -8,7 +8,7 @@
       "name": "C#: Club",
       "type": "dotnet",
       "request": "launch",
-      "projectPath": "${workspaceFolder}/Club.Api/club.csproj",
+      "projectPath": "${workspaceFolder}/Club.Api/Club.Api.csproj",
     },
   ],
 }
