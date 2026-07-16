@@ -2,23 +2,23 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 WORKDIR /app
 EXPOSE 5000
 ENV ASPNETCORE_URLS=http://+:5000
-RUN apt update && apt install -y curl && rm -rf /var/lib/apt/lists/*
 
 USER app
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG configuration=Release
 WORKDIR /src
-COPY ["src/club/club.csproj", "Directory.Build.props", "Directory.Packages.props", "src/club/"]
-RUN dotnet restore "src/club/club.csproj"
+COPY Club.Api/Club.Api.csproj Club.Api/
+COPY Directory.Build.props Directory.Packages.props ./
+RUN dotnet restore "Club.Api/Club.Api.csproj"
 COPY . .
-WORKDIR "/src/src/club"
-RUN dotnet build "club.csproj" -c $configuration -o /app/build
+WORKDIR "/src/Club.Api"
+RUN dotnet build "Club.Api.csproj" -c $configuration -o /app/build
 
 FROM build AS publish
 ARG configuration=Release
-RUN dotnet publish "club.csproj" -c $configuration -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "Club.Api.csproj" -c $configuration -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "club.dll"]
+ENTRYPOINT ["dotnet", "Club.Api.dll"]
