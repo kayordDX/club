@@ -14,7 +14,7 @@
     <PackageReference Include="Aspire.Hosting.Keycloak" />
     <PackageReference Include="Aspire.Hosting.PostgreSQL" />
     <PackageReference Include="Aspire.Hosting.Redis" />
-    <ProjectReference Include="../Club.Api/club.csproj" />
+    <ProjectReference Include="../Club.Api/Club.Api.csproj" />
   </ItemGroup>
 
 </Project>

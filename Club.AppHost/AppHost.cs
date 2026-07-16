@@ -24,13 +24,20 @@ var mailpit = builder.AddContainer("mailpit", "axllent/mailpit")
 var web = builder.AddViteApp("web", "../client")
     .WithPnpm()
     .WithEnvironment("BROWSER", "none");
+
+web.WithEndpoint("http", e =>
+{
+    e.Port = 5173;
+    e.TargetPort = 5173;
+    e.IsProxied = false;
+});
 #pragma warning disable ASPIREBROWSERLOGS001
 web = web.WithBrowserLogs();
 #pragma warning restore ASPIREBROWSERLOGS001
 
 // API — references Postgres and Redis
 // Connection strings are aliased to match the API's expected config keys
-var api = builder.AddProject("api", "../Club.Api/club.csproj")
+var api = builder.AddProject("api", "../Club.Api/Club.Api.csproj")
     .WithReference(clubDb)
     .WithReference(cache)
     .WithReference(keycloak)

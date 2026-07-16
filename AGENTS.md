@@ -21,7 +21,7 @@ Prefer these skills instead of duplicating their detailed instructions here.
 
 ## Commands
 
-- See `api/src/club/club.csproj`, `api/tests/`, `client/package.json`, and VS Code tasks for available build, test, lint, preview, API generation, and migration commands.
+- See `Club.Api/Club.Api.csproj`, `api/tests/`, `client/package.json`, and VS Code tasks for available build, test, lint, preview, API generation, and migration commands.
 
 ## Code Style Guidelines
 
