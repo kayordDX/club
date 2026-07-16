@@ -2,8 +2,11 @@
 
 ## Project Overview
 
-- Monorepo with two main apps:
-  - `api/` - .NET 10 FastEndpoints backend in `api/src/club/`
+- Aspire orchestrated monorepo with:
+  - `Club.Api/` - .NET 10 FastEndpoints backend
+  - `Club.AppHost/` - Aspire AppHost orchestrating all resources
+  - `Club.ServiceDefaults/` - Aspire service defaults (OTel, health checks, service discovery)
+  - `Club.Tests/` - Integration and unit tests
   - `client/` - SvelteKit 5 frontend with TypeScript in `client/src/`
 - Purpose: public booking and member login system with Google OAuth authentication
 
@@ -18,7 +21,7 @@ Prefer these skills instead of duplicating their detailed instructions here.
 
 ## Commands
 
-- See `api/src/club/club.csproj`, `api/tests/`, `client/package.json`, and VS Code tasks for available build, test, lint, preview, API generation, and migration commands.
+- See `Club.Api/Club.Api.csproj`, `api/tests/`, `client/package.json`, and VS Code tasks for available build, test, lint, preview, API generation, and migration commands.
 
 ## Code Style Guidelines
 
@@ -42,19 +45,19 @@ let user = $state<User | null>(null);
 // Derived state
 let doubled = $derived(count * 2);
 let complexData = $derived.by(() => {
-	// complex logic here
-	return processedResult;
+  // complex logic here
+  return processedResult;
 });
 
 // Effects (use sparingly, prefer $derived)
 $effect(() => {
-	console.log(`Count is now ${count}`);
+  console.log(`Count is now ${count}`);
 });
 
 // Component props - new syntax
 type Props = {
-	title: string;
-	optional?: boolean;
+  title: string;
+  optional?: boolean;
 };
 let { title, optional = false } = $props();
 ```
@@ -78,26 +81,26 @@ let { title, optional = false } = $props();
 ```typescript
 // Use const for functions instead of function expressions
 export const fetchUserData = async (id: string) => {
-	return await api.users.getById(id);
+  return await api.users.getById(id);
 };
 
 // Import organization
-import type { ComponentType } from 'svelte';
-import { page } from '$app/stores';
-import { getUserData } from '$lib/api/generated';
-import { Button } from '$lib/components';
+import type { ComponentType } from "svelte";
+import { page } from "$app/stores";
+import { getUserData } from "$lib/api/generated";
+import { Button } from "$lib/components";
 ```
 
 #### API Usage
 
 ```typescript
 // Use generated API client from src/lib/api/generated/
-import { createQuery } from '@tanstack/svelte-query';
-import { getUsersListUsersGet } from '$lib/api/generated';
+import { createQuery } from "@tanstack/svelte-query";
+import { getUsersListUsersGet } from "$lib/api/generated";
 
 const usersQuery = createQuery({
-	queryKey: ['users'],
-	queryFn: () => getUsersListUsersGet()
+  queryKey: ["users"],
+  queryFn: () => getUsersListUsersGet(),
 });
 ```
 

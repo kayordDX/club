@@ -1,13 +1,13 @@
 [
   {
     "label": "Build",
-    "command": "dotnet build ./api",
+    "command": "dotnet build ./Club.Api",
     "tags": ["run"],
     "hide": "on_success",
   },
   {
     "label": "Run",
-    "command": "dotnet run --project ./api/src/club/club.csproj",
+    "command": "dotnet run --project ./Club.Api/Club.Api.csproj",
     "tags": ["test"],
     "hide": "on_success",
   },

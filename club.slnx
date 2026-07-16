@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="Club.Api/Club.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="Club.Tests/IntegrationTests/IntegrationTests.csproj" />
+    <Project Path="Club.Tests/UnitTests/UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/aspire/">
+    <Project Path="Club.AppHost/Club.AppHost.csproj" />
+    <Project Path="Club.ServiceDefaults/Club.ServiceDefaults.csproj" />
+  </Folder>
+</Solution>

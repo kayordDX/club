@@ -204,7 +204,7 @@ Use one or more of these checks:
 Useful commands:
 
 ```bash
-dotnet build api/src/club/club.csproj
+dotnet build Club.Api/Club.Api.csproj
 dotnet test api/tests/
 ```
 
