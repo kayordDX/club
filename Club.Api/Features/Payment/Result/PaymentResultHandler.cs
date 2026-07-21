@@ -1,5 +1,9 @@
-using Microsoft.Extensions.Caching.Hybrid;
+using Microsoft.EntityFrameworkCore;
 using Club.Common.Payments;
+using Club.Data;
+using Club.Entities;
+using Club.Features.Payment.Events;
+using FastEndpoints;
 using Club.Services;
 
 namespace Club.Features.Payment.Result;
@@ -9,7 +13,6 @@ internal static class PaymentResultHandler
     public static async Task HandleAsync(
         HttpContext httpContext,
         IPaymentFactory paymentFactory,
-        HybridCache cache,
         ILogger logger,
         CancellationToken ct)
     {
@@ -55,53 +58,67 @@ internal static class PaymentResultHandler
             return;
         }
 
-        var cacheKey = $"webhook:{transactionId}";
-        var cacheOptions = new HybridCacheEntryOptions
-        {
-            Expiration = TimeSpan.FromHours(24)
-        };
-
+        PaymentResult? result = null;
         try
         {
-            var result = await cache.GetOrCreateAsync<PaymentResult>(
-                cacheKey,
-                async cancellationToken =>
-                {
-                    logger.LogInformation(
-                        "Processing webhook for provider '{Provider}', transaction '{TransactionId}'.",
-                        providerName, transactionId);
+            logger.LogInformation(
+                "Processing webhook for provider '{Provider}', transaction '{TransactionId}'.",
+                providerName, transactionId);
 
-                    httpContext.Request.Body.Position = 0;
+            httpContext.Request.Body.Position = 0;
 
-                    return await provider.ProcessResponseAsync(httpContext);
-                },
-                cacheOptions,
-                cancellationToken: ct);
-
-            if (result is null)
-            {
-                httpContext.Response.StatusCode = StatusCodes.Status204NoContent;
-                return;
-            }
+            result = await provider.ProcessResponseAsync(httpContext);
 
             logger.LogInformation(
                 "Webhook processed for provider '{Provider}', transaction '{TransactionId}': Success={Success}, Event={Event}",
                 providerName, result.TransactionId, result.Success, result.EventType);
 
-            httpContext.Response.StatusCode = StatusCodes.Status200OK;
-            await httpContext.Response.WriteAsJsonAsync(new
+            await PersistAndUpdateBookingAsync(httpContext, result, logger, ct);
+
+            var isGetRequest = string.Equals(httpContext.Request.Method, "GET", StringComparison.OrdinalIgnoreCase);
+            if (isGetRequest)
             {
-                result.Success,
-                result.TransactionId,
-                result.EventType,
-                result.Status
-            }, cancellationToken: ct);
+                var configuration = httpContext.RequestServices.GetRequiredService<IConfiguration>();
+                var frontendBaseUrl = configuration["Payment:FrontendBaseUrl"] ?? "http://localhost:5173";
+
+                var queryParams = new Dictionary<string, string>
+                {
+                    ["transactionId"] = result.TransactionId
+                };
+
+                if (!result.Success)
+                {
+                    queryParams["error"] = result.Metadata?.GetValueOrDefault("error") ?? "Payment processing failed.";
+                }
+
+                var isSuccess = result.Success;
+                var segment = isSuccess ? "success" : "failure";
+                var query = string.Join("&", queryParams.Select(kvp =>
+                    $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value)}"));
+                var redirectUrl = $"{frontendBaseUrl.TrimEnd('/')}/payment/{segment}?{query}";
+
+                httpContext.Response.StatusCode = StatusCodes.Status302Found;
+                httpContext.Response.Headers.Location = redirectUrl;
+                httpContext.Response.ContentLength = 0;
+                await httpContext.Response.StartAsync(ct);
+            }
+            else
+            {
+                httpContext.Response.StatusCode = StatusCodes.Status200OK;
+                await httpContext.Response.WriteAsJsonAsync(new
+                {
+                    result.Success,
+                    result.TransactionId,
+                    result.EventType,
+                    result.Status
+                }, cancellationToken: ct);
+            }
         }
         catch (Exception ex)
         {
             logger.LogError(ex,
                 "Webhook processing failed for provider '{Provider}', transaction '{TransactionId}'.",
-                providerName, transactionId);
+                providerName, result?.TransactionId ?? transactionId);
 
             httpContext.Response.StatusCode = StatusCodes.Status200OK;
             await httpContext.Response.WriteAsJsonAsync(new
@@ -112,6 +129,87 @@ internal static class PaymentResultHandler
             }, cancellationToken: ct);
         }
     }
+
+    private static async Task PersistAndUpdateBookingAsync(
+        HttpContext httpContext,
+        PaymentResult result,
+        ILogger logger,
+        CancellationToken ct)
+    {
+        var dbContext = httpContext.RequestServices.GetRequiredService<AppDbContext>();
+
+        var internalTransactionId = result.TransactionId;
+        if (string.IsNullOrWhiteSpace(internalTransactionId) || internalTransactionId == "unknown")
+        {
+            logger.LogWarning("Payment result has no valid transaction ID.");
+            return;
+        }
+
+        var payment = await dbContext.Payment
+            .FirstOrDefaultAsync(p => p.TransactionId == internalTransactionId, ct);
+
+        if (payment is null)
+        {
+            logger.LogWarning("Payment record not found for transaction '{TransactionId}'.", internalTransactionId);
+            return;
+        }
+
+        var paymentBooking = await dbContext.PaymentBooking
+            .Include(pb => pb.Booking)
+            .FirstOrDefaultAsync(pb => pb.PaymentId == payment.Id, ct);
+
+        var bookingId = paymentBooking?.BookingId ?? 0;
+
+        if (result.Success)
+        {
+            payment.PaymentStatusId = (int)Common.Enums.PaymentStatusEnum.Completed;
+            payment.PaymentStatusDate = DateTime.UtcNow;
+            payment.ProviderReference ??= result.Metadata?.GetValueOrDefault("providerReference");
+
+            if (paymentBooking?.Booking is not null)
+            {
+                var booking = paymentBooking.Booking;
+                booking.AmountPaid += payment.Amount;
+                booking.AmountOutstanding -= payment.Amount;
+
+                if (booking.AmountOutstanding <= 0)
+                {
+                    booking.IsPaid = true;
+                    booking.BookingStatusId = (int)Common.Enums.BookingStatusEnum.Confirmed;
+                    booking.BookingStatusDate = DateTime.UtcNow;
+                }
+            }
+
+            await dbContext.SaveChangesAsync(ct);
+
+            await new PaymentSucceededEvent
+            {
+                TransactionId = internalTransactionId,
+                PaymentId = payment.Id,
+                BookingId = bookingId,
+                Amount = payment.Amount,
+                ProviderReference = payment.ProviderReference
+            }.PublishAsync(Mode.WaitForNone, ct);
+        }
+        else
+        {
+            payment.PaymentStatusId = (int)Common.Enums.PaymentStatusEnum.Failed;
+            payment.PaymentStatusDate = DateTime.UtcNow;
+            payment.ErrorMessage = result.Metadata?.GetValueOrDefault("error");
+
+            await dbContext.SaveChangesAsync(ct);
+
+            await new PaymentFailedEvent
+            {
+                TransactionId = internalTransactionId,
+                PaymentId = payment.Id,
+                BookingId = bookingId,
+                ErrorMessage = payment.ErrorMessage
+            }.PublishAsync(Mode.WaitForNone, ct);
+        }
+    }
+
+
 
     private static async Task<string> ExtractTransactionIdAsync(HttpContext context, CancellationToken ct)
     {

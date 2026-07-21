@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
 
 	import { Alert, Badge, Button, Card, Table, ToggleGroup } from "@kayord/ui";
@@ -7,10 +6,8 @@
 		CalendarDaysIcon,
 		ChevronLeftIcon,
 		Clock3Icon,
-		CoinsIcon,
 		CreditCardIcon,
 		UserRoundIcon,
-		WalletMinimalIcon,
 	} from "@lucide/svelte";
 	import {
 		createBookingGet,
@@ -20,6 +17,7 @@
 	} from "$lib/api";
 	import Query from "$lib/components/Query.svelte";
 	import CountdownTimer from "$lib/components/CountdownTimer.svelte";
+	import customInstance from "$lib/api/mutator/customInstance.svelte";
 	import { toast } from "svelte-sonner";
 	import { goto } from "$app/navigation";
 
@@ -31,15 +29,54 @@
 
 	const paymentMethods = createFacilityPaymentMethods(() => facilityId);
 
+	let selectedProvider = $state("");
+	let isPaying = $state(false);
+
 	const updateStatusMut = createBookingUpdateStatus();
-	const updateStatus = async (status: BookingStatusEnum) => {
+	const cancelBooking = async () => {
 		try {
-			await updateStatusMut.mutateAsync({ data: { bookingId, status } });
-			toast.info("Confirmed booking");
-			goto(resolve(`/outlet/${slug}/${facilityId}`));
+			await updateStatusMut.mutateAsync({
+				data: { bookingId, status: BookingStatusEnum.Cancelled },
+			});
+			toast.info("Booking cancelled");
+			goto(`/outlet/${slug}/${facilityId}`);
 		} catch (error) {
-			console.error("Failed to update booking status:", error);
-			toast.error("Failed to update booking status. Please try again.");
+			console.error("Failed to cancel booking:", error);
+			toast.error("Failed to cancel booking. Please try again.");
+		}
+	};
+
+	const initiatePayment = async () => {
+		if (!selectedProvider) {
+			toast.error("Please select a payment method.");
+			return;
+		}
+
+		isPaying = true;
+		try {
+			const response = await customInstance<{
+				transactionId: string;
+				redirectUrl: string;
+				providerReference?: string | null;
+			}>("/payment/initiate", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					bookingId,
+					providerName: selectedProvider,
+				}),
+			});
+
+			if (response.redirectUrl) {
+				window.location.href = response.redirectUrl;
+			} else {
+				toast.error("Payment initiation failed. No redirect URL received.");
+			}
+		} catch (error) {
+			console.error("Payment initiation failed:", error);
+			toast.error("Failed to initiate payment. Please try again.");
+		} finally {
+			isPaying = false;
 		}
 	};
 </script>
@@ -155,10 +192,10 @@
 							type="single"
 							class="w-full border"
 							orientation="vertical"
-							value={paymentMethods.data[0].providerName}
+							bind:value={selectedProvider}
 						>
 							{#each paymentMethods.data as paymentMethod (paymentMethod.providerName)}
-								<ToggleGroup.Item value={paymentMethod.providerName} class="flex h-fit flex-1  p-4">
+								<ToggleGroup.Item value={paymentMethod.providerName} class="flex h-fit flex-1 p-4">
 									<CreditCardIcon />
 									<div>{paymentMethod.type}</div>
 								</ToggleGroup.Item>
@@ -173,12 +210,14 @@
 						</Alert.Root>
 					{/if}
 				</Card.Content>
-				<Card.Footer class=" flex justify-between border-t">
-					<Button onclick={() => updateStatus(BookingStatusEnum.Cancelled)} variant="destructive">
+				<Card.Footer class="flex justify-between border-t">
+					<Button onclick={cancelBooking} variant="destructive" disabled={isPaying}>
 						<ChevronLeftIcon class="size-4" />
 						Cancel
 					</Button>
-					<Button onclick={() => updateStatus(BookingStatusEnum.Confirmed)}>Complete</Button>
+					<Button onclick={initiatePayment} disabled={!selectedProvider || isPaying}>
+						{isPaying ? "Processing..." : "Pay Now"}
+					</Button>
 				</Card.Footer>
 			</Card.Root>
 		</div>

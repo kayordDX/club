@@ -51,12 +51,41 @@ public static class SeedDbContext
 
         if (!paymentTypes.Contains("Pay on arrival"))
         {
-            await dbContext.PaymentType.AddAsync(new PaymentType { Name = "Pay on arrival" }, ct);
+            await dbContext.PaymentType.AddAsync(new PaymentType { Id = (int)Common.Enums.PaymentTypeEnum.PayOnArrival, Name = "Pay on arrival" }, ct);
         }
 
         if (!paymentTypes.Contains("Credit card"))
         {
-            await dbContext.PaymentType.AddAsync(new PaymentType { Name = "Credit card" }, ct);
+            await dbContext.PaymentType.AddAsync(new PaymentType { Id = (int)Common.Enums.PaymentTypeEnum.CreditCard, Name = "Credit card" }, ct);
+        }
+
+        if (!paymentTypes.Contains("EFT"))
+        {
+            await dbContext.PaymentType.AddAsync(new PaymentType { Id = (int)Common.Enums.PaymentTypeEnum.EFT, Name = "EFT" }, ct);
+        }
+
+        var paymentStatuses = await dbContext.PaymentStatus
+            .Select(x => x.Name)
+            .ToListAsync(ct);
+
+        if (!paymentStatuses.Contains("Pending"))
+        {
+            await dbContext.PaymentStatus.AddAsync(new PaymentStatus { Id = (int)Common.Enums.PaymentStatusEnum.Pending, Name = "Pending" }, ct);
+        }
+
+        if (!paymentStatuses.Contains("Completed"))
+        {
+            await dbContext.PaymentStatus.AddAsync(new PaymentStatus { Id = (int)Common.Enums.PaymentStatusEnum.Completed, Name = "Completed" }, ct);
+        }
+
+        if (!paymentStatuses.Contains("Failed"))
+        {
+            await dbContext.PaymentStatus.AddAsync(new PaymentStatus { Id = (int)Common.Enums.PaymentStatusEnum.Failed, Name = "Failed" }, ct);
+        }
+
+        if (!paymentStatuses.Contains("Refunded"))
+        {
+            await dbContext.PaymentStatus.AddAsync(new PaymentStatus { Id = (int)Common.Enums.PaymentStatusEnum.Refunded, Name = "Refunded" }, ct);
         }
 
         await dbContext.SaveChangesAsync(ct);

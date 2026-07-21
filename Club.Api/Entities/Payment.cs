@@ -9,4 +9,9 @@ public class Payment : AuditableEntity
     public decimal Amount { get; set; }
     public int PaymentTypeId { get; set; }
     public PaymentType PaymentType { get; set; } = default!;
+    public required string TransactionId { get; set; }
+    public string? ProviderReference { get; set; }
+    public required string ProviderName { get; set; }
+    public string? RedirectUrl { get; set; }
+    public string? ErrorMessage { get; set; }
 }
