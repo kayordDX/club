@@ -116,9 +116,12 @@ public class PeachProvider(
                 };
             }
 
+            var isSuccess = IsSuccessResultCode(payload.Result?.Code);
+            var errorMessage = isSuccess ? null : payload.Result?.Description;
+
             return new PaymentResult
             {
-                Success = true,
+                Success = isSuccess,
                 TransactionId = payload.MerchantTransactionId ?? payload.Id ?? "unknown",
                 EventType = payload.PaymentType,
                 Status = payload.Result?.Code,
@@ -129,7 +132,8 @@ public class PeachProvider(
                     ["resultDescription"] = payload.Result?.Description ?? string.Empty,
                     ["redirectUrl"] = payload.Redirect?.Url ?? string.Empty,
                     ["paymentBrand"] = payload.PaymentBrand ?? string.Empty,
-                    ["resourcePath"] = context.Request.Query["resourcePath"].ToString()
+                    ["resourcePath"] = context.Request.Query["resourcePath"].ToString(),
+                    ["error"] = errorMessage ?? string.Empty
                 }
             };
         }
@@ -275,5 +279,15 @@ public class PeachProvider(
 
         [JsonPropertyName("method")]
         public string? Method { get; set; }
+    }
+
+    private static bool IsSuccessResultCode(string? code)
+    {
+        if (string.IsNullOrWhiteSpace(code))
+        {
+            return false;
+        }
+
+        return code.StartsWith("000.", StringComparison.Ordinal);
     }
 }

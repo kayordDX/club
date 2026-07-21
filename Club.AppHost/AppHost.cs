@@ -1,6 +1,11 @@
+using Aspire.Hosting.Pipelines;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
-var postgres = builder.AddPostgres("postgres");
+var postgres = builder.AddPostgres("postgres")
+    .WithDataVolume()
+    .WithHostPort(5432);
+
 var clubDb = postgres.AddDatabase("club");
 
 var cache = builder.AddRedis("cache");
