@@ -9,11 +9,13 @@ namespace Club.Features.Payment.Initiate;
 
 public class Endpoint(
     AppDbContext dbContext,
-    IPaymentFactory paymentFactory
+    IPaymentFactory paymentFactory,
+    PaymentLogger paymentLogger
 ) : Endpoint<PaymentInitiateRequest, PaymentInitiateResponse>
 {
     private readonly AppDbContext _dbContext = dbContext;
     private readonly IPaymentFactory _paymentFactory = paymentFactory;
+    private readonly PaymentLogger _paymentLogger = paymentLogger;
 
     public override void Configure()
     {
@@ -75,6 +77,11 @@ public class Endpoint(
         _dbContext.Payment.Add(payment);
         await _dbContext.SaveChangesAsync(ct);
 
+        await _paymentLogger.LogAsync(payment.Id, transactionId, req.ProviderName,
+            "payment.initiated", "pending",
+            $"Payment initiated for Booking #{booking.Id}, amount R{booking.AmountOutstanding:F2}",
+            new { bookingId = booking.Id, amount = booking.AmountOutstanding }, ct);
+
         _dbContext.PaymentBooking.Add(new PaymentBooking
         {
             PaymentId = payment.Id,
@@ -100,6 +107,13 @@ public class Endpoint(
             : null;
         payment.ProviderReference = result.ProviderReference;
         await _dbContext.SaveChangesAsync(ct);
+
+        await _paymentLogger.LogAsync(payment.Id, transactionId, req.ProviderName,
+            "provider.redirect_returned", result.Success ? "pending" : "failed",
+            result.Success
+                ? $"Provider returned redirect: {result.RedirectUrl ?? "(form)"}"
+                : $"Provider failed: {result.ErrorMessage}",
+            new { redirectUrl = result.RedirectUrl, formActionUrl = result.FormActionUrl, errorMessage = result.ErrorMessage }, ct);
 
         if (!result.Success)
         {

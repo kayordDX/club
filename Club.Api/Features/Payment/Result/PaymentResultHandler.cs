@@ -58,6 +58,19 @@ internal static class PaymentResultHandler
             return;
         }
 
+        var paymentLogger = httpContext.RequestServices.GetRequiredService<PaymentLogger>();
+        var dbContext = httpContext.RequestServices.GetRequiredService<AppDbContext>();
+
+        var payment = await dbContext.Payment
+            .FirstOrDefaultAsync(p => p.TransactionId == transactionId, ct);
+
+        if (payment is not null)
+        {
+            await paymentLogger.LogAsync(payment.Id, transactionId, providerName,
+                "itn.received", "processing",
+                $"ITN received from {providerName}", null, ct);
+        }
+
         PaymentResult? result = null;
         try
         {
@@ -73,7 +86,28 @@ internal static class PaymentResultHandler
                 "Webhook processed for provider '{Provider}', transaction '{TransactionId}': Success={Success}, Event={Event}",
                 providerName, result.TransactionId, result.Success, result.EventType);
 
+            if (payment is not null)
+            {
+                await paymentLogger.LogAsync(payment.Id, transactionId, providerName,
+                    result.Success ? "itn.verified" : "itn.verification_failed",
+                    result.Success ? "completed" : "failed",
+                    result.Success ? "ITN signature and server verification passed" : $"ITN verification failed: {result.Metadata?.GetValueOrDefault("error")}",
+                    new { eventType = result.EventType, status = result.Status, metadata = result.Metadata }, ct);
+            }
+
             await PersistAndUpdateBookingAsync(httpContext, result, logger, ct);
+
+            if (payment is not null)
+            {
+                var finalStatus = result.Success ? "completed" : "failed";
+                await paymentLogger.LogAsync(payment.Id, transactionId, providerName,
+                    result.Success ? "payment.completed" : "payment.failed",
+                    finalStatus,
+                    result.Success
+                        ? "Payment completed successfully"
+                        : $"Payment failed: {result.Metadata?.GetValueOrDefault("error")}",
+                    new { providerReference = result.Metadata?.GetValueOrDefault("providerReference") }, ct);
+            }
 
             var isGetRequest = string.Equals(httpContext.Request.Method, "GET", StringComparison.OrdinalIgnoreCase);
             if (isGetRequest)
@@ -119,6 +153,13 @@ internal static class PaymentResultHandler
             logger.LogError(ex,
                 "Webhook processing failed for provider '{Provider}', transaction '{TransactionId}'.",
                 providerName, result?.TransactionId ?? transactionId);
+
+            if (payment is not null)
+            {
+                await paymentLogger.LogAsync(payment.Id, transactionId, providerName,
+                    "itn.processing_error", "failed",
+                    $"ITN processing error: {ex.Message}", null, ct);
+            }
 
             httpContext.Response.StatusCode = StatusCodes.Status200OK;
             await httpContext.Response.WriteAsJsonAsync(new
