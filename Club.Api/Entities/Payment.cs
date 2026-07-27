@@ -13,5 +13,7 @@ public class Payment : AuditableEntity
     public string? ProviderReference { get; set; }
     public required string ProviderName { get; set; }
     public string? RedirectUrl { get; set; }
+    public string? FormActionUrl { get; set; }
+    public string? FormFieldsJson { get; set; }
     public string? ErrorMessage { get; set; }
 }

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Club.Common.Payments;
 using Club.Data;
@@ -93,6 +94,10 @@ public class Endpoint(
         var result = await provider.ProcessPaymentAsync(paymentRequest, ct);
 
         payment.RedirectUrl = result.RedirectUrl;
+        payment.FormActionUrl = result.FormActionUrl;
+        payment.FormFieldsJson = result.FormFields is not null
+            ? JsonSerializer.Serialize(result.FormFields)
+            : null;
         payment.ProviderReference = result.ProviderReference;
         await _dbContext.SaveChangesAsync(ct);
 
