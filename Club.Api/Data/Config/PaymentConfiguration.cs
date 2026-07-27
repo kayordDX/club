@@ -23,7 +23,13 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
             .IsRequired();
 
         builder.Property(p => p.RedirectUrl)
+            .HasMaxLength(4000);
+
+        builder.Property(p => p.FormActionUrl)
             .HasMaxLength(1000);
+
+        builder.Property(p => p.FormFieldsJson)
+            .HasColumnType("text");
 
         builder.Property(p => p.ErrorMessage)
             .HasMaxLength(1000);

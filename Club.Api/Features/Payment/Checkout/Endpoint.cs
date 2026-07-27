@@ -43,6 +43,8 @@ public class Endpoint(IPaymentFactory paymentFactory) : Endpoint<PaymentCheckout
             TransactionId = result.TransactionId,
             ProviderReference = result.ProviderReference,
             RedirectUrl = result.RedirectUrl,
+            FormActionUrl = result.FormActionUrl,
+            FormFields = result.FormFields,
             Status = result.Status,
             ErrorMessage = result.ErrorMessage
         }, ct);
