@@ -21,6 +21,7 @@ public static class PaymentExtensions
         services.AddScoped<IPaymentProvider, PayfastProvider>();
 
         services.AddScoped<IPaymentFactory, PaymentFactory>();
+        services.AddScoped<PaymentLogger>();
 
         return services;
     }

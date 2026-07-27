@@ -1,3 +1,5 @@
+using Club.Services;
+
 namespace Club.Features.Payment.Form;
 
 public class Endpoint : EndpointWithoutRequest

@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Club.Data;
+using Club.Services;
 
 namespace Club.Features.Payment.Form;
 
@@ -57,6 +58,12 @@ internal static class PaymentFormHandler
 
         httpContext.Response.ContentType = "text/html; charset=utf-8";
         await httpContext.Response.WriteAsync(html, Encoding.UTF8, ct);
+
+        var logger = httpContext.RequestServices.GetRequiredService<PaymentLogger>();
+        await logger.LogAsync(payment.Id, transactionId, payment.ProviderName,
+            "payment.form_served", "pending",
+            $"Form served for {payment.ProviderName}, action: {payment.FormActionUrl}",
+            new { formActionUrl = payment.FormActionUrl }, ct);
     }
 
     private static string BuildFormHtml(string actionUrl, Dictionary<string, string> fields)
