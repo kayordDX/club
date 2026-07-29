@@ -80,6 +80,18 @@
 		</Item.Actions>
 	</Item.Root>
 
+	<Item.Root variant="muted">
+		<Item.Content>
+			<Item.Title>Passkey</Item.Title>
+			<Item.Description>Configure passkey for passwordless authentication</Item.Description>
+		</Item.Content>
+		<Item.Actions>
+			<Button onclick={() => auth.keycloakAction("webauthn-register-passwordless")} variant="outline">
+				Configure Passkey
+			</Button>
+		</Item.Actions>
+	</Item.Root>
+
 	<Query {query} emptyText="No data found">
 		<TwoFactor
 			isTwoFactorEnabled={query.data?.isTwoFactorEnabled ?? false}

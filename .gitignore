@@ -13,3 +13,4 @@ api/src/club/bin*
 
 # Playwright screenshots
 **/__screenshots/
+.DS_Store

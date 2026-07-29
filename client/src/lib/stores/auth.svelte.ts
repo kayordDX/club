@@ -8,7 +8,8 @@ export type KeycloakAction =
 	| "UPDATE_PROFILE"
 	| "UPDATE_EMAIL"
 	| "VERIFY_EMAIL"
-	| "TERMS_AND_CONDITIONS"
+  | "TERMS_AND_CONDITIONS"
+	| "webauthn-register-passwordless"
 	| "delete_account";
 
 class Auth {
