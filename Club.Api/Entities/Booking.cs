@@ -13,4 +13,5 @@ public class Booking : AuditableEntity
     public decimal AmountPaid { get; set; }
     public DateTime ExpiresAt { get; set; }
     public ICollection<SlotContractBooking> SlotContractBookings { get; set; } = [];
+    public ICollection<ExtraBooking> ExtraBookings { get; set; } = [];
 }

@@ -6,4 +6,5 @@ public class ExtraBooking
     public Extra Extra { get; set; } = default!;
     public int BookingId { get; set; }
     public Booking Booking { get; set; } = default!;
+    public int Amount { get; set; } = 1;
 }
