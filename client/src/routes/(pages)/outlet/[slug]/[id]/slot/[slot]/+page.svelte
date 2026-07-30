@@ -95,7 +95,15 @@
 					},
 				});
 
-				await goto(resolve(`/outlet/${slug}/${facilityId}/booking/${bookingResponse.id}/pay`));
+				const paymentParams = new URLSearchParams({
+					slotId,
+					slotCount: slotCount.toString(),
+					date: selectedDate,
+				});
+
+				await goto(
+					`${resolve(`/outlet/${slug}/${facilityId}/booking/${bookingResponse.id}/pay`)}?${paymentParams.toString()}`
+				);
 			} catch {
 				toast.error("Failed to create booking. Please try again.");
 			} finally {
