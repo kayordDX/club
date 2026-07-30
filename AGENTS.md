@@ -3,8 +3,8 @@
 ## Project Overview
 
 - Aspire orchestrated monorepo with:
+  - `Club.AppHost/` - Aspire AppHost orchestrating the API, frontend, Postgres, Redis, Keycloak, and Mailpit
   - `Club.Api/` - .NET 10 FastEndpoints backend
-  - `Club.AppHost/` - Aspire AppHost orchestrating all resources
   - `Club.ServiceDefaults/` - Aspire service defaults (OTel, health checks, service discovery)
   - `Club.Tests/` - Integration and unit tests
   - `client/` - SvelteKit 5 frontend with TypeScript in `client/src/`
@@ -13,7 +13,7 @@
 ## Available Skills
 
 - `ui` - Use for `@kayord/ui` / shadcn-svelte components, trigger patterns, forms, inputs, dialogs, dropdowns, and related frontend UI composition.
-- `api` - Use for API and backend work including FastEndpoints, endpoint structure, backend conventions, service registration, EF patterns, and API debugging in `api/src/club/Features/`.
+- `api` - Use for API and backend work including FastEndpoints, endpoint structure, backend conventions, service registration, EF patterns, and API debugging in `Club.Api/Features/`.
 - `svelte-core-bestpractices` - Use for modern Svelte 5 patterns, reactivity, composition, styling, and performance guidance.
 - `svelte-code-writer` - Use for Svelte documentation lookup and code analysis whenever creating, editing, or reviewing `.svelte`, `.svelte.ts`, or `.svelte.js` files.
 
@@ -21,7 +21,7 @@ Prefer these skills instead of duplicating their detailed instructions here.
 
 ## Commands
 
-- See `Club.Api/Club.Api.csproj`, `api/tests/`, `client/package.json`, and VS Code tasks for available build, test, lint, preview, API generation, and migration commands.
+- See `Club.AppHost/Club.AppHost.csproj`, `Club.Api/Club.Api.csproj`, `Club.Tests/`, `client/package.json`, and VS Code tasks for available run, build, test, lint, preview, API generation, and migration commands.
 
 ## Code Style Guidelines
 
@@ -111,7 +111,7 @@ const usersQuery = createQuery({
 ### Backend (C# .NET)
 
 - Use file-scoped namespaces
-- Keep feature-based organization under `api/src/club/Features/`
+- Keep feature-based organization under `Club.Api/Features/`
 - Keep entities singular and PascalCase
 - Use DTOs from the dedicated `DTO/` area
 - For endpoint structure, service registration, EF conventions, and backend implementation details, use the `api` skill
@@ -126,7 +126,7 @@ const usersQuery = createQuery({
 
 ### Adding New API Endpoint
 
-1. Create the endpoint in `api/src/club/Features/{FeatureName}/`
+1. Create the endpoint in `Club.Api/Features/{FeatureName}/`
 2. Register any required services in `Common/Extensions/`
 3. Regenerate the frontend API client from `client/`
 4. Update frontend usage as needed
@@ -145,7 +145,7 @@ For `@kayord/ui` component work, use the `ui` skill.
 
 ### Database Changes
 
-1. Modify entities in `api/src/club/Entities/`
+1. Modify entities in `Club.Api/Entities/`
 2. Add a migration with the normal EF workflow
 3. Update the database
 
@@ -160,8 +160,9 @@ For `@kayord/ui` component work, use the `ui` skill.
 
 ## Quick Reference
 
+- AppHost entrypoint: `dotnet run --project Club.AppHost/Club.AppHost.csproj`
 - API docs: `http://localhost:5000/scalar/v1`
-- Aspire dashboard: `http://localhost:18888`
+- Aspire AppHost: `http://localhost:15283`
 - Health checks, telemetry, and OpenAPI docs are enabled in development
 - Run API client generation after API changes
 - Use VS Code tasks or CLI for EF migrations

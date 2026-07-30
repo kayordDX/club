@@ -2,6 +2,14 @@
 
 The public site to book and login as member.
 
+## Structure
+
+- `Club.AppHost/` - Aspire AppHost for local orchestration
+- `Club.Api/` - FastEndpoints backend
+- `Club.ServiceDefaults/` - shared Aspire defaults
+- `Club.Tests/` - backend integration and unit tests
+- `client/` - SvelteKit frontend
+
 ## Setup
 
 ```bash
@@ -11,6 +19,23 @@ mkdir -p ./container/traefik/certs
 mkcert -cert-file ./container/traefik/certs/local-cert.pem -key-file ./container/traefik/certs/local-key.pem "localhost" "*.localhost" "auth.localhost"
 # copy certs to ./container/traefik/certs
 ```
+
+## Run with Aspire
+
+Start the full local stack through the AppHost:
+
+```bash
+dotnet run --project Club.AppHost/Club.AppHost.csproj
+```
+
+This orchestrates the API, frontend, Postgres, Redis, Keycloak, and Mailpit for local development.
+
+Useful local endpoints when the AppHost is running:
+
+- Aspire AppHost: `http://localhost:15283`
+- API docs: `http://localhost:5000/scalar/v1`
+- Frontend: `http://localhost:5173`
+- Keycloak realm: `http://localhost:8088/realms/kayord`
 
 ## API (Backend)
 
@@ -25,33 +50,36 @@ dotnet list package --outdated
 dotnet package update
 
 # ef
-dotnet ef migrations add InitTables --project Club.Api/ -c AppDbContext -o ./Data/Migrations
-dotnet ef migrations remove --project Club.Api/
+dotnet ef migrations add InitTables --project Club.Api/Club.Api.csproj --startup-project Club.Api/Club.Api.csproj -c AppDbContext -o ./Data/Migrations
+dotnet ef migrations remove --project Club.Api/Club.Api.csproj --startup-project Club.Api/Club.Api.csproj
 
 # remove
-dotnet ef migrations remove --project Club.Api/ -c AppDbContext -o ./Data/Migrations
+dotnet ef migrations remove --project Club.Api/Club.Api.csproj --startup-project Club.Api/Club.Api.csproj -c AppDbContext -o ./Data/Migrations
 
 # list dbContexts
-dotnet ef dbcontext list --project Club.Api/ --startup-project Club.Api/
+dotnet ef dbcontext list --project Club.Api/Club.Api.csproj --startup-project Club.Api/Club.Api.csproj
 
 # TickerQ
-dotnet ef migrations add TickerQInit --project Club.Api/ -c TickerQDbContext -o ./Data/TickerQMigrations
+dotnet ef migrations add TickerQInit --project Club.Api/Club.Api.csproj --startup-project Club.Api/Club.Api.csproj -c TickerQDbContext -o ./Data/TickerQMigrations
 
 # squash migrations
 dotnet steward squash Club.Api/Data/Migrations
+
+# run the API by itself
+dotnet run --project Club.Api/Club.Api.csproj
 ```
 
 ### Secrets
 
 ```bash
-dotnet user-secrets init --project Club.Api/
-dotnet user-secrets set "Authentication:Google:ClientId" "secret" --project Club.Api/
-dotnet user-secrets set "Authentication:Google:ClientSecret" "secret" --project Club.Api/
+dotnet user-secrets init --project Club.Api/Club.Api.csproj
+dotnet user-secrets set "Authentication:Google:ClientId" "secret" --project Club.Api/Club.Api.csproj
+dotnet user-secrets set "Authentication:Google:ClientSecret" "secret" --project Club.Api/Club.Api.csproj
 
-dotnet user-secrets set "AWS:AccessKeyId" "secret" --project Club.Api/
-dotnet user-secrets set "AWS:SecretAccessKey" "secret" --project Club.Api/
+dotnet user-secrets set "AWS:AccessKeyId" "secret" --project Club.Api/Club.Api.csproj
+dotnet user-secrets set "AWS:SecretAccessKey" "secret" --project Club.Api/Club.Api.csproj
 
-dotnet user-secrets list --project Club.Api/
+dotnet user-secrets list --project Club.Api/Club.Api.csproj
 ```
 
 ## Client (Front End)
@@ -59,8 +87,7 @@ dotnet user-secrets list --project Club.Api/
 ### Start
 
 ```bash
-# cd client
-pnpm dev
+pnpm --dir client dev
 ```
 
 ## Principles
