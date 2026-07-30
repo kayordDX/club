@@ -3,13 +3,14 @@
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
 	import { createBookingCreate } from "$lib/api";
+	import { auth } from "$lib/stores/auth.svelte";
 
 	const bookingMutation = createBookingCreate();
 
 	import { createSlotGetAll, createSlotGetContracts } from "$lib/api";
 	import { createAppForm, Form } from "$lib/components/Form";
 	import Query from "$lib/components/Query.svelte";
-	import { Badge, Button, Card, Empty } from "@kayord/ui";
+	import { Badge, Button, Card, Combobox, Empty } from "@kayord/ui";
 	import {
 		CalendarDaysIcon,
 		ChevronLeftIcon,
@@ -20,6 +21,11 @@
 	import { toast } from "svelte-sonner";
 	import { playersSchema, type Players, type SelectedExtra } from "./schema";
 	import Extras from "./Extras.svelte";
+	import {
+		SELF_PLAYER_OPTION_VALUE,
+		getSelfPlayerDetails,
+		getSelfPlayerOption,
+	} from "./player-autofill";
 
 	const slug = $derived(page.params.slug ?? "");
 	const facilityId = $derived(Number(page.params.id) || 0);
@@ -41,6 +47,11 @@
 
 	const slot = $derived(slotQuery.data?.find((item) => item.id === slotId));
 	const contracts = $derived(contractsQuery.data ?? []);
+	const playerAutofillItems = $derived.by(() => {
+		const currentUser = getSelfPlayerOption(auth.user?.profile);
+
+		return currentUser == null ? [] : [currentUser];
+	});
 	const contractItems = $derived(
 		contracts.map((contract) => ({
 			value: contract.id.toString(),
@@ -70,6 +81,10 @@
 			email: "",
 			contractId: "",
 		}));
+	}
+
+	function createPlayerSelectionValues(count: number) {
+		return Array.from({ length: count }, () => "");
 	}
 
 	const form = createAppForm(() => ({
@@ -109,12 +124,38 @@
 
 	// Form reactivity
 	const players = form.useStore((state) => state.values.players);
+	let playerSelections = $state<string[]>([]);
 
 	const totalPrice = $derived(
 		(players.current ?? [])
 			.map((c) => getPriceFromContractId(c.contractId))
 			.reduce((sum, price) => sum + price, 0)
 	);
+
+	$effect(() => {
+		if (playerSelections.length !== slotCount) {
+			playerSelections = createPlayerSelectionValues(slotCount);
+		}
+	});
+
+	const updatePlayerSelection = (index: number, nextValue: string | number | undefined) => {
+		playerSelections = playerSelections.map((value, currentIndex) =>
+			currentIndex === index ? String(nextValue ?? "") : value
+		);
+
+		if (nextValue !== SELF_PLAYER_OPTION_VALUE) {
+			return;
+		}
+
+		const currentUser = getSelfPlayerDetails(auth.user?.profile);
+		if (currentUser == null) {
+			return;
+		}
+
+		form.setFieldValue(`players[${index}].name`, currentUser.name);
+		form.setFieldValue(`players[${index}].cellNo`, currentUser.cellNo);
+		form.setFieldValue(`players[${index}].email`, currentUser.email);
+	};
 </script>
 
 <div class="mx-auto flex w-full flex-col gap-6">
@@ -216,20 +257,34 @@
 									<form.Field name="players">
 										{#snippet children(field)}
 											<div class="flex flex-col gap-4">
-												{#each field.state.value as _, index (index)}
+												{#each field.state.value as player, index (index)}
 													<Card.Root>
 														<Card.Header class="pb-4">
 															<div class="flex items-center justify-between gap-4">
 																<div>
 																	<Card.Title class="text-base">User {index + 1}</Card.Title>
 																	<Card.Description
-																		>Enter the details for this player.</Card.Description
+																		>Enter the details for {player.name ||
+																			"this player"}.</Card.Description
 																	>
 																</div>
 																<Badge variant="secondary">Required</Badge>
 															</div>
 														</Card.Header>
 														<Card.Content>
+															{#if playerAutofillItems.length > 0}
+																<div class="mb-4 max-w-md space-y-2">
+																	<p class="text-muted-foreground text-sm">Use saved details</p>
+																	<Combobox
+																		name={`player ${index + 1}`}
+																		items={playerAutofillItems}
+																		bind:value={
+																			() => playerSelections[index] ?? "",
+																			(nextValue) => updatePlayerSelection(index, nextValue)
+																		}
+																	/>
+																</div>
+															{/if}
 															<div class="grid gap-4 md:grid-cols-2">
 																<form.AppField name={`players[${index}].contractId`}>
 																	{#snippet children(field)}
