@@ -2,7 +2,7 @@
 	import { page } from "$app/state";
 	import { resolve } from "$app/paths";
 
-	import { Alert, Badge, Button, Card, Table, ToggleGroup } from "@kayord/ui";
+	import { Alert, Badge, Breadcrumb, Button, Card, Table, ToggleGroup } from "@kayord/ui";
 	import {
 		CalendarDaysIcon,
 		ChevronLeftIcon,
@@ -21,6 +21,7 @@
 	import customInstance from "$lib/api/mutator/customInstance.svelte";
 	import { toast } from "svelte-sonner";
 	import { goto } from "$app/navigation";
+	import { canReturnToBasket, getBasketUrl } from "./navigation";
 
 	const slug = $derived(page.params.slug ?? "");
 	const facilityId = $derived(Number(page.params.id) || 0);
@@ -32,6 +33,16 @@
 
 	let selectedProvider = $state("");
 	let isPaying = $state(false);
+
+	const basketUrl = $derived(
+		getBasketUrl({
+			slug,
+			facilityId,
+			searchParams: page.url.searchParams,
+			booking: query.data,
+		})
+	);
+	const canGoBack = $derived(canReturnToBasket(query.data));
 
 	const updateStatusMut = createBookingUpdateStatus();
 	const formatCurrency = (value: number) =>
@@ -86,10 +97,32 @@
 			isPaying = false;
 		}
 	};
+
+	const goBackToBasket = async () => {
+		if (window.history.length > 1) {
+			window.history.back();
+			return;
+		}
+
+		await goto(basketUrl);
+	};
 </script>
 
 <Query {query} emptyText="Booking not found">
 	<div class="mx-auto flex w-full flex-col gap-6">
+		<Breadcrumb.Root>
+			<Breadcrumb.List>
+				{#if canGoBack}
+					<Breadcrumb.Item>
+						<Breadcrumb.Link href={basketUrl} class="text-xs">Basket</Breadcrumb.Link>
+					</Breadcrumb.Item>
+					<Breadcrumb.Separator />
+				{/if}
+				<Breadcrumb.Item>
+					<Breadcrumb.Page class="text-xs">Payment</Breadcrumb.Page>
+				</Breadcrumb.Item>
+			</Breadcrumb.List>
+		</Breadcrumb.Root>
 		<div class="grid gap-4 pt-4">
 			<Card.Root class="border-border/60 overflow-hidden border shadow-sm">
 				<Card.Header class="border-border/60  border-b">
@@ -246,10 +279,17 @@
 					{/if}
 				</Card.Content>
 				<Card.Footer class="flex justify-between border-t">
-					<Button onclick={cancelBooking} variant="destructive" disabled={isPaying}>
-						<ChevronLeftIcon class="size-4" />
-						Cancel
-					</Button>
+					<div class="flex gap-2">
+						{#if canGoBack}
+							<Button onclick={goBackToBasket} variant="outline" disabled={isPaying}>
+								<ChevronLeftIcon class="size-4" />
+								Back
+							</Button>
+						{/if}
+						<Button onclick={cancelBooking} variant="destructive" disabled={isPaying}>
+							Cancel
+						</Button>
+					</div>
 					<Button onclick={initiatePayment} disabled={!selectedProvider || isPaying}>
 						{isPaying ? "Processing..." : "Pay Now"}
 					</Button>
