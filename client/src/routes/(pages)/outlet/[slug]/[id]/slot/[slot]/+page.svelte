@@ -8,6 +8,7 @@
 	const bookingMutation = createBookingCreate();
 
 	import { createSlotGetAll, createSlotGetContracts } from "$lib/api";
+	import { auth } from "$lib/stores/auth.svelte";
 	import { createAppForm, Form } from "$lib/components/Form";
 	import Query from "$lib/components/Query.svelte";
 	import { Badge, Button, Card, Empty } from "@kayord/ui";
@@ -240,7 +241,22 @@
 																		>Enter the details for this player.</Card.Description
 																	>
 																</div>
+															<div class="flex items-center gap-2">
+																{#if index === 0 && auth.isAuthenticated}
+																	<Button
+																		variant="outline"
+																		size="sm"
+																		class="h-6 px-2 text-xs"
+																		onclick={() => {
+																			form.setFieldValue(`players[${index}].name`, auth.user?.profile?.name || "");
+																			form.setFieldValue(`players[${index}].email`, auth.user?.profile?.email || "");
+																		}}
+																	>
+																		Me
+																	</Button>
+																{/if}
 																<Badge variant="secondary">Required</Badge>
+															</div>
 															</div>
 														</Card.Header>
 														<Card.Content>
@@ -285,7 +301,11 @@
 								<ChevronLeftIcon class="size-4" />
 								Back to slots
 							</Button>
-							<Button type="submit">Book</Button>
+							{#if auth.isAuthenticated}
+								<Button type="submit">Book</Button>
+							{:else}
+								<Button onclick={() => auth.login(page.url.pathname + page.url.search)} type="button">Login to Book</Button>
+							{/if}
 						</Card.Footer>
 					</Form>
 				{/if}
