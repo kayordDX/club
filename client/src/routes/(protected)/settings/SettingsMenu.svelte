@@ -16,7 +16,7 @@
 			icon: ShieldIcon,
 			isActive: true,
 		},
-	];
+	] as const;
 
 	const activeItem = $derived.by(() => {
 		const routeId = page.route.id?.replaceAll("/[Id]", "");
