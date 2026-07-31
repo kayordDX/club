@@ -52,8 +52,9 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingCreateRequest, B
             .Distinct()
             .ToList();
 
+        var now = DateTime.UtcNow;
         var existingCounts = await _dbContext
-            .SlotContractBooking.Where(scb => slotIds.Contains(scb.SlotContract.SlotId) && scb.Booking.BookingStatusId != (int)BookingStatusEnum.Cancelled)
+            .SlotContractBooking.Where(scb => slotIds.Contains(scb.SlotContract.SlotId) && (scb.Booking.BookingStatusId != (int)BookingStatusEnum.Cancelled) && (scb.Booking.BookingStatusId != (int)BookingStatusEnum.Pending || scb.Booking.ExpiresAt >= now))
             .GroupBy(scb => scb.SlotContract.SlotId)
             .Select(g => new { SlotId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.SlotId, x => x.Count, ct);
@@ -74,7 +75,6 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingCreateRequest, B
             return;
         }
 
-        var now = DateTime.UtcNow;
         var requestedExtras = req
             .Extras.GroupBy(extra => extra.ExtraId)
             .Select(group => new { ExtraId = group.Key, Amount = group.Sum(extra => extra.Amount) })

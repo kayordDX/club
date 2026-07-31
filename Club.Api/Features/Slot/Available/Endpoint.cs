@@ -22,7 +22,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<AvailableSlotRequest, b
             ValidationContext.Instance.ThrowError("Slot not found");
         }
 
-        int bookedCount = await _dbContext.SlotContractBooking.Where(x => x.SlotContract.SlotId == r.Id).CountAsync(ct);
+        int bookedCount = await _dbContext.SlotContractBooking.Where(x => x.SlotContract.SlotId == r.Id && (x.Booking.BookingStatusId != 1 || x.Booking.ExpiresAt >= DateTime.UtcNow)).CountAsync(ct);
         bool result = (slot.MaxBookings - bookedCount) >= (r.SlotCount ?? 1);
         await Send.OkAsync(result, ct);
     }

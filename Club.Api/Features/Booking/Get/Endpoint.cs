@@ -1,3 +1,4 @@
+using Club.Common.Enums;
 using Club.Data;
 using Club.DTO;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,17 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingGetRequest, Book
             await Send.NotFoundAsync(ct);
             return;
         }
+
+        if (results.BookingStatusId == (int)BookingStatusEnum.Pending && results.ExpiresAt < DateTime.UtcNow)
+        {
+            results.BookingStatusId = (int)BookingStatusEnum.Expired;
+            if (results.BookingStatus != null)
+            {
+                results.BookingStatus.Id = (int)BookingStatusEnum.Expired;
+                results.BookingStatus.Name = "Expired";
+            }
+        }
+
         await Send.OkAsync(results, ct);
     }
 }
