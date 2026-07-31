@@ -56,7 +56,7 @@ class BookingFlowStore {
 			updatedAt: new Date().toISOString(),
 		};
 	}
-	
+
 	updateDraft(patch: Partial<BookingDraft>) {
 		if (!this.state) return;
 

@@ -12,9 +12,7 @@
 		<Card.Content class="flex flex-col items-center gap-4 py-12">
 			<CircleXIcon class="size-16 text-red-500" />
 			<Card.Title class="text-2xl">Payment Failed</Card.Title>
-			<Card.Description>
-				Something went wrong while processing your payment.
-			</Card.Description>
+			<Card.Description>Something went wrong while processing your payment.</Card.Description>
 			{#if error}
 				<div class="text-muted-foreground mt-2 max-w-xs text-xs">
 					{error}

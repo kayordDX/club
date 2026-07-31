@@ -124,10 +124,9 @@
 	const players = form.useStore((state) => state.values.players);
 
 	const totalPrice = $derived(
-		(players.current ?? []).map((c) => getPriceFromContractId(c.contractId)).reduce(
-			(sum, price) => sum + price,
-			0
-		) + getSelectedExtrasTotal(selectedExtras)
+		(players.current ?? [])
+			.map((c) => getPriceFromContractId(c.contractId))
+			.reduce((sum, price) => sum + price, 0) + getSelectedExtrasTotal(selectedExtras)
 	);
 </script>
 

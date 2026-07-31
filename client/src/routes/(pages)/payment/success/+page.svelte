@@ -11,9 +11,7 @@
 		<Card.Content class="flex flex-col items-center gap-4 py-12">
 			<CircleCheckIcon class="size-16 text-green-500" />
 			<Card.Title class="text-2xl">Payment Successful</Card.Title>
-			<Card.Description>
-				Your payment has been processed successfully.
-			</Card.Description>
+			<Card.Description>Your payment has been processed successfully.</Card.Description>
 			{#if transactionId}
 				<div class="text-muted-foreground mt-2 text-xs">
 					Transaction ID: {transactionId}

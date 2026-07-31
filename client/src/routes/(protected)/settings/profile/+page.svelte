@@ -86,7 +86,10 @@
 			<Item.Description>Configure passkey for passwordless authentication</Item.Description>
 		</Item.Content>
 		<Item.Actions>
-			<Button onclick={() => auth.keycloakAction("webauthn-register-passwordless")} variant="outline">
+			<Button
+				onclick={() => auth.keycloakAction("webauthn-register-passwordless")}
+				variant="outline"
+			>
 				Configure Passkey
 			</Button>
 		</Item.Actions>
