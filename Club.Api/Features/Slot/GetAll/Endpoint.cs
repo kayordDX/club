@@ -28,6 +28,8 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List
         var dateStart = new DateTime(dateUtc.Year, dateUtc.Month, dateUtc.Day, 0, 0, 0, DateTimeKind.Utc);
         var dateEnd = dateStart.AddDays(1);
 
+        var now = DateTime.UtcNow;
+
         var result = await _dbContext
             .Database.SqlQuery<SlotGetAllResponse>(
                 $"""
@@ -50,6 +52,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List
                 WHERE s.facility_id = {req.FacilityId}
                   AND s.start_datetime >= {dateStart}
                   AND s.start_datetime < {dateEnd}
+                  AND s.start_datetime > {now}
                 GROUP BY s.id, r.name
                 ORDER BY s.start_datetime
                 """
