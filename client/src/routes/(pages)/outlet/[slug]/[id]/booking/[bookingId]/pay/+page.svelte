@@ -130,9 +130,17 @@
 						<div class="space-y-2">
 							<Card.Title class="text-2xl">Payment details</Card.Title>
 							<Card.Description>
-								Your booking is pending. Please proceed to complete booking
+								{#if query.data?.bookingStatus?.id === 1}
+									Your booking is pending. Please proceed to complete booking.
+								{:else if query.data?.bookingStatus?.id === 2}
+									Your booking is confirmed.
+								{:else if query.data?.bookingStatus?.id === 3}
+									Your booking has been cancelled.
+								{:else if query.data?.bookingStatus?.id === 4}
+									Your booking has expired.
+								{/if}
 							</Card.Description>
-							{#if query.data?.expiresAt}
+							{#if query.data?.expiresAt && query.data?.bookingStatus?.id === 1}
 								<CountdownTimer expiresAt={query.data.expiresAt} />
 							{/if}
 						</div>

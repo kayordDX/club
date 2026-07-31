@@ -51,10 +51,12 @@
 						<div>{formatDate(query.data?.bookingStatusDate)}</div>
 					</div>
 
-					<div>
-						<div class="text-muted-foreground text-sm">Expires at</div>
-						<div>{formatDate(query.data?.expiresAt)}</div>
-					</div>
+					{#if query.data?.bookingStatus?.id === 1}
+						<div>
+							<div class="text-muted-foreground text-sm">Expires at</div>
+							<div>{formatDate(query.data?.expiresAt)}</div>
+						</div>
+					{/if}
 				</Card.Content>
 			</Card.Root>
 
