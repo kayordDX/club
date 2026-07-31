@@ -2,22 +2,22 @@ using Aspire.Hosting.Pipelines;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-var postgres = builder.AddPostgres("postgres")
-    .WithDataVolume()
-    .WithHostPort(5432);
+var postgres = builder.AddPostgres("postgres").WithDataVolume().WithHostPort(5432);
 
 var clubDb = postgres.AddDatabase("club");
 
 var cache = builder.AddRedis("cache");
 
-var keycloak = builder.AddKeycloak("keycloak", 8088)
+var keycloak = builder
+    .AddKeycloak("keycloak", 8088)
     .WithDataVolume()
     .WithBindMount("./keycloak/themes", "/opt/keycloak/providers")
     .WithRealmImport("./keycloak/realms");
+
 // .WithEnvironment("KC_HTTP_ENABLED", "true")
 
-
-var mailpit = builder.AddContainer("mailpit", "axllent/mailpit")
+var mailpit = builder
+    .AddContainer("mailpit", "axllent/mailpit")
     .WithEnvironment("MP_MAX_MESSAGES", "5000")
     .WithEnvironment("MP_SMTP_AUTH_ACCEPT_ANY", "1")
     .WithEnvironment("MP_SMTP_AUTH_ALLOW_INSECURE", "1")
@@ -26,23 +26,25 @@ var mailpit = builder.AddContainer("mailpit", "axllent/mailpit")
 
 // SvelteKit frontend — Vite dev mode, references API via service discovery
 // Declared early so API can reference its endpoint for CORS
-var web = builder.AddViteApp("web", "../client")
-    .WithPnpm()
-    .WithEnvironment("BROWSER", "none");
+var web = builder.AddViteApp("web", "../client").WithPnpm().WithEnvironment("BROWSER", "none");
 
-web.WithEndpoint("http", e =>
-{
-    e.Port = 5173;
-    e.TargetPort = 5173;
-    e.IsProxied = false;
-});
+web.WithEndpoint(
+    "http",
+    e =>
+    {
+        e.Port = 5173;
+        e.TargetPort = 5173;
+        e.IsProxied = false;
+    }
+);
 #pragma warning disable ASPIREBROWSERLOGS001
 web = web.WithBrowserLogs();
 #pragma warning restore ASPIREBROWSERLOGS001
 
 // API — references Postgres and Redis
 // Connection strings are aliased to match the API's expected config keys
-var api = builder.AddProject("api", "../Club.Api/Club.Api.csproj")
+var api = builder
+    .AddProject("api", "../Club.Api/Club.Api.csproj")
     .WithReference(clubDb)
     .WithReference(cache)
     .WithReference(keycloak)
