@@ -57,7 +57,11 @@
 				data: { bookingId, status: BookingStatusEnum.Cancelled },
 			});
 			toast.info("Booking cancelled");
-			goto(resolve("/(pages)/outlet/[slug]/[id]", { slug, id: facilityId.toString() }));
+			if (basketUrl) {
+				goto(basketUrl);
+			} else {
+				goto(resolve(`/outlet/${slug}/${facilityId}`));
+			}
 		} catch (error) {
 			console.error("Failed to cancel booking:", error);
 			toast.error("Failed to cancel booking. Please try again.");
@@ -99,6 +103,14 @@
 	};
 
 	const goBackToBasket = async () => {
+		try {
+			await updateStatusMut.mutateAsync({
+				data: { bookingId, status: BookingStatusEnum.Cancelled },
+			});
+		} catch (error) {
+			console.error("Failed to cancel booking on back:", error);
+		}
+		
 		if (window.history.length > 1) {
 			window.history.back();
 			return;
@@ -110,19 +122,6 @@
 
 <Query {query} emptyText="Booking not found">
 	<div class="mx-auto flex w-full flex-col gap-6">
-		<Breadcrumb.Root>
-			<Breadcrumb.List>
-				{#if canGoBack}
-					<Breadcrumb.Item>
-						<Breadcrumb.Link href={basketUrl} class="text-xs">Basket</Breadcrumb.Link>
-					</Breadcrumb.Item>
-					<Breadcrumb.Separator />
-				{/if}
-				<Breadcrumb.Item>
-					<Breadcrumb.Page class="text-xs">Payment</Breadcrumb.Page>
-				</Breadcrumb.Item>
-			</Breadcrumb.List>
-		</Breadcrumb.Root>
 		<div class="grid gap-4 pt-4">
 			<Card.Root class="border-border/60 overflow-hidden border shadow-sm">
 				<Card.Header class="border-border/60  border-b">
