@@ -25,6 +25,15 @@ Prefer these skills instead of duplicating their detailed instructions here.
 
 ## Code Style Guidelines
 
+- After any front end changes always run these commands to ensure code quality and consistency:
+  - `pnpm check` - Checks frontend code for errors
+  - `pnpm lint` - Lints frontend code
+  - `pnpm format` - Formats frontend code in case it needs to
+- After any back end changes always make sure the code builds:
+  - `dotnet build` - Builds the backend code
+  - `csharpier check .` - Checks backend code formatting
+  - `csharpier format .` - Format code if needed
+
 ### General Formatting
 
 - Tabs for frontend files; 4 spaces for backend files
