@@ -459,6 +459,10 @@ namespace Club.Data.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("extra_id");
 
+                    b.Property<int>("Amount")
+                        .HasColumnType("integer")
+                        .HasColumnName("amount");
+
                     b.Property<int>("BookingId")
                         .HasColumnType("integer")
                         .HasColumnName("booking_id");
@@ -1705,7 +1709,7 @@ namespace Club.Data.Migrations
             modelBuilder.Entity("Club.Entities.ExtraBooking", b =>
                 {
                     b.HasOne("Club.Entities.Booking", "Booking")
-                        .WithMany()
+                        .WithMany("ExtraBookings")
                         .HasForeignKey("BookingId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
@@ -2057,6 +2061,8 @@ namespace Club.Data.Migrations
 
             modelBuilder.Entity("Club.Entities.Booking", b =>
                 {
+                    b.Navigation("ExtraBookings");
+
                     b.Navigation("SlotContractBookings");
                 });
 

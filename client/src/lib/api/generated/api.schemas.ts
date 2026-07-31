@@ -366,6 +366,7 @@ export interface ExtraBooking {
   extra: Extra;
   bookingId: number;
   booking: Booking;
+  amount: number;
 }
 
 export interface Slot {
@@ -664,6 +665,13 @@ export interface SlotContractBookingDTO {
   cellphone?: string | null;
 }
 
+export interface ExtraBookingDTO {
+  extraId: number;
+  extra: Extra;
+  bookingId: number;
+  amount: number;
+}
+
 export interface BookingDTO {
   id: number;
   bookingStatusId: number;
@@ -677,6 +685,7 @@ export interface BookingDTO {
   amountPaid: number;
   expiresAt: string;
   slotContractBookings: SlotContractBookingDTO[];
+  extraBookings: ExtraBookingDTO[];
 }
 
 export interface PaginatedListOfBookingDTO {
@@ -703,8 +712,14 @@ export interface BookingRequest {
   cellphone?: string | null;
 }
 
+export interface BookingExtraRequest {
+  extraId: number;
+  amount: number;
+}
+
 export interface BookingCreateRequest {
   bookings: BookingRequest[];
+  extras: BookingExtraRequest[];
 }
 
 export interface AccountSyncRequest {
@@ -794,4 +809,3 @@ page?: number | null;
  */
 pageSize?: number | null;
 };
-

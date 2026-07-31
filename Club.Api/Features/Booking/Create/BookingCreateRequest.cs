@@ -3,6 +3,7 @@ namespace Club.Features.Booking.Create;
 public class BookingCreateRequest
 {
     public List<BookingRequest> Bookings { get; set; } = [];
+    public List<BookingExtraRequest> Extras { get; set; } = [];
 }
 
 public class BookingRequest
@@ -12,4 +13,10 @@ public class BookingRequest
     public string? Name { get; set; }
     public string? Email { get; set; }
     public string? Cellphone { get; set; }
+}
+
+public class BookingExtraRequest
+{
+    public int ExtraId { get; set; }
+    public int Amount { get; set; } = 1;
 }

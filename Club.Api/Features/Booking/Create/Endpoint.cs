@@ -48,6 +48,12 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingCreateRequest, B
         }
 
         var slotIds = req.Bookings.Select(b => b.SlotId).Distinct().ToList();
+        var facilityIds = slotContracts
+            .Select(sc => sc.Slot.FacilityId)
+            .Where(facilityId => facilityId.HasValue)
+            .Select(facilityId => facilityId!.Value)
+            .Distinct()
+            .ToList();
 
         var existingCounts = await _dbContext.SlotContractBooking
             .Where(scb =>
@@ -74,8 +80,48 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingCreateRequest, B
         }
 
         var now = DateTime.UtcNow;
+        var requestedExtras = req.Extras
+            .GroupBy(extra => extra.ExtraId)
+            .Select(group => new
+            {
+                ExtraId = group.Key,
+                Amount = group.Sum(extra => extra.Amount)
+            })
+            .ToList();
+
+        if (requestedExtras.Any(extra => extra.Amount <= 0))
+        {
+            AddError(r => r.Extras, "Extra amounts must be greater than zero.");
+            await Send.ErrorsAsync(400, ct);
+            return;
+        }
+
+        var extras = requestedExtras.Count == 0
+            ? []
+            : await _dbContext.Extra
+                .Where(extra =>
+                    requestedExtras.Select(requestedExtra => requestedExtra.ExtraId).Contains(extra.Id))
+                .ToListAsync(ct);
+
+        foreach (var requestedExtra in requestedExtras)
+        {
+            var extra = extras.FirstOrDefault(item => item.Id == requestedExtra.ExtraId);
+            if (extra is null || !extra.IsAvailable || !extra.IsOnline || !facilityIds.Contains(extra.FacilityId))
+            {
+                AddError(r => r.Extras, $"Extra {requestedExtra.ExtraId} is not available for this booking.");
+            }
+        }
+
+        if (ValidationFailed)
+        {
+            await Send.ErrorsAsync(404, ct);
+            return;
+        }
+
         var totalPrice = req.Bookings.Sum(br =>
             slotContracts.First(sc => sc.Id == br.SlotContractId && sc.SlotId == br.SlotId).Price);
+        var extrasTotal = requestedExtras.Sum(requestedExtra =>
+            extras.First(extra => extra.Id == requestedExtra.ExtraId).Price * requestedExtra.Amount);
 
         var userId = Helpers.GetCurrentUserId(HttpContext);
         var booking = new Entities.Booking
@@ -83,7 +129,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingCreateRequest, B
             BookingStatusId = (int)BookingStatusEnum.Pending,
             BookingStatusDate = now,
             IsPaid = false,
-            AmountOutstanding = totalPrice,
+            AmountOutstanding = totalPrice + extrasTotal,
             AmountPaid = 0,
             ExpiresAt = now.AddMinutes(10),
             UserId = userId,
@@ -104,6 +150,13 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingCreateRequest, B
             .ToList();
 
         await _dbContext.SlotContractBooking.AddRangeAsync(slotContractBookings, ct);
+        var extraBookings = requestedExtras.Select(requestedExtra => new Entities.ExtraBooking
+        {
+            ExtraId = requestedExtra.ExtraId,
+            BookingId = booking.Id,
+            Amount = requestedExtra.Amount,
+        });
+        await _dbContext.ExtraBooking.AddRangeAsync(extraBookings, ct);
         await _dbContext.SaveChangesAsync(ct);
 
         await Send.OkAsync(new BookingCreateResponse

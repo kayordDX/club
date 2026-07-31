@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { page } from "$app/state";
+	import { resolve } from "$app/paths";
+
 	import { Alert, Badge, Breadcrumb, Button, Card, Table, ToggleGroup } from "@kayord/ui";
 	import {
 		CalendarDaysIcon,
@@ -43,13 +45,19 @@
 	const canGoBack = $derived(canReturnToBasket(query.data));
 
 	const updateStatusMut = createBookingUpdateStatus();
+	const formatCurrency = (value: number) =>
+		new Intl.NumberFormat("en-ZA", {
+			style: "currency",
+			currency: "ZAR",
+		}).format(value);
+
 	const cancelBooking = async () => {
 		try {
 			await updateStatusMut.mutateAsync({
 				data: { bookingId, status: BookingStatusEnum.Cancelled },
 			});
 			toast.info("Booking cancelled");
-			goto(`/outlet/${slug}/${facilityId}`);
+			goto(resolve(`/outlet/${slug}/${facilityId}`));
 		} catch (error) {
 			console.error("Failed to cancel booking:", error);
 			toast.error("Failed to cancel booking. Please try again.");
@@ -206,6 +214,34 @@
 							</Table.Body>
 						</Table.Root>
 					</Card.Root>
+
+					{#if (query.data?.extraBookings.length ?? 0) > 0}
+						<div class="text-muted-foreground mt-6 mb-2">Extras</div>
+						<Card.Root class="overflow-hidden p-0">
+							<Table.Root>
+								<Table.Header>
+									<Table.Row>
+										<Table.Head>Extra</Table.Head>
+										<Table.Head>Price</Table.Head>
+										<Table.Head>Amount</Table.Head>
+										<Table.Head>Total</Table.Head>
+									</Table.Row>
+								</Table.Header>
+								<Table.Body>
+									{#each query.data?.extraBookings as extraBooking (extraBooking.extraId)}
+										<Table.Row>
+											<Table.Cell>{extraBooking.extra.name}</Table.Cell>
+											<Table.Cell>{formatCurrency(extraBooking.extra.price)}</Table.Cell>
+											<Table.Cell>{extraBooking.amount}</Table.Cell>
+											<Table.Cell>
+												{formatCurrency(extraBooking.extra.price * extraBooking.amount)}
+											</Table.Cell>
+										</Table.Row>
+									{/each}
+								</Table.Body>
+							</Table.Root>
+						</Card.Root>
+					{/if}
 
 					<div class="mt-4 mb-4 flex items-center justify-between gap-4">
 						<div>

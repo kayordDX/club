@@ -39,7 +39,7 @@ All tests use a shared `AppFixture` that:
 Use **MSBuild** (not `dotnet build` due to incremental build issues):
 
 ```bash
-dotnet msbuild tests/IntegrationTests/IntegrationTests.csproj /p:Configuration=Debug
+dotnet msbuild Club.Tests/IntegrationTests/IntegrationTests.csproj /p:Configuration=Debug
 ```
 
 ### Run Tests
@@ -53,7 +53,7 @@ dotnet /path/to/IntegrationTests.dll
 Or from the project root:
 
 ```bash
-dotnet tests/IntegrationTests/bin/Debug/net10.0/IntegrationTests.dll
+dotnet Club.Tests/IntegrationTests/bin/Debug/net10.0/IntegrationTests.dll
 ```
 
 ### Expected Output
@@ -151,7 +151,7 @@ If TestContainers fails to start PostgreSQL:
 ### Build Issues
 
 If MSBuild fails with incremental build errors:
-- Clean the bin/obj directories: `rm -rf tests/IntegrationTests/bin tests/IntegrationTests/obj`
+- Clean the bin/obj directories: `rm -rf Club.Tests/IntegrationTests/bin Club.Tests/IntegrationTests/obj`
 - Rebuild with MSBuild as described above
 
 ### Test Timeouts

@@ -25,7 +25,7 @@ public class FunctionJob(AppDbContext dbContext)
             WITH expired AS (
               SELECT id
               FROM booking
-              WHERE booking_status_id = 2
+              WHERE booking_status_id = {(int)BookingStatusEnum.Pending}
                 AND expires_at <= now()
             ),
             updated AS (
