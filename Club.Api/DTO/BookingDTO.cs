@@ -13,4 +13,5 @@ public class BookingDTO
     public decimal AmountPaid { get; set; }
     public DateTime ExpiresAt { get; set; }
     public List<SlotContractBookingDTO> SlotContractBookings { get; set; } = [];
+    public List<ExtraBookingDTO> ExtraBookings { get; set; } = [];
 }

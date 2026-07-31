@@ -20,6 +20,7 @@
 	import { toast } from "svelte-sonner";
 	import { playersSchema, type Players, type SelectedExtra } from "./schema";
 	import Extras from "./Extras.svelte";
+	import { getSelectedExtrasTotal } from "./pricing";
 
 	const slug = $derived(page.params.slug ?? "");
 	const facilityId = $derived(Number(page.params.id) || 0);
@@ -91,7 +92,11 @@
 
 				const bookingResponse = await bookingMutation.mutateAsync({
 					data: {
-						bookings: bookings,
+						bookings,
+						extras: selectedExtras.map((extra) => ({
+							extraId: extra.id,
+							amount: extra.amount,
+						})),
 					},
 				});
 
@@ -111,9 +116,10 @@
 	const players = form.useStore((state) => state.values.players);
 
 	const totalPrice = $derived(
-		(players.current ?? [])
-			.map((c) => getPriceFromContractId(c.contractId))
-			.reduce((sum, price) => sum + price, 0)
+		(players.current ?? []).map((c) => getPriceFromContractId(c.contractId)).reduce(
+			(sum, price) => sum + price,
+			0
+		) + getSelectedExtrasTotal(selectedExtras)
 	);
 </script>
 
@@ -216,7 +222,7 @@
 									<form.Field name="players">
 										{#snippet children(field)}
 											<div class="flex flex-col gap-4">
-												{#each field.state.value as _, index (index)}
+												{#each field.state.value as player, index (player)}
 													<Card.Root>
 														<Card.Header class="pb-4">
 															<div class="flex items-center justify-between gap-4">
