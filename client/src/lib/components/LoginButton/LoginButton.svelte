@@ -4,5 +4,5 @@
 </script>
 
 {#if !auth.isAuthenticated}
-	<Button onclick={auth.login} disabled={auth.isLoading}>Login</Button>
+	<Button onclick={() => auth.login()} disabled={auth.isLoading}>Login</Button>
 {/if}
