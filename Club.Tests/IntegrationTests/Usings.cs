@@ -1,7 +1,7 @@
-global using FastEndpoints.Testing;
+global using System.Net;
 global using FastEndpoints;
-global using Shouldly;
-global using Xunit;
+global using FastEndpoints.Testing;
 global using IntegrationTests.Fixtures;
 global using Microsoft.AspNetCore.Identity.Data;
-global using System.Net;
+global using Shouldly;
+global using Xunit;

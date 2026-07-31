@@ -10,13 +10,7 @@ public class EncryptionTest
 
     public EncryptionTest()
     {
-        var options = Options.Create(
-            new AppConfig
-            {
-                EncryptionKey = "Your16CharKeyHere",
-                EncryptionSalt = "Your16CharSaltHere",
-            }
-        );
+        var options = Options.Create(new AppConfig { EncryptionKey = "Your16CharKeyHere", EncryptionSalt = "Your16CharSaltHere" });
         _encryptionService = new EncryptionService(options);
     }
 
@@ -63,10 +57,7 @@ public class EncryptionTest
 
         var encryptedValue = _encryptionService.Encrypt(plainText, iv);
         // var decryptedValue = encryptionService.Decrypt(encryptedValue, iv);
-        Assert.Equivalent(
-            encryptedValue,
-            "PMIixucl3e5WDJZzhlofrgexKgl8kueNdI1gUV0hi/VeiO6fDhr8t5krKOT6ZYoxTGJY2rgADO1FE/KKhO2TZwOVsiUn+z2XS/Ux7WOmJj8="
-        );
+        Assert.Equivalent(encryptedValue, "PMIixucl3e5WDJZzhlofrgexKgl8kueNdI1gUV0hi/VeiO6fDhr8t5krKOT6ZYoxTGJY2rgADO1FE/KKhO2TZwOVsiUn+z2XS/Ux7WOmJj8=");
 
         var decryptedValue = _encryptionService.Decrypt(encryptedValue, iv);
         Assert.Equivalent(decryptedValue, plainText);

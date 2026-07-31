@@ -1,3 +1,4 @@
+using Club.Data;
 using FastEndpoints.Testing;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -5,15 +6,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Club.Data;
 using Testcontainers.PostgreSql;
 
 namespace IntegrationTests.Fixtures;
 
 [CollectionDefinition("AppFixture collection")]
-public class AppFixtureCollection : ICollectionFixture<AppFixture>
-{
-}
+public class AppFixtureCollection : ICollectionFixture<AppFixture> { }
 
 public class AppFixture : AppFixture<Program>, IAsyncLifetime
 {
@@ -38,17 +36,16 @@ public class AppFixture : AppFixture<Program>, IAsyncLifetime
 
     protected override void ConfigureApp(IWebHostBuilder builder)
     {
-        builder.ConfigureAppConfiguration((context, config) =>
-        {
-            // Load test configuration
-            config.SetBasePath(Directory.GetCurrentDirectory());
-            config.AddJsonFile("appsettings.Testing.json", optional: false);
-            // Override the database connection string with TestContainer connection string
-            config.AddInMemoryCollection(new Dictionary<string, string?>
+        builder.ConfigureAppConfiguration(
+            (context, config) =>
             {
-                ["ConnectionStrings:DefaultConnection"] = _connectionString
-            });
-        });
+                // Load test configuration
+                config.SetBasePath(Directory.GetCurrentDirectory());
+                config.AddJsonFile("appsettings.Testing.json", optional: false);
+                // Override the database connection string with TestContainer connection string
+                config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:DefaultConnection"] = _connectionString });
+            }
+        );
 
         builder.UseEnvironment("Testing");
     }
@@ -65,17 +62,13 @@ public class AppFixture : AppFixture<Program>, IAsyncLifetime
         services.AddDbContext<AppDbContext>(options =>
         {
             options.UseSnakeCaseNamingConvention();
-            options.UseNpgsql(
-                _connectionString,
-                b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)
-            );
+            options.UseNpgsql(_connectionString, b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName));
             options.EnableSensitiveDataLogging();
         });
 
         // Disable Redis caching for tests - use memory cache instead
         services.AddMemoryCache();
-        var redisCacheDescriptor = services.FirstOrDefault(d =>
-            d.ServiceType == typeof(IDistributedCache));
+        var redisCacheDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IDistributedCache));
         if (redisCacheDescriptor != null)
         {
             services.Remove(redisCacheDescriptor);

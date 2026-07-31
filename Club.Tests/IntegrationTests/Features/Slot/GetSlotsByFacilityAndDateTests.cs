@@ -1,8 +1,8 @@
-using Club.Entities;
 using Club.Data;
+using Club.Entities;
+using Club.Features.Slot.GetAll;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Club.Features.Slot.GetAll;
 
 namespace IntegrationTests.Features.Slot;
 
@@ -17,7 +17,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
         var request = new SlotGetAllRequest
         {
             FacilityId = 999, // Non-existent facility
-            Date = new DateTime(today.Year, today.Month, today.Day, 0, 0, 0, DateTimeKind.Utc)
+            Date = new DateTime(today.Year, today.Month, today.Day, 0, 0, 0, DateTimeKind.Utc),
         };
 
         // Act
@@ -47,7 +47,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             Outlet = outlet,
             OutletId = outlet.Id,
             FacilityTypeId = facilityTypeId,
-            IsActive = true
+            IsActive = true,
         };
         db.Facility.Add(facility);
         await db.SaveChangesAsync(app.Context.CancellationToken);
@@ -56,23 +56,17 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
         var slotStartTime = new DateTime(today.Year, today.Month, today.Day, 10, 0, 0, DateTimeKind.Utc);
         var slotEndTime = slotStartTime.AddHours(1);
 
-        var request = new SlotGetAllRequest
-        {
-            FacilityId = facility.Id,
-            Date = new DateTime(today.Year, today.Month, today.Day, 0, 0, 0, DateTimeKind.Utc)
-        };
+        var request = new SlotGetAllRequest { FacilityId = facility.Id, Date = new DateTime(today.Year, today.Month, today.Day, 0, 0, 0, DateTimeKind.Utc) };
 
         var slot = new Club.Entities.Slot
         {
             Id = Guid.NewGuid(),
             FacilityId = facility.Id,
             StartDatetime = slotStartTime,
-            EndDatetime = slotEndTime
+            EndDatetime = slotEndTime,
         };
         db.Slot.Add(slot);
         await db.SaveChangesAsync(app.Context.CancellationToken);
-
-
 
         // Act
         var (rsp, result) = await app.Client.GETAsync<Endpoint, SlotGetAllRequest, List<SlotGetAllResponse>>(request);
@@ -104,7 +98,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             Outlet = outlet,
             OutletId = outlet.Id,
             FacilityTypeId = facilityTypeId,
-            IsActive = true
+            IsActive = true,
         };
         db.Facility.Add(facility);
         await db.SaveChangesAsync(app.Context.CancellationToken);
@@ -118,7 +112,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             Id = Guid.NewGuid(),
             FacilityId = facility.Id,
             StartDatetime = new DateTime(today.Year, today.Month, today.Day, 10, 0, 0, DateTimeKind.Utc),
-            EndDatetime = new DateTime(today.Year, today.Month, today.Day, 11, 0, 0, DateTimeKind.Utc)
+            EndDatetime = new DateTime(today.Year, today.Month, today.Day, 11, 0, 0, DateTimeKind.Utc),
         };
 
         var slotTomorrow = new Club.Entities.Slot
@@ -126,7 +120,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             Id = Guid.NewGuid(),
             FacilityId = facility.Id,
             StartDatetime = new DateTime(tomorrow.Year, tomorrow.Month, tomorrow.Day, 10, 0, 0, DateTimeKind.Utc),
-            EndDatetime = new DateTime(tomorrow.Year, tomorrow.Month, tomorrow.Day, 11, 0, 0, DateTimeKind.Utc)
+            EndDatetime = new DateTime(tomorrow.Year, tomorrow.Month, tomorrow.Day, 11, 0, 0, DateTimeKind.Utc),
         };
 
         db.Slot.AddRange(slotToday, slotTomorrow);
@@ -135,7 +129,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
         var requestToday = new SlotGetAllRequest
         {
             FacilityId = facility.Id,
-            Date = new DateTime(today.Year, today.Month, today.Day, 0, 0, 0, DateTimeKind.Utc)
+            Date = new DateTime(today.Year, today.Month, today.Day, 0, 0, 0, DateTimeKind.Utc),
         };
 
         // Act - Query for today's slots
@@ -150,7 +144,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
         var requestTomorrow = new SlotGetAllRequest
         {
             FacilityId = facility.Id,
-            Date = new DateTime(tomorrow.Year, tomorrow.Month, tomorrow.Day, 0, 0, 0, DateTimeKind.Utc)
+            Date = new DateTime(tomorrow.Year, tomorrow.Month, tomorrow.Day, 0, 0, 0, DateTimeKind.Utc),
         };
         var (rspTomorrow, resultTomorrow) = await app.Client.GETAsync<Endpoint, SlotGetAllRequest, List<SlotGetAllResponse>>(requestTomorrow);
 
@@ -176,7 +170,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             Outlet = outlet,
             OutletId = outlet.Id,
             FacilityTypeId = facilityTypeId,
-            IsActive = true
+            IsActive = true,
         };
         db.Facility.Add(facility);
         await db.SaveChangesAsync(app.Context.CancellationToken);
@@ -189,7 +183,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             Id = Guid.NewGuid(),
             FacilityId = facility.Id,
             StartDatetime = new DateTime(today.Year, today.Month, today.Day, 10, 0, 0, DateTimeKind.Utc),
-            EndDatetime = new DateTime(today.Year, today.Month, today.Day, 11, 0, 0, DateTimeKind.Utc)
+            EndDatetime = new DateTime(today.Year, today.Month, today.Day, 11, 0, 0, DateTimeKind.Utc),
         };
 
         var slot2 = new Club.Entities.Slot
@@ -197,7 +191,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             Id = Guid.NewGuid(),
             FacilityId = facility.Id,
             StartDatetime = new DateTime(today.Year, today.Month, today.Day, 14, 0, 0, DateTimeKind.Utc),
-            EndDatetime = new DateTime(today.Year, today.Month, today.Day, 15, 0, 0, DateTimeKind.Utc)
+            EndDatetime = new DateTime(today.Year, today.Month, today.Day, 15, 0, 0, DateTimeKind.Utc),
         };
 
         var slot3 = new Club.Entities.Slot
@@ -205,17 +199,13 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             Id = Guid.NewGuid(),
             FacilityId = facility.Id,
             StartDatetime = new DateTime(today.Year, today.Month, today.Day, 12, 0, 0, DateTimeKind.Utc),
-            EndDatetime = new DateTime(today.Year, today.Month, today.Day, 13, 0, 0, DateTimeKind.Utc)
+            EndDatetime = new DateTime(today.Year, today.Month, today.Day, 13, 0, 0, DateTimeKind.Utc),
         };
 
         db.Slot.AddRange(slot1, slot2, slot3);
         await db.SaveChangesAsync(app.Context.CancellationToken);
 
-        var request = new SlotGetAllRequest
-        {
-            FacilityId = facility.Id,
-            Date = new DateTime(today.Year, today.Month, today.Day, 0, 0, 0, DateTimeKind.Utc)
-        };
+        var request = new SlotGetAllRequest { FacilityId = facility.Id, Date = new DateTime(today.Year, today.Month, today.Day, 0, 0, 0, DateTimeKind.Utc) };
 
         // Act
         var (rsp, result) = await app.Client.GETAsync<Endpoint, SlotGetAllRequest, List<SlotGetAllResponse>>(request);
@@ -244,7 +234,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             Outlet = outlet,
             OutletId = outlet.Id,
             FacilityTypeId = facilityTypeId,
-            IsActive = true
+            IsActive = true,
         };
         db.Facility.Add(facility);
         await db.SaveChangesAsync(app.Context.CancellationToken);
@@ -254,7 +244,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             Name = "Test Resource",
             Facility = facility,
             FacilityId = facility.Id,
-            IsActive = true
+            IsActive = true,
         };
         db.Resource.Add(resource);
         await db.SaveChangesAsync(app.Context.CancellationToken);
@@ -266,16 +256,12 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             FacilityId = facility.Id,
             ResourceId = resource.Id,
             StartDatetime = new DateTime(today.Year, today.Month, today.Day, 10, 0, 0, DateTimeKind.Utc),
-            EndDatetime = new DateTime(today.Year, today.Month, today.Day, 11, 0, 0, DateTimeKind.Utc)
+            EndDatetime = new DateTime(today.Year, today.Month, today.Day, 11, 0, 0, DateTimeKind.Utc),
         };
         db.Slot.Add(slot);
         await db.SaveChangesAsync(app.Context.CancellationToken);
 
-        var request = new SlotGetAllRequest
-        {
-            FacilityId = facility.Id,
-            Date = new DateTime(today.Year, today.Month, today.Day, 0, 0, 0, DateTimeKind.Utc)
-        };
+        var request = new SlotGetAllRequest { FacilityId = facility.Id, Date = new DateTime(today.Year, today.Month, today.Day, 0, 0, 0, DateTimeKind.Utc) };
 
         // Act
         var (rsp, result) = await app.Client.GETAsync<Endpoint, SlotGetAllRequest, List<SlotGetAllResponse>>(request);
@@ -296,7 +282,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
         var request = new SlotGetAllRequest
         {
             FacilityId = 999999, // Non-existent facility ID
-            Date = new DateTime(today.Year, today.Month, today.Day, 0, 0, 0, DateTimeKind.Utc)
+            Date = new DateTime(today.Year, today.Month, today.Day, 0, 0, 0, DateTimeKind.Utc),
         };
 
         // Act
@@ -324,7 +310,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             Outlet = outlet,
             OutletId = outlet.Id,
             FacilityTypeId = facilityTypeId,
-            IsActive = true
+            IsActive = true,
         };
 
         var facility2 = new Facility
@@ -333,7 +319,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             Outlet = outlet,
             OutletId = outlet.Id,
             FacilityTypeId = facilityTypeId,
-            IsActive = true
+            IsActive = true,
         };
 
         db.Facility.AddRange(facility1, facility2);
@@ -346,7 +332,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             Id = Guid.NewGuid(),
             FacilityId = facility1.Id,
             StartDatetime = new DateTime(today.Year, today.Month, today.Day, 10, 0, 0, DateTimeKind.Utc),
-            EndDatetime = new DateTime(today.Year, today.Month, today.Day, 11, 0, 0, DateTimeKind.Utc)
+            EndDatetime = new DateTime(today.Year, today.Month, today.Day, 11, 0, 0, DateTimeKind.Utc),
         };
 
         var slot2 = new Club.Entities.Slot
@@ -354,17 +340,13 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             Id = Guid.NewGuid(),
             FacilityId = facility2.Id,
             StartDatetime = new DateTime(today.Year, today.Month, today.Day, 10, 0, 0, DateTimeKind.Utc),
-            EndDatetime = new DateTime(today.Year, today.Month, today.Day, 11, 0, 0, DateTimeKind.Utc)
+            EndDatetime = new DateTime(today.Year, today.Month, today.Day, 11, 0, 0, DateTimeKind.Utc),
         };
 
         db.Slot.AddRange(slot1, slot2);
         await db.SaveChangesAsync(app.Context.CancellationToken);
 
-        var request = new SlotGetAllRequest
-        {
-            FacilityId = facility1.Id,
-            Date = new DateTime(today.Year, today.Month, today.Day, 0, 0, 0, DateTimeKind.Utc)
-        };
+        var request = new SlotGetAllRequest { FacilityId = facility1.Id, Date = new DateTime(today.Year, today.Month, today.Day, 0, 0, 0, DateTimeKind.Utc) };
 
         // Act
         var (rsp, result) = await app.Client.GETAsync<Endpoint, SlotGetAllRequest, List<SlotGetAllResponse>>(request);
@@ -380,14 +362,9 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
     private async Task<int> CreateFacilityType(AppDbContext db)
     {
         // Use raw SQL to insert facility type since it's not exposed as DbSet
-        await db.Database.ExecuteSqlRawAsync(
-            "INSERT INTO facility_type (name) VALUES ({0}) ON CONFLICT DO NOTHING",
-            $"FacilityType_{Guid.NewGuid()}"
-        );
+        await db.Database.ExecuteSqlRawAsync("INSERT INTO facility_type (name) VALUES ({0}) ON CONFLICT DO NOTHING", $"FacilityType_{Guid.NewGuid()}");
 
-        var facilityType = await db.Database.SqlQueryRaw<FacilityType>(
-            "SELECT id, name FROM facility_type ORDER BY id DESC LIMIT 1"
-        ).FirstOrDefaultAsync();
+        var facilityType = await db.Database.SqlQueryRaw<FacilityType>("SELECT id, name FROM facility_type ORDER BY id DESC LIMIT 1").FirstOrDefaultAsync();
 
         return facilityType?.Id ?? 1;
     }
@@ -412,7 +389,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
             DisplayName = "Test Outlet",
             OutletType = outletType,
             OutletTypeId = outletType.Id,
-            IsActive = true
+            IsActive = true,
         };
         db.Outlet.Add(outlet);
         await db.SaveChangesAsync();

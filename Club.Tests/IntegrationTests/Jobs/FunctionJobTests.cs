@@ -36,7 +36,7 @@ public class FunctionJobTests(AppFixture app)
             DisplayName = "Test Outlet",
             OutletType = outletType,
             OutletTypeId = outletType.Id,
-            IsActive = true
+            IsActive = true,
         };
         db.Outlet.Add(outlet);
         await db.SaveChangesAsync(app.Context.CancellationToken);
@@ -47,7 +47,7 @@ public class FunctionJobTests(AppFixture app)
             Outlet = outlet,
             OutletId = outlet.Id,
             FacilityTypeId = facilityTypeId,
-            IsActive = true
+            IsActive = true,
         };
         db.Facility.Add(facility);
         await db.SaveChangesAsync(app.Context.CancellationToken);
@@ -58,7 +58,7 @@ public class FunctionJobTests(AppFixture app)
             FacilityId = facility.Id,
             StartDatetime = DateTime.UtcNow.AddHours(1),
             EndDatetime = DateTime.UtcNow.AddHours(2),
-            MaxBookings = 2
+            MaxBookings = 2,
         };
         db.Slot.Add(slot);
         await db.SaveChangesAsync(app.Context.CancellationToken);
@@ -67,7 +67,7 @@ public class FunctionJobTests(AppFixture app)
         {
             Name = $"Contract_{Guid.NewGuid()}",
             Business = business,
-            BusinessId = business.Id
+            BusinessId = business.Id,
         };
         db.Contract.Add(contract);
         await db.SaveChangesAsync(app.Context.CancellationToken);
@@ -76,7 +76,7 @@ public class FunctionJobTests(AppFixture app)
         {
             SlotId = slot.Id,
             ContractId = contract.Id,
-            Price = 100
+            Price = 100,
         };
         db.SlotContract.Add(slotContract);
         await db.SaveChangesAsync(app.Context.CancellationToken);
@@ -88,7 +88,7 @@ public class FunctionJobTests(AppFixture app)
             IsPaid = false,
             AmountOutstanding = 100,
             AmountPaid = 0,
-            ExpiresAt = DateTime.UtcNow.AddMinutes(-10)
+            ExpiresAt = DateTime.UtcNow.AddMinutes(-10),
         };
         var confirmedBooking = new Booking
         {
@@ -97,7 +97,7 @@ public class FunctionJobTests(AppFixture app)
             IsPaid = true,
             AmountOutstanding = 0,
             AmountPaid = 100,
-            ExpiresAt = DateTime.UtcNow.AddMinutes(-10)
+            ExpiresAt = DateTime.UtcNow.AddMinutes(-10),
         };
         db.Booking.AddRange(expiredPendingBooking, confirmedBooking);
         await db.SaveChangesAsync(app.Context.CancellationToken);
@@ -114,23 +114,17 @@ public class FunctionJobTests(AppFixture app)
                 SlotContractId = slotContract.Id,
                 BookingId = confirmedBooking.Id,
                 Name = "Confirmed Player",
-            });
+            }
+        );
         await db.SaveChangesAsync(app.Context.CancellationToken);
 
         var job = new FunctionJob(db);
 
         await job.ClearExpiredBookings(app.Context.CancellationToken);
 
-        var updatedPendingBooking = await db.Booking
-            .AsNoTracking()
-            .SingleAsync(x => x.Id == expiredPendingBooking.Id, app.Context.CancellationToken);
-        var updatedConfirmedBooking = await db.Booking
-            .AsNoTracking()
-            .SingleAsync(x => x.Id == confirmedBooking.Id, app.Context.CancellationToken);
-        var remainingSlotBookings = await db.SlotContractBooking
-            .AsNoTracking()
-            .OrderBy(x => x.BookingId)
-            .ToListAsync(app.Context.CancellationToken);
+        var updatedPendingBooking = await db.Booking.AsNoTracking().SingleAsync(x => x.Id == expiredPendingBooking.Id, app.Context.CancellationToken);
+        var updatedConfirmedBooking = await db.Booking.AsNoTracking().SingleAsync(x => x.Id == confirmedBooking.Id, app.Context.CancellationToken);
+        var remainingSlotBookings = await db.SlotContractBooking.AsNoTracking().OrderBy(x => x.BookingId).ToListAsync(app.Context.CancellationToken);
 
         updatedPendingBooking.BookingStatusId.ShouldBe((int)BookingStatusEnum.Expired);
         updatedConfirmedBooking.BookingStatusId.ShouldBe((int)BookingStatusEnum.Confirmed);
@@ -140,14 +134,9 @@ public class FunctionJobTests(AppFixture app)
 
     private static async Task<int> CreateFacilityType(AppDbContext db)
     {
-        await db.Database.ExecuteSqlRawAsync(
-            "INSERT INTO facility_type (name) VALUES ({0}) ON CONFLICT DO NOTHING",
-            $"FacilityType_{Guid.NewGuid()}"
-        );
+        await db.Database.ExecuteSqlRawAsync("INSERT INTO facility_type (name) VALUES ({0}) ON CONFLICT DO NOTHING", $"FacilityType_{Guid.NewGuid()}");
 
-        var facilityType = await db.Database.SqlQueryRaw<FacilityType>(
-            "SELECT id, name FROM facility_type ORDER BY id DESC LIMIT 1"
-        ).FirstOrDefaultAsync();
+        var facilityType = await db.Database.SqlQueryRaw<FacilityType>("SELECT id, name FROM facility_type ORDER BY id DESC LIMIT 1").FirstOrDefaultAsync();
 
         return facilityType?.Id ?? 1;
     }

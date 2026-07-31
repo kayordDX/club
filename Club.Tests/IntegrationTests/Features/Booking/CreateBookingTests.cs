@@ -5,7 +5,6 @@ using Club.Features.Booking.Create;
 using Club.Features.Booking.Get;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-
 using BookingCreateEndpoint = Club.Features.Booking.Create.Endpoint;
 using BookingGetEndpoint = Club.Features.Booking.Get.Endpoint;
 
@@ -30,7 +29,7 @@ public class CreateBookingTests(AppFixture app)
             Outlet = outlet,
             OutletId = outlet.Id,
             FacilityTypeId = facilityTypeId,
-            IsActive = true
+            IsActive = true,
         };
         db.Facility.Add(facility);
         await db.SaveChangesAsync(app.Context.CancellationToken);
@@ -41,7 +40,7 @@ public class CreateBookingTests(AppFixture app)
             FacilityId = facility.Id,
             StartDatetime = DateTime.UtcNow.AddDays(1),
             EndDatetime = DateTime.UtcNow.AddDays(1).AddHours(1),
-            MaxBookings = 4
+            MaxBookings = 4,
         };
         db.Slot.Add(slot);
 
@@ -49,7 +48,7 @@ public class CreateBookingTests(AppFixture app)
         {
             Name = $"Contract_{Guid.NewGuid()}",
             BusinessId = outlet.BusinessId,
-            Business = outlet.Business
+            Business = outlet.Business,
         };
         db.Contract.Add(contract);
         await db.SaveChangesAsync(app.Context.CancellationToken);
@@ -62,7 +61,7 @@ public class CreateBookingTests(AppFixture app)
             Contract = contract,
             Price = 100m,
             CanPayLater = false,
-            Description = "Guest 18 Holes"
+            Description = "Guest 18 Holes",
         };
         db.SlotContract.Add(slotContract);
 
@@ -75,7 +74,7 @@ public class CreateBookingTests(AppFixture app)
             Code = $"EXTRA_{Guid.NewGuid():N}",
             Price = 300m,
             IsAvailable = true,
-            IsOnline = true
+            IsOnline = true,
         };
         db.Extra.Add(extra);
         await db.SaveChangesAsync(app.Context.CancellationToken);
@@ -90,17 +89,10 @@ public class CreateBookingTests(AppFixture app)
                     SlotContractId = slotContract.Id,
                     Name = "Jaco Taute",
                     Email = "jaco@example.com",
-                    Cellphone = "0842502311"
-                }
+                    Cellphone = "0842502311",
+                },
             ],
-            Extras =
-            [
-                new BookingExtraRequest
-                {
-                    ExtraId = extra.Id,
-                    Amount = 2
-                }
-            ]
+            Extras = [new BookingExtraRequest { ExtraId = extra.Id, Amount = 2 }],
         };
 
         // Act
@@ -110,8 +102,8 @@ public class CreateBookingTests(AppFixture app)
         createResponse.IsSuccessStatusCode.ShouldBeTrue();
         createdBooking.Id.ShouldBeGreaterThan(0);
 
-        var persistedBooking = await db.Booking
-            .Include(booking => booking.ExtraBookings)
+        var persistedBooking = await db
+            .Booking.Include(booking => booking.ExtraBookings)
             .FirstAsync(booking => booking.Id == createdBooking.Id, app.Context.CancellationToken);
 
         persistedBooking.AmountOutstanding.ShouldBe(700m);
@@ -119,7 +111,8 @@ public class CreateBookingTests(AppFixture app)
         persistedBooking.ExtraBookings.Single().Amount.ShouldBe(2);
 
         var (getResponse, bookingDto) = await app.Client.GETAsync<BookingGetEndpoint, BookingGetRequest, BookingDTO>(
-            new BookingGetRequest { Id = createdBooking.Id });
+            new BookingGetRequest { Id = createdBooking.Id }
+        );
 
         getResponse.IsSuccessStatusCode.ShouldBeTrue();
         bookingDto.AmountOutstanding.ShouldBe(700m);
@@ -130,14 +123,9 @@ public class CreateBookingTests(AppFixture app)
 
     private async Task<int> CreateFacilityType(AppDbContext db)
     {
-        await db.Database.ExecuteSqlRawAsync(
-            "INSERT INTO facility_type (name) VALUES ({0}) ON CONFLICT DO NOTHING",
-            $"FacilityType_{Guid.NewGuid()}"
-        );
+        await db.Database.ExecuteSqlRawAsync("INSERT INTO facility_type (name) VALUES ({0}) ON CONFLICT DO NOTHING", $"FacilityType_{Guid.NewGuid()}");
 
-        var facilityType = await db.Database.SqlQueryRaw<FacilityType>(
-            "SELECT id, name FROM facility_type ORDER BY id DESC LIMIT 1"
-        ).FirstOrDefaultAsync();
+        var facilityType = await db.Database.SqlQueryRaw<FacilityType>("SELECT id, name FROM facility_type ORDER BY id DESC LIMIT 1").FirstOrDefaultAsync();
 
         return facilityType?.Id ?? 1;
     }
@@ -162,7 +150,7 @@ public class CreateBookingTests(AppFixture app)
             DisplayName = "Test Outlet",
             OutletType = outletType,
             OutletTypeId = outletType.Id,
-            IsActive = true
+            IsActive = true,
         };
         db.Outlet.Add(outlet);
         await db.SaveChangesAsync(app.Context.CancellationToken);
