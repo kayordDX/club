@@ -1,5 +1,5 @@
-using Keycloak.AuthServices.Sdk.Admin;
 using Club.Common;
+using Keycloak.AuthServices.Sdk.Admin;
 
 namespace Club.Features.Test;
 
@@ -36,7 +36,7 @@ public class Endpoint(IKeycloakUserClient keycloakUserClient) : Endpoint<TestReq
         {
             Success = true,
             Token = "test",
-            Other = "userId"
+            Other = "userId",
         };
         await Send.OkAsync(response, ct);
     }

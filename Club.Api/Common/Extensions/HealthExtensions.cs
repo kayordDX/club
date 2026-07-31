@@ -1,13 +1,13 @@
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+
 namespace Club.Common.Extensions;
 
 public static class HealthExtensions
 {
     public static void ConfigureHealth(this IServiceCollection services, IConfiguration configuration)
     {
-        var healthChecksBuilder = services.AddHealthChecks()
-            .AddProcessAllocatedMemoryHealthCheck(1750);
+        var healthChecksBuilder = services.AddHealthChecks().AddProcessAllocatedMemoryHealthCheck(1750);
 
         // Only add database health check if connection string is available
         var dbConnectionString = configuration.GetConnectionString("DefaultConnection");
@@ -26,10 +26,7 @@ public static class HealthExtensions
 
     public static IApplicationBuilder UseHealth(this IApplicationBuilder app)
     {
-        app.UseHealthChecks("/health", new HealthCheckOptions
-        {
-            ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-        });
+        app.UseHealthChecks("/health", new HealthCheckOptions { ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse });
         return app;
     }
 }

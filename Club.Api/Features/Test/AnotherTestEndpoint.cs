@@ -1,13 +1,14 @@
 using Amazon.S3;
 using Amazon.S3.Model;
-using Microsoft.Extensions.Options;
 using Club.Common.Config;
+using Microsoft.Extensions.Options;
 
 namespace Club.Features.Test;
 
 public class AnotherTestEndpoint(IAmazonS3 s3Client, IOptions<AWSConfig> awsConfig) : EndpointWithoutRequest<object>
 {
     private readonly AWSConfig config = awsConfig.Value;
+
     public override void Configure()
     {
         Get("/test/another");
@@ -24,7 +25,7 @@ public class AnotherTestEndpoint(IAmazonS3 s3Client, IOptions<AWSConfig> awsConf
             SizeInBytes = result.Headers.ContentLength,
             ContentType = result.Headers.ContentType,
             LastModified = result.LastModified,
-            ETag = result.ETag
+            ETag = result.ETag,
         };
 
         await Send.OkAsync(fileInfo, ct);

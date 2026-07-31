@@ -1,8 +1,8 @@
 using System.Security.Claims;
 using System.Threading.RateLimiting;
+using Club.Common.Config;
 using FastEndpoints.Swagger;
 using NSwag;
-using Club.Common.Config;
 using Scalar.AspNetCore;
 
 namespace Club.Common.Extensions;
@@ -11,8 +11,8 @@ public static class ApiExtensions
 {
     public static void ConfigureApi(this IServiceCollection services, IConfiguration configuration)
     {
-        var keycloakConfig = configuration.GetSection(KeycloakConfig.Key).Get<KeycloakConfig>()
-            ?? throw new InvalidOperationException("Keycloak configuration is missing.");
+        var keycloakConfig =
+            configuration.GetSection(KeycloakConfig.Key).Get<KeycloakConfig>() ?? throw new InvalidOperationException("Keycloak configuration is missing.");
 
         services.AddResponseCompression(o =>
         {
@@ -30,23 +30,26 @@ public static class ApiExtensions
                 s.Title = AppDomain.CurrentDomain.FriendlyName;
                 s.Version = "v1";
                 s.MarkNonNullablePropsAsRequired();
-                s.AddAuth("Keycloak", new OpenApiSecurityScheme
-                {
-                    Type = OpenApiSecuritySchemeType.OAuth2,
-                    Flows = new OpenApiOAuthFlows
+                s.AddAuth(
+                    "Keycloak",
+                    new OpenApiSecurityScheme
                     {
-                        Implicit = new OpenApiOAuthFlow
+                        Type = OpenApiSecuritySchemeType.OAuth2,
+                        Flows = new OpenApiOAuthFlows
                         {
-                            AuthorizationUrl = keycloakConfig.AuthorizationUrl,
-                            Scopes = new Dictionary<string, string>
+                            Implicit = new OpenApiOAuthFlow
                             {
-                                { "openid", "OpenID Connect scope" },
-                                { "profile", "Profile scope" },
-                                { "email", "Email scope" }
-                            }
+                                AuthorizationUrl = keycloakConfig.AuthorizationUrl,
+                                Scopes = new Dictionary<string, string>
+                                {
+                                    { "openid", "OpenID Connect scope" },
+                                    { "profile", "Profile scope" },
+                                    { "email", "Email scope" },
+                                },
+                            },
                         },
                     }
-                });
+                );
             };
         });
 
@@ -54,22 +57,24 @@ public static class ApiExtensions
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-            options.AddPolicy("OnlyOnePerMinutePerUser", context =>
-            {
-                var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                             ?? context.Connection.RemoteIpAddress?.ToString()
-                             ?? "anonymous";
+            options.AddPolicy(
+                "OnlyOnePerMinutePerUser",
+                context =>
+                {
+                    var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? context.Connection.RemoteIpAddress?.ToString() ?? "anonymous";
 
-                return RateLimitPartition.GetFixedWindowLimiter(
-                    partitionKey: userId,
-                    factory: _ => new FixedWindowRateLimiterOptions
-                    {
-                        PermitLimit = 1,
-                        Window = TimeSpan.FromMinutes(1),
-                        QueueLimit = 0,
-                        AutoReplenishment = true
-                    });
-            });
+                    return RateLimitPartition.GetFixedWindowLimiter(
+                        partitionKey: userId,
+                        factory: _ => new FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit = 1,
+                            Window = TimeSpan.FromMinutes(1),
+                            QueueLimit = 0,
+                            AutoReplenishment = true,
+                        }
+                    );
+                }
+            );
         });
     }
 

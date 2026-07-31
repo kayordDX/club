@@ -1,5 +1,5 @@
-using Microsoft.AspNetCore.HttpOverrides;
 using Club.Common.Config;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace Club.Common.Extensions;
 
@@ -7,14 +7,12 @@ public static class NetworkExtensions
 {
     public static IServiceCollection ConfigureNetwork(this IServiceCollection services, IConfiguration configuration)
     {
-        var appConfig = configuration.GetSection("App").Get<AppConfig>() ?? throw new ArgumentNullException(nameof(configuration), "App configuration is missing.");
+        var appConfig =
+            configuration.GetSection("App").Get<AppConfig>() ?? throw new ArgumentNullException(nameof(configuration), "App configuration is missing.");
 
         services.Configure<ForwardedHeadersOptions>(options =>
         {
-            options.ForwardedHeaders =
-                ForwardedHeaders.XForwardedFor |
-                ForwardedHeaders.XForwardedProto |
-                ForwardedHeaders.XForwardedHost;
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
 
             // Trust only Docker's internal bridge network where Traefik runs.
             // ForwardLimit = 1 ensures only the header set by Traefik itself is trusted,

@@ -24,11 +24,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingGetUserRequest, 
             await Send.UnauthorizedAsync(ct);
             return;
         }
-        var results = await _dbContext.Booking
-            .Where(x => x.UserId == userId)
-            .ProjectToDto()
-            .OrderBy(x => x.Id)
-            .GetPagedAsync(r, ct);
+        var results = await _dbContext.Booking.Where(x => x.UserId == userId).ProjectToDto().OrderBy(x => x.Id).GetPagedAsync(r, ct);
 
         await Send.OkAsync(results, ct);
     }

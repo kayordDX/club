@@ -11,13 +11,7 @@ namespace Club.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<Guid>(
-                name: "group_id",
-                table: "slot",
-                type: "uuid",
-                nullable: true,
-                oldClrType: typeof(Guid),
-                oldType: "uuid");
+            migrationBuilder.AlterColumn<Guid>(name: "group_id", table: "slot", type: "uuid", nullable: true, oldClrType: typeof(Guid), oldType: "uuid");
         }
 
         /// <inheritdoc />
@@ -31,7 +25,8 @@ namespace Club.Data.Migrations
                 defaultValue: new Guid("00000000-0000-0000-0000-000000000000"),
                 oldClrType: typeof(Guid),
                 oldType: "uuid",
-                oldNullable: true);
+                oldNullable: true
+            );
         }
     }
 }

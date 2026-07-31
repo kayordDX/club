@@ -1,6 +1,6 @@
-using Microsoft.EntityFrameworkCore;
 using Club.Data;
 using Club.DTO;
+using Microsoft.EntityFrameworkCore;
 
 namespace Club.Features.Outlet.GetBasic;
 
@@ -17,8 +17,8 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<OutletGetBasicRequest, 
 
     public override async Task HandleAsync(OutletGetBasicRequest req, CancellationToken ct)
     {
-        var results = await _dbContext.Outlet
-            .Select(x => new OutletBasicDTO
+        var results = await _dbContext
+            .Outlet.Select(x => new OutletBasicDTO
             {
                 Id = x.Id,
                 Slug = x.Slug,
@@ -27,20 +27,18 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<OutletGetBasicRequest, 
                 Logo = x.Logo,
                 DisplayName = x.DisplayName,
                 OutletTypeId = x.OutletTypeId,
-                OutletType = new OutletTypeDTO
-                {
-                    Id = x.OutletType.Id,
-                    Name = x.OutletType.Name
-                },
+                OutletType = new OutletTypeDTO { Id = x.OutletType.Id, Name = x.OutletType.Name },
                 IsActive = x.IsActive,
-                Facilities = x.Facilities.Select(f => new FacilityBasicDTO
-                {
-                    Id = f.Id,
-                    Name = f.Name,
-                    IsActive = f.IsActive,
-                    FacilityTypeId = f.FacilityTypeId,
-                    FacilityTypeName = f.FacilityType.Name
-                }).ToList()
+                Facilities = x
+                    .Facilities.Select(f => new FacilityBasicDTO
+                    {
+                        Id = f.Id,
+                        Name = f.Name,
+                        IsActive = f.IsActive,
+                        FacilityTypeId = f.FacilityTypeId,
+                        FacilityTypeName = f.FacilityType.Name,
+                    })
+                    .ToList(),
             })
             .FirstOrDefaultAsync(x => x.Slug == req.Slug, ct);
 

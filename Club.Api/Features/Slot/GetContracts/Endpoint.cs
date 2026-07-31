@@ -1,5 +1,5 @@
-using Microsoft.EntityFrameworkCore;
 using Club.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Club.Features.Slot.GetContracts;
 
@@ -16,8 +16,8 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetContractsRequest
 
     public override async Task HandleAsync(SlotGetContractsRequest req, CancellationToken ct)
     {
-        var slotContracts = await _dbContext.SlotContract
-            .Where(sc => sc.SlotId == req.Id)
+        var slotContracts = await _dbContext
+            .SlotContract.Where(sc => sc.SlotId == req.Id)
             .Select(sc => new SlotGetContractsResponse
             {
                 Id = sc.Id,
@@ -27,7 +27,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetContractsRequest
                 Price = sc.Price,
                 ValidationId = sc.ValidationId,
                 CanPayLater = sc.CanPayLater,
-                Description = sc.Description
+                Description = sc.Description,
             })
             .OrderBy(sc => sc.Price)
             .ToListAsync(ct);

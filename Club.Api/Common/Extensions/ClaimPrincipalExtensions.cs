@@ -6,8 +6,6 @@ internal static class ClaimsPrincipalExtensions
     {
         string? userId = principal?.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        return Guid.TryParse(userId, out Guid parsedUserId) ?
-            parsedUserId :
-            null;
+        return Guid.TryParse(userId, out Guid parsedUserId) ? parsedUserId : null;
     }
 }

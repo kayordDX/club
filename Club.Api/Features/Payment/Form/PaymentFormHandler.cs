@@ -1,8 +1,8 @@
 using System.Text;
 using System.Text.Json;
-using Microsoft.EntityFrameworkCore;
 using Club.Data;
 using Club.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace Club.Features.Payment.Form;
 
@@ -20,8 +20,7 @@ internal static class PaymentFormHandler
         }
 
         var dbContext = httpContext.RequestServices.GetRequiredService<AppDbContext>();
-        var payment = await dbContext.Payment
-            .FirstOrDefaultAsync(p => p.TransactionId == transactionId, ct);
+        var payment = await dbContext.Payment.FirstOrDefaultAsync(p => p.TransactionId == transactionId, ct);
 
         if (payment is null)
         {
@@ -32,8 +31,7 @@ internal static class PaymentFormHandler
         if (string.IsNullOrEmpty(payment.FormActionUrl) || string.IsNullOrEmpty(payment.FormFieldsJson))
         {
             httpContext.Response.StatusCode = 400;
-            await httpContext.Response.WriteAsync(
-                $"Provider '{payment.ProviderName}' does not support form-based payments.", ct);
+            await httpContext.Response.WriteAsync($"Provider '{payment.ProviderName}' does not support form-based payments.", ct);
             return;
         }
 
@@ -60,10 +58,16 @@ internal static class PaymentFormHandler
         await httpContext.Response.WriteAsync(html, Encoding.UTF8, ct);
 
         var logger = httpContext.RequestServices.GetRequiredService<PaymentLogger>();
-        await logger.LogAsync(payment.Id, transactionId, payment.ProviderName,
-            "payment.form_served", "pending",
+        await logger.LogAsync(
+            payment.Id,
+            transactionId,
+            payment.ProviderName,
+            "payment.form_served",
+            "pending",
             $"Form served for {payment.ProviderName}, action: {payment.FormActionUrl}",
-            new { formActionUrl = payment.FormActionUrl }, ct);
+            new { formActionUrl = payment.FormActionUrl },
+            ct
+        );
     }
 
     private static string BuildFormHtml(string actionUrl, Dictionary<string, string> fields)
@@ -86,11 +90,6 @@ internal static class PaymentFormHandler
 
     private static string HtmlEncode(string value)
     {
-        return value
-            .Replace("&", "&amp;")
-            .Replace("\"", "&quot;")
-            .Replace("'", "&#39;")
-            .Replace("<", "&lt;")
-            .Replace(">", "&gt;");
+        return value.Replace("&", "&amp;").Replace("\"", "&quot;").Replace("'", "&#39;").Replace("<", "&lt;").Replace(">", "&gt;");
     }
 }

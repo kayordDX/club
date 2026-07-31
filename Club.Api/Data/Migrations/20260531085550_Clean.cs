@@ -11,20 +11,15 @@ namespace Club.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "openiddict_scope");
+            migrationBuilder.DropTable(name: "openiddict_scope");
 
-            migrationBuilder.DropTable(
-                name: "openiddict_token");
+            migrationBuilder.DropTable(name: "openiddict_token");
 
-            migrationBuilder.DropTable(
-                name: "user_refresh_token");
+            migrationBuilder.DropTable(name: "user_refresh_token");
 
-            migrationBuilder.DropTable(
-                name: "openiddict_authorization");
+            migrationBuilder.DropTable(name: "openiddict_authorization");
 
-            migrationBuilder.DropTable(
-                name: "openiddict_application");
+            migrationBuilder.DropTable(name: "openiddict_application");
         }
 
         /// <inheritdoc />
@@ -49,12 +44,13 @@ namespace Club.Data.Migrations
                     properties = table.Column<string>(type: "text", nullable: true),
                     redirect_uris = table.Column<string>(type: "text", nullable: true),
                     requirements = table.Column<string>(type: "text", nullable: true),
-                    settings = table.Column<string>(type: "text", nullable: true)
+                    settings = table.Column<string>(type: "text", nullable: true),
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_openiddict_application", x => x.id);
-                });
+                }
+            );
 
             migrationBuilder.CreateTable(
                 name: "openiddict_scope",
@@ -68,12 +64,13 @@ namespace Club.Data.Migrations
                     display_names = table.Column<string>(type: "text", nullable: true),
                     name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
                     properties = table.Column<string>(type: "text", nullable: true),
-                    resources = table.Column<string>(type: "text", nullable: true)
+                    resources = table.Column<string>(type: "text", nullable: true),
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_openiddict_scope", x => x.id);
-                });
+                }
+            );
 
             migrationBuilder.CreateTable(
                 name: "user_refresh_token",
@@ -87,7 +84,7 @@ namespace Club.Data.Migrations
                     expires_at_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     platform = table.Column<string>(type: "text", nullable: false),
                     processor = table.Column<string>(type: "text", nullable: false),
-                    token = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false)
+                    token = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                 },
                 constraints: table =>
                 {
@@ -97,8 +94,10 @@ namespace Club.Data.Migrations
                         column: x => x.user_id,
                         principalTable: "user",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                });
+                        onDelete: ReferentialAction.Cascade
+                    );
+                }
+            );
 
             migrationBuilder.CreateTable(
                 name: "openiddict_authorization",
@@ -112,7 +111,7 @@ namespace Club.Data.Migrations
                     scopes = table.Column<string>(type: "text", nullable: true),
                     status = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
                     subject = table.Column<string>(type: "character varying(400)", maxLength: 400, nullable: true),
-                    type = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true)
+                    type = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
                 },
                 constraints: table =>
                 {
@@ -121,8 +120,10 @@ namespace Club.Data.Migrations
                         name: "fk_openiddict_authorization_openiddict_application_application",
                         column: x => x.application_id,
                         principalTable: "openiddict_application",
-                        principalColumn: "id");
-                });
+                        principalColumn: "id"
+                    );
+                }
+            );
 
             migrationBuilder.CreateTable(
                 name: "openiddict_token",
@@ -140,7 +141,7 @@ namespace Club.Data.Migrations
                     reference_id = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     status = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
                     subject = table.Column<string>(type: "character varying(400)", maxLength: 400, nullable: true),
-                    type = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: true)
+                    type = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: true),
                 },
                 constraints: table =>
                 {
@@ -149,57 +150,40 @@ namespace Club.Data.Migrations
                         name: "fk_openiddict_token_openiddict_application_application_id",
                         column: x => x.application_id,
                         principalTable: "openiddict_application",
-                        principalColumn: "id");
+                        principalColumn: "id"
+                    );
                     table.ForeignKey(
                         name: "fk_openiddict_token_openiddict_authorization_authorization_id",
                         column: x => x.authorization_id,
                         principalTable: "openiddict_authorization",
-                        principalColumn: "id");
-                });
+                        principalColumn: "id"
+                    );
+                }
+            );
 
-            migrationBuilder.CreateIndex(
-                name: "ix_openiddict_application_client_id",
-                table: "openiddict_application",
-                column: "client_id",
-                unique: true);
+            migrationBuilder.CreateIndex(name: "ix_openiddict_application_client_id", table: "openiddict_application", column: "client_id", unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "ix_openiddict_authorization_application_id_status_subject_type",
                 table: "openiddict_authorization",
-                columns: new[] { "application_id", "status", "subject", "type" });
+                columns: new[] { "application_id", "status", "subject", "type" }
+            );
 
-            migrationBuilder.CreateIndex(
-                name: "ix_openiddict_scope_name",
-                table: "openiddict_scope",
-                column: "name",
-                unique: true);
+            migrationBuilder.CreateIndex(name: "ix_openiddict_scope_name", table: "openiddict_scope", column: "name", unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "ix_openiddict_token_application_id_status_subject_type",
                 table: "openiddict_token",
-                columns: new[] { "application_id", "status", "subject", "type" });
+                columns: new[] { "application_id", "status", "subject", "type" }
+            );
 
-            migrationBuilder.CreateIndex(
-                name: "ix_openiddict_token_authorization_id",
-                table: "openiddict_token",
-                column: "authorization_id");
+            migrationBuilder.CreateIndex(name: "ix_openiddict_token_authorization_id", table: "openiddict_token", column: "authorization_id");
 
-            migrationBuilder.CreateIndex(
-                name: "ix_openiddict_token_reference_id",
-                table: "openiddict_token",
-                column: "reference_id",
-                unique: true);
+            migrationBuilder.CreateIndex(name: "ix_openiddict_token_reference_id", table: "openiddict_token", column: "reference_id", unique: true);
 
-            migrationBuilder.CreateIndex(
-                name: "ix_user_refresh_token_token",
-                table: "user_refresh_token",
-                column: "token",
-                unique: true);
+            migrationBuilder.CreateIndex(name: "ix_user_refresh_token_token", table: "user_refresh_token", column: "token", unique: true);
 
-            migrationBuilder.CreateIndex(
-                name: "ix_user_refresh_token_user_id",
-                table: "user_refresh_token",
-                column: "user_id");
+            migrationBuilder.CreateIndex(name: "ix_user_refresh_token_user_id", table: "user_refresh_token", column: "user_id");
         }
     }
 }

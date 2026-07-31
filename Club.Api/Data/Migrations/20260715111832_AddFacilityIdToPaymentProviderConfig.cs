@@ -20,12 +20,15 @@ namespace Club.Data.Migrations
             // They will be re-created per-facility by the seeder after migration.
             migrationBuilder.Sql("DELETE FROM payment_provider_config;");
 
-            migrationBuilder.Sql("""
+            migrationBuilder.Sql(
+                """
                 CREATE UNIQUE INDEX IF NOT EXISTS ix_payment_provider_config_facility_id_provider_key
                 ON payment_provider_config (facility_id, provider_key);
-                """);
+                """
+            );
 
-            migrationBuilder.Sql("""
+            migrationBuilder.Sql(
+                """
                 DO $$
                 BEGIN
                     IF NOT EXISTS (
@@ -37,32 +40,32 @@ namespace Club.Data.Migrations
                         FOREIGN KEY (facility_id) REFERENCES facility (id) ON DELETE CASCADE;
                     END IF;
                 END $$;
-                """);
+                """
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("""
+            migrationBuilder.Sql(
+                """
                 ALTER TABLE payment_provider_config
                 DROP CONSTRAINT IF EXISTS fk_payment_provider_config_facility_facility_id;
-                """);
+                """
+            );
 
             migrationBuilder.Sql("DROP INDEX IF EXISTS ix_payment_provider_config_facility_id_provider_key;");
 
-            migrationBuilder.DropColumn(
-                name: "facility_id",
-                table: "payment_provider_config");
+            migrationBuilder.DropColumn(name: "facility_id", table: "payment_provider_config");
 
-            migrationBuilder.DropColumn(
-                name: "type",
-                table: "payment_provider_config");
+            migrationBuilder.DropColumn(name: "type", table: "payment_provider_config");
 
             migrationBuilder.CreateIndex(
                 name: "ix_payment_provider_config_provider_key",
                 table: "payment_provider_config",
                 column: "provider_key",
-                unique: true);
+                unique: true
+            );
         }
     }
 }

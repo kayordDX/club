@@ -19,19 +19,18 @@ public static class TelemetryExtensions
 
     public static void ConfigureTelemetry(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddOpenTelemetry()
+        services
+            .AddOpenTelemetry()
             .ConfigureResource(r => r.AddService("ClubApi"))
-            .WithMetrics(metrics => metrics
+            .WithMetrics(metrics =>
+                metrics
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation()
                     .AddProcessInstrumentation()
-                    .AddNpgsqlInstrumentation())
-            .WithTracing(tracing => tracing
-                .AddHttpClientInstrumentation()
-                .AddAspNetCoreInstrumentation()
-                .AddEntityFrameworkCoreInstrumentation()
-                .AddNpgsql())
+                    .AddNpgsqlInstrumentation()
+            )
+            .WithTracing(tracing => tracing.AddHttpClientInstrumentation().AddAspNetCoreInstrumentation().AddEntityFrameworkCoreInstrumentation().AddNpgsql())
             .UseOtlpExporter();
     }
 }

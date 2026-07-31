@@ -1,17 +1,14 @@
 using System.Text.Json;
-using Microsoft.EntityFrameworkCore;
 using Club.Common.Payments;
 using Club.Data;
 using Club.Entities;
 using Club.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace Club.Features.Payment.Initiate;
 
-public class Endpoint(
-    AppDbContext dbContext,
-    IPaymentFactory paymentFactory,
-    PaymentLogger paymentLogger
-) : Endpoint<PaymentInitiateRequest, PaymentInitiateResponse>
+public class Endpoint(AppDbContext dbContext, IPaymentFactory paymentFactory, PaymentLogger paymentLogger)
+    : Endpoint<PaymentInitiateRequest, PaymentInitiateResponse>
 {
     private readonly AppDbContext _dbContext = dbContext;
     private readonly IPaymentFactory _paymentFactory = paymentFactory;
@@ -26,9 +23,7 @@ public class Endpoint(
 
     public override async Task HandleAsync(PaymentInitiateRequest req, CancellationToken ct)
     {
-        var booking = await _dbContext.Booking
-            .Include(b => b.BookingStatus)
-            .FirstOrDefaultAsync(b => b.Id == req.BookingId, ct);
+        var booking = await _dbContext.Booking.Include(b => b.BookingStatus).FirstOrDefaultAsync(b => b.Id == req.BookingId, ct);
 
         if (booking is null)
         {
@@ -55,10 +50,8 @@ public class Endpoint(
             return;
         }
 
-        var pendingStatus = await _dbContext.PaymentStatus
-            .FirstAsync(s => s.Id == (int)Common.Enums.PaymentStatusEnum.Pending, ct);
-        var creditCardType = await _dbContext.PaymentType
-            .FirstAsync(t => t.Id == (int)Common.Enums.PaymentTypeEnum.CreditCard, ct);
+        var pendingStatus = await _dbContext.PaymentStatus.FirstAsync(s => s.Id == (int)Common.Enums.PaymentStatusEnum.Pending, ct);
+        var creditCardType = await _dbContext.PaymentType.FirstAsync(t => t.Id == (int)Common.Enums.PaymentTypeEnum.CreditCard, ct);
 
         var transactionId = Guid.NewGuid().ToString();
 
@@ -71,49 +64,64 @@ public class Endpoint(
             PaymentTypeId = creditCardType.Id,
             PaymentType = creditCardType,
             TransactionId = transactionId,
-            ProviderName = req.ProviderName
+            ProviderName = req.ProviderName,
         };
 
         _dbContext.Payment.Add(payment);
         await _dbContext.SaveChangesAsync(ct);
 
-        await _paymentLogger.LogAsync(payment.Id, transactionId, req.ProviderName,
-            "payment.initiated", "pending",
+        await _paymentLogger.LogAsync(
+            payment.Id,
+            transactionId,
+            req.ProviderName,
+            "payment.initiated",
+            "pending",
             $"Payment initiated for Booking #{booking.Id}, amount R{booking.AmountOutstanding:F2}",
-            new { bookingId = booking.Id, amount = booking.AmountOutstanding }, ct);
+            new { bookingId = booking.Id, amount = booking.AmountOutstanding },
+            ct
+        );
 
-        _dbContext.PaymentBooking.Add(new PaymentBooking
-        {
-            PaymentId = payment.Id,
-            Payment = payment,
-            BookingId = booking.Id,
-            Booking = booking
-        });
+        _dbContext.PaymentBooking.Add(
+            new PaymentBooking
+            {
+                PaymentId = payment.Id,
+                Payment = payment,
+                BookingId = booking.Id,
+                Booking = booking,
+            }
+        );
 
         var paymentRequest = new PaymentRequest
         {
             Amount = booking.AmountOutstanding,
             Currency = "ZAR",
             TransactionId = transactionId,
-            Description = $"Booking #{booking.Id}"
+            Description = $"Booking #{booking.Id}",
         };
 
         var result = await provider.ProcessPaymentAsync(paymentRequest, ct);
 
         payment.RedirectUrl = result.RedirectUrl;
         payment.FormActionUrl = result.FormActionUrl;
-        payment.FormFieldsJson = result.FormFields is not null
-            ? JsonSerializer.Serialize(result.FormFields)
-            : null;
+        payment.FormFieldsJson = result.FormFields is not null ? JsonSerializer.Serialize(result.FormFields) : null;
         payment.ProviderReference = result.ProviderReference;
         await _dbContext.SaveChangesAsync(ct);
 
-        await _paymentLogger.LogAsync(payment.Id, transactionId, req.ProviderName,
-            "provider.redirect_returned", result.Success ? "pending" : "failed",
-            result.Success
-                ? $"Provider returned redirect: {result.RedirectUrl ?? "(form)"}"
-                : $"Provider failed: {result.ErrorMessage}",
-            new { redirectUrl = result.RedirectUrl, formActionUrl = result.FormActionUrl, errorMessage = result.ErrorMessage }, ct);
+        await _paymentLogger.LogAsync(
+            payment.Id,
+            transactionId,
+            req.ProviderName,
+            "provider.redirect_returned",
+            result.Success ? "pending" : "failed",
+            result.Success ? $"Provider returned redirect: {result.RedirectUrl ?? "(form)"}" : $"Provider failed: {result.ErrorMessage}",
+            new
+            {
+                redirectUrl = result.RedirectUrl,
+                formActionUrl = result.FormActionUrl,
+                errorMessage = result.ErrorMessage,
+            },
+            ct
+        );
 
         if (!result.Success)
         {
@@ -122,20 +130,26 @@ public class Endpoint(
             payment.ErrorMessage = result.ErrorMessage;
             await _dbContext.SaveChangesAsync(ct);
 
-            await Send.OkAsync(new PaymentInitiateResponse
-            {
-                TransactionId = transactionId,
-                RedirectUrl = "",
-                ProviderReference = result.ProviderReference
-            }, ct);
+            await Send.OkAsync(
+                new PaymentInitiateResponse
+                {
+                    TransactionId = transactionId,
+                    RedirectUrl = "",
+                    ProviderReference = result.ProviderReference,
+                },
+                ct
+            );
             return;
         }
 
-        await Send.OkAsync(new PaymentInitiateResponse
-        {
-            TransactionId = transactionId,
-            RedirectUrl = result.RedirectUrl!,
-            ProviderReference = result.ProviderReference
-        }, ct);
+        await Send.OkAsync(
+            new PaymentInitiateResponse
+            {
+                TransactionId = transactionId,
+                RedirectUrl = result.RedirectUrl!,
+                ProviderReference = result.ProviderReference,
+            },
+            ct
+        );
     }
 }

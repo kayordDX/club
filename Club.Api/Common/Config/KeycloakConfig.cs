@@ -15,34 +15,22 @@ public class KeycloakConfig
 
     public string KeycloakUrlRealm
     {
-        get
-        {
-            return BuildRealmUrl();
-        }
+        get { return BuildRealmUrl(); }
     }
 
     public string KeycloakTokenEndpoint
     {
-        get
-        {
-            return BuildRealmUrl("protocol/openid-connect/token");
-        }
+        get { return BuildRealmUrl("protocol/openid-connect/token"); }
     }
 
     public string AuthorizationUrl
     {
-        get
-        {
-            return BuildRealmUrl("protocol/openid-connect/auth");
-        }
+        get { return BuildRealmUrl("protocol/openid-connect/auth"); }
     }
 
     public string MetadataAddress
     {
-        get
-        {
-            return BuildRealmUrl(".well-known/openid-configuration");
-        }
+        get { return BuildRealmUrl(".well-known/openid-configuration"); }
     }
 
     private string BuildRealmUrl(string relativePath = "")

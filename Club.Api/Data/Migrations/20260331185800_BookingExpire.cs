@@ -16,15 +16,14 @@ namespace Club.Data.Migrations
                 table: "booking",
                 type: "timestamp with time zone",
                 nullable: false,
-                defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
+                defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "expires_at",
-                table: "booking");
+            migrationBuilder.DropColumn(name: "expires_at", table: "booking");
         }
     }
 }

@@ -1,10 +1,10 @@
 ﻿using Club.Common.Extensions;
-using TickerQ.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Npgsql;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
+using TickerQ.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,11 +26,10 @@ builder.Services.ConfigureAWS(builder.Configuration);
 builder.Services.ConfigureNetwork(builder.Configuration);
 
 // Add Npgsql and EF Core instrumentation on top of AddServiceDefaults()
-builder.Services.AddOpenTelemetry()
+builder
+    .Services.AddOpenTelemetry()
     .WithMetrics(metrics => metrics.AddNpgsqlInstrumentation())
-    .WithTracing(tracing => tracing
-        .AddEntityFrameworkCoreInstrumentation()
-        .AddNpgsql());
+    .WithTracing(tracing => tracing.AddEntityFrameworkCoreInstrumentation().AddNpgsql());
 
 var app = builder.Build();
 

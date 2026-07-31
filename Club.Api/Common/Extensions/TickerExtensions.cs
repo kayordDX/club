@@ -1,5 +1,5 @@
-using Microsoft.EntityFrameworkCore;
 using Club.Data;
+using Microsoft.EntityFrameworkCore;
 using TickerQ.Dashboard.DependencyInjection;
 using TickerQ.DependencyInjection;
 using TickerQ.EntityFrameworkCore.DbContextFactory;
@@ -28,10 +28,7 @@ public static class TickerExtensions
             services.AddDbContext<TickerQDbContext>(options =>
             {
                 options.UseSnakeCaseNamingConvention();
-                options.UseNpgsql(
-                    configuration.GetConnectionString("DefaultConnection"),
-                    b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)
-                );
+                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName));
             });
 
             opt.AddDashboard(o =>

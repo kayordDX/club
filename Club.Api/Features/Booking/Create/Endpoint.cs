@@ -1,9 +1,9 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Club.Common;
 using Club.Common.Config;
 using Club.Common.Enums;
 using Club.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Club.Features.Booking.Create;
 
@@ -29,10 +29,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingCreateRequest, B
 
         var slotContractIds = req.Bookings.Select(b => b.SlotContractId).Distinct().ToList();
 
-        var slotContracts = await _dbContext.SlotContract
-            .Include(sc => sc.Slot)
-            .Where(sc => slotContractIds.Contains(sc.Id))
-            .ToListAsync(ct);
+        var slotContracts = await _dbContext.SlotContract.Include(sc => sc.Slot).Where(sc => slotContractIds.Contains(sc.Id)).ToListAsync(ct);
 
         foreach (var bookingReq in req.Bookings)
         {
@@ -55,10 +52,8 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingCreateRequest, B
             .Distinct()
             .ToList();
 
-        var existingCounts = await _dbContext.SlotContractBooking
-            .Where(scb =>
-                slotIds.Contains(scb.SlotContract.SlotId) &&
-                scb.Booking.BookingStatusId != (int)BookingStatusEnum.Cancelled)
+        var existingCounts = await _dbContext
+            .SlotContractBooking.Where(scb => slotIds.Contains(scb.SlotContract.SlotId) && scb.Booking.BookingStatusId != (int)BookingStatusEnum.Cancelled)
             .GroupBy(scb => scb.SlotContract.SlotId)
             .Select(g => new { SlotId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.SlotId, x => x.Count, ct);
@@ -80,13 +75,9 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingCreateRequest, B
         }
 
         var now = DateTime.UtcNow;
-        var requestedExtras = req.Extras
-            .GroupBy(extra => extra.ExtraId)
-            .Select(group => new
-            {
-                ExtraId = group.Key,
-                Amount = group.Sum(extra => extra.Amount)
-            })
+        var requestedExtras = req
+            .Extras.GroupBy(extra => extra.ExtraId)
+            .Select(group => new { ExtraId = group.Key, Amount = group.Sum(extra => extra.Amount) })
             .ToList();
 
         if (requestedExtras.Any(extra => extra.Amount <= 0))
@@ -96,12 +87,10 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingCreateRequest, B
             return;
         }
 
-        var extras = requestedExtras.Count == 0
-            ? []
-            : await _dbContext.Extra
-                .Where(extra =>
-                    requestedExtras.Select(requestedExtra => requestedExtra.ExtraId).Contains(extra.Id))
-                .ToListAsync(ct);
+        var extras =
+            requestedExtras.Count == 0
+                ? []
+                : await _dbContext.Extra.Where(extra => requestedExtras.Select(requestedExtra => requestedExtra.ExtraId).Contains(extra.Id)).ToListAsync(ct);
 
         foreach (var requestedExtra in requestedExtras)
         {
@@ -118,10 +107,8 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingCreateRequest, B
             return;
         }
 
-        var totalPrice = req.Bookings.Sum(br =>
-            slotContracts.First(sc => sc.Id == br.SlotContractId && sc.SlotId == br.SlotId).Price);
-        var extrasTotal = requestedExtras.Sum(requestedExtra =>
-            extras.First(extra => extra.Id == requestedExtra.ExtraId).Price * requestedExtra.Amount);
+        var totalPrice = req.Bookings.Sum(br => slotContracts.First(sc => sc.Id == br.SlotContractId && sc.SlotId == br.SlotId).Price);
+        var extrasTotal = requestedExtras.Sum(requestedExtra => extras.First(extra => extra.Id == requestedExtra.ExtraId).Price * requestedExtra.Amount);
 
         var userId = Helpers.GetCurrentUserId(HttpContext);
         var booking = new Entities.Booking
@@ -138,8 +125,8 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingCreateRequest, B
         await _dbContext.Booking.AddAsync(booking, ct);
         await _dbContext.SaveChangesAsync(ct);
 
-        var slotContractBookings = req.Bookings
-            .Select(br => new Entities.SlotContractBooking
+        var slotContractBookings = req
+            .Bookings.Select(br => new Entities.SlotContractBooking
             {
                 SlotContractId = br.SlotContractId,
                 BookingId = booking.Id,
@@ -159,9 +146,6 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingCreateRequest, B
         await _dbContext.ExtraBooking.AddRangeAsync(extraBookings, ct);
         await _dbContext.SaveChangesAsync(ct);
 
-        await Send.OkAsync(new BookingCreateResponse
-        {
-            Id = booking.Id,
-        }, ct);
+        await Send.OkAsync(new BookingCreateResponse { Id = booking.Id }, ct);
     }
 }

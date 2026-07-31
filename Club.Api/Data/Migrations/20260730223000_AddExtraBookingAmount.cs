@@ -14,20 +14,13 @@ namespace Club.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<int>(
-                name: "amount",
-                table: "extra_booking",
-                type: "integer",
-                nullable: false,
-                defaultValue: 1);
+            migrationBuilder.AddColumn<int>(name: "amount", table: "extra_booking", type: "integer", nullable: false, defaultValue: 1);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "amount",
-                table: "extra_booking");
+            migrationBuilder.DropColumn(name: "amount", table: "extra_booking");
         }
     }
 }

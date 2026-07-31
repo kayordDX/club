@@ -9,9 +9,11 @@ public class User : IdentityUser<Guid>
     public string? Picture { get; set; }
     public ICollection<UserContract> UserContracts { get; set; } = [];
     public ICollection<UserRole> UserRoles { get; set; } = [];
+
     public override string ToString()
     {
         return FirstName + " " + LastName;
     }
+
     public DateTime LastSync { get; set; }
 }

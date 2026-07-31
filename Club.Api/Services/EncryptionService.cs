@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.Extensions.Options;
 using Club.Common.Config;
+using Microsoft.Extensions.Options;
 
 namespace Club.Services;
 
@@ -20,13 +20,7 @@ public class EncryptionService
     {
         byte[] salt = Encoding.UTF8.GetBytes(_appConfig.EncryptionSalt);
         byte[] passwordBytes = Encoding.UTF8.GetBytes(_appConfig.EncryptionKey);
-        return Rfc2898DeriveBytes.Pbkdf2(
-            passwordBytes,
-            salt,
-            600_000,
-            HashAlgorithmName.SHA512,
-            32
-        );
+        return Rfc2898DeriveBytes.Pbkdf2(passwordBytes, salt, 600_000, HashAlgorithmName.SHA512, 32);
     }
 
     public string Encrypt(string plainText, byte[] iv)

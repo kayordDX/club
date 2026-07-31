@@ -1,11 +1,11 @@
 using System.Text.Json;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using Club.Common.Payments.Provider.Peach;
 using Club.Common.Payments.Provider.Payfast;
+using Club.Common.Payments.Provider.Peach;
 using Club.Data;
 using Club.Entities;
 using Club.Services;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Club.Common.Payments;
 
@@ -16,7 +16,8 @@ public static class PaymentProviderConfigSeeder
         EncryptionService encryption,
         IOptions<PeachOptions> peachOptions,
         IOptions<PayfastOptions> payfastOptions,
-        CancellationToken ct)
+        CancellationToken ct
+    )
     {
         var facility = await db.Facility.FirstOrDefaultAsync(ct);
 
@@ -34,7 +35,7 @@ public static class PaymentProviderConfigSeeder
                 BaseUrl = "https://sandbox.payfast.co.za/eng/process",
                 ReturnUrl = "http://localhost:5173/payment/success",
                 CancelUrl = "http://localhost:5173/payment/cancelled",
-                NotifyUrl = "http://localhost:5000/payment/result/payfast"
+                NotifyUrl = "http://localhost:5000/payment/result/payfast",
             }
             : payfastOptions.Value;
 
@@ -46,7 +47,7 @@ public static class PaymentProviderConfigSeeder
                 EntityId = "8ac7a4c894809722019482d1df62029d",
                 UserId = "5fb5e392d6fa11ef9b3002f694e28f55",
                 Password = "OMydSc7ewVmEKPZCAj2WxHoik",
-                BaseUrl = "https://testapi-v2.peachpayments.com"
+                BaseUrl = "https://testapi-v2.peachpayments.com",
             }
             : peachOptions.Value;
 
@@ -61,10 +62,11 @@ public static class PaymentProviderConfigSeeder
         string providerKey,
         PaymentProviderType type,
         T options,
-        CancellationToken ct) where T : class
+        CancellationToken ct
+    )
+        where T : class
     {
-        var exists = await db.PaymentProviderConfig
-            .AnyAsync(c => c.FacilityId == facilityId && c.ProviderKey == providerKey, ct);
+        var exists = await db.PaymentProviderConfig.AnyAsync(c => c.FacilityId == facilityId && c.ProviderKey == providerKey, ct);
 
         if (exists)
         {
@@ -75,14 +77,16 @@ public static class PaymentProviderConfigSeeder
         var iv = encryption.GenerateIV();
         var encrypted = encryption.Encrypt(json, iv);
 
-        db.PaymentProviderConfig.Add(new PaymentProviderConfig
-        {
-            FacilityId = facilityId,
-            ProviderKey = providerKey,
-            Type = type,
-            Iv = iv,
-            EncryptedSettings = encrypted,
-            Enabled = true,
-        });
+        db.PaymentProviderConfig.Add(
+            new PaymentProviderConfig
+            {
+                FacilityId = facilityId,
+                ProviderKey = providerKey,
+                Type = type,
+                Iv = iv,
+                EncryptedSettings = encrypted,
+                Enabled = true,
+            }
+        );
     }
 }

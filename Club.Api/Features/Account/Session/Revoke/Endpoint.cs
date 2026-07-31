@@ -1,7 +1,7 @@
-using Keycloak.AuthServices.Sdk.Kiota.Admin;
-using Microsoft.Extensions.Options;
 using Club.Common;
 using Club.Common.Config;
+using Keycloak.AuthServices.Sdk.Kiota.Admin;
+using Microsoft.Extensions.Options;
 
 namespace Club.Features.Account.Session.Revoke;
 
@@ -24,7 +24,8 @@ public class Endpoint(KeycloakAdminApiClient keycloakAdminClient, IOptions<Keycl
             return;
         }
 
-        await keycloakAdminClient.Admin.Realms[keycloakConfig.Realm]
+        await keycloakAdminClient
+            .Admin.Realms[keycloakConfig.Realm]
             .Sessions[req.Id]
             .DeleteAsync(o => o.QueryParameters.IsOffline = true, cancellationToken: ct);
 

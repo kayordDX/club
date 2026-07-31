@@ -16,7 +16,8 @@ namespace Club.Data.Migrations
                 name: "payment_log",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "integer", nullable: false)
+                    id = table
+                        .Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     payment_id = table.Column<int>(type: "integer", nullable: false),
                     transaction_id = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
@@ -25,7 +26,7 @@ namespace Club.Data.Migrations
                     status = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     message = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
                     metadata = table.Column<string>(type: "text", nullable: true),
-                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                 },
                 constraints: table =>
                 {
@@ -35,35 +36,24 @@ namespace Club.Data.Migrations
                         column: x => x.payment_id,
                         principalTable: "payment",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                });
+                        onDelete: ReferentialAction.Cascade
+                    );
+                }
+            );
 
-            migrationBuilder.CreateIndex(
-                name: "ix_payment_log_created_at",
-                table: "payment_log",
-                column: "created_at");
+            migrationBuilder.CreateIndex(name: "ix_payment_log_created_at", table: "payment_log", column: "created_at");
 
-            migrationBuilder.CreateIndex(
-                name: "ix_payment_log_event_type",
-                table: "payment_log",
-                column: "event_type");
+            migrationBuilder.CreateIndex(name: "ix_payment_log_event_type", table: "payment_log", column: "event_type");
 
-            migrationBuilder.CreateIndex(
-                name: "ix_payment_log_payment_id",
-                table: "payment_log",
-                column: "payment_id");
+            migrationBuilder.CreateIndex(name: "ix_payment_log_payment_id", table: "payment_log", column: "payment_id");
 
-            migrationBuilder.CreateIndex(
-                name: "ix_payment_log_transaction_id",
-                table: "payment_log",
-                column: "transaction_id");
+            migrationBuilder.CreateIndex(name: "ix_payment_log_transaction_id", table: "payment_log", column: "transaction_id");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "payment_log");
+            migrationBuilder.DropTable(name: "payment_log");
         }
     }
 }

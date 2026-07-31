@@ -19,7 +19,8 @@ namespace Club.Data.Migrations
                 oldClrType: typeof(string),
                 oldType: "character varying(1000)",
                 oldMaxLength: 1000,
-                oldNullable: true);
+                oldNullable: true
+            );
         }
 
         /// <inheritdoc />
@@ -34,7 +35,8 @@ namespace Club.Data.Migrations
                 oldClrType: typeof(string),
                 oldType: "character varying(4000)",
                 oldMaxLength: 4000,
-                oldNullable: true);
+                oldNullable: true
+            );
         }
     }
 }

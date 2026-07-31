@@ -1,6 +1,6 @@
 using Club.Common.Payments;
-using Club.Common.Payments.Provider.Peach;
 using Club.Common.Payments.Provider.Payfast;
+using Club.Common.Payments.Provider.Peach;
 using Club.Services;
 
 namespace Club.Common.Extensions;

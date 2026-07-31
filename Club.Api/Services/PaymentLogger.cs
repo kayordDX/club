@@ -16,7 +16,8 @@ public class PaymentLogger(AppDbContext dbContext)
         string status,
         string? message = null,
         object? metadata = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default
+    )
     {
         var log = new PaymentLog
         {
@@ -27,7 +28,7 @@ public class PaymentLogger(AppDbContext dbContext)
             Status = status,
             Message = message,
             Metadata = metadata is not null ? JsonSerializer.Serialize(metadata) : null,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
         };
 
         _dbContext.PaymentLog.Add(log);

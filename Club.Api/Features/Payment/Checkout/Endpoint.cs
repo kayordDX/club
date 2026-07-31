@@ -32,21 +32,24 @@ public class Endpoint(IPaymentFactory paymentFactory) : Endpoint<PaymentCheckout
             Amount = req.Amount,
             Currency = req.Currency,
             TransactionId = req.TransactionId,
-            Description = req.Description ?? $"Club payment {req.TransactionId}"
+            Description = req.Description ?? $"Club payment {req.TransactionId}",
         };
 
         var result = await provider.ProcessPaymentAsync(paymentRequest, ct);
 
-        await Send.OkAsync(new PaymentCheckoutResponse
-        {
-            Success = result.Success,
-            TransactionId = result.TransactionId,
-            ProviderReference = result.ProviderReference,
-            RedirectUrl = result.RedirectUrl,
-            FormActionUrl = result.FormActionUrl,
-            FormFields = result.FormFields,
-            Status = result.Status,
-            ErrorMessage = result.ErrorMessage
-        }, ct);
+        await Send.OkAsync(
+            new PaymentCheckoutResponse
+            {
+                Success = result.Success,
+                TransactionId = result.TransactionId,
+                ProviderReference = result.ProviderReference,
+                RedirectUrl = result.RedirectUrl,
+                FormActionUrl = result.FormActionUrl,
+                FormFields = result.FormFields,
+                Status = result.Status,
+                ErrorMessage = result.ErrorMessage,
+            },
+            ct
+        );
     }
 }

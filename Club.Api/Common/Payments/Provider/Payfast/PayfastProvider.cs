@@ -8,10 +8,8 @@ using Microsoft.AspNetCore.Http.Extensions;
 
 namespace Club.Common.Payments.Provider.Payfast;
 
-public class PayfastProvider(
-    IPaymentOptionsAccessor<PayfastOptions> optionsAccessor,
-    IHttpContextAccessor httpContextAccessor,
-    HttpClient httpClient) : IPaymentProvider
+public class PayfastProvider(IPaymentOptionsAccessor<PayfastOptions> optionsAccessor, IHttpContextAccessor httpContextAccessor, HttpClient httpClient)
+    : IPaymentProvider
 {
     private readonly HttpClient _httpClient = httpClient;
 
@@ -47,7 +45,8 @@ public class PayfastProvider(
             httpContextAccessor.HttpContext!.Request.Scheme,
             httpContextAccessor.HttpContext.Request.Host,
             httpContextAccessor.HttpContext.Request.PathBase,
-            $"/payment/form/payfast/{request.TransactionId}");
+            $"/payment/form/payfast/{request.TransactionId}"
+        );
 
         return new PaymentResponse
         {
@@ -56,7 +55,7 @@ public class PayfastProvider(
             RedirectUrl = redirectUrl,
             FormActionUrl = options.BaseUrl,
             FormFields = allFields,
-            Status = "pending"
+            Status = "pending",
         };
     }
 
@@ -73,8 +72,8 @@ public class PayfastProvider(
 
             var parsedData = HttpUtility.ParseQueryString(body);
 
-            var orderedParams = parsedData.AllKeys
-                .Where(k => k is not null)
+            var orderedParams = parsedData
+                .AllKeys.Where(k => k is not null)
                 .Select(k => new KeyValuePair<string, string>(k!, parsedData[k!] ?? string.Empty))
                 .ToList();
 
@@ -84,14 +83,12 @@ public class PayfastProvider(
                 dataDict[kvp.Key] = kvp.Value;
             }
 
-            if (!dataDict.TryGetValue("signature", out var receivedSignature) ||
-                string.IsNullOrEmpty(receivedSignature))
+            if (!dataDict.TryGetValue("signature", out var receivedSignature) || string.IsNullOrEmpty(receivedSignature))
             {
                 return FailedResult("Missing signature in ITN payload.");
             }
 
-            var signatureParameters = orderedParams
-                .Where(kvp => !string.Equals(kvp.Key, "signature", StringComparison.OrdinalIgnoreCase));
+            var signatureParameters = orderedParams.Where(kvp => !string.Equals(kvp.Key, "signature", StringComparison.OrdinalIgnoreCase));
 
             var options = await RequireOptionsAsync(context.RequestAborted);
             var expectedSignature = CalculateSignature(signatureParameters, options.Passphrase);
@@ -107,8 +104,7 @@ public class PayfastProvider(
                 return FailedResult("Payfast server-to-server callback validation failed.");
             }
 
-            if (!dataDict.TryGetValue("m_payment_id", out var transactionId) ||
-                string.IsNullOrEmpty(transactionId))
+            if (!dataDict.TryGetValue("m_payment_id", out var transactionId) || string.IsNullOrEmpty(transactionId))
             {
                 return FailedResult("Missing m_payment_id in ITN payload.");
             }
@@ -122,10 +118,7 @@ public class PayfastProvider(
                 TransactionId = transactionId,
                 EventType = MapPaymentStatusToEvent(paymentStatus),
                 Status = paymentStatus,
-                Metadata = new Dictionary<string, string>(dataDict, StringComparer.Ordinal)
-                {
-                    ["provider"] = ProviderName
-                }
+                Metadata = new Dictionary<string, string>(dataDict, StringComparer.Ordinal) { ["provider"] = ProviderName },
             };
         }
         catch (Exception ex)
@@ -136,14 +129,9 @@ public class PayfastProvider(
 
     internal static string CalculateSignature(IEnumerable<KeyValuePair<string, string>> parameters, string passphrase)
     {
-        var paramString = string.Join("&",
-            parameters
-                .Where(kvp => !string.IsNullOrEmpty(kvp.Value))
-                .Select(kvp => $"{kvp.Key}={PayfastUrlEncode(kvp.Value)}"));
+        var paramString = string.Join("&", parameters.Where(kvp => !string.IsNullOrEmpty(kvp.Value)).Select(kvp => $"{kvp.Key}={PayfastUrlEncode(kvp.Value)}"));
 
-        var signatureString = string.IsNullOrEmpty(passphrase)
-            ? paramString
-            : $"{paramString}&passphrase={PayfastUrlEncode(passphrase)}";
+        var signatureString = string.IsNullOrEmpty(passphrase) ? paramString : $"{paramString}&passphrase={PayfastUrlEncode(passphrase)}";
         var hashBytes = MD5.HashData(Encoding.UTF8.GetBytes(signatureString));
 
         return Convert.ToHexStringLower(hashBytes);
@@ -161,11 +149,9 @@ public class PayfastProvider(
     {
         try
         {
-            var payload = new FormUrlEncodedContent(itnData
-                .Where(kvp => !string.Equals(kvp.Key, "signature", StringComparison.OrdinalIgnoreCase)));
+            var payload = new FormUrlEncodedContent(itnData.Where(kvp => !string.Equals(kvp.Key, "signature", StringComparison.OrdinalIgnoreCase)));
 
-            var response = await _httpClient.PostAsync(
-                "https://www.payfast.co.za/eng/query/validate", payload, ct);
+            var response = await _httpClient.PostAsync("https://www.payfast.co.za/eng/query/validate", payload, ct);
 
             var body = await response.Content.ReadAsStringAsync(ct);
 
@@ -185,10 +171,7 @@ public class PayfastProvider(
             TransactionId = "unknown",
             EventType = "webhook.error",
             Status = "failed",
-            Metadata = new Dictionary<string, string>
-            {
-                ["error"] = error
-            }
+            Metadata = new Dictionary<string, string> { ["error"] = error },
         };
     }
 
@@ -196,8 +179,8 @@ public class PayfastProvider(
     {
         return await optionsAccessor.GetAsync(ct)
             ?? throw new InvalidOperationException(
-                "No enabled Payfast provider configuration was found. " +
-                "Seed or configure payment provider settings before processing payments.");
+                "No enabled Payfast provider configuration was found. " + "Seed or configure payment provider settings before processing payments."
+            );
     }
 
     private static string MapPaymentStatusToEvent(string paymentStatus)
@@ -208,7 +191,7 @@ public class PayfastProvider(
             "failed" => "payment.failed",
             "pending" => "payment.pending",
             "refunded" => "refund.completed",
-            _ => $"payment.{paymentStatus.ToLowerInvariant()}"
+            _ => $"payment.{paymentStatus.ToLowerInvariant()}",
         };
     }
 }

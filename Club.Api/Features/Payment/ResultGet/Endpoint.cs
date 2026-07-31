@@ -3,10 +3,7 @@ using Club.Services;
 
 namespace Club.Features.Payment.ResultGet;
 
-public class Endpoint(
-    IPaymentFactory paymentFactory,
-    ILogger<Endpoint> logger
-) : EndpointWithoutRequest
+public class Endpoint(IPaymentFactory paymentFactory, ILogger<Endpoint> logger) : EndpointWithoutRequest
 {
     private readonly IPaymentFactory _paymentFactory = paymentFactory;
     private readonly ILogger<Endpoint> _logger = logger;

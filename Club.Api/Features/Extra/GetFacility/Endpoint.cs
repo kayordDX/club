@@ -1,5 +1,5 @@
-using Microsoft.EntityFrameworkCore;
 using Club.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Club.Features.Extra.GetFacility;
 

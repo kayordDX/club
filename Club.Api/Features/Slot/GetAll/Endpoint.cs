@@ -1,5 +1,5 @@
-using Microsoft.EntityFrameworkCore;
 using Club.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Club.Features.Slot.GetAll;
 
@@ -21,15 +21,16 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List
         {
             DateTimeKind.Local => req.Date.ToUniversalTime(),
             DateTimeKind.Unspecified => DateTime.SpecifyKind(req.Date, DateTimeKind.Utc),
-            _ => req.Date
+            _ => req.Date,
         };
 
         // Get the start and end of the selected date in UTC
         var dateStart = new DateTime(dateUtc.Year, dateUtc.Month, dateUtc.Day, 0, 0, 0, DateTimeKind.Utc);
         var dateEnd = dateStart.AddDays(1);
 
-        var result = await _dbContext.Database
-            .SqlQuery<SlotGetAllResponse>($"""
+        var result = await _dbContext
+            .Database.SqlQuery<SlotGetAllResponse>(
+                $"""
                 SELECT
                     s.id,
                     s.facility_id,
@@ -51,7 +52,8 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List
                   AND s.start_datetime < {dateEnd}
                 GROUP BY s.id, r.name
                 ORDER BY s.start_datetime
-                """)
+                """
+            )
             .ToListAsync(ct);
 
         await Send.OkAsync(result, ct);

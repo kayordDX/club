@@ -6,8 +6,8 @@ namespace Club.Common.Utilities;
 public class ImageUploader(ITransferUtility transferUtility, IConfiguration configuration)
 {
     private readonly ITransferUtility _transferUtility = transferUtility;
-    private readonly string _bucketName = configuration["AWSBucketName"]
-            ?? throw new ArgumentNullException(nameof(configuration), "Bucket name is missing from configuration.");
+    private readonly string _bucketName =
+        configuration["AWSBucketName"] ?? throw new ArgumentNullException(nameof(configuration), "Bucket name is missing from configuration.");
 
     public async Task UploadFileAsync(Stream fileStream, string keyName, CancellationToken ct = default)
     {
@@ -16,7 +16,7 @@ public class ImageUploader(ITransferUtility transferUtility, IConfiguration conf
             InputStream = fileStream,
             Key = keyName,
             BucketName = _bucketName,
-            CannedACL = S3CannedACL.PublicRead
+            CannedACL = S3CannedACL.PublicRead,
         };
         await _transferUtility.UploadAsync(uploadRequest, ct);
     }

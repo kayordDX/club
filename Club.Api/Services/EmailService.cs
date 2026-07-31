@@ -36,19 +36,18 @@ public class EmailService(AppDbContext dbContext, ITimeTickerManager<TimeTickerE
     {
         var payload = new EmailPayload(to, cc, bcc, isHtml, replyTo);
 
-        await dbContext.EmailLog.AddAsync(new EmailLog
-        {
-            Payload = JsonSerializer.Serialize(payload),
-            Subject = subject,
-            Message = message,
-        }, cancellationToken);
+        await dbContext.EmailLog.AddAsync(
+            new EmailLog
+            {
+                Payload = JsonSerializer.Serialize(payload),
+                Subject = subject,
+                Message = message,
+            },
+            cancellationToken
+        );
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        await tickerManager.AddAsync(new TimeTickerEntity
-        {
-            Function = "EmailJob",
-            ExecutionTime = DateTime.UtcNow,
-        }, cancellationToken);
+        await tickerManager.AddAsync(new TimeTickerEntity { Function = "EmailJob", ExecutionTime = DateTime.UtcNow }, cancellationToken);
     }
 }

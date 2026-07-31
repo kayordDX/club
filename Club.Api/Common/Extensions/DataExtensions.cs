@@ -1,13 +1,13 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Club.Common.Payments;
 using Club.Common.Payments.Provider.Payfast;
 using Club.Common.Payments.Provider.Peach;
 using Club.Data;
 using Club.Entities;
 using Club.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using TickerQ.EntityFrameworkCore.DbContextFactory;
 
 namespace Club.Common.Extensions;
@@ -16,18 +16,19 @@ public static class DataExtensions
 {
     public static IServiceCollection ConfigureEF(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment env)
     {
-        services.AddIdentity<User, IdentityRole<Guid>>(opt =>
-        {
-            opt.Password.RequireDigit = true;
-            opt.Password.RequireLowercase = true;
-            opt.Password.RequireNonAlphanumeric = true;
-            opt.Password.RequireUppercase = true;
-            opt.Password.RequiredLength = 8;
-            opt.User.RequireUniqueEmail = false;
-        })
-        .AddEntityFrameworkStores<AppDbContext>()
-        .AddDefaultTokenProviders()
-        .AddUserStore<UserStore>();
+        services
+            .AddIdentity<User, IdentityRole<Guid>>(opt =>
+            {
+                opt.Password.RequireDigit = true;
+                opt.Password.RequireLowercase = true;
+                opt.Password.RequireNonAlphanumeric = true;
+                opt.Password.RequireUppercase = true;
+                opt.Password.RequiredLength = 8;
+                opt.User.RequireUniqueEmail = false;
+            })
+            .AddEntityFrameworkStores<AppDbContext>()
+            .AddDefaultTokenProviders()
+            .AddUserStore<UserStore>();
 
         // Disable automatic redirects for API; return 403 instead of redirecting to /Account/Login
         services.ConfigureApplicationCookie(options =>
@@ -49,10 +50,7 @@ public static class DataExtensions
         services.AddDbContext<AppDbContext>(options =>
         {
             options.UseSnakeCaseNamingConvention();
-            options.UseNpgsql(
-                configuration.GetConnectionString("DefaultConnection"),
-                b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)
-            );
+            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName));
             if (env.IsDevelopment())
             {
                 options.EnableSensitiveDataLogging();

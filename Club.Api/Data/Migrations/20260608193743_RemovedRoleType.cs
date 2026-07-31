@@ -12,8 +12,7 @@ namespace Club.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
-                name: "role_type");
+            migrationBuilder.DropTable(name: "role_type");
         }
 
         /// <inheritdoc />
@@ -23,7 +22,8 @@ namespace Club.Data.Migrations
                 name: "role_type",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "integer", nullable: false)
+                    id = table
+                        .Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     created_by = table.Column<Guid>(type: "uuid", nullable: true),
@@ -31,12 +31,13 @@ namespace Club.Data.Migrations
                     is_super_admin = table.Column<bool>(type: "boolean", nullable: false),
                     last_modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     last_modified_by = table.Column<Guid>(type: "uuid", nullable: true),
-                    name = table.Column<string>(type: "text", nullable: false)
+                    name = table.Column<string>(type: "text", nullable: false),
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_role_type", x => x.id);
-                });
+                }
+            );
         }
     }
 }

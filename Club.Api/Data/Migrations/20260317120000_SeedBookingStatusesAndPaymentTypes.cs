@@ -31,7 +31,8 @@ public partial class SeedBookingStatusesAndPaymentTypes : Migration
             INSERT INTO payment_type (name)
             SELECT 'Credit card'
             WHERE NOT EXISTS (SELECT 1 FROM payment_type WHERE name = 'Credit card');
-            """);
+            """
+        );
     }
 
     protected override void Down(MigrationBuilder migrationBuilder)
@@ -43,6 +44,7 @@ public partial class SeedBookingStatusesAndPaymentTypes : Migration
 
             DELETE FROM payment_type
             WHERE name IN ('Pay on arrival', 'Credit card');
-            """);
+            """
+        );
     }
 }

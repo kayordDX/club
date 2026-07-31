@@ -1,20 +1,16 @@
-using Microsoft.EntityFrameworkCore;
 using Club.Common.Payments;
 using Club.Data;
 using Club.Entities;
 using Club.Features.Payment.Events;
-using FastEndpoints;
 using Club.Services;
+using FastEndpoints;
+using Microsoft.EntityFrameworkCore;
 
 namespace Club.Features.Payment.Result;
 
 internal static class PaymentResultHandler
 {
-    public static async Task HandleAsync(
-        HttpContext httpContext,
-        IPaymentFactory paymentFactory,
-        ILogger logger,
-        CancellationToken ct)
+    public static async Task HandleAsync(HttpContext httpContext, IPaymentFactory paymentFactory, ILogger logger, CancellationToken ct)
     {
         var providerName = httpContext.Request.RouteValues["provider"]?.ToString();
 
@@ -61,22 +57,17 @@ internal static class PaymentResultHandler
         var paymentLogger = httpContext.RequestServices.GetRequiredService<PaymentLogger>();
         var dbContext = httpContext.RequestServices.GetRequiredService<AppDbContext>();
 
-        var payment = await dbContext.Payment
-            .FirstOrDefaultAsync(p => p.TransactionId == transactionId, ct);
+        var payment = await dbContext.Payment.FirstOrDefaultAsync(p => p.TransactionId == transactionId, ct);
 
         if (payment is not null)
         {
-            await paymentLogger.LogAsync(payment.Id, transactionId, providerName,
-                "itn.received", "processing",
-                $"ITN received from {providerName}", null, ct);
+            await paymentLogger.LogAsync(payment.Id, transactionId, providerName, "itn.received", "processing", $"ITN received from {providerName}", null, ct);
         }
 
         PaymentResult? result = null;
         try
         {
-            logger.LogInformation(
-                "Processing webhook for provider '{Provider}', transaction '{TransactionId}'.",
-                providerName, transactionId);
+            logger.LogInformation("Processing webhook for provider '{Provider}', transaction '{TransactionId}'.", providerName, transactionId);
 
             httpContext.Request.Body.Position = 0;
 
@@ -84,15 +75,29 @@ internal static class PaymentResultHandler
 
             logger.LogInformation(
                 "Webhook processed for provider '{Provider}', transaction '{TransactionId}': Success={Success}, Event={Event}",
-                providerName, result.TransactionId, result.Success, result.EventType);
+                providerName,
+                result.TransactionId,
+                result.Success,
+                result.EventType
+            );
 
             if (payment is not null)
             {
-                await paymentLogger.LogAsync(payment.Id, transactionId, providerName,
+                await paymentLogger.LogAsync(
+                    payment.Id,
+                    transactionId,
+                    providerName,
                     result.Success ? "itn.verified" : "itn.verification_failed",
                     result.Success ? "completed" : "failed",
                     result.Success ? "ITN signature and server verification passed" : $"ITN verification failed: {result.Metadata?.GetValueOrDefault("error")}",
-                    new { eventType = result.EventType, status = result.Status, metadata = result.Metadata }, ct);
+                    new
+                    {
+                        eventType = result.EventType,
+                        status = result.Status,
+                        metadata = result.Metadata,
+                    },
+                    ct
+                );
             }
 
             await PersistAndUpdateBookingAsync(httpContext, result, logger, ct);
@@ -100,13 +105,16 @@ internal static class PaymentResultHandler
             if (payment is not null)
             {
                 var finalStatus = result.Success ? "completed" : "failed";
-                await paymentLogger.LogAsync(payment.Id, transactionId, providerName,
+                await paymentLogger.LogAsync(
+                    payment.Id,
+                    transactionId,
+                    providerName,
                     result.Success ? "payment.completed" : "payment.failed",
                     finalStatus,
-                    result.Success
-                        ? "Payment completed successfully"
-                        : $"Payment failed: {result.Metadata?.GetValueOrDefault("error")}",
-                    new { providerReference = result.Metadata?.GetValueOrDefault("providerReference") }, ct);
+                    result.Success ? "Payment completed successfully" : $"Payment failed: {result.Metadata?.GetValueOrDefault("error")}",
+                    new { providerReference = result.Metadata?.GetValueOrDefault("providerReference") },
+                    ct
+                );
             }
 
             var isGetRequest = string.Equals(httpContext.Request.Method, "GET", StringComparison.OrdinalIgnoreCase);
@@ -115,10 +123,7 @@ internal static class PaymentResultHandler
                 var configuration = httpContext.RequestServices.GetRequiredService<IConfiguration>();
                 var frontendBaseUrl = configuration["Payment:FrontendBaseUrl"] ?? "http://localhost:5173";
 
-                var queryParams = new Dictionary<string, string>
-                {
-                    ["transactionId"] = result.TransactionId
-                };
+                var queryParams = new Dictionary<string, string> { ["transactionId"] = result.TransactionId };
 
                 if (!result.Success)
                 {
@@ -127,8 +132,7 @@ internal static class PaymentResultHandler
 
                 var isSuccess = result.Success;
                 var segment = isSuccess ? "success" : "failure";
-                var query = string.Join("&", queryParams.Select(kvp =>
-                    $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value)}"));
+                var query = string.Join("&", queryParams.Select(kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value)}"));
                 var redirectUrl = $"{frontendBaseUrl.TrimEnd('/')}/payment/{segment}?{query}";
 
                 httpContext.Response.StatusCode = StatusCodes.Status302Found;
@@ -139,43 +143,55 @@ internal static class PaymentResultHandler
             else
             {
                 httpContext.Response.StatusCode = StatusCodes.Status200OK;
-                await httpContext.Response.WriteAsJsonAsync(new
-                {
-                    result.Success,
-                    result.TransactionId,
-                    result.EventType,
-                    result.Status
-                }, cancellationToken: ct);
+                await httpContext.Response.WriteAsJsonAsync(
+                    new
+                    {
+                        result.Success,
+                        result.TransactionId,
+                        result.EventType,
+                        result.Status,
+                    },
+                    cancellationToken: ct
+                );
             }
         }
         catch (Exception ex)
         {
-            logger.LogError(ex,
+            logger.LogError(
+                ex,
                 "Webhook processing failed for provider '{Provider}', transaction '{TransactionId}'.",
-                providerName, result?.TransactionId ?? transactionId);
+                providerName,
+                result?.TransactionId ?? transactionId
+            );
 
             if (payment is not null)
             {
-                await paymentLogger.LogAsync(payment.Id, transactionId, providerName,
-                    "itn.processing_error", "failed",
-                    $"ITN processing error: {ex.Message}", null, ct);
+                await paymentLogger.LogAsync(
+                    payment.Id,
+                    transactionId,
+                    providerName,
+                    "itn.processing_error",
+                    "failed",
+                    $"ITN processing error: {ex.Message}",
+                    null,
+                    ct
+                );
             }
 
             httpContext.Response.StatusCode = StatusCodes.Status200OK;
-            await httpContext.Response.WriteAsJsonAsync(new
-            {
-                Success = false,
-                TransactionId = transactionId,
-                Error = "Webhook processing failed. Gateway may retry."
-            }, cancellationToken: ct);
+            await httpContext.Response.WriteAsJsonAsync(
+                new
+                {
+                    Success = false,
+                    TransactionId = transactionId,
+                    Error = "Webhook processing failed. Gateway may retry.",
+                },
+                cancellationToken: ct
+            );
         }
     }
 
-    private static async Task PersistAndUpdateBookingAsync(
-        HttpContext httpContext,
-        PaymentResult result,
-        ILogger logger,
-        CancellationToken ct)
+    private static async Task PersistAndUpdateBookingAsync(HttpContext httpContext, PaymentResult result, ILogger logger, CancellationToken ct)
     {
         var dbContext = httpContext.RequestServices.GetRequiredService<AppDbContext>();
 
@@ -186,8 +202,7 @@ internal static class PaymentResultHandler
             return;
         }
 
-        var payment = await dbContext.Payment
-            .FirstOrDefaultAsync(p => p.TransactionId == internalTransactionId, ct);
+        var payment = await dbContext.Payment.FirstOrDefaultAsync(p => p.TransactionId == internalTransactionId, ct);
 
         if (payment is null)
         {
@@ -195,9 +210,7 @@ internal static class PaymentResultHandler
             return;
         }
 
-        var paymentBooking = await dbContext.PaymentBooking
-            .Include(pb => pb.Booking)
-            .FirstOrDefaultAsync(pb => pb.PaymentId == payment.Id, ct);
+        var paymentBooking = await dbContext.PaymentBooking.Include(pb => pb.Booking).FirstOrDefaultAsync(pb => pb.PaymentId == payment.Id, ct);
 
         var bookingId = paymentBooking?.BookingId ?? 0;
 
@@ -229,7 +242,7 @@ internal static class PaymentResultHandler
                 PaymentId = payment.Id,
                 BookingId = bookingId,
                 Amount = payment.Amount,
-                ProviderReference = payment.ProviderReference
+                ProviderReference = payment.ProviderReference,
             }.PublishAsync(Mode.WaitForNone, ct);
         }
         else
@@ -245,12 +258,10 @@ internal static class PaymentResultHandler
                 TransactionId = internalTransactionId,
                 PaymentId = payment.Id,
                 BookingId = bookingId,
-                ErrorMessage = payment.ErrorMessage
+                ErrorMessage = payment.ErrorMessage,
             }.PublishAsync(Mode.WaitForNone, ct);
         }
     }
-
-
 
     private static async Task<string> ExtractTransactionIdAsync(HttpContext context, CancellationToken ct)
     {
@@ -293,27 +304,22 @@ internal static class PaymentResultHandler
         try
         {
             using var doc = System.Text.Json.JsonDocument.Parse(body);
-            if (doc.RootElement.TryGetProperty("merchantTransactionId", out var mti) &&
-                mti.ValueKind == System.Text.Json.JsonValueKind.String)
+            if (doc.RootElement.TryGetProperty("merchantTransactionId", out var mti) && mti.ValueKind == System.Text.Json.JsonValueKind.String)
             {
                 return mti.GetString() ?? string.Empty;
             }
 
-            if (doc.RootElement.TryGetProperty("m_payment_id", out var mpi) &&
-                mpi.ValueKind == System.Text.Json.JsonValueKind.String)
+            if (doc.RootElement.TryGetProperty("m_payment_id", out var mpi) && mpi.ValueKind == System.Text.Json.JsonValueKind.String)
             {
                 return mpi.GetString() ?? string.Empty;
             }
 
-            if (doc.RootElement.TryGetProperty("id", out var id) &&
-                id.ValueKind == System.Text.Json.JsonValueKind.String)
+            if (doc.RootElement.TryGetProperty("id", out var id) && id.ValueKind == System.Text.Json.JsonValueKind.String)
             {
                 return id.GetString() ?? string.Empty;
             }
         }
-        catch
-        {
-        }
+        catch { }
 
         var parsed = System.Web.HttpUtility.ParseQueryString(body);
         var extractedId = parsed["m_payment_id"] ?? parsed["merchantTransactionId"] ?? parsed["id"];
@@ -324,10 +330,6 @@ internal static class PaymentResultHandler
     private static async Task SendBadRequestAsync(HttpContext context, CancellationToken ct)
     {
         context.Response.StatusCode = StatusCodes.Status400BadRequest;
-        await context.Response.WriteAsJsonAsync(new
-        {
-            Success = false,
-            Error = "Invalid webhook request."
-        }, cancellationToken: ct);
+        await context.Response.WriteAsJsonAsync(new { Success = false, Error = "Invalid webhook request." }, cancellationToken: ct);
     }
 }

@@ -1,6 +1,6 @@
-using Microsoft.AspNetCore.Identity;
 using Club.Data;
 using Club.Entities;
+using Microsoft.AspNetCore.Identity;
 
 namespace Club.Features.Example;
 
@@ -25,7 +25,6 @@ public class VerifyEndpoint(AppDbContext dbContext, UserManager<User> userManage
             bool result = await _userManager.VerifyTwoFactorTokenAsync(user, TokenOptions.DefaultEmailProvider, r.Code);
             await Send.OkAsync(result, ct);
             return;
-
         }
         await Send.OkAsync(false, ct);
     }

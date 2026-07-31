@@ -10,12 +10,7 @@ namespace Club.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "error_message",
-                table: "payment",
-                type: "character varying(1000)",
-                maxLength: 1000,
-                nullable: true);
+            migrationBuilder.AddColumn<string>(name: "error_message", table: "payment", type: "character varying(1000)", maxLength: 1000, nullable: true);
 
             migrationBuilder.AddColumn<string>(
                 name: "provider_name",
@@ -23,21 +18,12 @@ namespace Club.Data.Migrations
                 type: "character varying(50)",
                 maxLength: 50,
                 nullable: false,
-                defaultValue: "");
+                defaultValue: ""
+            );
 
-            migrationBuilder.AddColumn<string>(
-                name: "provider_reference",
-                table: "payment",
-                type: "character varying(255)",
-                maxLength: 255,
-                nullable: true);
+            migrationBuilder.AddColumn<string>(name: "provider_reference", table: "payment", type: "character varying(255)", maxLength: 255, nullable: true);
 
-            migrationBuilder.AddColumn<string>(
-                name: "redirect_url",
-                table: "payment",
-                type: "character varying(1000)",
-                maxLength: 1000,
-                nullable: true);
+            migrationBuilder.AddColumn<string>(name: "redirect_url", table: "payment", type: "character varying(1000)", maxLength: 1000, nullable: true);
 
             migrationBuilder.AddColumn<string>(
                 name: "transaction_id",
@@ -45,41 +31,26 @@ namespace Club.Data.Migrations
                 type: "character varying(100)",
                 maxLength: 100,
                 nullable: false,
-                defaultValue: "");
+                defaultValue: ""
+            );
 
-            migrationBuilder.CreateIndex(
-                name: "ix_payment_transaction_id",
-                table: "payment",
-                column: "transaction_id",
-                unique: true);
+            migrationBuilder.CreateIndex(name: "ix_payment_transaction_id", table: "payment", column: "transaction_id", unique: true);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropIndex(
-                name: "ix_payment_transaction_id",
-                table: "payment");
+            migrationBuilder.DropIndex(name: "ix_payment_transaction_id", table: "payment");
 
-            migrationBuilder.DropColumn(
-                name: "error_message",
-                table: "payment");
+            migrationBuilder.DropColumn(name: "error_message", table: "payment");
 
-            migrationBuilder.DropColumn(
-                name: "provider_name",
-                table: "payment");
+            migrationBuilder.DropColumn(name: "provider_name", table: "payment");
 
-            migrationBuilder.DropColumn(
-                name: "provider_reference",
-                table: "payment");
+            migrationBuilder.DropColumn(name: "provider_reference", table: "payment");
 
-            migrationBuilder.DropColumn(
-                name: "redirect_url",
-                table: "payment");
+            migrationBuilder.DropColumn(name: "redirect_url", table: "payment");
 
-            migrationBuilder.DropColumn(
-                name: "transaction_id",
-                table: "payment");
+            migrationBuilder.DropColumn(name: "transaction_id", table: "payment");
         }
     }
 }

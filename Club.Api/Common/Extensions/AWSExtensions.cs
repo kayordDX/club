@@ -17,10 +17,7 @@ public static class AWSExtensions
         services.AddSingleton<IAmazonS3>(sp =>
         {
             var credentials = new BasicAWSCredentials(awsConfig.AccessKeyId, awsConfig.SecretAccessKey);
-            var config = new AmazonS3Config
-            {
-                RegionEndpoint = Amazon.RegionEndpoint.GetBySystemName(awsConfig.Region)
-            };
+            var config = new AmazonS3Config { RegionEndpoint = Amazon.RegionEndpoint.GetBySystemName(awsConfig.Region) };
             return new AmazonS3Client(credentials, config);
         });
 

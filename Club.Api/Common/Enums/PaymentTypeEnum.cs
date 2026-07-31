@@ -4,5 +4,5 @@ public enum PaymentTypeEnum
 {
     PayOnArrival = 1,
     CreditCard = 2,
-    EFT = 3
+    EFT = 3,
 }

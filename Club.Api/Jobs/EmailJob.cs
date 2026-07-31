@@ -1,12 +1,12 @@
 using System.Text.Json;
+using Club.Common.Config;
+using Club.Data;
+using Club.Models;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using Club.Common.Config;
-using Club.Data;
-using Club.Models;
 using TickerQ.Utilities.Base;
 
 namespace Club.Jobs;
@@ -31,17 +31,19 @@ public class EmailJob(AppDbContext dbContext, IOptions<EmailConfig> emailConfig)
             throw new Exception("Email password is empty in config");
         }
 
-        var pendingEmails = await dbContext.EmailLog
-            .FromSql($"""
-                select * from email_log
-                where is_sent = false
-                order by created_at_utc
-                for update skip locked
-            """)
+        var pendingEmails = await dbContext
+            .EmailLog.FromSql(
+                $"""
+                    select * from email_log
+                    where is_sent = false
+                    order by created_at_utc
+                    for update skip locked
+                """
+            )
             .ToListAsync(ct);
 
-        if (pendingEmails.Count == 0) return;
-
+        if (pendingEmails.Count == 0)
+            return;
 
         using var client = new SmtpClient();
         try
@@ -54,7 +56,8 @@ public class EmailJob(AppDbContext dbContext, IOptions<EmailConfig> emailConfig)
                 try
                 {
                     var emailData = JsonSerializer.Deserialize<EmailPayload>(log.Payload);
-                    if (emailData == null) continue;
+                    if (emailData == null)
+                        continue;
 
                     var mail = new MimeMessage();
                     mail.From.Add(new MailboxAddress(_emailConfig.Name, _emailConfig.Email));
@@ -72,8 +75,10 @@ public class EmailJob(AppDbContext dbContext, IOptions<EmailConfig> emailConfig)
                         mail.ReplyTo.Add(MailboxAddress.Parse(emailData.ReplyTo));
 
                     var builder = new BodyBuilder();
-                    if (emailData.IsHtml) builder.HtmlBody = log.Message;
-                    else builder.TextBody = log.Message;
+                    if (emailData.IsHtml)
+                        builder.HtmlBody = log.Message;
+                    else
+                        builder.TextBody = log.Message;
 
                     mail.Body = builder.ToMessageBody();
 

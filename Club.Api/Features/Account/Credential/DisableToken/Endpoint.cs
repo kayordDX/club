@@ -1,8 +1,8 @@
-using Microsoft.AspNetCore.Identity;
 using Club.Common;
 using Club.Entities;
 using Club.Models;
 using Club.Services;
+using Microsoft.AspNetCore.Identity;
 
 namespace Club.Features.Account.Credential.DisableToken;
 
@@ -25,20 +25,17 @@ public class Endpoint(UserManager<User> userManager, IEmailService emailService)
         }
 
         string template = """
-        <p>Hi {{name}},</p>
-        <p>You have requested to disable your TOTP credential. Please use the following OTP code to confirm this action:</p>
-        <h2>{{otpCode}}</h2>
-        """
-        .Replace("{{name}}", user.FirstName)
-        .Replace("{{otpCode}}", otpCode);
+            <p>Hi {{name}},</p>
+            <p>You have requested to disable your TOTP credential. Please use the following OTP code to confirm this action:</p>
+            <h2>{{otpCode}}</h2>
+            """.Replace("{{name}}", user.FirstName).Replace("{{otpCode}}", otpCode);
 
         string message = EmailHelpers.EmailBody(template);
-
 
         await emailService.EnqueueEmailAsync(
             [new(user.Email, user.UserName ?? "")],
             "Your OTP code for disabling credential",
-           message,
+            message,
             isHtml: true,
             cancellationToken: ct
         );

@@ -16,16 +16,14 @@ namespace Club.Data.TickerQMigrations
                 table: "CronTickers",
                 type: "boolean",
                 nullable: false,
-                defaultValue: false);
+                defaultValue: false
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "is_system_paused",
-                schema: "ticker",
-                table: "CronTickers");
+            migrationBuilder.DropColumn(name: "is_system_paused", schema: "ticker", table: "CronTickers");
         }
     }
 }

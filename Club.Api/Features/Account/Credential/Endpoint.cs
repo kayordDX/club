@@ -1,5 +1,5 @@
-using Keycloak.AuthServices.Sdk.Admin;
 using Club.Common;
+using Keycloak.AuthServices.Sdk.Admin;
 
 namespace Club.Features.Account.Credential;
 
@@ -21,11 +21,7 @@ public class Endpoint(IKeycloakUserClient keycloakUserClient) : EndpointWithoutR
         }
         var credentials = await keycloakUserClient.GetCredentialsAsync("kayord", userId.ToString() ?? "", cancellationToken: ct);
 
-        var response = new AccountCredentialResponse
-        {
-            IsTwoFactorEnabled = credentials.Any(c => c.Type == "otp"),
-            HasCredential = credentials.Any()
-        };
+        var response = new AccountCredentialResponse { IsTwoFactorEnabled = credentials.Any(c => c.Type == "otp"), HasCredential = credentials.Any() };
 
         await Send.OkAsync(response, ct);
     }

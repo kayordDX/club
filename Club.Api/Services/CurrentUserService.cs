@@ -1,5 +1,5 @@
-using Microsoft.AspNetCore.Identity;
 using Club.Entities;
+using Microsoft.AspNetCore.Identity;
 
 namespace Club.Services;
 

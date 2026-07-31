@@ -1,6 +1,6 @@
+using Club.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Club.Entities;
 
 namespace Club.Data.Config;
 
@@ -13,9 +13,6 @@ public class PaymentProviderConfigConfiguration : IEntityTypeConfiguration<Payme
         builder.Property(c => c.Type).HasConversion<string>().HasMaxLength(50).IsRequired();
         builder.Property(c => c.EncryptedSettings).IsRequired();
         builder.Property(c => c.Iv).IsRequired();
-        builder.HasOne(c => c.Facility)
-            .WithMany(f => f.PaymentProviderConfigs)
-            .HasForeignKey(c => c.FacilityId)
-            .OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne(c => c.Facility).WithMany(f => f.PaymentProviderConfigs).HasForeignKey(c => c.FacilityId).OnDelete(DeleteBehavior.Cascade);
     }
 }

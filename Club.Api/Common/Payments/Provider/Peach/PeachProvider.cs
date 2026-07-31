@@ -1,15 +1,13 @@
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.WebUtilities;
 using Club.Common.Payments;
 using Club.Services;
+using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace Club.Common.Payments.Provider.Peach;
 
-public class PeachProvider(
-    IPaymentOptionsAccessor<PeachOptions> optionsAccessor,
-    HttpClient httpClient,
-    IHttpContextAccessor httpContextAccessor) : IPaymentProvider
+public class PeachProvider(IPaymentOptionsAccessor<PeachOptions> optionsAccessor, HttpClient httpClient, IHttpContextAccessor httpContextAccessor)
+    : IPaymentProvider
 {
     private readonly HttpClient _httpClient = httpClient;
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
@@ -29,20 +27,17 @@ public class PeachProvider(
                 {
                     userId = options.UserId,
                     password = options.Password,
-                    entityId = options.EntityId
+                    entityId = options.EntityId,
                 },
                 merchantTransactionId = request.TransactionId,
                 amount = request.Amount.ToString("F2"),
                 currency = request.Currency,
                 paymentBrand = "PEACHEFT",
                 paymentType = "DB",
-                shopperResultUrl
+                shopperResultUrl,
             };
 
-            var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"{options.BaseUrl.TrimEnd('/')}/payments")
-            {
-                Content = JsonContent.Create(payload)
-            };
+            var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"{options.BaseUrl.TrimEnd('/')}/payments") { Content = JsonContent.Create(payload) };
 
             var response = await _httpClient.SendAsync(httpRequest, ct);
             var result = await response.Content.ReadFromJsonAsync<PeachCheckoutResponse>(cancellationToken: ct);
@@ -53,7 +48,7 @@ public class PeachProvider(
                 {
                     Success = false,
                     TransactionId = request.TransactionId,
-                    ErrorMessage = result?.Result?.Description ?? "Peach Payments checkout request failed."
+                    ErrorMessage = result?.Result?.Description ?? "Peach Payments checkout request failed.",
                 };
             }
 
@@ -63,7 +58,7 @@ public class PeachProvider(
                 TransactionId = request.TransactionId,
                 ProviderReference = result.Id,
                 RedirectUrl = result.Redirect?.Url,
-                Status = result.Result?.Code
+                Status = result.Result?.Code,
             };
         }
         catch (Exception ex)
@@ -72,7 +67,7 @@ public class PeachProvider(
             {
                 Success = false,
                 TransactionId = request.TransactionId,
-                ErrorMessage = $"Peach Payments error: {ex.Message}"
+                ErrorMessage = $"Peach Payments error: {ex.Message}",
             };
         }
     }
@@ -95,7 +90,8 @@ public class PeachProvider(
             {
                 payload = await System.Text.Json.JsonSerializer.DeserializeAsync<PeachPaymentPayload>(
                     context.Request.Body,
-                    cancellationToken: context.RequestAborted);
+                    cancellationToken: context.RequestAborted
+                );
 
                 // Ensure stream can be re-read if needed downstream
                 context.Request.Body.Position = 0;
@@ -109,10 +105,7 @@ public class PeachProvider(
                     TransactionId = "unknown",
                     EventType = "unknown",
                     Status = "failed",
-                    Metadata = new Dictionary<string, string>
-                    {
-                        ["error"] = "Empty or unparseable Peach payment response received."
-                    }
+                    Metadata = new Dictionary<string, string> { ["error"] = "Empty or unparseable Peach payment response received." },
                 };
             }
 
@@ -133,8 +126,8 @@ public class PeachProvider(
                     ["redirectUrl"] = payload.Redirect?.Url ?? string.Empty,
                     ["paymentBrand"] = payload.PaymentBrand ?? string.Empty,
                     ["resourcePath"] = context.Request.Query["resourcePath"].ToString(),
-                    ["error"] = errorMessage ?? string.Empty
-                }
+                    ["error"] = errorMessage ?? string.Empty,
+                },
             };
         }
         catch (Exception ex)
@@ -145,10 +138,7 @@ public class PeachProvider(
                 TransactionId = "unknown",
                 EventType = "webhook.error",
                 Status = "failed",
-                Metadata = new Dictionary<string, string>
-                {
-                    ["error"] = $"Failed to process Peach Payments response: {ex.Message}"
-                }
+                Metadata = new Dictionary<string, string> { ["error"] = $"Failed to process Peach Payments response: {ex.Message}" },
             };
         }
     }
@@ -158,10 +148,7 @@ public class PeachProvider(
         return request.Query.ContainsKey("resourcePath") || request.Query.ContainsKey("id");
     }
 
-    private async Task<PeachPaymentPayload?> QueryPaymentStatusAsync(
-        HttpRequest request,
-        PeachOptions options,
-        CancellationToken ct)
+    private async Task<PeachPaymentPayload?> QueryPaymentStatusAsync(HttpRequest request, PeachOptions options, CancellationToken ct)
     {
         var resourcePath = request.Query["resourcePath"].ToString();
         var id = request.Query["id"].ToString();
@@ -182,16 +169,16 @@ public class PeachProvider(
             {
                 ["authentication.entityId"] = options.EntityId,
                 ["authentication.userId"] = options.UserId,
-                ["authentication.password"] = options.Password
-            });
+                ["authentication.password"] = options.Password,
+            }
+        );
 
         var response = await _httpClient.GetAsync(uri, ct);
         var payload = await response.Content.ReadFromJsonAsync<PeachPaymentPayload>(cancellationToken: ct);
 
         if (payload is null || !response.IsSuccessStatusCode)
         {
-            throw new InvalidOperationException(
-                payload?.Result?.Description ?? "Failed to query Peach payment status from shopper result callback.");
+            throw new InvalidOperationException(payload?.Result?.Description ?? "Failed to query Peach payment status from shopper result callback.");
         }
 
         return payload;
@@ -199,23 +186,19 @@ public class PeachProvider(
 
     private string BuildShopperResultUrl()
     {
-        var request = _httpContextAccessor.HttpContext?.Request
-            ?? throw new InvalidOperationException(
-                "Unable to build Peach shopperResultUrl because there is no active HTTP request.");
+        var request =
+            _httpContextAccessor.HttpContext?.Request
+            ?? throw new InvalidOperationException("Unable to build Peach shopperResultUrl because there is no active HTTP request.");
 
-        return UriHelper.BuildAbsolute(
-            request.Scheme,
-            request.Host,
-            request.PathBase,
-            $"/payment/result/{ProviderName}");
+        return UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase, $"/payment/result/{ProviderName}");
     }
 
     private async Task<PeachOptions> RequireOptionsAsync(CancellationToken ct)
     {
         return await optionsAccessor.GetAsync(ct)
             ?? throw new InvalidOperationException(
-                "No enabled Peach provider configuration was found. " +
-                "Seed or configure payment provider settings before processing payments.");
+                "No enabled Peach provider configuration was found. " + "Seed or configure payment provider settings before processing payments."
+            );
     }
 
     private sealed class PeachCheckoutResponse

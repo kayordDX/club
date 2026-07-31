@@ -1,14 +1,15 @@
+using Club.Common;
+using Club.Common.Config;
+using Club.Entities;
 using Keycloak.AuthServices.Sdk.Admin;
 using Keycloak.AuthServices.Sdk.Admin.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using Club.Common;
-using Club.Common.Config;
-using Club.Entities;
 
 namespace Club.Features.Account.Sync;
 
-public class Endpoint(IKeycloakUserClient keycloakUserClient, IOptions<KeycloakConfig> keycloakConfig, UserManager<User> userManager) : Endpoint<AccountSyncRequest>
+public class Endpoint(IKeycloakUserClient keycloakUserClient, IOptions<KeycloakConfig> keycloakConfig, UserManager<User> userManager)
+    : Endpoint<AccountSyncRequest>
 {
     private readonly KeycloakConfig keycloakConfig = keycloakConfig.Value;
 
@@ -51,7 +52,6 @@ public class Endpoint(IKeycloakUserClient keycloakUserClient, IOptions<KeycloakC
                 await Send.NotFoundAsync(ct);
             }
         }
-
         else
         {
             // create new user
@@ -74,11 +74,7 @@ public class Endpoint(IKeycloakUserClient keycloakUserClient, IOptions<KeycloakC
         var phoneNumber = keycloakUser.Attributes?.FirstOrDefault(x => x.Key == "phoneNumber").Value?.FirstOrDefault();
         var phoneNumberVerified = keycloakUser.Attributes?.FirstOrDefault(x => x.Key == "phoneNumberVerified").Value?.FirstOrDefault() == "false";
 
-        user ??= new User
-        {
-            FirstName = keycloakUser.FirstName ?? "",
-            LastName = keycloakUser.LastName ?? "",
-        };
+        user ??= new User { FirstName = keycloakUser.FirstName ?? "", LastName = keycloakUser.LastName ?? "" };
 
         user.Id = userId;
         user.TwoFactorEnabled = keycloakUser.Totp ?? false;

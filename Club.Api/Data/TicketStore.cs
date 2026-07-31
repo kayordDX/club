@@ -29,11 +29,7 @@ public class TicketStore(HybridCache cache) : ITicketStore
             return;
         }
 
-        var options = new HybridCacheEntryOptions
-        {
-            Expiration = remainingTime,
-            LocalCacheExpiration = TimeSpan.FromMinutes(10)
-        };
+        var options = new HybridCacheEntryOptions { Expiration = remainingTime, LocalCacheExpiration = TimeSpan.FromMinutes(10) };
 
         var userId = ticket.Principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         var tags = userId != null ? new[] { $"user:{userId}" } : null;
@@ -46,9 +42,7 @@ public class TicketStore(HybridCache cache) : ITicketStore
     {
         try
         {
-            var ticketBytes = await _cache.GetOrCreateAsync<byte[]?>(
-                key,
-                factory: static _ => ValueTask.FromResult<byte[]?>(null));
+            var ticketBytes = await _cache.GetOrCreateAsync<byte[]?>(key, factory: static _ => ValueTask.FromResult<byte[]?>(null));
 
             if (ticketBytes is null || ticketBytes.Length == 0)
             {

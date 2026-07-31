@@ -24,8 +24,8 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<AccountRoleRequest, Lis
             return;
         }
 
-        var roles = await _dbContext.UserRoles
-            .Where(ur => ur.UserId == userId && ur.FacilityId == req.FacilityId)
+        var roles = await _dbContext
+            .UserRoles.Where(ur => ur.UserId == userId && ur.FacilityId == req.FacilityId)
             .Select(x => new UserRoleBasicDTO() { FacilityId = x.FacilityId, NormalizedName = x.Role.NormalizedName })
             .ToListAsync(ct);
 

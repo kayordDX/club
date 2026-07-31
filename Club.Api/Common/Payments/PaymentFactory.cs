@@ -10,7 +10,8 @@ public class PaymentFactory(IEnumerable<IPaymentProvider> providers) : IPaymentF
     {
         return _providers.FirstOrDefault(p => p.ProviderName.Equals(providerName, StringComparison.OrdinalIgnoreCase))
             ?? throw new InvalidOperationException(
-                $"No payment provider is registered for '{providerName}'. " +
-                $"Available providers: {string.Join(", ", _providers.Select(p => p.ProviderName))}");
+                $"No payment provider is registered for '{providerName}'. "
+                    + $"Available providers: {string.Join(", ", _providers.Select(p => p.ProviderName))}"
+            );
     }
 }

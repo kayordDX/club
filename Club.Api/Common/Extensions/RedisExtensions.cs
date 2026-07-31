@@ -1,7 +1,7 @@
+using Club.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Caching.Hybrid;
-using Club.Data;
 using StackExchange.Redis;
 
 namespace Club.Common.Extensions;
@@ -22,21 +22,14 @@ public static class RedisExtensions
 
         services.AddStackExchangeRedisCache(o =>
         {
-            o.ConnectionMultiplexerFactory = () =>
-                Task.FromResult<IConnectionMultiplexer>(multiplexer);
+            o.ConnectionMultiplexerFactory = () => Task.FromResult<IConnectionMultiplexer>(multiplexer);
         });
 
-        services.AddDataProtection()
-            .SetApplicationName("club")
-            .PersistKeysToStackExchangeRedis(multiplexer, "DataProtection-Keys");
+        services.AddDataProtection().SetApplicationName("club").PersistKeysToStackExchangeRedis(multiplexer, "DataProtection-Keys");
 
         services.AddHybridCache(options =>
         {
-            options.DefaultEntryOptions = new HybridCacheEntryOptions
-            {
-                Expiration = TimeSpan.FromDays(30),
-                LocalCacheExpiration = TimeSpan.FromMinutes(10)
-            };
+            options.DefaultEntryOptions = new HybridCacheEntryOptions { Expiration = TimeSpan.FromDays(30), LocalCacheExpiration = TimeSpan.FromMinutes(10) };
         });
 
         services.AddSingleton<ITicketStore, TicketStore>();

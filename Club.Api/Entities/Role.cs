@@ -2,6 +2,4 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Club.Entities;
 
-public class Role : IdentityRole<Guid>
-{
-}
+public class Role : IdentityRole<Guid> { }

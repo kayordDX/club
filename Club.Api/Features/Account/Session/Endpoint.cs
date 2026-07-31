@@ -1,11 +1,12 @@
-using Keycloak.AuthServices.Sdk.Kiota.Admin;
-using Microsoft.Extensions.Options;
 using Club.Common;
 using Club.Common.Config;
+using Keycloak.AuthServices.Sdk.Kiota.Admin;
+using Microsoft.Extensions.Options;
 
 namespace Club.Features.Account.Session;
 
-public class Endpoint(KeycloakAdminApiClient keycloakAdminClient, IOptions<KeycloakConfig> keycloakConfig) : EndpointWithoutRequest<List<AccountSessionResponse>>
+public class Endpoint(KeycloakAdminApiClient keycloakAdminClient, IOptions<KeycloakConfig> keycloakConfig)
+    : EndpointWithoutRequest<List<AccountSessionResponse>>
 {
     private readonly KeycloakConfig keycloakConfig = keycloakConfig.Value;
 
@@ -24,10 +25,15 @@ public class Endpoint(KeycloakAdminApiClient keycloakAdminClient, IOptions<Keycl
             return;
         }
 
-        var clients = await keycloakAdminClient.Admin.Realms[keycloakConfig.Realm].Clients.GetAsync(config =>
-        {
-            config.QueryParameters.ClientId = keycloakConfig.PublicClientId;
-        }, cancellationToken: ct);
+        var clients = await keycloakAdminClient
+            .Admin.Realms[keycloakConfig.Realm]
+            .Clients.GetAsync(
+                config =>
+                {
+                    config.QueryParameters.ClientId = keycloakConfig.PublicClientId;
+                },
+                cancellationToken: ct
+            );
 
         var client = clients?.FirstOrDefault();
 
@@ -37,15 +43,15 @@ public class Endpoint(KeycloakAdminApiClient keycloakAdminClient, IOptions<Keycl
             return;
         }
 
-        var sessions = await keycloakAdminClient.Admin.Realms[keycloakConfig.Realm]
-            .Users[userId.ToString()]
-            .OfflineSessions[client.Id.ToString()]
-            .GetAsync(cancellationToken: ct) ?? [];
+        var sessions =
+            await keycloakAdminClient
+                .Admin.Realms[keycloakConfig.Realm]
+                .Users[userId.ToString()]
+                .OfflineSessions[client.Id.ToString()]
+                .GetAsync(cancellationToken: ct)
+            ?? [];
 
-        var response = sessions
-            .Select(session => new AccountSessionResponse(session))
-            .OrderByDescending(s => s.LastAccess)
-            .ToList();
+        var response = sessions.Select(session => new AccountSessionResponse(session)).OrderByDescending(s => s.LastAccess).ToList();
 
         await Send.OkAsync(response, ct);
     }

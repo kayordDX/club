@@ -1,6 +1,6 @@
-using Microsoft.EntityFrameworkCore;
-using Club.Data;
 using Club.Common.Payments;
+using Club.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Club.Features.Facility.PaymentMethods;
 
@@ -17,14 +17,10 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<FacilityPaymentMethodsR
 
     public override async Task HandleAsync(FacilityPaymentMethodsRequest req, CancellationToken ct)
     {
-        var results = await _dbContext.PaymentProviderConfig
-            .AsNoTracking()
+        var results = await _dbContext
+            .PaymentProviderConfig.AsNoTracking()
             .Where(c => c.FacilityId == req.FacilityId && c.Enabled == true)
-            .Select(c => new FacilityPaymentMethodsResponse
-            {
-                ProviderName = PaymentOptionsRegistry.GetProviderName(c.Type),
-                Type = c.Type.ToString(),
-            })
+            .Select(c => new FacilityPaymentMethodsResponse { ProviderName = PaymentOptionsRegistry.GetProviderName(c.Type), Type = c.Type.ToString() })
             .ToListAsync(ct);
 
         await Send.OkAsync(results, ct);

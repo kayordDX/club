@@ -1,13 +1,10 @@
-
 using Keycloak.AuthServices.Sdk.Kiota.Admin.Models;
 
 namespace Club.Features.Account.Session;
 
 public class AccountSessionResponse
 {
-    public AccountSessionResponse()
-    {
-    }
+    public AccountSessionResponse() { }
 
     public string? Id { get; set; }
     public string? IpAddress { get; set; }

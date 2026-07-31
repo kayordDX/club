@@ -1,8 +1,8 @@
 using System.Reflection;
+using Club.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Club.Entities;
 
 namespace Club.Data;
 
@@ -64,5 +64,4 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IHttpContextAc
         int returnValue = await base.SaveChangesAsync(ct);
         return returnValue;
     }
-
 }

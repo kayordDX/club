@@ -54,8 +54,7 @@ public class CurrentFacilityAccessor(IHttpContextAccessor httpContextAccessor) :
     {
         foreach (var key in RouteKeys)
         {
-            if (httpContext.Request.RouteValues.TryGetValue(key, out var value) && value != null &&
-                int.TryParse(value.ToString(), out var facilityId))
+            if (httpContext.Request.RouteValues.TryGetValue(key, out var value) && value != null && int.TryParse(value.ToString(), out var facilityId))
             {
                 return facilityId;
             }
@@ -68,8 +67,7 @@ public class CurrentFacilityAccessor(IHttpContextAccessor httpContextAccessor) :
     {
         foreach (var key in HeaderKeys)
         {
-            if (httpContext.Request.Headers.TryGetValue(key, out StringValues value) &&
-                int.TryParse(value.ToString(), out var facilityId))
+            if (httpContext.Request.Headers.TryGetValue(key, out StringValues value) && int.TryParse(value.ToString(), out var facilityId))
             {
                 return facilityId;
             }

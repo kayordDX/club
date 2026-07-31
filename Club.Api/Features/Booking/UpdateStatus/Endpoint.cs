@@ -1,6 +1,6 @@
-using Microsoft.EntityFrameworkCore;
 using Club.Common.Enums;
 using Club.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Club.Features.Booking.UpdateStatus;
 
