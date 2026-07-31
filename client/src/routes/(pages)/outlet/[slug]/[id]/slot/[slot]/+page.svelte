@@ -3,6 +3,7 @@
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
 	import { createBookingCreate } from "$lib/api";
+	import type { ResolvedPathname } from "$app/types";
 
 	const bookingMutation = createBookingCreate();
 
@@ -107,7 +108,7 @@
 				});
 
 				await goto(
-					`${resolve(`/outlet/${slug}/${facilityId}/booking/${bookingResponse.id}/pay`)}?${paymentParams.toString()}`
+					`${resolve(`/outlet/${slug}/${facilityId}/booking/${bookingResponse.id}/pay`)}?${paymentParams.toString()}` as ResolvedPathname
 				);
 			} catch {
 				toast.error("Failed to create booking. Please try again.");

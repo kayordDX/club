@@ -1,14 +1,9 @@
 <script lang="ts">
-	import { Button, Card, Loader } from "@kayord/ui";
-	import { PUBLIC_APP_URL } from "$env/static/public";
+	import { Card } from "@kayord/ui";
 	import { auth } from "$lib/stores/auth.svelte";
 	import LogoButton from "$lib/components/LogoButton.svelte";
 	import LogoutButton from "$lib/components/LogoutButton/LogoutButton.svelte";
-	import GoogleIcon from "$lib/svg/icons/GoogleIcon.svelte";
-	import { page } from "$app/state";
 	import LoginButton from "$lib/components/LoginButton/LoginButton.svelte";
-
-	// const redirect = $derived(`${PUBLIC_APP_URL}${page.url.searchParams.get("redirect") ?? ""}`);
 </script>
 
 <div class="flex h-screen w-full flex-col items-center">

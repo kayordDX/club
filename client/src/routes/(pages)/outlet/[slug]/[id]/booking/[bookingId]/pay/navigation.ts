@@ -1,3 +1,5 @@
+import type { ResolvedPathname } from "$app/types";
+
 type BookingNavigationData = {
 	isPaid?: boolean;
 	slotContractBookings?: Array<{
@@ -30,7 +32,7 @@ export const getBasketUrl = ({
 	facilityId,
 	searchParams,
 	booking,
-}: BasketNavigationOptions) => {
+}: BasketNavigationOptions): ResolvedPathname => {
 	const slotId =
 		searchParams.get("slotId") ?? booking?.slotContractBookings?.[0]?.slotContract?.slotId ?? "";
 	const date = searchParams.get("date") ?? getBookingDate(booking);
@@ -49,5 +51,5 @@ export const getBasketUrl = ({
 		params.set("slotCount", slotCount);
 	}
 
-	return params.size > 0 ? `${pathname}?${params.toString()}` : pathname;
+	return (params.size > 0 ? `${pathname}?${params.toString()}` : pathname) as ResolvedPathname;
 };

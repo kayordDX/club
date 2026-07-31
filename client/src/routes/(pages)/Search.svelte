@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Card, Input, Button, Badge, InputGroup } from "@kayord/ui";
+	import { Card, Badge, InputGroup } from "@kayord/ui";
 	import { CalendarIcon, ClockIcon, MapPinIcon, SearchIcon } from "@lucide/svelte";
 
 	const handleSearch = () => console.log("searching");

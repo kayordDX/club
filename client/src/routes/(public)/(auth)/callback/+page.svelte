@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { auth } from "$lib/stores/auth.svelte";
+	import type { ResolvedPathname } from "$app/types";
 	import { onMount } from "svelte";
 
 	let error = $state<string | null>(null);
@@ -10,7 +11,8 @@
 			const user = await auth.handleCallback();
 			// Restore the page the user was on before step-up auth redirected them away.
 			// Falls back to "/" for normal login flows that don't set a returnUrl.
-			const returnUrl = (user.state as { returnUrl?: string } | undefined)?.returnUrl ?? "/";
+			const returnUrl = ((user.state as { returnUrl?: string } | undefined)?.returnUrl ??
+				"/") as ResolvedPathname;
 			goto(returnUrl);
 		} catch (err) {
 			console.error("Authentication callback failed:", err);

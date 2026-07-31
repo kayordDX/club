@@ -57,7 +57,7 @@
 				data: { bookingId, status: BookingStatusEnum.Cancelled },
 			});
 			toast.info("Booking cancelled");
-			goto(resolve(`/outlet/${slug}/${facilityId}`));
+			goto(resolve("/(pages)/outlet/[slug]/[id]", { slug, id: facilityId.toString() }));
 		} catch (error) {
 			console.error("Failed to cancel booking:", error);
 			toast.error("Failed to cancel booking. Please try again.");

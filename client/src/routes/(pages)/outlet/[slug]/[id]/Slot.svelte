@@ -101,10 +101,10 @@
 			<div class="flex flex-col gap-1">
 				<div class="text-muted-foreground text-xs">Slots</div>
 				<div class="mb-1.5 flex grow flex-row items-center gap-1">
-					{#each Array(available) as _, i (i)}
+					{#each Array(available), i (i)}
 						<StatusDot.Root variant="success" />
 					{/each}
-					{#each Array(booked) as _, i (i)}
+					{#each Array(booked), i (i)}
 						<StatusDot.Root variant="error" />
 					{/each}
 				</div>
