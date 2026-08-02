@@ -27,20 +27,11 @@ const getBookingDate = (booking?: BookingNavigationData | null) => {
 
 export const canReturnToBasket = (booking?: BookingNavigationData | null) => !booking?.isPaid;
 
-export const getBasketUrl = ({
-	slug,
-	facilityId,
-	searchParams,
-	booking,
-}: BasketNavigationOptions): ResolvedPathname => {
-	const slotId =
-		searchParams.get("slotId") ?? booking?.slotContractBookings?.[0]?.slotContract?.slotId ?? "";
+export const getBasketUrl = ({ slug, facilityId, searchParams, booking }: BasketNavigationOptions): ResolvedPathname => {
+	const slotId = searchParams.get("slotId") ?? booking?.slotContractBookings?.[0]?.slotContract?.slotId ?? "";
 	const date = searchParams.get("date") ?? getBookingDate(booking);
-	const slotCount =
-		searchParams.get("slotCount") ?? booking?.slotContractBookings?.length?.toString() ?? "";
-	const pathname = slotId
-		? `/outlet/${slug}/${facilityId}/slot/${slotId}`
-		: `/outlet/${slug}/${facilityId}`;
+	const slotCount = searchParams.get("slotCount") ?? booking?.slotContractBookings?.length?.toString() ?? "";
+	const pathname = slotId ? `/outlet/${slug}/${facilityId}/slot/${slotId}` : `/outlet/${slug}/${facilityId}`;
 	const params = new URLSearchParams();
 
 	if (date) {

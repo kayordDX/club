@@ -12,16 +12,13 @@
 	let { facilities, facilityTypeIdFilter = $bindable() }: Props = $props();
 
 	// Get count of facilities for a specific type
-	const getFacilityTypeCount = $derived(
-		(typeId: number) => facilities.filter((f) => f.facilityTypeId === typeId).length
-	);
+	const getFacilityTypeCount = $derived((typeId: number) => facilities.filter((f) => f.facilityTypeId === typeId).length);
 </script>
 
 {#if facilities.length > 0}
 	<ToggleGroup.Root
 		type="single"
-		onValueChange={(value) =>
-			value == "" ? (facilityTypeIdFilter = "0") : (facilityTypeIdFilter = value)}
+		onValueChange={(value) => (value == "" ? (facilityTypeIdFilter = "0") : (facilityTypeIdFilter = value))}
 		spacing={2}
 		class="mb-2 flex-wrap"
 		bind:value={facilityTypeIdFilter}
@@ -35,10 +32,7 @@
 			</Badge>
 		</ToggleGroup.Item>
 		{#each facilities as facility (facility.id)}
-			<ToggleGroup.Item
-				value={facility.facilityTypeId.toString()}
-				aria-label={`Toggle ${facility.facilityTypeName}`}
-			>
+			<ToggleGroup.Item value={facility.facilityTypeId.toString()} aria-label={`Toggle ${facility.facilityTypeName}`}>
 				<FacilityIcon typeId={facility.facilityTypeId} />
 				{facility.facilityTypeName}
 				<Badge variant="outline" class="hidden md:flex">

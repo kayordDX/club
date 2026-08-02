@@ -14,11 +14,7 @@
 <a href={resolve(`/outlet/${outlet.slug}`)} class="group" data-testid={`outlet-${outlet.id}`}>
 	<Card.Root class="flex w-full cursor-pointer pt-0 transition-all duration-200 hover:shadow-lg">
 		<div class="relative aspect-video overflow-hidden rounded-t-lg">
-			<img
-				src="https://ruimsigcc.co.za/wp-content/uploads/2024/08/image0031.jpg"
-				alt={outlet.name}
-				class="h-full w-full object-cover"
-			/>
+			<img src="https://ruimsigcc.co.za/wp-content/uploads/2024/08/image0031.jpg" alt={outlet.name} class="h-full w-full object-cover" />
 		</div>
 
 		<Card.Header class="pb-3">
@@ -52,11 +48,7 @@
 				<div class="text-muted-foreground flex items-center text-sm">
 					<ClockIcon class="mr-1 h-4 w-4" />
 				</div>
-				<Button
-					size="sm"
-					class="group-hover:bg-primary! group-hover:text-primary-foreground!"
-					variant="outline">Select Outlet</Button
-				>
+				<Button size="sm" class="group-hover:bg-primary! group-hover:text-primary-foreground!" variant="outline">Select Outlet</Button>
 			</div>
 		</Card.Content>
 	</Card.Root>

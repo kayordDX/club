@@ -8,836 +8,833 @@
  * the dto used to send an error response to the client when an unhandled exception occurs on the server
  */
 export interface InternalErrorResponse {
-  /** error status */
-  status: string;
-  /** http status code of the error response */
-  code: number;
-  /** the reason for the error */
-  reason: string;
-  /** additional information or instructions */
-  note: string;
+	/** error status */
+	status: string;
+	/** http status code of the error response */
+	code: number;
+	/** the reason for the error */
+	reason: string;
+	/** additional information or instructions */
+	note: string;
 }
 
 export interface TestResponse {
-  success: boolean;
-  /** @nullable */
-  token?: string | null;
-  other?: unknown | null;
+	success: boolean;
+	/** @nullable */
+	token?: string | null;
+	other?: unknown | null;
 }
 
 export interface SlotGetContractsResponse {
-  id: number;
-  slotId: string;
-  contractId: number;
-  contractName: string;
-  price: number;
-  /** @nullable */
-  validationId?: number | null;
-  canPayLater: boolean;
-  /** @nullable */
-  description?: string | null;
+	id: number;
+	slotId: string;
+	contractId: number;
+	contractName: string;
+	price: number;
+	/** @nullable */
+	validationId?: number | null;
+	canPayLater: boolean;
+	/** @nullable */
+	description?: string | null;
 }
 
 /**
  * the collection of errors for the current context
  */
-export type ErrorResponseErrors = {[key: string]: string[]};
+export type ErrorResponseErrors = { [key: string]: string[] };
 
 /**
  * the dto used to send an error response to the client
  */
 export interface ErrorResponse {
-  /** the http status code sent to the client. default is 400. */
-  statusCode: number;
-  /** the message for the error response */
-  message: string;
-  /** the collection of errors for the current context */
-  errors: ErrorResponseErrors;
+	/** the http status code sent to the client. default is 400. */
+	statusCode: number;
+	/** the message for the error response */
+	message: string;
+	/** the collection of errors for the current context */
+	errors: ErrorResponseErrors;
 }
 
 export interface SlotGetAllResponse {
-  id: string;
-  /** @nullable */
-  facilityId?: number | null;
-  /** @nullable */
-  resourceId?: number | null;
-  /** @nullable */
-  resourceName?: string | null;
-  startDatetime: string;
-  /** @nullable */
-  endDatetime?: string | null;
-  booked: number;
-  total: number;
-  isAvailable: boolean;
+	id: string;
+	/** @nullable */
+	facilityId?: number | null;
+	/** @nullable */
+	resourceId?: number | null;
+	/** @nullable */
+	resourceName?: string | null;
+	startDatetime: string;
+	/** @nullable */
+	endDatetime?: string | null;
+	booked: number;
+	total: number;
+	isAvailable: boolean;
 }
 
 export interface AvailableSlotRequest {
-  id: string;
-  /** @nullable */
-  slotCount?: number | null;
+	id: string;
+	/** @nullable */
+	slotCount?: number | null;
 }
 
 export interface PaymentInitiateResponse {
-  transactionId: string;
-  redirectUrl: string;
-  /** @nullable */
-  providerReference?: string | null;
+	transactionId: string;
+	redirectUrl: string;
+	/** @nullable */
+	providerReference?: string | null;
 }
 
 export interface PaymentInitiateRequest {
-  bookingId: number;
-  providerName: string;
+	bookingId: number;
+	providerName: string;
 }
 
 /**
  * @nullable
  */
-export type PaymentCheckoutResponseFormFields = {[key: string]: string} | null;
+export type PaymentCheckoutResponseFormFields = { [key: string]: string } | null;
 
 export interface PaymentCheckoutResponse {
-  success: boolean;
-  transactionId: string;
-  /** @nullable */
-  providerReference?: string | null;
-  /** @nullable */
-  redirectUrl?: string | null;
-  /** @nullable */
-  formActionUrl?: string | null;
-  /** @nullable */
-  formFields?: PaymentCheckoutResponseFormFields;
-  /** @nullable */
-  status?: string | null;
-  /** @nullable */
-  errorMessage?: string | null;
+	success: boolean;
+	transactionId: string;
+	/** @nullable */
+	providerReference?: string | null;
+	/** @nullable */
+	redirectUrl?: string | null;
+	/** @nullable */
+	formActionUrl?: string | null;
+	/** @nullable */
+	formFields?: PaymentCheckoutResponseFormFields;
+	/** @nullable */
+	status?: string | null;
+	/** @nullable */
+	errorMessage?: string | null;
 }
 
 export interface PaymentCheckoutRequest {
-  amount: number;
-  currency: string;
-  transactionId: string;
-  /** @nullable */
-  description?: string | null;
+	amount: number;
+	currency: string;
+	transactionId: string;
+	/** @nullable */
+	description?: string | null;
 }
 
 export interface OutletTypeDTO {
-  id: number;
-  name: string;
+	id: number;
+	name: string;
 }
 
 export interface FacilityBasicDTO {
-  id: number;
-  name: string;
-  /** @nullable */
-  isActive?: boolean | null;
-  facilityTypeId: number;
-  facilityTypeName: string;
+	id: number;
+	name: string;
+	/** @nullable */
+	isActive?: boolean | null;
+	facilityTypeId: number;
+	facilityTypeName: string;
 }
 
 export interface OutletBasicDTO {
-  id: number;
-  slug: string;
-  name: string;
-  businessName: string;
-  /** @nullable */
-  logo?: string | null;
-  displayName: string;
-  outletTypeId: number;
-  outletType: OutletTypeDTO;
-  isActive: boolean;
-  facilities: FacilityBasicDTO[];
+	id: number;
+	slug: string;
+	name: string;
+	businessName: string;
+	/** @nullable */
+	logo?: string | null;
+	displayName: string;
+	outletTypeId: number;
+	outletType: OutletTypeDTO;
+	isActive: boolean;
+	facilities: FacilityBasicDTO[];
 }
 
 export interface Contract {
-  created: string;
-  /** @nullable */
-  createdBy?: string | null;
-  /** @nullable */
-  lastModified?: string | null;
-  /** @nullable */
-  lastModifiedBy?: string | null;
-  id: number;
-  name: string;
-  businessId: number;
-  business: Business;
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	name: string;
+	businessId: number;
+	business: Business;
 }
 
 export interface ContractFieldConfig {
-  created: string;
-  /** @nullable */
-  createdBy?: string | null;
-  /** @nullable */
-  lastModified?: string | null;
-  /** @nullable */
-  lastModifiedBy?: string | null;
-  id: number;
-  contractId: number;
-  contract: Contract;
-  contractConfigId: number;
-  contractField: ContractField;
-  isActive: boolean;
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	contractId: number;
+	contract: Contract;
+	contractConfigId: number;
+	contractField: ContractField;
+	isActive: boolean;
 }
 
 export interface ContractField {
-  created: string;
-  /** @nullable */
-  createdBy?: string | null;
-  /** @nullable */
-  lastModified?: string | null;
-  /** @nullable */
-  lastModifiedBy?: string | null;
-  id: number;
-  name: string;
-  /** @nullable */
-  fieldValidation?: string | null;
-  businessId: number;
-  business: Business;
-  contractFieldConfigs: ContractFieldConfig[];
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	name: string;
+	/** @nullable */
+	fieldValidation?: string | null;
+	businessId: number;
+	business: Business;
+	contractFieldConfigs: ContractFieldConfig[];
 }
 
 export interface Business {
-  created: string;
-  /** @nullable */
-  createdBy?: string | null;
-  /** @nullable */
-  lastModified?: string | null;
-  /** @nullable */
-  lastModifiedBy?: string | null;
-  id: number;
-  name: string;
-  outlets: Outlet[];
-  contracts: Contract[];
-  contractFields: ContractField[];
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	name: string;
+	outlets: Outlet[];
+	contracts: Contract[];
+	contractFields: ContractField[];
 }
 
 export interface OutletType {
-  created: string;
-  /** @nullable */
-  createdBy?: string | null;
-  /** @nullable */
-  lastModified?: string | null;
-  /** @nullable */
-  lastModifiedBy?: string | null;
-  id: number;
-  name: string;
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	name: string;
 }
 
 export interface FacilityType {
-  id: number;
-  name: string;
+	id: number;
+	name: string;
 }
 
 export interface Validation {
-  id: number;
-  name: string;
+	id: number;
+	name: string;
 }
 
 export interface SlotContract {
-  created: string;
-  /** @nullable */
-  createdBy?: string | null;
-  /** @nullable */
-  lastModified?: string | null;
-  /** @nullable */
-  lastModifiedBy?: string | null;
-  id: number;
-  slotId: string;
-  slot: Slot;
-  contractId: number;
-  contract: Contract;
-  price: number;
-  /** @nullable */
-  validationId?: number | null;
-  validation?: Validation | null;
-  canPayLater: boolean;
-  /** @nullable */
-  description?: string | null;
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	slotId: string;
+	slot: Slot;
+	contractId: number;
+	contract: Contract;
+	price: number;
+	/** @nullable */
+	validationId?: number | null;
+	validation?: Validation | null;
+	canPayLater: boolean;
+	/** @nullable */
+	description?: string | null;
 }
 
 export interface Extra {
-  id: number;
-  facilityId: number;
-  facility: Facility;
-  outletId: number;
-  name: string;
-  code: string;
-  price: number;
-  isAvailable: boolean;
-  isOnline: boolean;
+	id: number;
+	facilityId: number;
+	facility: Facility;
+	outletId: number;
+	name: string;
+	code: string;
+	price: number;
+	isAvailable: boolean;
+	isOnline: boolean;
 }
 
 export interface BookingStatus {
-  id: number;
-  name: string;
+	id: number;
+	name: string;
 }
 
 export interface UserContract {
-  created: string;
-  /** @nullable */
-  createdBy?: string | null;
-  /** @nullable */
-  lastModified?: string | null;
-  /** @nullable */
-  lastModifiedBy?: string | null;
-  id: number;
-  contractId: number;
-  contract: Contract;
-  startDate: string;
-  /** @nullable */
-  endDate?: string | null;
-  price: number;
-  isActive: boolean;
-  userId: string;
-  user: User;
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	contractId: number;
+	contract: Contract;
+	startDate: string;
+	/** @nullable */
+	endDate?: string | null;
+	price: number;
+	isActive: boolean;
+	userId: string;
+	user: User;
 }
 
 export interface Role {
-  id: string;
-  /** @nullable */
-  name?: string | null;
-  /** @nullable */
-  normalizedName?: string | null;
-  /** @nullable */
-  concurrencyStamp?: string | null;
+	id: string;
+	/** @nullable */
+	name?: string | null;
+	/** @nullable */
+	normalizedName?: string | null;
+	/** @nullable */
+	concurrencyStamp?: string | null;
 }
 
 export interface UserRole {
-  userId: string;
-  roleId: string;
-  id: number;
-  /** @nullable */
-  facilityId?: number | null;
-  facility?: Facility | null;
-  role: Role;
+	userId: string;
+	roleId: string;
+	id: number;
+	/** @nullable */
+	facilityId?: number | null;
+	facility?: Facility | null;
+	role: Role;
 }
 
 export interface User {
-  id: string;
-  /** @nullable */
-  userName?: string | null;
-  /** @nullable */
-  normalizedUserName?: string | null;
-  /** @nullable */
-  email?: string | null;
-  /** @nullable */
-  normalizedEmail?: string | null;
-  emailConfirmed: boolean;
-  /** @nullable */
-  passwordHash?: string | null;
-  /** @nullable */
-  securityStamp?: string | null;
-  /** @nullable */
-  concurrencyStamp?: string | null;
-  /** @nullable */
-  phoneNumber?: string | null;
-  phoneNumberConfirmed: boolean;
-  twoFactorEnabled: boolean;
-  /** @nullable */
-  lockoutEnd?: string | null;
-  lockoutEnabled: boolean;
-  accessFailedCount: number;
-  firstName: string;
-  lastName: string;
-  /** @nullable */
-  picture?: string | null;
-  userContracts: UserContract[];
-  userRoles: UserRole[];
-  lastSync: string;
+	id: string;
+	/** @nullable */
+	userName?: string | null;
+	/** @nullable */
+	normalizedUserName?: string | null;
+	/** @nullable */
+	email?: string | null;
+	/** @nullable */
+	normalizedEmail?: string | null;
+	emailConfirmed: boolean;
+	/** @nullable */
+	passwordHash?: string | null;
+	/** @nullable */
+	securityStamp?: string | null;
+	/** @nullable */
+	concurrencyStamp?: string | null;
+	/** @nullable */
+	phoneNumber?: string | null;
+	phoneNumberConfirmed: boolean;
+	twoFactorEnabled: boolean;
+	/** @nullable */
+	lockoutEnd?: string | null;
+	lockoutEnabled: boolean;
+	accessFailedCount: number;
+	firstName: string;
+	lastName: string;
+	/** @nullable */
+	picture?: string | null;
+	userContracts: UserContract[];
+	userRoles: UserRole[];
+	lastSync: string;
 }
 
 export interface SlotContractBooking {
-  id: number;
-  slotContractId: number;
-  slotContract: SlotContract;
-  bookingId: number;
-  booking: Booking;
-  /** @nullable */
-  userId?: string | null;
-  /** @nullable */
-  name?: string | null;
-  /** @nullable */
-  email?: string | null;
-  /** @nullable */
-  cellphone?: string | null;
+	id: number;
+	slotContractId: number;
+	slotContract: SlotContract;
+	bookingId: number;
+	booking: Booking;
+	/** @nullable */
+	userId?: string | null;
+	/** @nullable */
+	name?: string | null;
+	/** @nullable */
+	email?: string | null;
+	/** @nullable */
+	cellphone?: string | null;
 }
 
 export interface Booking {
-  created: string;
-  /** @nullable */
-  createdBy?: string | null;
-  /** @nullable */
-  lastModified?: string | null;
-  /** @nullable */
-  lastModifiedBy?: string | null;
-  id: number;
-  bookingStatusId: number;
-  bookingStatus: BookingStatus;
-  bookingStatusDate: string;
-  /** @nullable */
-  userId?: string | null;
-  user?: User | null;
-  isPaid: boolean;
-  amountOutstanding: number;
-  amountPaid: number;
-  expiresAt: string;
-  slotContractBookings: SlotContractBooking[];
-  extraBookings: ExtraBooking[];
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	bookingStatusId: number;
+	bookingStatus: BookingStatus;
+	bookingStatusDate: string;
+	/** @nullable */
+	userId?: string | null;
+	user?: User | null;
+	isPaid: boolean;
+	amountOutstanding: number;
+	amountPaid: number;
+	expiresAt: string;
+	slotContractBookings: SlotContractBooking[];
+	extraBookings: ExtraBooking[];
 }
 
 export interface ExtraBooking {
-  extraId: number;
-  extra: Extra;
-  bookingId: number;
-  booking: Booking;
-  amount: number;
+	extraId: number;
+	extra: Extra;
+	bookingId: number;
+	booking: Booking;
+	amount: number;
 }
 
 export interface Slot {
-  created: string;
-  /** @nullable */
-  createdBy?: string | null;
-  /** @nullable */
-  lastModified?: string | null;
-  /** @nullable */
-  lastModifiedBy?: string | null;
-  id: string;
-  /** @nullable */
-  resourceId?: number | null;
-  resource?: Resource | null;
-  /** @nullable */
-  facilityId?: number | null;
-  facility?: Facility | null;
-  startDatetime: string;
-  /** @nullable */
-  endDatetime?: string | null;
-  maxBookings: number;
-  slotContracts: SlotContract[];
-  extraBookings: ExtraBooking[];
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: string;
+	/** @nullable */
+	resourceId?: number | null;
+	resource?: Resource | null;
+	/** @nullable */
+	facilityId?: number | null;
+	facility?: Facility | null;
+	startDatetime: string;
+	/** @nullable */
+	endDatetime?: string | null;
+	maxBookings: number;
+	slotContracts: SlotContract[];
+	extraBookings: ExtraBooking[];
 }
 
 export interface Resource {
-  created: string;
-  /** @nullable */
-  createdBy?: string | null;
-  /** @nullable */
-  lastModified?: string | null;
-  /** @nullable */
-  lastModifiedBy?: string | null;
-  id: number;
-  name: string;
-  facilityId: number;
-  facility: Facility;
-  isActive: boolean;
-  slots: Slot[];
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	name: string;
+	facilityId: number;
+	facility: Facility;
+	isActive: boolean;
+	slots: Slot[];
 }
 
-export type PaymentProviderType = typeof PaymentProviderType[keyof typeof PaymentProviderType];
-
+export type PaymentProviderType = (typeof PaymentProviderType)[keyof typeof PaymentProviderType];
 
 export const PaymentProviderType = {
-  /** PeachPayments */
-  Peach: 0,
-  /** Payfast */
-  Payfast: 1,
+	/** PeachPayments */
+	Peach: 0,
+	/** Payfast */
+	Payfast: 1,
 } as const;
 
 export interface PaymentProviderConfig {
-  created: string;
-  /** @nullable */
-  createdBy?: string | null;
-  /** @nullable */
-  lastModified?: string | null;
-  /** @nullable */
-  lastModifiedBy?: string | null;
-  id: number;
-  facilityId: number;
-  facility: Facility;
-  providerKey: string;
-  type: PaymentProviderType;
-  iv: string;
-  encryptedSettings: string;
-  enabled: boolean;
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	facilityId: number;
+	facility: Facility;
+	providerKey: string;
+	type: PaymentProviderType;
+	iv: string;
+	encryptedSettings: string;
+	enabled: boolean;
 }
 
 export interface Facility {
-  created: string;
-  /** @nullable */
-  createdBy?: string | null;
-  /** @nullable */
-  lastModified?: string | null;
-  /** @nullable */
-  lastModifiedBy?: string | null;
-  id: number;
-  name: string;
-  outletId: number;
-  outlet: Outlet;
-  /** @nullable */
-  isActive?: boolean | null;
-  facilityTypeId: number;
-  /** @nullable */
-  contact?: string | null;
-  /** @nullable */
-  email?: string | null;
-  /** @nullable */
-  rules?: string | null;
-  /** @nullable */
-  operatingHours?: string | null;
-  facilityType: FacilityType;
-  resources: Resource[];
-  slots: Slot[];
-  paymentProviderConfigs: PaymentProviderConfig[];
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	name: string;
+	outletId: number;
+	outlet: Outlet;
+	/** @nullable */
+	isActive?: boolean | null;
+	facilityTypeId: number;
+	/** @nullable */
+	contact?: string | null;
+	/** @nullable */
+	email?: string | null;
+	/** @nullable */
+	rules?: string | null;
+	/** @nullable */
+	operatingHours?: string | null;
+	facilityType: FacilityType;
+	resources: Resource[];
+	slots: Slot[];
+	paymentProviderConfigs: PaymentProviderConfig[];
 }
 
 export interface ContractOutlet {
-  created: string;
-  /** @nullable */
-  createdBy?: string | null;
-  /** @nullable */
-  lastModified?: string | null;
-  /** @nullable */
-  lastModifiedBy?: string | null;
-  id: number;
-  contractId: number;
-  contract: Contract;
-  outletId: number;
-  outlet: Outlet;
-  /** @nullable */
-  contractStart?: string | null;
-  /** @nullable */
-  contractEnd?: string | null;
-  isActive: boolean;
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	contractId: number;
+	contract: Contract;
+	outletId: number;
+	outlet: Outlet;
+	/** @nullable */
+	contractStart?: string | null;
+	/** @nullable */
+	contractEnd?: string | null;
+	isActive: boolean;
 }
 
 export interface Outlet {
-  created: string;
-  /** @nullable */
-  createdBy?: string | null;
-  /** @nullable */
-  lastModified?: string | null;
-  /** @nullable */
-  lastModifiedBy?: string | null;
-  id: number;
-  slug: string;
-  name: string;
-  businessId: number;
-  business: Business;
-  vatNumber: string;
-  /** @nullable */
-  logo?: string | null;
-  /** @nullable */
-  address?: string | null;
-  /** @nullable */
-  description?: string | null;
-  /** @nullable */
-  registration?: string | null;
-  /** @nullable */
-  tags?: string | null;
-  /** @nullable */
-  contact?: string | null;
-  /** @nullable */
-  email?: string | null;
-  /** @nullable */
-  operatingHours?: string | null;
-  displayName: string;
-  outletTypeId: number;
-  outletType: OutletType;
-  isActive: boolean;
-  facilities: Facility[];
-  extras: Extra[];
-  contractOutlets: ContractOutlet[];
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	slug: string;
+	name: string;
+	businessId: number;
+	business: Business;
+	vatNumber: string;
+	/** @nullable */
+	logo?: string | null;
+	/** @nullable */
+	address?: string | null;
+	/** @nullable */
+	description?: string | null;
+	/** @nullable */
+	registration?: string | null;
+	/** @nullable */
+	tags?: string | null;
+	/** @nullable */
+	contact?: string | null;
+	/** @nullable */
+	email?: string | null;
+	/** @nullable */
+	operatingHours?: string | null;
+	displayName: string;
+	outletTypeId: number;
+	outletType: OutletType;
+	isActive: boolean;
+	facilities: Facility[];
+	extras: Extra[];
+	contractOutlets: ContractOutlet[];
 }
 
 export interface PaginatedListOfOutlet {
-  items: Outlet[];
-  pageNumber: number;
-  totalPages: number;
-  totalCount: number;
-  hasPreviousPage: boolean;
-  hasNextPage: boolean;
+	items: Outlet[];
+	pageNumber: number;
+	totalPages: number;
+	totalCount: number;
+	hasPreviousPage: boolean;
+	hasNextPage: boolean;
 }
 
 export interface BusinessDTO {
-  id: number;
-  name: string;
+	id: number;
+	name: string;
 }
 
 export interface FacilityTypeDTO {
-  id: number;
-  name: string;
+	id: number;
+	name: string;
 }
 
 export interface FacilityDTO {
-  id: number;
-  name: string;
-  outletId: number;
-  /** @nullable */
-  isActive?: boolean | null;
-  facilityTypeId: number;
-  facilityType: FacilityTypeDTO;
-  /** @nullable */
-  contact?: string | null;
-  /** @nullable */
-  email?: string | null;
-  /** @nullable */
-  rules?: string | null;
-  /** @nullable */
-  operatingHours?: string | null;
+	id: number;
+	name: string;
+	outletId: number;
+	/** @nullable */
+	isActive?: boolean | null;
+	facilityTypeId: number;
+	facilityType: FacilityTypeDTO;
+	/** @nullable */
+	contact?: string | null;
+	/** @nullable */
+	email?: string | null;
+	/** @nullable */
+	rules?: string | null;
+	/** @nullable */
+	operatingHours?: string | null;
 }
 
 export interface OutletDTO {
-  id: number;
-  slug: string;
-  name: string;
-  businessId: number;
-  business: BusinessDTO;
-  vatNumber: string;
-  /** @nullable */
-  logo?: string | null;
-  /** @nullable */
-  address?: string | null;
-  /** @nullable */
-  company?: string | null;
-  /** @nullable */
-  description?: string | null;
-  /** @nullable */
-  registration?: string | null;
-  /** @nullable */
-  tags?: string | null;
-  /** @nullable */
-  contact?: string | null;
-  /** @nullable */
-  email?: string | null;
-  /** @nullable */
-  operatingHours?: string | null;
-  displayName: string;
-  outletTypeId: number;
-  outletType: OutletTypeDTO;
-  isActive: boolean;
-  facilities: FacilityDTO[];
+	id: number;
+	slug: string;
+	name: string;
+	businessId: number;
+	business: BusinessDTO;
+	vatNumber: string;
+	/** @nullable */
+	logo?: string | null;
+	/** @nullable */
+	address?: string | null;
+	/** @nullable */
+	company?: string | null;
+	/** @nullable */
+	description?: string | null;
+	/** @nullable */
+	registration?: string | null;
+	/** @nullable */
+	tags?: string | null;
+	/** @nullable */
+	contact?: string | null;
+	/** @nullable */
+	email?: string | null;
+	/** @nullable */
+	operatingHours?: string | null;
+	displayName: string;
+	outletTypeId: number;
+	outletType: OutletTypeDTO;
+	isActive: boolean;
+	facilities: FacilityDTO[];
 }
 
 export interface FacilityPaymentMethodsResponse {
-  providerName: string;
-  type: string;
+	providerName: string;
+	type: string;
 }
 
-export type BookingStatusEnum = typeof BookingStatusEnum[keyof typeof BookingStatusEnum];
-
+export type BookingStatusEnum = (typeof BookingStatusEnum)[keyof typeof BookingStatusEnum];
 
 export const BookingStatusEnum = {
-  Pending: 1,
-  Confirmed: 2,
-  Cancelled: 3,
-  Expired: 4,
+	Pending: 1,
+	Confirmed: 2,
+	Cancelled: 3,
+	Expired: 4,
 } as const;
 
 export interface BookingUpdateStatusRequest {
-  bookingId: number;
-  status: BookingStatusEnum;
+	bookingId: number;
+	status: BookingStatusEnum;
 }
 
 export interface BookingStatusDTO {
-  id: number;
-  name: string;
+	id: number;
+	name: string;
 }
 
 export interface UserDTO {
-  firstName: string;
-  lastName: string;
-  /** @nullable */
-  picture?: string | null;
+	firstName: string;
+	lastName: string;
+	/** @nullable */
+	picture?: string | null;
 }
 
 export interface SlotDTO {
-  id: string;
-  /** @nullable */
-  resourceId?: number | null;
-  /** @nullable */
-  facilityId?: number | null;
-  startDatetime: string;
-  /** @nullable */
-  endDatetime?: string | null;
-  maxBookings: number;
+	id: string;
+	/** @nullable */
+	resourceId?: number | null;
+	/** @nullable */
+	facilityId?: number | null;
+	startDatetime: string;
+	/** @nullable */
+	endDatetime?: string | null;
+	maxBookings: number;
 }
 
 export interface SlotContractDTO {
-  id: number;
-  slotId: string;
-  slot: SlotDTO;
-  contractId: number;
-  price: number;
-  /** @nullable */
-  validationId?: number | null;
-  canPayLater: boolean;
-  /** @nullable */
-  description?: string | null;
+	id: number;
+	slotId: string;
+	slot: SlotDTO;
+	contractId: number;
+	price: number;
+	/** @nullable */
+	validationId?: number | null;
+	canPayLater: boolean;
+	/** @nullable */
+	description?: string | null;
 }
 
 export interface SlotContractBookingDTO {
-  id: number;
-  slotContractId: number;
-  slotContract: SlotContractDTO;
-  bookingId: number;
-  /** @nullable */
-  userId?: string | null;
-  /** @nullable */
-  name?: string | null;
-  /** @nullable */
-  email?: string | null;
-  /** @nullable */
-  cellphone?: string | null;
+	id: number;
+	slotContractId: number;
+	slotContract: SlotContractDTO;
+	bookingId: number;
+	/** @nullable */
+	userId?: string | null;
+	/** @nullable */
+	name?: string | null;
+	/** @nullable */
+	email?: string | null;
+	/** @nullable */
+	cellphone?: string | null;
 }
 
 export interface ExtraDTO {
-  id: number;
-  facilityId: number;
-  outletId: number;
-  name: string;
-  code: string;
-  price: number;
+	id: number;
+	facilityId: number;
+	outletId: number;
+	name: string;
+	code: string;
+	price: number;
 }
 
 export interface ExtraBookingDTO {
-  extraId: number;
-  extra: ExtraDTO;
-  bookingId: number;
-  amount: number;
+	extraId: number;
+	extra: ExtraDTO;
+	bookingId: number;
+	amount: number;
 }
 
 export interface BookingDTO {
-  id: number;
-  bookingStatusId: number;
-  bookingStatus: BookingStatusDTO;
-  bookingStatusDate: string;
-  /** @nullable */
-  userId?: string | null;
-  user?: UserDTO | null;
-  isPaid: boolean;
-  amountOutstanding: number;
-  amountPaid: number;
-  expiresAt: string;
-  slotContractBookings: SlotContractBookingDTO[];
-  extraBookings: ExtraBookingDTO[];
+	id: number;
+	bookingStatusId: number;
+	bookingStatus: BookingStatusDTO;
+	bookingStatusDate: string;
+	/** @nullable */
+	userId?: string | null;
+	user?: UserDTO | null;
+	isPaid: boolean;
+	amountOutstanding: number;
+	amountPaid: number;
+	expiresAt: string;
+	slotContractBookings: SlotContractBookingDTO[];
+	extraBookings: ExtraBookingDTO[];
 }
 
 export interface PaginatedListOfBookingDTO {
-  items: BookingDTO[];
-  pageNumber: number;
-  totalPages: number;
-  totalCount: number;
-  hasPreviousPage: boolean;
-  hasNextPage: boolean;
+	items: BookingDTO[];
+	pageNumber: number;
+	totalPages: number;
+	totalCount: number;
+	hasPreviousPage: boolean;
+	hasNextPage: boolean;
 }
 
 export interface BookingCreateResponse {
-  id: number;
+	id: number;
 }
 
 export interface BookingRequest {
-  slotId: string;
-  slotContractId: number;
-  /** @nullable */
-  name?: string | null;
-  /** @nullable */
-  email?: string | null;
-  /** @nullable */
-  cellphone?: string | null;
+	slotId: string;
+	slotContractId: number;
+	/** @nullable */
+	name?: string | null;
+	/** @nullable */
+	email?: string | null;
+	/** @nullable */
+	cellphone?: string | null;
 }
 
 export interface BookingExtraRequest {
-  extraId: number;
-  amount: number;
+	extraId: number;
+	amount: number;
 }
 
 export interface BookingCreateRequest {
-  bookings: BookingRequest[];
-  extras: BookingExtraRequest[];
+	bookings: BookingRequest[];
+	extras: BookingExtraRequest[];
 }
 
 export interface AccountSyncRequest {
-  force: boolean;
+	force: boolean;
 }
 
 export interface AccountSessionResponse {
-  /** @nullable */
-  id?: string | null;
-  /** @nullable */
-  ipAddress?: string | null;
-  /** @nullable */
-  lastAccess?: number | null;
-  /** @nullable */
-  start?: number | null;
-  /** @nullable */
-  username?: string | null;
+	/** @nullable */
+	id?: string | null;
+	/** @nullable */
+	ipAddress?: string | null;
+	/** @nullable */
+	lastAccess?: number | null;
+	/** @nullable */
+	start?: number | null;
+	/** @nullable */
+	username?: string | null;
 }
 
 export interface AccountSessionRevokeRequest {
-  id: string;
+	id: string;
 }
 
 export interface UserRoleBasicDTO {
-  /** @nullable */
-  facilityId?: number | null;
-  /** @nullable */
-  normalizedName?: string | null;
+	/** @nullable */
+	facilityId?: number | null;
+	/** @nullable */
+	normalizedName?: string | null;
 }
 
 export interface AccountCredentialResponse {
-  isTwoFactorEnabled: boolean;
-  hasCredential: boolean;
+	isTwoFactorEnabled: boolean;
+	hasCredential: boolean;
 }
 
 export interface CredentialDisableRequest {
-  token: string;
+	token: string;
 }
 
 export type TestParams = {
-name: string;
+	name: string;
 };
 
 export type SlotGetAllParams = {
-facilityId: number;
-date: string;
+	facilityId: number;
+	date: string;
 };
 
 export type OutletGetAllParams = {
-/**
- * @nullable
- */
-sorts?: string | null;
-/**
- * @nullable
- */
-filters?: string | null;
-/**
- * @nullable
- */
-page?: number | null;
-/**
- * @nullable
- */
-pageSize?: number | null;
+	/**
+	 * @nullable
+	 */
+	sorts?: string | null;
+	/**
+	 * @nullable
+	 */
+	filters?: string | null;
+	/**
+	 * @nullable
+	 */
+	page?: number | null;
+	/**
+	 * @nullable
+	 */
+	pageSize?: number | null;
 };
 
 export type ExampleVerifyParams = {
-code: string;
+	code: string;
 };
 
 export type BookingGetUserParams = {
-/**
- * @nullable
- */
-sorts?: string | null;
-/**
- * @nullable
- */
-filters?: string | null;
-/**
- * @nullable
- */
-page?: number | null;
-/**
- * @nullable
- */
-pageSize?: number | null;
+	/**
+	 * @nullable
+	 */
+	sorts?: string | null;
+	/**
+	 * @nullable
+	 */
+	filters?: string | null;
+	/**
+	 * @nullable
+	 */
+	page?: number | null;
+	/**
+	 * @nullable
+	 */
+	pageSize?: number | null;
 };
-

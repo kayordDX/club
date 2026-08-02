@@ -21,13 +21,9 @@
 				<LogoutButton />
 			</Card.Content>
 			<Card.Footer class="flex flex-col items-center gap-2">
-				<p class="text-muted-foreground text-xs">
-					We use Google to keep your account secure. No password needed.
-				</p>
+				<p class="text-muted-foreground text-xs">We use Google to keep your account secure. No password needed.</p>
 			</Card.Footer>
 		</Card.Root>
-		<p class="text-muted-foreground text-xs">
-			By signing in, you agree to our Terms of Service and Privacy Policy
-		</p>
+		<p class="text-muted-foreground text-xs">By signing in, you agree to our Terms of Service and Privacy Policy</p>
 	</div>
 </div>

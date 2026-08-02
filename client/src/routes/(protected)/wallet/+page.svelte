@@ -1,20 +1,11 @@
 <script lang="ts">
 	import { Badge, Button, Card } from "@kayord/ui";
 	import PageHeading from "../settings/PageHeading.svelte";
-	import {
-		WalletIcon,
-		BanknoteArrowUpIcon,
-		BanknoteArrowDownIcon,
-		WalletMinimalIcon,
-	} from "@lucide/svelte";
+	import { WalletIcon, BanknoteArrowUpIcon, BanknoteArrowDownIcon, WalletMinimalIcon } from "@lucide/svelte";
 </script>
 
 <div class="m-4">
-	<PageHeading
-		title="Wallet"
-		description="Secure payments with OTP authentication"
-		icon={WalletIcon}
-	/>
+	<PageHeading title="Wallet" description="Secure payments with OTP authentication" icon={WalletIcon} />
 	<Card.Root class="mt-6">
 		<Card.Header class="flex items-center gap-2">
 			<div class="bg-background text-foreground rounded-md p-2"><WalletIcon /></div>

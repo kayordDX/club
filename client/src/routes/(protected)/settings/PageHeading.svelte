@@ -15,9 +15,7 @@
 <div class="flex flex-col gap-2">
 	<div class="flex items-center gap-2 text-2xl">
 		{#if icon}
-			<div
-				class="bg-muted text-muted-foreground flex size-10 items-center justify-center rounded-md"
-			>
+			<div class="bg-muted text-muted-foreground flex size-10 items-center justify-center rounded-md">
 				<HeadingIcon class="size-5" />
 			</div>
 		{/if}

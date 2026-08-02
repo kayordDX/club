@@ -1,3927 +1,3558 @@
 {
-  "x-generator": "NSwag v14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))",
-  "openapi": "3.0.0",
-  "info": {
-    "title": "Club.Api",
-    "version": "v1"
-  },
-  "servers": [
-    {
-      "url": "http://localhost:5000"
-    }
-  ],
-  "paths": {
-    "/test/another": {
-      "get": {
-        "tags": [
-          "Test"
-        ],
-        "operationId": "TestAnother",
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "204": {
-            "description": "No Content"
-          }
-        }
-      }
-    },
-    "/test": {
-      "get": {
-        "tags": [
-          "Test"
-        ],
-        "operationId": "Test",
-        "parameters": [
-          {
-            "name": "name",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TestResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "Keycloak": []
-          }
-        ]
-      }
-    },
-    "/slot/contracts/{id}": {
-      "get": {
-        "tags": [
-          "Slot"
-        ],
-        "operationId": "SlotGetContracts",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "guid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SlotGetContractsResponse"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/slot": {
-      "get": {
-        "tags": [
-          "Slot"
-        ],
-        "operationId": "SlotGetAll",
-        "parameters": [
-          {
-            "name": "facilityId",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "date",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "date-time"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/SlotGetAllResponse"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/slot/available": {
-      "post": {
-        "tags": [
-          "Slot"
-        ],
-        "operationId": "SlotAvailable",
-        "requestBody": {
-          "x-name": "AvailableSlotRequest",
-          "description": "",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AvailableSlotRequest"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 1
-        },
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/payment/result/{provider}": {
-      "get": {
-        "tags": [
-          "Payment"
-        ],
-        "operationId": "PaymentResultGet",
-        "parameters": [
-          {
-            "name": "provider",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "204": {
-            "description": "No Content"
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "Payment"
-        ],
-        "operationId": "PaymentResultPost",
-        "parameters": [
-          {
-            "name": "provider",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "204": {
-            "description": "No Content"
-          }
-        }
-      }
-    },
-    "/payment/initiate": {
-      "post": {
-        "tags": [
-          "Payment"
-        ],
-        "operationId": "PaymentInitiate",
-        "requestBody": {
-          "x-name": "PaymentInitiateRequest",
-          "description": "",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PaymentInitiateRequest"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 1
-        },
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PaymentInitiateResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/payment/form/{provider}/{transactionId}": {
-      "get": {
-        "tags": [
-          "Payment"
-        ],
-        "operationId": "PaymentForm",
-        "parameters": [
-          {
-            "name": "provider",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "transactionId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "204": {
-            "description": "No Content"
-          }
-        }
-      }
-    },
-    "/payment/checkout/{provider}": {
-      "post": {
-        "tags": [
-          "Payment"
-        ],
-        "operationId": "PaymentCheckout",
-        "parameters": [
-          {
-            "name": "provider",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "x-name": "PaymentCheckoutRequest",
-          "description": "",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PaymentCheckoutRequest"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 1
-        },
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PaymentCheckoutResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/outlet/basic/{slug}": {
-      "get": {
-        "tags": [
-          "Outlet"
-        ],
-        "operationId": "OutletGetBasic",
-        "parameters": [
-          {
-            "name": "slug",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OutletBasicDTO"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/outlet": {
-      "get": {
-        "tags": [
-          "Outlet"
-        ],
-        "operationId": "OutletGetAll",
-        "parameters": [
-          {
-            "name": "sorts",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "nullable": true
-            }
-          },
-          {
-            "name": "filters",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "nullable": true
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "nullable": true
-            }
-          },
-          {
-            "name": "pageSize",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "nullable": true
-            }
-          }
-        ],
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PaginatedListOfOutlet"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/outlet/{slug}": {
-      "get": {
-        "tags": [
-          "Outlet"
-        ],
-        "operationId": "OutletGet",
-        "parameters": [
-          {
-            "name": "slug",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OutletDTO"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/outlet/{slug}/admin": {
-      "get": {
-        "tags": [
-          "Outlet"
-        ],
-        "operationId": "OutletAdminGet",
-        "parameters": [
-          {
-            "name": "slug",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OutletDTO"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/facility/{facilityId}/payment-methods": {
-      "get": {
-        "tags": [
-          "Facility"
-        ],
-        "operationId": "FacilityPaymentMethods",
-        "parameters": [
-          {
-            "name": "facilityId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/FacilityPaymentMethodsResponse"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/facility/{id}": {
-      "get": {
-        "tags": [
-          "Facility"
-        ],
-        "operationId": "FacilityGet",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FacilityDTO"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/extra/facility/{facilityId}": {
-      "get": {
-        "tags": [
-          "Extra"
-        ],
-        "operationId": "ExtraGetFacility",
-        "parameters": [
-          {
-            "name": "facilityId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Extra"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/example": {
-      "get": {
-        "tags": [
-          "Example"
-        ],
-        "operationId": "Example",
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/example/verify": {
-      "get": {
-        "tags": [
-          "Example"
-        ],
-        "operationId": "ExampleVerify",
-        "parameters": [
-          {
-            "name": "code",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "boolean"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/booking/status": {
-      "put": {
-        "tags": [
-          "Booking"
-        ],
-        "operationId": "BookingUpdateStatus",
-        "requestBody": {
-          "x-name": "BookingUpdateStatusRequest",
-          "description": "",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/BookingUpdateStatusRequest"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 1
-        },
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "204": {
-            "description": "No Content"
-          }
-        }
-      }
-    },
-    "/booking/user": {
-      "get": {
-        "tags": [
-          "Booking"
-        ],
-        "operationId": "BookingGetUser",
-        "parameters": [
-          {
-            "name": "sorts",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "nullable": true
-            }
-          },
-          {
-            "name": "filters",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "nullable": true
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "nullable": true
-            }
-          },
-          {
-            "name": "pageSize",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32",
-              "nullable": true
-            }
-          }
-        ],
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PaginatedListOfBookingDTO"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
-        },
-        "security": [
-          {
-            "Keycloak": []
-          }
-        ]
-      }
-    },
-    "/booking/{id}": {
-      "get": {
-        "tags": [
-          "Booking"
-        ],
-        "operationId": "BookingGet",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BookingDTO"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/booking": {
-      "post": {
-        "tags": [
-          "Booking"
-        ],
-        "operationId": "BookingCreate",
-        "requestBody": {
-          "x-name": "BookingCreateRequest",
-          "description": "",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/BookingCreateRequest"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 1
-        },
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BookingCreateResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/account/sync": {
-      "post": {
-        "tags": [
-          "Account"
-        ],
-        "operationId": "AccountSync",
-        "requestBody": {
-          "x-name": "AccountSyncRequest",
-          "description": "",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AccountSyncRequest"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 1
-        },
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "204": {
-            "description": "No Content"
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
-        },
-        "security": [
-          {
-            "Keycloak": []
-          }
-        ]
-      }
-    },
-    "/account/session": {
-      "get": {
-        "tags": [
-          "Account"
-        ],
-        "operationId": "AccountSession",
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/AccountSessionResponse"
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
-        },
-        "security": [
-          {
-            "Keycloak": []
-          }
-        ]
-      }
-    },
-    "/account/session/revokeAll": {
-      "post": {
-        "tags": [
-          "Account"
-        ],
-        "operationId": "AccountSessionRevokeAll",
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "204": {
-            "description": "No Content"
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
-        },
-        "security": [
-          {
-            "Keycloak": []
-          }
-        ]
-      }
-    },
-    "/account/session/revoke": {
-      "post": {
-        "tags": [
-          "Account"
-        ],
-        "operationId": "AccountSessionRevoke",
-        "requestBody": {
-          "x-name": "AccountSessionRevokeRequest",
-          "description": "",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AccountSessionRevokeRequest"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 1
-        },
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "204": {
-            "description": "No Content"
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
-        },
-        "security": [
-          {
-            "Keycloak": []
-          }
-        ]
-      }
-    },
-    "/account/role/{facilityId}": {
-      "get": {
-        "tags": [
-          "Account"
-        ],
-        "operationId": "AccountRole",
-        "parameters": [
-          {
-            "name": "facilityId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/UserRoleBasicDTO"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "Keycloak": []
-          }
-        ]
-      }
-    },
-    "/account/credential": {
-      "get": {
-        "tags": [
-          "Account"
-        ],
-        "operationId": "AccountCredential",
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AccountCredentialResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
-        },
-        "security": [
-          {
-            "Keycloak": []
-          }
-        ]
-      }
-    },
-    "/account/credential/disableToken": {
-      "post": {
-        "tags": [
-          "Account"
-        ],
-        "operationId": "AccountCredentialDisableToken",
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "204": {
-            "description": "No Content"
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
-        },
-        "security": [
-          {
-            "Keycloak": []
-          }
-        ]
-      }
-    },
-    "/account/credential/disable": {
-      "post": {
-        "tags": [
-          "Account"
-        ],
-        "operationId": "AccountCredentialDisable",
-        "requestBody": {
-          "x-name": "CredentialDisableRequest",
-          "description": "",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CredentialDisableRequest"
-              }
-            }
-          },
-          "required": true,
-          "x-position": 1
-        },
-        "responses": {
-          "500": {
-            "description": "Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InternalErrorResponse"
-                }
-              }
-            }
-          },
-          "204": {
-            "description": "No Content"
-          },
-          "401": {
-            "description": "Unauthorized"
-          }
-        },
-        "security": [
-          {
-            "Keycloak": []
-          }
-        ]
-      }
-    }
-  },
-  "components": {
-    "schemas": {
-      "InternalErrorResponse": {
-        "type": "object",
-        "description": "the dto used to send an error response to the client when an unhandled exception occurs on the server",
-        "additionalProperties": false,
-        "required": [
-          "status",
-          "code",
-          "reason",
-          "note"
-        ],
-        "properties": {
-          "status": {
-            "type": "string",
-            "description": "error status",
-            "default": "Internal Server Error!"
-          },
-          "code": {
-            "type": "integer",
-            "description": "http status code of the error response",
-            "format": "int32",
-            "default": 500
-          },
-          "reason": {
-            "type": "string",
-            "description": "the reason for the error",
-            "default": "Something unexpected has happened"
-          },
-          "note": {
-            "type": "string",
-            "description": "additional information or instructions",
-            "default": "See application log for stack trace."
-          }
-        }
-      },
-      "TestResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "success"
-        ],
-        "properties": {
-          "success": {
-            "type": "boolean"
-          },
-          "token": {
-            "type": "string",
-            "nullable": true
-          },
-          "other": {
-            "nullable": true
-          }
-        }
-      },
-      "SlotGetContractsResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "id",
-          "slotId",
-          "contractId",
-          "contractName",
-          "price",
-          "canPayLater"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "slotId": {
-            "type": "string",
-            "format": "guid"
-          },
-          "contractId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "contractName": {
-            "type": "string"
-          },
-          "price": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "validationId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "canPayLater": {
-            "type": "boolean"
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "ErrorResponse": {
-        "type": "object",
-        "description": "the dto used to send an error response to the client",
-        "additionalProperties": false,
-        "required": [
-          "statusCode",
-          "message",
-          "errors"
-        ],
-        "properties": {
-          "statusCode": {
-            "type": "integer",
-            "description": "the http status code sent to the client. default is 400.",
-            "format": "int32",
-            "default": 400
-          },
-          "message": {
-            "type": "string",
-            "description": "the message for the error response",
-            "default": "One or more errors occurred!"
-          },
-          "errors": {
-            "type": "object",
-            "description": "the collection of errors for the current context",
-            "additionalProperties": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
-        }
-      },
-      "SlotGetAllResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "id",
-          "startDatetime",
-          "booked",
-          "total",
-          "isAvailable"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "guid"
-          },
-          "facilityId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "resourceId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "resourceName": {
-            "type": "string",
-            "nullable": true
-          },
-          "startDatetime": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "endDatetime": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "booked": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "total": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "isAvailable": {
-            "type": "boolean"
-          }
-        }
-      },
-      "AvailableSlotRequest": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "id"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "guid"
-          },
-          "slotCount": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          }
-        }
-      },
-      "PaymentInitiateResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "transactionId",
-          "redirectUrl"
-        ],
-        "properties": {
-          "transactionId": {
-            "type": "string"
-          },
-          "redirectUrl": {
-            "type": "string"
-          },
-          "providerReference": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "PaymentInitiateRequest": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "providerName",
-          "bookingId"
-        ],
-        "properties": {
-          "bookingId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "providerName": {
-            "type": "string"
-          }
-        }
-      },
-      "PaymentCheckoutResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "transactionId",
-          "success"
-        ],
-        "properties": {
-          "success": {
-            "type": "boolean"
-          },
-          "transactionId": {
-            "type": "string"
-          },
-          "providerReference": {
-            "type": "string",
-            "nullable": true
-          },
-          "redirectUrl": {
-            "type": "string",
-            "nullable": true
-          },
-          "formActionUrl": {
-            "type": "string",
-            "nullable": true
-          },
-          "formFields": {
-            "type": "object",
-            "nullable": true,
-            "additionalProperties": {
-              "type": "string"
-            }
-          },
-          "status": {
-            "type": "string",
-            "nullable": true
-          },
-          "errorMessage": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "PaymentCheckoutRequest": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "transactionId",
-          "amount",
-          "currency"
-        ],
-        "properties": {
-          "amount": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "currency": {
-            "type": "string"
-          },
-          "transactionId": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "OutletBasicDTO": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "slug",
-          "name",
-          "businessName",
-          "displayName",
-          "id",
-          "outletTypeId",
-          "outletType",
-          "isActive",
-          "facilities"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "slug": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "businessName": {
-            "type": "string"
-          },
-          "logo": {
-            "type": "string",
-            "nullable": true
-          },
-          "displayName": {
-            "type": "string"
-          },
-          "outletTypeId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "outletType": {
-            "$ref": "#/components/schemas/OutletTypeDTO"
-          },
-          "isActive": {
-            "type": "boolean"
-          },
-          "facilities": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/FacilityBasicDTO"
-            }
-          }
-        }
-      },
-      "OutletTypeDTO": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "name",
-          "id"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "name": {
-            "type": "string"
-          }
-        }
-      },
-      "FacilityBasicDTO": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "name",
-          "facilityTypeName",
-          "id",
-          "facilityTypeId"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "name": {
-            "type": "string"
-          },
-          "isActive": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "facilityTypeId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "facilityTypeName": {
-            "type": "string"
-          }
-        }
-      },
-      "PaginatedListOfOutlet": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "items",
-          "pageNumber",
-          "totalPages",
-          "totalCount",
-          "hasPreviousPage",
-          "hasNextPage"
-        ],
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Outlet"
-            }
-          },
-          "pageNumber": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "totalPages": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "totalCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "hasPreviousPage": {
-            "type": "boolean"
-          },
-          "hasNextPage": {
-            "type": "boolean"
-          }
-        }
-      },
-      "Outlet": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "slug",
-          "name",
-          "business",
-          "vatNumber",
-          "displayName",
-          "created",
-          "id",
-          "businessId",
-          "outletTypeId",
-          "outletType",
-          "isActive",
-          "facilities",
-          "extras",
-          "contractOutlets"
-        ],
-        "properties": {
-          "created": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "lastModified": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "lastModifiedBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "slug": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "businessId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "business": {
-            "$ref": "#/components/schemas/Business"
-          },
-          "vatNumber": {
-            "type": "string"
-          },
-          "logo": {
-            "type": "string",
-            "nullable": true
-          },
-          "address": {
-            "type": "string",
-            "nullable": true
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
-          "registration": {
-            "type": "string",
-            "nullable": true
-          },
-          "tags": {
-            "type": "string",
-            "nullable": true
-          },
-          "contact": {
-            "type": "string",
-            "nullable": true
-          },
-          "email": {
-            "type": "string",
-            "nullable": true
-          },
-          "operatingHours": {
-            "type": "string",
-            "nullable": true
-          },
-          "displayName": {
-            "type": "string"
-          },
-          "outletTypeId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "outletType": {
-            "$ref": "#/components/schemas/OutletType"
-          },
-          "isActive": {
-            "type": "boolean"
-          },
-          "facilities": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Facility"
-            }
-          },
-          "extras": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Extra"
-            }
-          },
-          "contractOutlets": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ContractOutlet"
-            }
-          }
-        }
-      },
-      "Business": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "name",
-          "created",
-          "id",
-          "outlets",
-          "contracts",
-          "contractFields"
-        ],
-        "properties": {
-          "created": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "lastModified": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "lastModifiedBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "name": {
-            "type": "string"
-          },
-          "outlets": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Outlet"
-            }
-          },
-          "contracts": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Contract"
-            }
-          },
-          "contractFields": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ContractField"
-            }
-          }
-        }
-      },
-      "Contract": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "name",
-          "business",
-          "created",
-          "id",
-          "businessId"
-        ],
-        "properties": {
-          "created": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "lastModified": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "lastModifiedBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "name": {
-            "type": "string"
-          },
-          "businessId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "business": {
-            "$ref": "#/components/schemas/Business"
-          }
-        }
-      },
-      "ContractField": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "name",
-          "business",
-          "created",
-          "id",
-          "businessId",
-          "contractFieldConfigs"
-        ],
-        "properties": {
-          "created": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "lastModified": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "lastModifiedBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "name": {
-            "type": "string"
-          },
-          "fieldValidation": {
-            "type": "string",
-            "nullable": true
-          },
-          "businessId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "business": {
-            "$ref": "#/components/schemas/Business"
-          },
-          "contractFieldConfigs": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ContractFieldConfig"
-            }
-          }
-        }
-      },
-      "ContractFieldConfig": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "contract",
-          "contractField",
-          "created",
-          "id",
-          "contractId",
-          "contractConfigId",
-          "isActive"
-        ],
-        "properties": {
-          "created": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "lastModified": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "lastModifiedBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "contractId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "contract": {
-            "$ref": "#/components/schemas/Contract"
-          },
-          "contractConfigId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "contractField": {
-            "$ref": "#/components/schemas/ContractField"
-          },
-          "isActive": {
-            "type": "boolean"
-          }
-        }
-      },
-      "OutletType": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "name",
-          "created",
-          "id"
-        ],
-        "properties": {
-          "created": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "lastModified": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "lastModifiedBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "name": {
-            "type": "string"
-          }
-        }
-      },
-      "Facility": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "name",
-          "outlet",
-          "created",
-          "id",
-          "outletId",
-          "facilityTypeId",
-          "facilityType",
-          "resources",
-          "slots",
-          "paymentProviderConfigs"
-        ],
-        "properties": {
-          "created": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "lastModified": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "lastModifiedBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "name": {
-            "type": "string"
-          },
-          "outletId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "outlet": {
-            "$ref": "#/components/schemas/Outlet"
-          },
-          "isActive": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "facilityTypeId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "contact": {
-            "type": "string",
-            "nullable": true
-          },
-          "email": {
-            "type": "string",
-            "nullable": true
-          },
-          "rules": {
-            "type": "string",
-            "nullable": true
-          },
-          "operatingHours": {
-            "type": "string",
-            "nullable": true
-          },
-          "facilityType": {
-            "$ref": "#/components/schemas/FacilityType"
-          },
-          "resources": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Resource"
-            }
-          },
-          "slots": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Slot"
-            }
-          },
-          "paymentProviderConfigs": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PaymentProviderConfig"
-            }
-          }
-        }
-      },
-      "FacilityType": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "name",
-          "id"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "name": {
-            "type": "string"
-          }
-        }
-      },
-      "Resource": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "name",
-          "facility",
-          "created",
-          "id",
-          "facilityId",
-          "isActive",
-          "slots"
-        ],
-        "properties": {
-          "created": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "lastModified": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "lastModifiedBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "name": {
-            "type": "string"
-          },
-          "facilityId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "facility": {
-            "$ref": "#/components/schemas/Facility"
-          },
-          "isActive": {
-            "type": "boolean"
-          },
-          "slots": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Slot"
-            }
-          }
-        }
-      },
-      "Slot": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "startDatetime",
-          "created",
-          "id",
-          "maxBookings",
-          "slotContracts",
-          "extraBookings"
-        ],
-        "properties": {
-          "created": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "lastModified": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "lastModifiedBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "id": {
-            "type": "string",
-            "format": "guid"
-          },
-          "resourceId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "resource": {
-            "nullable": true,
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/Resource"
-              }
-            ]
-          },
-          "facilityId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "facility": {
-            "nullable": true,
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/Facility"
-              }
-            ]
-          },
-          "startDatetime": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "endDatetime": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "maxBookings": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "slotContracts": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SlotContract"
-            }
-          },
-          "extraBookings": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ExtraBooking"
-            }
-          }
-        }
-      },
-      "SlotContract": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "created",
-          "id",
-          "slotId",
-          "slot",
-          "contractId",
-          "contract",
-          "price",
-          "canPayLater"
-        ],
-        "properties": {
-          "created": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "lastModified": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "lastModifiedBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "slotId": {
-            "type": "string",
-            "format": "guid"
-          },
-          "slot": {
-            "$ref": "#/components/schemas/Slot"
-          },
-          "contractId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "contract": {
-            "$ref": "#/components/schemas/Contract"
-          },
-          "price": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "validationId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "validation": {
-            "nullable": true,
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/Validation"
-              }
-            ]
-          },
-          "canPayLater": {
-            "type": "boolean"
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "Validation": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "name",
-          "id"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "name": {
-            "type": "string"
-          }
-        }
-      },
-      "ExtraBooking": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "extraId",
-          "extra",
-          "bookingId",
-          "booking",
-          "amount"
-        ],
-        "properties": {
-          "extraId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "extra": {
-            "$ref": "#/components/schemas/Extra"
-          },
-          "bookingId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "booking": {
-            "$ref": "#/components/schemas/Booking"
-          },
-          "amount": {
-            "type": "integer",
-            "format": "int32"
-          }
-        }
-      },
-      "Extra": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "id",
-          "facilityId",
-          "facility",
-          "outletId",
-          "name",
-          "code",
-          "price",
-          "isAvailable",
-          "isOnline"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "facilityId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "facility": {
-            "$ref": "#/components/schemas/Facility"
-          },
-          "outletId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "name": {
-            "type": "string"
-          },
-          "code": {
-            "type": "string"
-          },
-          "price": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "isAvailable": {
-            "type": "boolean"
-          },
-          "isOnline": {
-            "type": "boolean"
-          }
-        }
-      },
-      "Booking": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "bookingStatusDate",
-          "created",
-          "id",
-          "bookingStatusId",
-          "bookingStatus",
-          "isPaid",
-          "amountOutstanding",
-          "amountPaid",
-          "expiresAt",
-          "slotContractBookings",
-          "extraBookings"
-        ],
-        "properties": {
-          "created": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "lastModified": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "lastModifiedBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "bookingStatusId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "bookingStatus": {
-            "$ref": "#/components/schemas/BookingStatus"
-          },
-          "bookingStatusDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "userId": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "user": {
-            "nullable": true,
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/User"
-              }
-            ]
-          },
-          "isPaid": {
-            "type": "boolean"
-          },
-          "amountOutstanding": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "amountPaid": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "expiresAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "slotContractBookings": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SlotContractBooking"
-            }
-          },
-          "extraBookings": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ExtraBooking"
-            }
-          }
-        }
-      },
-      "BookingStatus": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "name",
-          "id"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "name": {
-            "type": "string"
-          }
-        }
-      },
-      "User": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "firstName",
-          "lastName",
-          "id",
-          "emailConfirmed",
-          "phoneNumberConfirmed",
-          "twoFactorEnabled",
-          "lockoutEnabled",
-          "accessFailedCount",
-          "userContracts",
-          "userRoles",
-          "lastSync"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "guid"
-          },
-          "userName": {
-            "type": "string",
-            "nullable": true
-          },
-          "normalizedUserName": {
-            "type": "string",
-            "nullable": true
-          },
-          "email": {
-            "type": "string",
-            "nullable": true
-          },
-          "normalizedEmail": {
-            "type": "string",
-            "nullable": true
-          },
-          "emailConfirmed": {
-            "type": "boolean"
-          },
-          "passwordHash": {
-            "type": "string",
-            "nullable": true
-          },
-          "securityStamp": {
-            "type": "string",
-            "nullable": true
-          },
-          "concurrencyStamp": {
-            "type": "string",
-            "nullable": true
-          },
-          "phoneNumber": {
-            "type": "string",
-            "nullable": true
-          },
-          "phoneNumberConfirmed": {
-            "type": "boolean"
-          },
-          "twoFactorEnabled": {
-            "type": "boolean"
-          },
-          "lockoutEnd": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "lockoutEnabled": {
-            "type": "boolean"
-          },
-          "accessFailedCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "firstName": {
-            "type": "string"
-          },
-          "lastName": {
-            "type": "string"
-          },
-          "picture": {
-            "type": "string",
-            "nullable": true
-          },
-          "userContracts": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UserContract"
-            }
-          },
-          "userRoles": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/UserRole"
-            }
-          },
-          "lastSync": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "UserContract": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "contract",
-          "startDate",
-          "user",
-          "created",
-          "id",
-          "contractId",
-          "price",
-          "isActive",
-          "userId"
-        ],
-        "properties": {
-          "created": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "lastModified": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "lastModifiedBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "contractId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "contract": {
-            "$ref": "#/components/schemas/Contract"
-          },
-          "startDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "endDate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "price": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "isActive": {
-            "type": "boolean"
-          },
-          "userId": {
-            "type": "string",
-            "format": "guid"
-          },
-          "user": {
-            "$ref": "#/components/schemas/User"
-          }
-        }
-      },
-      "UserRole": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "userId",
-          "roleId",
-          "id",
-          "role"
-        ],
-        "properties": {
-          "userId": {
-            "type": "string",
-            "format": "guid"
-          },
-          "roleId": {
-            "type": "string",
-            "format": "guid"
-          },
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "facilityId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "facility": {
-            "nullable": true,
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/Facility"
-              }
-            ]
-          },
-          "role": {
-            "$ref": "#/components/schemas/Role"
-          }
-        }
-      },
-      "Role": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "id"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "guid"
-          },
-          "name": {
-            "type": "string",
-            "nullable": true
-          },
-          "normalizedName": {
-            "type": "string",
-            "nullable": true
-          },
-          "concurrencyStamp": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "SlotContractBooking": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "id",
-          "slotContractId",
-          "slotContract",
-          "bookingId",
-          "booking"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "slotContractId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "slotContract": {
-            "$ref": "#/components/schemas/SlotContract"
-          },
-          "bookingId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "booking": {
-            "$ref": "#/components/schemas/Booking"
-          },
-          "userId": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "name": {
-            "type": "string",
-            "nullable": true
-          },
-          "email": {
-            "type": "string",
-            "nullable": true
-          },
-          "cellphone": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "PaymentProviderConfig": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "providerKey",
-          "encryptedSettings",
-          "created",
-          "id",
-          "facilityId",
-          "facility",
-          "type",
-          "iv",
-          "enabled"
-        ],
-        "properties": {
-          "created": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "lastModified": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "lastModifiedBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "facilityId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "facility": {
-            "$ref": "#/components/schemas/Facility"
-          },
-          "providerKey": {
-            "type": "string"
-          },
-          "type": {
-            "$ref": "#/components/schemas/PaymentProviderType"
-          },
-          "iv": {
-            "type": "string",
-            "format": "byte"
-          },
-          "encryptedSettings": {
-            "type": "string"
-          },
-          "enabled": {
-            "type": "boolean"
-          }
-        }
-      },
-      "PaymentProviderType": {
-        "type": "integer",
-        "description": "",
-        "x-enumNames": [
-          "Peach",
-          "Payfast"
-        ],
-        "x-enum-descriptions": [
-          "PeachPayments",
-          "Payfast"
-        ],
-        "enum": [
-          0,
-          1
-        ]
-      },
-      "ContractOutlet": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "contract",
-          "outlet",
-          "created",
-          "id",
-          "contractId",
-          "outletId",
-          "isActive"
-        ],
-        "properties": {
-          "created": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "lastModified": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "lastModifiedBy": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "contractId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "contract": {
-            "$ref": "#/components/schemas/Contract"
-          },
-          "outletId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "outlet": {
-            "$ref": "#/components/schemas/Outlet"
-          },
-          "contractStart": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "contractEnd": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "isActive": {
-            "type": "boolean"
-          }
-        }
-      },
-      "OutletDTO": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "slug",
-          "name",
-          "business",
-          "vatNumber",
-          "displayName",
-          "id",
-          "businessId",
-          "outletTypeId",
-          "outletType",
-          "isActive",
-          "facilities"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "slug": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "businessId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "business": {
-            "$ref": "#/components/schemas/BusinessDTO"
-          },
-          "vatNumber": {
-            "type": "string"
-          },
-          "logo": {
-            "type": "string",
-            "nullable": true
-          },
-          "address": {
-            "type": "string",
-            "nullable": true
-          },
-          "company": {
-            "type": "string",
-            "nullable": true
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
-          "registration": {
-            "type": "string",
-            "nullable": true
-          },
-          "tags": {
-            "type": "string",
-            "nullable": true
-          },
-          "contact": {
-            "type": "string",
-            "nullable": true
-          },
-          "email": {
-            "type": "string",
-            "nullable": true
-          },
-          "operatingHours": {
-            "type": "string",
-            "nullable": true
-          },
-          "displayName": {
-            "type": "string"
-          },
-          "outletTypeId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "outletType": {
-            "$ref": "#/components/schemas/OutletTypeDTO"
-          },
-          "isActive": {
-            "type": "boolean"
-          },
-          "facilities": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/FacilityDTO"
-            }
-          }
-        }
-      },
-      "BusinessDTO": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "name",
-          "id"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "name": {
-            "type": "string"
-          }
-        }
-      },
-      "FacilityDTO": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "name",
-          "id",
-          "outletId",
-          "facilityTypeId",
-          "facilityType"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "name": {
-            "type": "string"
-          },
-          "outletId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "isActive": {
-            "type": "boolean",
-            "nullable": true
-          },
-          "facilityTypeId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "facilityType": {
-            "$ref": "#/components/schemas/FacilityTypeDTO"
-          },
-          "contact": {
-            "type": "string",
-            "nullable": true
-          },
-          "email": {
-            "type": "string",
-            "nullable": true
-          },
-          "rules": {
-            "type": "string",
-            "nullable": true
-          },
-          "operatingHours": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "FacilityTypeDTO": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "name",
-          "id"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "name": {
-            "type": "string"
-          }
-        }
-      },
-      "FacilityPaymentMethodsResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "providerName",
-          "type"
-        ],
-        "properties": {
-          "providerName": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
-          }
-        }
-      },
-      "BookingUpdateStatusRequest": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "bookingId",
-          "status"
-        ],
-        "properties": {
-          "bookingId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "status": {
-            "$ref": "#/components/schemas/BookingStatusEnum"
-          }
-        }
-      },
-      "BookingStatusEnum": {
-        "type": "integer",
-        "description": "",
-        "x-enumNames": [
-          "Pending",
-          "Confirmed",
-          "Cancelled",
-          "Expired"
-        ],
-        "enum": [
-          1,
-          2,
-          3,
-          4
-        ]
-      },
-      "PaginatedListOfBookingDTO": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "items",
-          "pageNumber",
-          "totalPages",
-          "totalCount",
-          "hasPreviousPage",
-          "hasNextPage"
-        ],
-        "properties": {
-          "items": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/BookingDTO"
-            }
-          },
-          "pageNumber": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "totalPages": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "totalCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "hasPreviousPage": {
-            "type": "boolean"
-          },
-          "hasNextPage": {
-            "type": "boolean"
-          }
-        }
-      },
-      "BookingDTO": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "bookingStatusDate",
-          "id",
-          "bookingStatusId",
-          "bookingStatus",
-          "isPaid",
-          "amountOutstanding",
-          "amountPaid",
-          "expiresAt",
-          "slotContractBookings",
-          "extraBookings"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "bookingStatusId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "bookingStatus": {
-            "$ref": "#/components/schemas/BookingStatusDTO"
-          },
-          "bookingStatusDate": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "userId": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "user": {
-            "nullable": true,
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/UserDTO"
-              }
-            ]
-          },
-          "isPaid": {
-            "type": "boolean"
-          },
-          "amountOutstanding": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "amountPaid": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "expiresAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "slotContractBookings": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SlotContractBookingDTO"
-            }
-          },
-          "extraBookings": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ExtraBookingDTO"
-            }
-          }
-        }
-      },
-      "BookingStatusDTO": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "name",
-          "id"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "name": {
-            "type": "string"
-          }
-        }
-      },
-      "UserDTO": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "firstName",
-          "lastName"
-        ],
-        "properties": {
-          "firstName": {
-            "type": "string"
-          },
-          "lastName": {
-            "type": "string"
-          },
-          "picture": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "SlotContractBookingDTO": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "id",
-          "slotContractId",
-          "slotContract",
-          "bookingId"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "slotContractId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "slotContract": {
-            "$ref": "#/components/schemas/SlotContractDTO"
-          },
-          "bookingId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "userId": {
-            "type": "string",
-            "format": "guid",
-            "nullable": true
-          },
-          "name": {
-            "type": "string",
-            "nullable": true
-          },
-          "email": {
-            "type": "string",
-            "nullable": true
-          },
-          "cellphone": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "SlotContractDTO": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "id",
-          "slotId",
-          "slot",
-          "contractId",
-          "price",
-          "canPayLater"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "slotId": {
-            "type": "string",
-            "format": "guid"
-          },
-          "slot": {
-            "$ref": "#/components/schemas/SlotDTO"
-          },
-          "contractId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "price": {
-            "type": "number",
-            "format": "decimal"
-          },
-          "validationId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "canPayLater": {
-            "type": "boolean"
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "SlotDTO": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "startDatetime",
-          "id",
-          "maxBookings"
-        ],
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "guid"
-          },
-          "resourceId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "facilityId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "startDatetime": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "endDatetime": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "maxBookings": {
-            "type": "integer",
-            "format": "int32"
-          }
-        }
-      },
-      "ExtraBookingDTO": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "extraId",
-          "extra",
-          "bookingId",
-          "amount"
-        ],
-        "properties": {
-          "extraId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "extra": {
-            "$ref": "#/components/schemas/ExtraDTO"
-          },
-          "bookingId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "amount": {
-            "type": "integer",
-            "format": "int32"
-          }
-        }
-      },
-      "ExtraDTO": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "id",
-          "facilityId",
-          "outletId",
-          "name",
-          "code",
-          "price"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "facilityId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "outletId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "name": {
-            "type": "string"
-          },
-          "code": {
-            "type": "string"
-          },
-          "price": {
-            "type": "number",
-            "format": "decimal"
-          }
-        }
-      },
-      "BookingCreateResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "id"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          }
-        }
-      },
-      "BookingCreateRequest": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "bookings",
-          "extras"
-        ],
-        "properties": {
-          "bookings": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/BookingRequest"
-            }
-          },
-          "extras": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/BookingExtraRequest"
-            }
-          }
-        }
-      },
-      "BookingRequest": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "slotId",
-          "slotContractId"
-        ],
-        "properties": {
-          "slotId": {
-            "type": "string",
-            "format": "guid"
-          },
-          "slotContractId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "name": {
-            "type": "string",
-            "nullable": true
-          },
-          "email": {
-            "type": "string",
-            "nullable": true
-          },
-          "cellphone": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "BookingExtraRequest": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "extraId",
-          "amount"
-        ],
-        "properties": {
-          "extraId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "amount": {
-            "type": "integer",
-            "format": "int32"
-          }
-        }
-      },
-      "AccountSyncRequest": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "force"
-        ],
-        "properties": {
-          "force": {
-            "type": "boolean"
-          }
-        }
-      },
-      "AccountSessionResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "string",
-            "nullable": true
-          },
-          "ipAddress": {
-            "type": "string",
-            "nullable": true
-          },
-          "lastAccess": {
-            "type": "integer",
-            "format": "int64",
-            "nullable": true
-          },
-          "start": {
-            "type": "integer",
-            "format": "int64",
-            "nullable": true
-          },
-          "username": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "AccountSessionRevokeRequest": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "id"
-        ],
-        "properties": {
-          "id": {
-            "type": "string"
-          }
-        }
-      },
-      "UserRoleBasicDTO": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "facilityId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "normalizedName": {
-            "type": "string",
-            "nullable": true
-          }
-        }
-      },
-      "AccountCredentialResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "isTwoFactorEnabled",
-          "hasCredential"
-        ],
-        "properties": {
-          "isTwoFactorEnabled": {
-            "type": "boolean"
-          },
-          "hasCredential": {
-            "type": "boolean"
-          }
-        }
-      },
-      "CredentialDisableRequest": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "token"
-        ],
-        "properties": {
-          "token": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "securitySchemes": {
-      "Keycloak": {
-        "type": "oauth2",
-        "flows": {
-          "implicit": {
-            "authorizationUrl": "https://localhost:8088/realms/kayord/protocol/openid-connect/auth",
-            "scopes": {
-              "openid": "OpenID Connect scope",
-              "profile": "Profile scope",
-              "email": "Email scope"
-            }
-          }
-        }
-      }
-    }
-  }
+	"x-generator": "NSwag v14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))",
+	"openapi": "3.0.0",
+	"info": {
+		"title": "Club.Api",
+		"version": "v1"
+	},
+	"servers": [
+		{
+			"url": "http://localhost:5000"
+		}
+	],
+	"paths": {
+		"/test/another": {
+			"get": {
+				"tags": ["Test"],
+				"operationId": "TestAnother",
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"204": {
+						"description": "No Content"
+					}
+				}
+			}
+		},
+		"/test": {
+			"get": {
+				"tags": ["Test"],
+				"operationId": "Test",
+				"parameters": [
+					{
+						"name": "name",
+						"in": "query",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TestResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/problem+json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"Keycloak": []
+					}
+				]
+			}
+		},
+		"/slot/contracts/{id}": {
+			"get": {
+				"tags": ["Slot"],
+				"operationId": "SlotGetContracts",
+				"parameters": [
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "guid"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/SlotGetContractsResponse"
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/problem+json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/slot": {
+			"get": {
+				"tags": ["Slot"],
+				"operationId": "SlotGetAll",
+				"parameters": [
+					{
+						"name": "facilityId",
+						"in": "query",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					},
+					{
+						"name": "date",
+						"in": "query",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "date-time"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/SlotGetAllResponse"
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/problem+json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/slot/available": {
+			"post": {
+				"tags": ["Slot"],
+				"operationId": "SlotAvailable",
+				"requestBody": {
+					"x-name": "AvailableSlotRequest",
+					"description": "",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/AvailableSlotRequest"
+							}
+						}
+					},
+					"required": true,
+					"x-position": 1
+				},
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "boolean"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/payment/result/{provider}": {
+			"get": {
+				"tags": ["Payment"],
+				"operationId": "PaymentResultGet",
+				"parameters": [
+					{
+						"name": "provider",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"204": {
+						"description": "No Content"
+					}
+				}
+			},
+			"post": {
+				"tags": ["Payment"],
+				"operationId": "PaymentResultPost",
+				"parameters": [
+					{
+						"name": "provider",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"204": {
+						"description": "No Content"
+					}
+				}
+			}
+		},
+		"/payment/initiate": {
+			"post": {
+				"tags": ["Payment"],
+				"operationId": "PaymentInitiate",
+				"requestBody": {
+					"x-name": "PaymentInitiateRequest",
+					"description": "",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/PaymentInitiateRequest"
+							}
+						}
+					},
+					"required": true,
+					"x-position": 1
+				},
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PaymentInitiateResponse"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/payment/form/{provider}/{transactionId}": {
+			"get": {
+				"tags": ["Payment"],
+				"operationId": "PaymentForm",
+				"parameters": [
+					{
+						"name": "provider",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"name": "transactionId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"204": {
+						"description": "No Content"
+					}
+				}
+			}
+		},
+		"/payment/checkout/{provider}": {
+			"post": {
+				"tags": ["Payment"],
+				"operationId": "PaymentCheckout",
+				"parameters": [
+					{
+						"name": "provider",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"x-name": "PaymentCheckoutRequest",
+					"description": "",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/PaymentCheckoutRequest"
+							}
+						}
+					},
+					"required": true,
+					"x-position": 1
+				},
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PaymentCheckoutResponse"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/outlet/basic/{slug}": {
+			"get": {
+				"tags": ["Outlet"],
+				"operationId": "OutletGetBasic",
+				"parameters": [
+					{
+						"name": "slug",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/OutletBasicDTO"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/outlet": {
+			"get": {
+				"tags": ["Outlet"],
+				"operationId": "OutletGetAll",
+				"parameters": [
+					{
+						"name": "sorts",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"nullable": true
+						}
+					},
+					{
+						"name": "filters",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"nullable": true
+						}
+					},
+					{
+						"name": "page",
+						"in": "query",
+						"schema": {
+							"type": "integer",
+							"format": "int32",
+							"nullable": true
+						}
+					},
+					{
+						"name": "pageSize",
+						"in": "query",
+						"schema": {
+							"type": "integer",
+							"format": "int32",
+							"nullable": true
+						}
+					}
+				],
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PaginatedListOfOutlet"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/outlet/{slug}": {
+			"get": {
+				"tags": ["Outlet"],
+				"operationId": "OutletGet",
+				"parameters": [
+					{
+						"name": "slug",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/OutletDTO"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/outlet/{slug}/admin": {
+			"get": {
+				"tags": ["Outlet"],
+				"operationId": "OutletAdminGet",
+				"parameters": [
+					{
+						"name": "slug",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/OutletDTO"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/facility/{facilityId}/payment-methods": {
+			"get": {
+				"tags": ["Facility"],
+				"operationId": "FacilityPaymentMethods",
+				"parameters": [
+					{
+						"name": "facilityId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					}
+				],
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/FacilityPaymentMethodsResponse"
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/facility/{id}": {
+			"get": {
+				"tags": ["Facility"],
+				"operationId": "FacilityGet",
+				"parameters": [
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					}
+				],
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/FacilityDTO"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/extra/facility/{facilityId}": {
+			"get": {
+				"tags": ["Extra"],
+				"operationId": "ExtraGetFacility",
+				"parameters": [
+					{
+						"name": "facilityId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					}
+				],
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/Extra"
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/example": {
+			"get": {
+				"tags": ["Example"],
+				"operationId": "Example",
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/example/verify": {
+			"get": {
+				"tags": ["Example"],
+				"operationId": "ExampleVerify",
+				"parameters": [
+					{
+						"name": "code",
+						"in": "query",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "boolean"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/booking/status": {
+			"put": {
+				"tags": ["Booking"],
+				"operationId": "BookingUpdateStatus",
+				"requestBody": {
+					"x-name": "BookingUpdateStatusRequest",
+					"description": "",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/BookingUpdateStatusRequest"
+							}
+						}
+					},
+					"required": true,
+					"x-position": 1
+				},
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"204": {
+						"description": "No Content"
+					}
+				}
+			}
+		},
+		"/booking/user": {
+			"get": {
+				"tags": ["Booking"],
+				"operationId": "BookingGetUser",
+				"parameters": [
+					{
+						"name": "sorts",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"nullable": true
+						}
+					},
+					{
+						"name": "filters",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"nullable": true
+						}
+					},
+					{
+						"name": "page",
+						"in": "query",
+						"schema": {
+							"type": "integer",
+							"format": "int32",
+							"nullable": true
+						}
+					},
+					{
+						"name": "pageSize",
+						"in": "query",
+						"schema": {
+							"type": "integer",
+							"format": "int32",
+							"nullable": true
+						}
+					}
+				],
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PaginatedListOfBookingDTO"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					}
+				},
+				"security": [
+					{
+						"Keycloak": []
+					}
+				]
+			}
+		},
+		"/booking/{id}": {
+			"get": {
+				"tags": ["Booking"],
+				"operationId": "BookingGet",
+				"parameters": [
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					}
+				],
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BookingDTO"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/booking": {
+			"post": {
+				"tags": ["Booking"],
+				"operationId": "BookingCreate",
+				"requestBody": {
+					"x-name": "BookingCreateRequest",
+					"description": "",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/BookingCreateRequest"
+							}
+						}
+					},
+					"required": true,
+					"x-position": 1
+				},
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BookingCreateResponse"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/account/sync": {
+			"post": {
+				"tags": ["Account"],
+				"operationId": "AccountSync",
+				"requestBody": {
+					"x-name": "AccountSyncRequest",
+					"description": "",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/AccountSyncRequest"
+							}
+						}
+					},
+					"required": true,
+					"x-position": 1
+				},
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"204": {
+						"description": "No Content"
+					},
+					"401": {
+						"description": "Unauthorized"
+					}
+				},
+				"security": [
+					{
+						"Keycloak": []
+					}
+				]
+			}
+		},
+		"/account/session": {
+			"get": {
+				"tags": ["Account"],
+				"operationId": "AccountSession",
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/AccountSessionResponse"
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					}
+				},
+				"security": [
+					{
+						"Keycloak": []
+					}
+				]
+			}
+		},
+		"/account/session/revokeAll": {
+			"post": {
+				"tags": ["Account"],
+				"operationId": "AccountSessionRevokeAll",
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"204": {
+						"description": "No Content"
+					},
+					"401": {
+						"description": "Unauthorized"
+					}
+				},
+				"security": [
+					{
+						"Keycloak": []
+					}
+				]
+			}
+		},
+		"/account/session/revoke": {
+			"post": {
+				"tags": ["Account"],
+				"operationId": "AccountSessionRevoke",
+				"requestBody": {
+					"x-name": "AccountSessionRevokeRequest",
+					"description": "",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/AccountSessionRevokeRequest"
+							}
+						}
+					},
+					"required": true,
+					"x-position": 1
+				},
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"204": {
+						"description": "No Content"
+					},
+					"401": {
+						"description": "Unauthorized"
+					}
+				},
+				"security": [
+					{
+						"Keycloak": []
+					}
+				]
+			}
+		},
+		"/account/role/{facilityId}": {
+			"get": {
+				"tags": ["Account"],
+				"operationId": "AccountRole",
+				"parameters": [
+					{
+						"name": "facilityId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/UserRoleBasicDTO"
+									}
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/problem+json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"Keycloak": []
+					}
+				]
+			}
+		},
+		"/account/credential": {
+			"get": {
+				"tags": ["Account"],
+				"operationId": "AccountCredential",
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AccountCredentialResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					}
+				},
+				"security": [
+					{
+						"Keycloak": []
+					}
+				]
+			}
+		},
+		"/account/credential/disableToken": {
+			"post": {
+				"tags": ["Account"],
+				"operationId": "AccountCredentialDisableToken",
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"204": {
+						"description": "No Content"
+					},
+					"401": {
+						"description": "Unauthorized"
+					}
+				},
+				"security": [
+					{
+						"Keycloak": []
+					}
+				]
+			}
+		},
+		"/account/credential/disable": {
+			"post": {
+				"tags": ["Account"],
+				"operationId": "AccountCredentialDisable",
+				"requestBody": {
+					"x-name": "CredentialDisableRequest",
+					"description": "",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CredentialDisableRequest"
+							}
+						}
+					},
+					"required": true,
+					"x-position": 1
+				},
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"204": {
+						"description": "No Content"
+					},
+					"401": {
+						"description": "Unauthorized"
+					}
+				},
+				"security": [
+					{
+						"Keycloak": []
+					}
+				]
+			}
+		}
+	},
+	"components": {
+		"schemas": {
+			"InternalErrorResponse": {
+				"type": "object",
+				"description": "the dto used to send an error response to the client when an unhandled exception occurs on the server",
+				"additionalProperties": false,
+				"required": ["status", "code", "reason", "note"],
+				"properties": {
+					"status": {
+						"type": "string",
+						"description": "error status",
+						"default": "Internal Server Error!"
+					},
+					"code": {
+						"type": "integer",
+						"description": "http status code of the error response",
+						"format": "int32",
+						"default": 500
+					},
+					"reason": {
+						"type": "string",
+						"description": "the reason for the error",
+						"default": "Something unexpected has happened"
+					},
+					"note": {
+						"type": "string",
+						"description": "additional information or instructions",
+						"default": "See application log for stack trace."
+					}
+				}
+			},
+			"TestResponse": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["success"],
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"token": {
+						"type": "string",
+						"nullable": true
+					},
+					"other": {
+						"nullable": true
+					}
+				}
+			},
+			"SlotGetContractsResponse": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["id", "slotId", "contractId", "contractName", "price", "canPayLater"],
+				"properties": {
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"slotId": {
+						"type": "string",
+						"format": "guid"
+					},
+					"contractId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"contractName": {
+						"type": "string"
+					},
+					"price": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"validationId": {
+						"type": "integer",
+						"format": "int32",
+						"nullable": true
+					},
+					"canPayLater": {
+						"type": "boolean"
+					},
+					"description": {
+						"type": "string",
+						"nullable": true
+					}
+				}
+			},
+			"ErrorResponse": {
+				"type": "object",
+				"description": "the dto used to send an error response to the client",
+				"additionalProperties": false,
+				"required": ["statusCode", "message", "errors"],
+				"properties": {
+					"statusCode": {
+						"type": "integer",
+						"description": "the http status code sent to the client. default is 400.",
+						"format": "int32",
+						"default": 400
+					},
+					"message": {
+						"type": "string",
+						"description": "the message for the error response",
+						"default": "One or more errors occurred!"
+					},
+					"errors": {
+						"type": "object",
+						"description": "the collection of errors for the current context",
+						"additionalProperties": {
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						}
+					}
+				}
+			},
+			"SlotGetAllResponse": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["id", "startDatetime", "booked", "total", "isAvailable"],
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "guid"
+					},
+					"facilityId": {
+						"type": "integer",
+						"format": "int32",
+						"nullable": true
+					},
+					"resourceId": {
+						"type": "integer",
+						"format": "int32",
+						"nullable": true
+					},
+					"resourceName": {
+						"type": "string",
+						"nullable": true
+					},
+					"startDatetime": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"endDatetime": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"booked": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"total": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"isAvailable": {
+						"type": "boolean"
+					}
+				}
+			},
+			"AvailableSlotRequest": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["id"],
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "guid"
+					},
+					"slotCount": {
+						"type": "integer",
+						"format": "int32",
+						"nullable": true
+					}
+				}
+			},
+			"PaymentInitiateResponse": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["transactionId", "redirectUrl"],
+				"properties": {
+					"transactionId": {
+						"type": "string"
+					},
+					"redirectUrl": {
+						"type": "string"
+					},
+					"providerReference": {
+						"type": "string",
+						"nullable": true
+					}
+				}
+			},
+			"PaymentInitiateRequest": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["providerName", "bookingId"],
+				"properties": {
+					"bookingId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"providerName": {
+						"type": "string"
+					}
+				}
+			},
+			"PaymentCheckoutResponse": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["transactionId", "success"],
+				"properties": {
+					"success": {
+						"type": "boolean"
+					},
+					"transactionId": {
+						"type": "string"
+					},
+					"providerReference": {
+						"type": "string",
+						"nullable": true
+					},
+					"redirectUrl": {
+						"type": "string",
+						"nullable": true
+					},
+					"formActionUrl": {
+						"type": "string",
+						"nullable": true
+					},
+					"formFields": {
+						"type": "object",
+						"nullable": true,
+						"additionalProperties": {
+							"type": "string"
+						}
+					},
+					"status": {
+						"type": "string",
+						"nullable": true
+					},
+					"errorMessage": {
+						"type": "string",
+						"nullable": true
+					}
+				}
+			},
+			"PaymentCheckoutRequest": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["transactionId", "amount", "currency"],
+				"properties": {
+					"amount": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"currency": {
+						"type": "string"
+					},
+					"transactionId": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string",
+						"nullable": true
+					}
+				}
+			},
+			"OutletBasicDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["slug", "name", "businessName", "displayName", "id", "outletTypeId", "outletType", "isActive", "facilities"],
+				"properties": {
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"slug": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"businessName": {
+						"type": "string"
+					},
+					"logo": {
+						"type": "string",
+						"nullable": true
+					},
+					"displayName": {
+						"type": "string"
+					},
+					"outletTypeId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"outletType": {
+						"$ref": "#/components/schemas/OutletTypeDTO"
+					},
+					"isActive": {
+						"type": "boolean"
+					},
+					"facilities": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/FacilityBasicDTO"
+						}
+					}
+				}
+			},
+			"OutletTypeDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["name", "id"],
+				"properties": {
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"name": {
+						"type": "string"
+					}
+				}
+			},
+			"FacilityBasicDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["name", "facilityTypeName", "id", "facilityTypeId"],
+				"properties": {
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"name": {
+						"type": "string"
+					},
+					"isActive": {
+						"type": "boolean",
+						"nullable": true
+					},
+					"facilityTypeId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"facilityTypeName": {
+						"type": "string"
+					}
+				}
+			},
+			"PaginatedListOfOutlet": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["items", "pageNumber", "totalPages", "totalCount", "hasPreviousPage", "hasNextPage"],
+				"properties": {
+					"items": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Outlet"
+						}
+					},
+					"pageNumber": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"totalPages": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"totalCount": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"hasPreviousPage": {
+						"type": "boolean"
+					},
+					"hasNextPage": {
+						"type": "boolean"
+					}
+				}
+			},
+			"Outlet": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"slug",
+					"name",
+					"business",
+					"vatNumber",
+					"displayName",
+					"created",
+					"id",
+					"businessId",
+					"outletTypeId",
+					"outletType",
+					"isActive",
+					"facilities",
+					"extras",
+					"contractOutlets"
+				],
+				"properties": {
+					"created": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"createdBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"lastModified": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"lastModifiedBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"slug": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"businessId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"business": {
+						"$ref": "#/components/schemas/Business"
+					},
+					"vatNumber": {
+						"type": "string"
+					},
+					"logo": {
+						"type": "string",
+						"nullable": true
+					},
+					"address": {
+						"type": "string",
+						"nullable": true
+					},
+					"description": {
+						"type": "string",
+						"nullable": true
+					},
+					"registration": {
+						"type": "string",
+						"nullable": true
+					},
+					"tags": {
+						"type": "string",
+						"nullable": true
+					},
+					"contact": {
+						"type": "string",
+						"nullable": true
+					},
+					"email": {
+						"type": "string",
+						"nullable": true
+					},
+					"operatingHours": {
+						"type": "string",
+						"nullable": true
+					},
+					"displayName": {
+						"type": "string"
+					},
+					"outletTypeId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"outletType": {
+						"$ref": "#/components/schemas/OutletType"
+					},
+					"isActive": {
+						"type": "boolean"
+					},
+					"facilities": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Facility"
+						}
+					},
+					"extras": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Extra"
+						}
+					},
+					"contractOutlets": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ContractOutlet"
+						}
+					}
+				}
+			},
+			"Business": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["name", "created", "id", "outlets", "contracts", "contractFields"],
+				"properties": {
+					"created": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"createdBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"lastModified": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"lastModifiedBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"name": {
+						"type": "string"
+					},
+					"outlets": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Outlet"
+						}
+					},
+					"contracts": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Contract"
+						}
+					},
+					"contractFields": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ContractField"
+						}
+					}
+				}
+			},
+			"Contract": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["name", "business", "created", "id", "businessId"],
+				"properties": {
+					"created": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"createdBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"lastModified": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"lastModifiedBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"name": {
+						"type": "string"
+					},
+					"businessId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"business": {
+						"$ref": "#/components/schemas/Business"
+					}
+				}
+			},
+			"ContractField": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["name", "business", "created", "id", "businessId", "contractFieldConfigs"],
+				"properties": {
+					"created": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"createdBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"lastModified": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"lastModifiedBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"name": {
+						"type": "string"
+					},
+					"fieldValidation": {
+						"type": "string",
+						"nullable": true
+					},
+					"businessId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"business": {
+						"$ref": "#/components/schemas/Business"
+					},
+					"contractFieldConfigs": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ContractFieldConfig"
+						}
+					}
+				}
+			},
+			"ContractFieldConfig": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["contract", "contractField", "created", "id", "contractId", "contractConfigId", "isActive"],
+				"properties": {
+					"created": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"createdBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"lastModified": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"lastModifiedBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"contractId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"contract": {
+						"$ref": "#/components/schemas/Contract"
+					},
+					"contractConfigId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"contractField": {
+						"$ref": "#/components/schemas/ContractField"
+					},
+					"isActive": {
+						"type": "boolean"
+					}
+				}
+			},
+			"OutletType": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["name", "created", "id"],
+				"properties": {
+					"created": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"createdBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"lastModified": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"lastModifiedBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"name": {
+						"type": "string"
+					}
+				}
+			},
+			"Facility": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["name", "outlet", "created", "id", "outletId", "facilityTypeId", "facilityType", "resources", "slots", "paymentProviderConfigs"],
+				"properties": {
+					"created": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"createdBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"lastModified": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"lastModifiedBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"name": {
+						"type": "string"
+					},
+					"outletId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"outlet": {
+						"$ref": "#/components/schemas/Outlet"
+					},
+					"isActive": {
+						"type": "boolean",
+						"nullable": true
+					},
+					"facilityTypeId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"contact": {
+						"type": "string",
+						"nullable": true
+					},
+					"email": {
+						"type": "string",
+						"nullable": true
+					},
+					"rules": {
+						"type": "string",
+						"nullable": true
+					},
+					"operatingHours": {
+						"type": "string",
+						"nullable": true
+					},
+					"facilityType": {
+						"$ref": "#/components/schemas/FacilityType"
+					},
+					"resources": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Resource"
+						}
+					},
+					"slots": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Slot"
+						}
+					},
+					"paymentProviderConfigs": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/PaymentProviderConfig"
+						}
+					}
+				}
+			},
+			"FacilityType": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["name", "id"],
+				"properties": {
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"name": {
+						"type": "string"
+					}
+				}
+			},
+			"Resource": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["name", "facility", "created", "id", "facilityId", "isActive", "slots"],
+				"properties": {
+					"created": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"createdBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"lastModified": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"lastModifiedBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"name": {
+						"type": "string"
+					},
+					"facilityId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"facility": {
+						"$ref": "#/components/schemas/Facility"
+					},
+					"isActive": {
+						"type": "boolean"
+					},
+					"slots": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Slot"
+						}
+					}
+				}
+			},
+			"Slot": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["startDatetime", "created", "id", "maxBookings", "slotContracts", "extraBookings"],
+				"properties": {
+					"created": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"createdBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"lastModified": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"lastModifiedBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"id": {
+						"type": "string",
+						"format": "guid"
+					},
+					"resourceId": {
+						"type": "integer",
+						"format": "int32",
+						"nullable": true
+					},
+					"resource": {
+						"nullable": true,
+						"oneOf": [
+							{
+								"$ref": "#/components/schemas/Resource"
+							}
+						]
+					},
+					"facilityId": {
+						"type": "integer",
+						"format": "int32",
+						"nullable": true
+					},
+					"facility": {
+						"nullable": true,
+						"oneOf": [
+							{
+								"$ref": "#/components/schemas/Facility"
+							}
+						]
+					},
+					"startDatetime": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"endDatetime": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"maxBookings": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"slotContracts": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/SlotContract"
+						}
+					},
+					"extraBookings": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ExtraBooking"
+						}
+					}
+				}
+			},
+			"SlotContract": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["created", "id", "slotId", "slot", "contractId", "contract", "price", "canPayLater"],
+				"properties": {
+					"created": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"createdBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"lastModified": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"lastModifiedBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"slotId": {
+						"type": "string",
+						"format": "guid"
+					},
+					"slot": {
+						"$ref": "#/components/schemas/Slot"
+					},
+					"contractId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"contract": {
+						"$ref": "#/components/schemas/Contract"
+					},
+					"price": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"validationId": {
+						"type": "integer",
+						"format": "int32",
+						"nullable": true
+					},
+					"validation": {
+						"nullable": true,
+						"oneOf": [
+							{
+								"$ref": "#/components/schemas/Validation"
+							}
+						]
+					},
+					"canPayLater": {
+						"type": "boolean"
+					},
+					"description": {
+						"type": "string",
+						"nullable": true
+					}
+				}
+			},
+			"Validation": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["name", "id"],
+				"properties": {
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"name": {
+						"type": "string"
+					}
+				}
+			},
+			"ExtraBooking": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["extraId", "extra", "bookingId", "booking", "amount"],
+				"properties": {
+					"extraId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"extra": {
+						"$ref": "#/components/schemas/Extra"
+					},
+					"bookingId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"booking": {
+						"$ref": "#/components/schemas/Booking"
+					},
+					"amount": {
+						"type": "integer",
+						"format": "int32"
+					}
+				}
+			},
+			"Extra": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["id", "facilityId", "facility", "outletId", "name", "code", "price", "isAvailable", "isOnline"],
+				"properties": {
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"facilityId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"facility": {
+						"$ref": "#/components/schemas/Facility"
+					},
+					"outletId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"name": {
+						"type": "string"
+					},
+					"code": {
+						"type": "string"
+					},
+					"price": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"isAvailable": {
+						"type": "boolean"
+					},
+					"isOnline": {
+						"type": "boolean"
+					}
+				}
+			},
+			"Booking": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"bookingStatusDate",
+					"created",
+					"id",
+					"bookingStatusId",
+					"bookingStatus",
+					"isPaid",
+					"amountOutstanding",
+					"amountPaid",
+					"expiresAt",
+					"slotContractBookings",
+					"extraBookings"
+				],
+				"properties": {
+					"created": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"createdBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"lastModified": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"lastModifiedBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"bookingStatusId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"bookingStatus": {
+						"$ref": "#/components/schemas/BookingStatus"
+					},
+					"bookingStatusDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"userId": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"user": {
+						"nullable": true,
+						"oneOf": [
+							{
+								"$ref": "#/components/schemas/User"
+							}
+						]
+					},
+					"isPaid": {
+						"type": "boolean"
+					},
+					"amountOutstanding": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"amountPaid": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"expiresAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"slotContractBookings": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/SlotContractBooking"
+						}
+					},
+					"extraBookings": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ExtraBooking"
+						}
+					}
+				}
+			},
+			"BookingStatus": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["name", "id"],
+				"properties": {
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"name": {
+						"type": "string"
+					}
+				}
+			},
+			"User": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"firstName",
+					"lastName",
+					"id",
+					"emailConfirmed",
+					"phoneNumberConfirmed",
+					"twoFactorEnabled",
+					"lockoutEnabled",
+					"accessFailedCount",
+					"userContracts",
+					"userRoles",
+					"lastSync"
+				],
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "guid"
+					},
+					"userName": {
+						"type": "string",
+						"nullable": true
+					},
+					"normalizedUserName": {
+						"type": "string",
+						"nullable": true
+					},
+					"email": {
+						"type": "string",
+						"nullable": true
+					},
+					"normalizedEmail": {
+						"type": "string",
+						"nullable": true
+					},
+					"emailConfirmed": {
+						"type": "boolean"
+					},
+					"passwordHash": {
+						"type": "string",
+						"nullable": true
+					},
+					"securityStamp": {
+						"type": "string",
+						"nullable": true
+					},
+					"concurrencyStamp": {
+						"type": "string",
+						"nullable": true
+					},
+					"phoneNumber": {
+						"type": "string",
+						"nullable": true
+					},
+					"phoneNumberConfirmed": {
+						"type": "boolean"
+					},
+					"twoFactorEnabled": {
+						"type": "boolean"
+					},
+					"lockoutEnd": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"lockoutEnabled": {
+						"type": "boolean"
+					},
+					"accessFailedCount": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"firstName": {
+						"type": "string"
+					},
+					"lastName": {
+						"type": "string"
+					},
+					"picture": {
+						"type": "string",
+						"nullable": true
+					},
+					"userContracts": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/UserContract"
+						}
+					},
+					"userRoles": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/UserRole"
+						}
+					},
+					"lastSync": {
+						"type": "string",
+						"format": "date-time"
+					}
+				}
+			},
+			"UserContract": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["contract", "startDate", "user", "created", "id", "contractId", "price", "isActive", "userId"],
+				"properties": {
+					"created": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"createdBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"lastModified": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"lastModifiedBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"contractId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"contract": {
+						"$ref": "#/components/schemas/Contract"
+					},
+					"startDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"endDate": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"price": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"isActive": {
+						"type": "boolean"
+					},
+					"userId": {
+						"type": "string",
+						"format": "guid"
+					},
+					"user": {
+						"$ref": "#/components/schemas/User"
+					}
+				}
+			},
+			"UserRole": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["userId", "roleId", "id", "role"],
+				"properties": {
+					"userId": {
+						"type": "string",
+						"format": "guid"
+					},
+					"roleId": {
+						"type": "string",
+						"format": "guid"
+					},
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"facilityId": {
+						"type": "integer",
+						"format": "int32",
+						"nullable": true
+					},
+					"facility": {
+						"nullable": true,
+						"oneOf": [
+							{
+								"$ref": "#/components/schemas/Facility"
+							}
+						]
+					},
+					"role": {
+						"$ref": "#/components/schemas/Role"
+					}
+				}
+			},
+			"Role": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["id"],
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "guid"
+					},
+					"name": {
+						"type": "string",
+						"nullable": true
+					},
+					"normalizedName": {
+						"type": "string",
+						"nullable": true
+					},
+					"concurrencyStamp": {
+						"type": "string",
+						"nullable": true
+					}
+				}
+			},
+			"SlotContractBooking": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["id", "slotContractId", "slotContract", "bookingId", "booking"],
+				"properties": {
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"slotContractId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"slotContract": {
+						"$ref": "#/components/schemas/SlotContract"
+					},
+					"bookingId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"booking": {
+						"$ref": "#/components/schemas/Booking"
+					},
+					"userId": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"name": {
+						"type": "string",
+						"nullable": true
+					},
+					"email": {
+						"type": "string",
+						"nullable": true
+					},
+					"cellphone": {
+						"type": "string",
+						"nullable": true
+					}
+				}
+			},
+			"PaymentProviderConfig": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["providerKey", "encryptedSettings", "created", "id", "facilityId", "facility", "type", "iv", "enabled"],
+				"properties": {
+					"created": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"createdBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"lastModified": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"lastModifiedBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"facilityId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"facility": {
+						"$ref": "#/components/schemas/Facility"
+					},
+					"providerKey": {
+						"type": "string"
+					},
+					"type": {
+						"$ref": "#/components/schemas/PaymentProviderType"
+					},
+					"iv": {
+						"type": "string",
+						"format": "byte"
+					},
+					"encryptedSettings": {
+						"type": "string"
+					},
+					"enabled": {
+						"type": "boolean"
+					}
+				}
+			},
+			"PaymentProviderType": {
+				"type": "integer",
+				"description": "",
+				"x-enumNames": ["Peach", "Payfast"],
+				"x-enum-descriptions": ["PeachPayments", "Payfast"],
+				"enum": [0, 1]
+			},
+			"ContractOutlet": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["contract", "outlet", "created", "id", "contractId", "outletId", "isActive"],
+				"properties": {
+					"created": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"createdBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"lastModified": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"lastModifiedBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"contractId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"contract": {
+						"$ref": "#/components/schemas/Contract"
+					},
+					"outletId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"outlet": {
+						"$ref": "#/components/schemas/Outlet"
+					},
+					"contractStart": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"contractEnd": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"isActive": {
+						"type": "boolean"
+					}
+				}
+			},
+			"OutletDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["slug", "name", "business", "vatNumber", "displayName", "id", "businessId", "outletTypeId", "outletType", "isActive", "facilities"],
+				"properties": {
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"slug": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"businessId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"business": {
+						"$ref": "#/components/schemas/BusinessDTO"
+					},
+					"vatNumber": {
+						"type": "string"
+					},
+					"logo": {
+						"type": "string",
+						"nullable": true
+					},
+					"address": {
+						"type": "string",
+						"nullable": true
+					},
+					"company": {
+						"type": "string",
+						"nullable": true
+					},
+					"description": {
+						"type": "string",
+						"nullable": true
+					},
+					"registration": {
+						"type": "string",
+						"nullable": true
+					},
+					"tags": {
+						"type": "string",
+						"nullable": true
+					},
+					"contact": {
+						"type": "string",
+						"nullable": true
+					},
+					"email": {
+						"type": "string",
+						"nullable": true
+					},
+					"operatingHours": {
+						"type": "string",
+						"nullable": true
+					},
+					"displayName": {
+						"type": "string"
+					},
+					"outletTypeId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"outletType": {
+						"$ref": "#/components/schemas/OutletTypeDTO"
+					},
+					"isActive": {
+						"type": "boolean"
+					},
+					"facilities": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/FacilityDTO"
+						}
+					}
+				}
+			},
+			"BusinessDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["name", "id"],
+				"properties": {
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"name": {
+						"type": "string"
+					}
+				}
+			},
+			"FacilityDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["name", "id", "outletId", "facilityTypeId", "facilityType"],
+				"properties": {
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"name": {
+						"type": "string"
+					},
+					"outletId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"isActive": {
+						"type": "boolean",
+						"nullable": true
+					},
+					"facilityTypeId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"facilityType": {
+						"$ref": "#/components/schemas/FacilityTypeDTO"
+					},
+					"contact": {
+						"type": "string",
+						"nullable": true
+					},
+					"email": {
+						"type": "string",
+						"nullable": true
+					},
+					"rules": {
+						"type": "string",
+						"nullable": true
+					},
+					"operatingHours": {
+						"type": "string",
+						"nullable": true
+					}
+				}
+			},
+			"FacilityTypeDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["name", "id"],
+				"properties": {
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"name": {
+						"type": "string"
+					}
+				}
+			},
+			"FacilityPaymentMethodsResponse": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["providerName", "type"],
+				"properties": {
+					"providerName": {
+						"type": "string"
+					},
+					"type": {
+						"type": "string"
+					}
+				}
+			},
+			"BookingUpdateStatusRequest": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["bookingId", "status"],
+				"properties": {
+					"bookingId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"status": {
+						"$ref": "#/components/schemas/BookingStatusEnum"
+					}
+				}
+			},
+			"BookingStatusEnum": {
+				"type": "integer",
+				"description": "",
+				"x-enumNames": ["Pending", "Confirmed", "Cancelled", "Expired"],
+				"enum": [1, 2, 3, 4]
+			},
+			"PaginatedListOfBookingDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["items", "pageNumber", "totalPages", "totalCount", "hasPreviousPage", "hasNextPage"],
+				"properties": {
+					"items": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/BookingDTO"
+						}
+					},
+					"pageNumber": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"totalPages": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"totalCount": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"hasPreviousPage": {
+						"type": "boolean"
+					},
+					"hasNextPage": {
+						"type": "boolean"
+					}
+				}
+			},
+			"BookingDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"bookingStatusDate",
+					"id",
+					"bookingStatusId",
+					"bookingStatus",
+					"isPaid",
+					"amountOutstanding",
+					"amountPaid",
+					"expiresAt",
+					"slotContractBookings",
+					"extraBookings"
+				],
+				"properties": {
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"bookingStatusId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"bookingStatus": {
+						"$ref": "#/components/schemas/BookingStatusDTO"
+					},
+					"bookingStatusDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"userId": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"user": {
+						"nullable": true,
+						"oneOf": [
+							{
+								"$ref": "#/components/schemas/UserDTO"
+							}
+						]
+					},
+					"isPaid": {
+						"type": "boolean"
+					},
+					"amountOutstanding": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"amountPaid": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"expiresAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"slotContractBookings": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/SlotContractBookingDTO"
+						}
+					},
+					"extraBookings": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ExtraBookingDTO"
+						}
+					}
+				}
+			},
+			"BookingStatusDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["name", "id"],
+				"properties": {
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"name": {
+						"type": "string"
+					}
+				}
+			},
+			"UserDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["firstName", "lastName"],
+				"properties": {
+					"firstName": {
+						"type": "string"
+					},
+					"lastName": {
+						"type": "string"
+					},
+					"picture": {
+						"type": "string",
+						"nullable": true
+					}
+				}
+			},
+			"SlotContractBookingDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["id", "slotContractId", "slotContract", "bookingId"],
+				"properties": {
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"slotContractId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"slotContract": {
+						"$ref": "#/components/schemas/SlotContractDTO"
+					},
+					"bookingId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"userId": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"name": {
+						"type": "string",
+						"nullable": true
+					},
+					"email": {
+						"type": "string",
+						"nullable": true
+					},
+					"cellphone": {
+						"type": "string",
+						"nullable": true
+					}
+				}
+			},
+			"SlotContractDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["id", "slotId", "slot", "contractId", "price", "canPayLater"],
+				"properties": {
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"slotId": {
+						"type": "string",
+						"format": "guid"
+					},
+					"slot": {
+						"$ref": "#/components/schemas/SlotDTO"
+					},
+					"contractId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"price": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"validationId": {
+						"type": "integer",
+						"format": "int32",
+						"nullable": true
+					},
+					"canPayLater": {
+						"type": "boolean"
+					},
+					"description": {
+						"type": "string",
+						"nullable": true
+					}
+				}
+			},
+			"SlotDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["startDatetime", "id", "maxBookings"],
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "guid"
+					},
+					"resourceId": {
+						"type": "integer",
+						"format": "int32",
+						"nullable": true
+					},
+					"facilityId": {
+						"type": "integer",
+						"format": "int32",
+						"nullable": true
+					},
+					"startDatetime": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"endDatetime": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"maxBookings": {
+						"type": "integer",
+						"format": "int32"
+					}
+				}
+			},
+			"ExtraBookingDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["extraId", "extra", "bookingId", "amount"],
+				"properties": {
+					"extraId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"extra": {
+						"$ref": "#/components/schemas/ExtraDTO"
+					},
+					"bookingId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"amount": {
+						"type": "integer",
+						"format": "int32"
+					}
+				}
+			},
+			"ExtraDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["id", "facilityId", "outletId", "name", "code", "price"],
+				"properties": {
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"facilityId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"outletId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"name": {
+						"type": "string"
+					},
+					"code": {
+						"type": "string"
+					},
+					"price": {
+						"type": "number",
+						"format": "decimal"
+					}
+				}
+			},
+			"BookingCreateResponse": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["id"],
+				"properties": {
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					}
+				}
+			},
+			"BookingCreateRequest": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["bookings", "extras"],
+				"properties": {
+					"bookings": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/BookingRequest"
+						}
+					},
+					"extras": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/BookingExtraRequest"
+						}
+					}
+				}
+			},
+			"BookingRequest": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["slotId", "slotContractId"],
+				"properties": {
+					"slotId": {
+						"type": "string",
+						"format": "guid"
+					},
+					"slotContractId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"name": {
+						"type": "string",
+						"nullable": true
+					},
+					"email": {
+						"type": "string",
+						"nullable": true
+					},
+					"cellphone": {
+						"type": "string",
+						"nullable": true
+					}
+				}
+			},
+			"BookingExtraRequest": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["extraId", "amount"],
+				"properties": {
+					"extraId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"amount": {
+						"type": "integer",
+						"format": "int32"
+					}
+				}
+			},
+			"AccountSyncRequest": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["force"],
+				"properties": {
+					"force": {
+						"type": "boolean"
+					}
+				}
+			},
+			"AccountSessionResponse": {
+				"type": "object",
+				"additionalProperties": false,
+				"properties": {
+					"id": {
+						"type": "string",
+						"nullable": true
+					},
+					"ipAddress": {
+						"type": "string",
+						"nullable": true
+					},
+					"lastAccess": {
+						"type": "integer",
+						"format": "int64",
+						"nullable": true
+					},
+					"start": {
+						"type": "integer",
+						"format": "int64",
+						"nullable": true
+					},
+					"username": {
+						"type": "string",
+						"nullable": true
+					}
+				}
+			},
+			"AccountSessionRevokeRequest": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["id"],
+				"properties": {
+					"id": {
+						"type": "string"
+					}
+				}
+			},
+			"UserRoleBasicDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"properties": {
+					"facilityId": {
+						"type": "integer",
+						"format": "int32",
+						"nullable": true
+					},
+					"normalizedName": {
+						"type": "string",
+						"nullable": true
+					}
+				}
+			},
+			"AccountCredentialResponse": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["isTwoFactorEnabled", "hasCredential"],
+				"properties": {
+					"isTwoFactorEnabled": {
+						"type": "boolean"
+					},
+					"hasCredential": {
+						"type": "boolean"
+					}
+				}
+			},
+			"CredentialDisableRequest": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["token"],
+				"properties": {
+					"token": {
+						"type": "string"
+					}
+				}
+			}
+		},
+		"securitySchemes": {
+			"Keycloak": {
+				"type": "oauth2",
+				"flows": {
+					"implicit": {
+						"authorizationUrl": "https://localhost:8088/realms/kayord/protocol/openid-connect/auth",
+						"scopes": {
+							"openid": "OpenID Connect scope",
+							"profile": "Profile scope",
+							"email": "Email scope"
+						}
+					}
+				}
+			}
+		}
+	}
 }

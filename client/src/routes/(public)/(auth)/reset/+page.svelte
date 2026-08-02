@@ -33,10 +33,7 @@
 		<Card.Root class="w-full">
 			<Card.Header>
 				<Card.Title>Reset Password</Card.Title>
-				<Card.Description>
-					Please enter your current password and choose a new password to update your account
-					security.
-				</Card.Description>
+				<Card.Description>Please enter your current password and choose a new password to update your account security.</Card.Description>
 			</Card.Header>
 			<Form {form}>
 				<Card.Content class="flex flex-col items-center">
@@ -65,8 +62,6 @@
 				</Card.Footer>
 			</Form>
 		</Card.Root>
-		<p class="text-muted-foreground text-xs">
-			By signing in, you agree to our Terms of Service and Privacy Policy
-		</p>
+		<p class="text-muted-foreground text-xs">By signing in, you agree to our Terms of Service and Privacy Policy</p>
 	</div>
 </div>

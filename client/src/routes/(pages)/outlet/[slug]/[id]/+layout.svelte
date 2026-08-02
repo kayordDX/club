@@ -41,7 +41,7 @@
 				</Breadcrumb.Item>
 				<Breadcrumb.Separator />
 				<Breadcrumb.Item>
-					{#if page.route.id?.includes('/slot/') || page.route.id?.includes('/booking/')}
+					{#if page.route.id?.includes("/slot/") || page.route.id?.includes("/booking/")}
 						<Breadcrumb.Link href={resolve(`/outlet/${page.params.slug}/${page.params.id}`)} class="text-xs">
 							{facility?.name}
 						</Breadcrumb.Link>
@@ -51,17 +51,20 @@
 						</Breadcrumb.Page>
 					{/if}
 				</Breadcrumb.Item>
-				{#if page.route.id?.includes('/slot/')}
+				{#if page.route.id?.includes("/slot/")}
 					<Breadcrumb.Separator />
 					<Breadcrumb.Item>
 						<Breadcrumb.Page class="text-xs">Player Details</Breadcrumb.Page>
 					</Breadcrumb.Item>
 				{/if}
-				{#if page.route.id?.includes('/booking/')}
+				{#if page.route.id?.includes("/booking/")}
 					<Breadcrumb.Separator />
 					<Breadcrumb.Item>
-						{#if page.url.searchParams.get('slotId')}
-							<Breadcrumb.Link href={resolve(`/outlet/${page.params.slug}/${page.params.id}/slot/${page.url.searchParams.get('slotId')}?${page.url.searchParams.toString()}`)} class="text-xs">
+						{#if page.url.searchParams.get("slotId")}
+							<Breadcrumb.Link
+								href={resolve(`/outlet/${page.params.slug}/${page.params.id}/slot/${page.url.searchParams.get("slotId")}?${page.url.searchParams.toString()}`)}
+								class="text-xs"
+							>
 								Player Details
 							</Breadcrumb.Link>
 						{:else}

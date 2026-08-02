@@ -12,13 +12,7 @@
 	import { createAppForm, Form } from "$lib/components/Form";
 	import Query from "$lib/components/Query.svelte";
 	import { Badge, Button, Card, Empty } from "@kayord/ui";
-	import {
-		CalendarDaysIcon,
-		ChevronLeftIcon,
-		Clock3Icon,
-		CreditCardIcon,
-		UserRoundIcon,
-	} from "@lucide/svelte";
+	import { CalendarDaysIcon, ChevronLeftIcon, Clock3Icon, CreditCardIcon, UserRoundIcon } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
 	import { playersSchema, type Players, type SelectedExtra } from "./schema";
 	import Extras from "./Extras.svelte";
@@ -108,9 +102,7 @@
 					date: selectedDate,
 				});
 
-				await goto(
-					`${resolve(`/outlet/${slug}/${facilityId}/booking/${bookingResponse.id}/pay`)}?${paymentParams.toString()}` as ResolvedPathname
-				);
+				await goto(`${resolve(`/outlet/${slug}/${facilityId}/booking/${bookingResponse.id}/pay`)}?${paymentParams.toString()}` as ResolvedPathname);
 			} catch {
 				toast.error("Failed to create booking. Please try again.");
 			} finally {
@@ -119,16 +111,13 @@
 		},
 	}));
 
-	const getPriceFromContractId = (contractId: string) =>
-		contracts.find((c) => c.id === Number(contractId))?.price ?? 0;
+	const getPriceFromContractId = (contractId: string) => contracts.find((c) => c.id === Number(contractId))?.price ?? 0;
 
 	// Form reactivity
 	const players = form.useStore((state) => state.values.players);
 
 	const totalPrice = $derived(
-		(players.current ?? [])
-			.map((c) => getPriceFromContractId(c.contractId))
-			.reduce((sum, price) => sum + price, 0) + getSelectedExtrasTotal(selectedExtras)
+		(players.current ?? []).map((c) => getPriceFromContractId(c.contractId)).reduce((sum, price) => sum + price, 0) + getSelectedExtrasTotal(selectedExtras)
 	);
 </script>
 
@@ -140,25 +129,19 @@
 					<div class="space-y-2">
 						<Card.Title class="text-2xl">Add each player's details</Card.Title>
 						<Card.Description class="max-w-2xl text-sm leading-6">
-							Capture the booking information for all {slotCount} players, review the summary, and then
-							choose how you want to pay.
+							Capture the booking information for all {slotCount} players, review the summary, and then choose how you want to pay.
 						</Card.Description>
 					</div>
 				</div>
 			</Card.Header>
 
-			<Query
-				query={contractsQuery}
-				emptyText="No booking contracts are available for this slot yet."
-			>
+			<Query query={contractsQuery} emptyText="No booking contracts are available for this slot yet.">
 				{#if !selectedDate}
 					<Card.Content class="p-6">
 						<Empty.Root>
 							<Empty.Header>
 								<Empty.Title>Select a date first</Empty.Title>
-								<Empty.Description>
-									Choose a date on the facility page before continuing with player details.
-								</Empty.Description>
+								<Empty.Description>Choose a date on the facility page before continuing with player details.</Empty.Description>
 							</Empty.Header>
 							<Empty.Content>
 								<Button href={resolve(`/outlet/${slug}/${facilityId}`)} variant="outline">
@@ -173,40 +156,30 @@
 						<Card.Content class="space-y-6 p-6">
 							<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
 								<div class="rounded-2xl border p-4">
-									<div
-										class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase"
-									>
+									<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
 										<CalendarDaysIcon class="size-4" />
 										Date
 									</div>
 									<p class="mt-3 text-sm font-semibold">{selectedDate}</p>
 								</div>
 								<div class="rounded-2xl border p-4">
-									<div
-										class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase"
-									>
+									<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
 										<Clock3Icon class="size-4" />
 										Time
 									</div>
 									<p class="mt-3 text-sm font-semibold">
-										{slot
-											? `${formatTime(slot.startDatetime)} - ${formatTime(slot.endDatetime)}`
-											: "Selected slot"}
+										{slot ? `${formatTime(slot.startDatetime)} - ${formatTime(slot.endDatetime)}` : "Selected slot"}
 									</p>
 								</div>
 								<div class="rounded-2xl border p-4">
-									<div
-										class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase"
-									>
+									<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
 										<UserRoundIcon class="size-4" />
 										Players
 									</div>
 									<p class="mt-3 text-sm font-semibold">{slotCount} total</p>
 								</div>
 								<div class="rounded-2xl border p-4">
-									<div
-										class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase"
-									>
+									<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
 										<CreditCardIcon class="size-4" />
 										Total
 									</div>
@@ -220,9 +193,7 @@
 								<div class="flex items-center justify-between gap-4">
 									<div class="mt-4">
 										<h2 class="text-lg font-semibold">User information</h2>
-										<p class="text-muted-foreground text-sm">
-											Add the contact details for each user included in this booking.
-										</p>
+										<p class="text-muted-foreground text-sm">Add the contact details for each user included in this booking.</p>
 									</div>
 									<Badge variant="outline">{slotCount} users</Badge>
 								</div>
@@ -237,26 +208,24 @@
 															<div class="flex items-center justify-between gap-4">
 																<div>
 																	<Card.Title class="text-base">User {index + 1}</Card.Title>
-																	<Card.Description
-																		>Enter the details for this player.</Card.Description
-																	>
+																	<Card.Description>Enter the details for this player.</Card.Description>
 																</div>
-															<div class="flex items-center gap-2">
-																{#if index === 0 && auth.isAuthenticated}
-																	<Button
-																		variant="outline"
-																		size="sm"
-																		class="h-6 px-2 text-xs"
-																		onclick={() => {
-																			form.setFieldValue(`players[${index}].name`, auth.user?.profile?.name || "");
-																			form.setFieldValue(`players[${index}].email`, auth.user?.profile?.email || "");
-																		}}
-																	>
-																		Me
-																	</Button>
-																{/if}
-																<Badge variant="secondary">Required</Badge>
-															</div>
+																<div class="flex items-center gap-2">
+																	{#if index === 0 && auth.isAuthenticated}
+																		<Button
+																			variant="outline"
+																			size="sm"
+																			class="h-6 px-2 text-xs"
+																			onclick={() => {
+																				form.setFieldValue(`players[${index}].name`, auth.user?.profile?.name || "");
+																				form.setFieldValue(`players[${index}].email`, auth.user?.profile?.email || "");
+																			}}
+																		>
+																			Me
+																		</Button>
+																	{/if}
+																	<Badge variant="secondary">Required</Badge>
+																</div>
 															</div>
 														</Card.Header>
 														<Card.Content>
@@ -278,11 +247,7 @@
 																</form.AppField>
 																<form.AppField name={`players[${index}].email`}>
 																	{#snippet children(field)}
-																		<field.Input
-																			label="Email"
-																			type="text"
-																			placeholder="player@email.com"
-																		/>
+																		<field.Input label="Email" type="text" placeholder="player@email.com" />
 																	{/snippet}
 																</form.AppField>
 															</div>

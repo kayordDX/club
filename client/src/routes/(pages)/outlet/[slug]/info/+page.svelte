@@ -43,10 +43,7 @@
 					<Card.Title>About</Card.Title>
 				</Card.Header>
 				<Card.Content>
-					<Markdown
-						source={query.data?.description ?? ""}
-						class="prose-p:text-muted-foreground text-sm"
-					/>
+					<Markdown source={query.data?.description ?? ""} class="prose-p:text-muted-foreground text-sm" />
 				</Card.Content>
 			</Card.Root>
 

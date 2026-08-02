@@ -77,9 +77,7 @@
 						<div class="flex flex-col gap-2">
 							<Dialog.Header>
 								<Dialog.Title>Disable TOTP?</Dialog.Title>
-								<Dialog.Description>
-									Please enter code received from email to disable TOTP.
-								</Dialog.Description>
+								<Dialog.Description>Please enter code received from email to disable TOTP.</Dialog.Description>
 							</Dialog.Header>
 							<div class="flex flex-col items-center gap-2">
 								<form.AppField name="token">
@@ -116,9 +114,7 @@
 				</Dialog.Content>
 			</Dialog.Root>
 		{:else}
-			<Button onclick={() => auth.keycloakAction("CONFIGURE_TOTP")} variant="outline">
-				Configure TOTP
-			</Button>
+			<Button onclick={() => auth.keycloakAction("CONFIGURE_TOTP")} variant="outline">Configure TOTP</Button>
 		{/if}
 	</Item.Actions>
 </Item.Root>

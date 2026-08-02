@@ -58,11 +58,7 @@
 							<ExtrasAmount bind:selectedExtras {index} />
 						</Table.Cell>
 						<Table.Cell class="text-end">
-							<Button
-								size="icon"
-								variant="destructive"
-								onclick={() => (selectedExtras = selectedExtras.filter((_, i) => i !== index))}
-							>
+							<Button size="icon" variant="destructive" onclick={() => (selectedExtras = selectedExtras.filter((_, i) => i !== index))}>
 								<TrashIcon />
 							</Button>
 						</Table.Cell>

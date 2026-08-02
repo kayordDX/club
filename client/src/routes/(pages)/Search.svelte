@@ -7,13 +7,7 @@
 	let searchQuery = $state("");
 	const selectedFilters = $state<Array<string>>([]);
 
-	const quickFilters = [
-		"Paddle Courts",
-		"Golf Courses",
-		"Available Today",
-		"Premium Clubs",
-		"Budget Friendly",
-	];
+	const quickFilters = ["Paddle Courts", "Golf Courses", "Available Today", "Premium Clubs", "Budget Friendly"];
 
 	const popularSearches = [
 		{ term: "Paddle courts near me", icon: MapPinIcon },
@@ -44,10 +38,7 @@
 				<h3 class="text-muted-foreground mb-3 text-sm font-medium">Quick Filters</h3>
 				<div class="flex flex-wrap gap-2">
 					{#each quickFilters as filter (filter)}
-						<Badge
-							variant={selectedFilters.includes(filter) ? "default" : "secondary"}
-							class="hover:bg-primary/20 cursor-pointer transition-colors"
-						>
+						<Badge variant={selectedFilters.includes(filter) ? "default" : "secondary"} class="hover:bg-primary/20 cursor-pointer transition-colors">
 							{filter}
 						</Badge>
 					{/each}

@@ -15,9 +15,7 @@
 
 	const stringValue = $derived(field.state.value == null ? "" : String(field.state.value));
 
-	const triggerContent = $derived(
-		items.find((item) => item.value === field.state.value)?.label ?? label ?? "Select an option"
-	);
+	const triggerContent = $derived(items.find((item) => item.value === field.state.value)?.label ?? label ?? "Select an option");
 
 	const handleValueChange = (value: string) => {
 		const selectedItem = items.find((item) => String(item.value) === value);
@@ -32,14 +30,7 @@
 	{#if label}
 		<Field.Label for={field.name}>{label}</Field.Label>
 	{/if}
-	<Select.Root
-		type="single"
-		name={field.name}
-		value={stringValue}
-		onOpenChange={() => field.handleBlur()}
-		onValueChange={handleValueChange}
-		{...props}
-	>
+	<Select.Root type="single" name={field.name} value={stringValue} onOpenChange={() => field.handleBlur()} onValueChange={handleValueChange} {...props}>
 		<Select.Trigger aria-invalid={isInvalid(field)}>
 			{triggerContent}
 		</Select.Trigger>

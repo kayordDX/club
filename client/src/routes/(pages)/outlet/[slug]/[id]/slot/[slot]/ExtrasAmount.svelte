@@ -11,13 +11,7 @@
 	let { selectedExtras = $bindable(), index }: Props = $props();
 </script>
 
-<Button
-	size="icon"
-	variant="outline"
-	class="size-7"
-	onclick={() => selectedExtras[index].amount--}
-	disabled={selectedExtras[index].amount <= 1}
->
+<Button size="icon" variant="outline" class="size-7" onclick={() => selectedExtras[index].amount--} disabled={selectedExtras[index].amount <= 1}>
 	<MinusIcon class="size-3" />
 </Button>
 <Input class="h-7 w-10 p-0 text-center" bind:value={selectedExtras[index].amount} />

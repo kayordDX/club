@@ -23,9 +23,7 @@
 					<TicketXIcon />
 				</Empty.Media>
 				<Empty.Title>No Slots Available</Empty.Title>
-				<Empty.Description>
-					There are no slots available for your current selection
-				</Empty.Description>
+				<Empty.Description>There are no slots available for your current selection</Empty.Description>
 			</Empty.Header>
 			<Empty.Content></Empty.Content>
 		</Empty.Root>

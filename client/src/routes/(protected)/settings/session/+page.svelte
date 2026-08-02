@@ -29,11 +29,7 @@
 </script>
 
 <div class="m-4">
-	<PageHeading
-		title="Sessions"
-		description="Manage your active sessions across devices."
-		icon={ShieldIcon}
-	/>
+	<PageHeading title="Sessions" description="Manage your active sessions across devices." icon={ShieldIcon} />
 	<Query {query} emptyText="No sessions found">
 		<div class="space-y-2">
 			<div class="flex items-center justify-between">
@@ -41,13 +37,7 @@
 					Sessions ({query.data?.length})
 				</div>
 				{#if (query.data?.length ?? 0) > 0}
-					<Button
-						variant="ghost"
-						size="sm"
-						class="text-destructive hover:text-destructive"
-						disabled={isRevoking}
-						onclick={revokeAll}
-					>
+					<Button variant="ghost" size="sm" class="text-destructive hover:text-destructive" disabled={isRevoking} onclick={revokeAll}>
 						<ShieldBanIcon />
 						Revoke All
 					</Button>

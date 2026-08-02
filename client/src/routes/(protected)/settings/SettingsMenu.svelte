@@ -34,10 +34,7 @@
 	<Sidebar.Menu class="gap-1">
 		{#each menuItems as item (item.title)}
 			<Sidebar.MenuItem>
-				<Sidebar.MenuButton
-					isActive={activeItem?.title === item.title}
-					class="text-muted-foreground"
-				>
+				<Sidebar.MenuButton isActive={activeItem?.title === item.title} class="text-muted-foreground">
 					{#snippet child({ props })}
 						<a href={resolve(item.url)} {...props}>
 							<item.icon />

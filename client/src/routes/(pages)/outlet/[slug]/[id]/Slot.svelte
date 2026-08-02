@@ -5,14 +5,7 @@
 	import { resolve } from "$app/paths";
 	import { type SlotGetAllResponse, createSlotGetContracts, createSlotAvailable } from "$lib/api";
 	import { Card } from "@kayord/ui";
-	import {
-		ChevronRightIcon,
-		CircleDotIcon,
-		CircleQuestionMark,
-		ClockIcon,
-		MinusIcon,
-		PlusIcon,
-	} from "@lucide/svelte";
+	import { ChevronRightIcon, CircleDotIcon, CircleQuestionMark, ClockIcon, MinusIcon, PlusIcon } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
 	import { goto } from "$app/navigation";
 
@@ -40,11 +33,7 @@
 				},
 			});
 			if (isAvailable) {
-				goto(
-					resolve(
-						`/outlet/${page.params.slug}/${page.params.id}/slot/${slot.id}?slotCount=${slotCount ?? 1}&date=${selectedDate}`
-					)
-				);
+				goto(resolve(`/outlet/${page.params.slug}/${page.params.id}/slot/${slot.id}?slotCount=${slotCount ?? 1}&date=${selectedDate}`));
 			} else {
 				toast.error("Not enough slots available");
 				refetch();
@@ -69,10 +58,7 @@
 	};
 </script>
 
-<Card.Root
-	class={cn("w-full gap-0 p-0", isUnavailable && "pointer-events-none opacity-50")}
-	aria-disabled={isUnavailable}
->
+<Card.Root class={cn("w-full gap-0 p-0", isUnavailable && "pointer-events-none opacity-50")} aria-disabled={isUnavailable}>
 	<Card.Header class="bg-muted/50 p-2 ">
 		<div class="flex items-center justify-start gap-4">
 			<div class="flex items-center gap-1">
@@ -115,23 +101,11 @@
 			<div class="flex flex-col gap-1">
 				<div class="text-muted-foreground text-xs">Players</div>
 				<div class="flex items-center gap-1">
-					<Button
-						size="icon"
-						variant="outline"
-						class="size-7"
-						onclick={() => slotCount--}
-						disabled={slotCount <= 1}
-					>
+					<Button size="icon" variant="outline" class="size-7" onclick={() => slotCount--} disabled={slotCount <= 1}>
 						<MinusIcon class="size-3" />
 					</Button>
 					<Input class="h-7 w-10 p-0 text-center" bind:value={slotCount} />
-					<Button
-						size="icon"
-						variant="outline"
-						class="size-7"
-						onclick={() => slotCount++}
-						disabled={slotCount >= available}
-					>
+					<Button size="icon" variant="outline" class="size-7" onclick={() => slotCount++} disabled={slotCount >= available}>
 						<PlusIcon class="size-3" />
 					</Button>
 				</div>
