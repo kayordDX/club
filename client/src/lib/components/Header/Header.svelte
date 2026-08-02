@@ -14,12 +14,7 @@
 	let { children, class: className, leftHeader }: Props = $props();
 </script>
 
-<div
-	class={cn(
-		"border-border bg-card/50 flex h-14 items-center justify-between border-b p-2 backdrop-blur-sm",
-		className
-	)}
->
+<div class={cn("border-border bg-card/50 flex h-14 items-center justify-between border-b p-2 backdrop-blur-sm", className)}>
 	{#if leftHeader}
 		{@render leftHeader()}
 	{:else}

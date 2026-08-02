@@ -18,10 +18,7 @@
 	let facilityTypeIdFilter = $state("0");
 
 	const facilitiesFiltered = $derived(
-		facilityTypeIdFilter === "0"
-			? (outlet?.facilities ?? [])
-			: (outlet?.facilities.filter((f) => f.facilityTypeId.toString() === facilityTypeIdFilter) ??
-					[])
+		facilityTypeIdFilter === "0" ? (outlet?.facilities ?? []) : (outlet?.facilities.filter((f) => f.facilityTypeId.toString() === facilityTypeIdFilter) ?? [])
 	);
 </script>
 

@@ -136,9 +136,10 @@ class Auth {
 		return this.#roles?.includes("MANAGER") ?? false;
 	}
 
-	login = async () => {
+	login = async (returnUrl?: string) => {
 		await this.userManager.signinRedirect({
 			prompt: "select_account",
+			state: returnUrl ? { returnUrl } : undefined,
 		});
 	};
 

@@ -13,7 +13,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
     public async Task GetSlots_WithNoSlotsForFacility_ShouldReturnEmptyList()
     {
         // Arrange
-        var today = DateTime.UtcNow.Date;
+        var today = DateTime.UtcNow.AddDays(1).Date;
         var request = new SlotGetAllRequest
         {
             FacilityId = 999, // Non-existent facility
@@ -52,7 +52,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
         db.Facility.Add(facility);
         await db.SaveChangesAsync(app.Context.CancellationToken);
 
-        var today = DateTime.UtcNow.Date;
+        var today = DateTime.UtcNow.AddDays(1).Date;
         var slotStartTime = new DateTime(today.Year, today.Month, today.Day, 10, 0, 0, DateTimeKind.Utc);
         var slotEndTime = slotStartTime.AddHours(1);
 
@@ -103,7 +103,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
         db.Facility.Add(facility);
         await db.SaveChangesAsync(app.Context.CancellationToken);
 
-        var today = DateTime.UtcNow.Date;
+        var today = DateTime.UtcNow.AddDays(1).Date;
         var tomorrow = today.AddDays(1);
 
         // Create slots for different dates
@@ -175,7 +175,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
         db.Facility.Add(facility);
         await db.SaveChangesAsync(app.Context.CancellationToken);
 
-        var today = DateTime.UtcNow.Date;
+        var today = DateTime.UtcNow.AddDays(1).Date;
 
         // Create multiple slots for the same day
         var slot1 = new Club.Entities.Slot
@@ -249,7 +249,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
         db.Resource.Add(resource);
         await db.SaveChangesAsync(app.Context.CancellationToken);
 
-        var today = DateTime.UtcNow.Date;
+        var today = DateTime.UtcNow.AddDays(1).Date;
         var slot = new Club.Entities.Slot
         {
             Id = Guid.NewGuid(),
@@ -278,7 +278,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
     public async Task GetSlots_WithInvalidFacilityId_ShouldReturnEmptyList()
     {
         // Arrange
-        var today = DateTime.UtcNow.Date;
+        var today = DateTime.UtcNow.AddDays(1).Date;
         var request = new SlotGetAllRequest
         {
             FacilityId = 999999, // Non-existent facility ID
@@ -325,7 +325,7 @@ public class GetSlotsByFacilityAndDateTests(AppFixture app)
         db.Facility.AddRange(facility1, facility2);
         await db.SaveChangesAsync(app.Context.CancellationToken);
 
-        var today = DateTime.UtcNow.Date;
+        var today = DateTime.UtcNow.AddDays(1).Date;
 
         var slot1 = new Club.Entities.Slot
         {

@@ -1,20 +1,8 @@
 <script lang="ts">
 	import { Button, Popover, ButtonGroup } from "@kayord/ui";
 	import { Calendar } from "@kayord/ui/calendar";
-	import {
-		CalendarIcon,
-		ChevronRightIcon,
-		ChevronLeftIcon,
-		BuildingIcon,
-		UserCogIcon,
-	} from "@lucide/svelte";
-	import {
-		parseDate,
-		today,
-		getLocalTimeZone,
-		DateFormatter,
-		type DateValue,
-	} from "@internationalized/date";
+	import { CalendarIcon, ChevronRightIcon, ChevronLeftIcon, BuildingIcon, UserCogIcon } from "@lucide/svelte";
+	import { parseDate, today, getLocalTimeZone, DateFormatter, type DateValue } from "@internationalized/date";
 	import { page } from "$app/state";
 	import { resolve } from "$app/paths";
 	import { cn } from "@kayord/ui/utils";
@@ -55,14 +43,7 @@
 							<Button size="icon" variant="outline" onclick={() => incrementDate(-1)}>
 								<ChevronLeftIcon />
 							</Button>
-							<Button
-								variant="outline"
-								class={cn(
-									"w-70 justify-start text-start font-normal",
-									!value && "text-muted-foreground"
-								)}
-								{...props}
-							>
+							<Button variant="outline" class={cn("w-70 justify-start text-start font-normal", !value && "text-muted-foreground")} {...props}>
 								<CalendarIcon class="me-2 size-4" />
 								{value ? df.format(value.toDate(getLocalTimeZone())) : "Select a date"}
 							</Button>
@@ -80,10 +61,7 @@
 	</div>
 	<div class="flex items-center gap-2">
 		{#if auth.isManager}
-			<Button
-				variant="destructive"
-				href={resolve(`/outlet/${page.params.slug}/${page.params.id}/admin`)}
-			>
+			<Button variant="destructive" href={resolve(`/outlet/${page.params.slug}/${page.params.id}/admin`)}>
 				<UserCogIcon />
 				Admin
 			</Button>

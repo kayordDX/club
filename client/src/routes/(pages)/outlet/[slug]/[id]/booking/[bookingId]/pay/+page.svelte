@@ -2,20 +2,9 @@
 	import { page } from "$app/state";
 	import { resolve } from "$app/paths";
 
-	import { Alert, Badge, Breadcrumb, Button, Card, Table, ToggleGroup } from "@kayord/ui";
-	import {
-		CalendarDaysIcon,
-		ChevronLeftIcon,
-		Clock3Icon,
-		CreditCardIcon,
-		UserRoundIcon,
-	} from "@lucide/svelte";
-	import {
-		createBookingGet,
-		createBookingUpdateStatus,
-		BookingStatusEnum,
-		createFacilityPaymentMethods,
-	} from "$lib/api";
+	import { Alert, Badge, Button, Card, Table, ToggleGroup } from "@kayord/ui";
+	import { CalendarDaysIcon, ChevronLeftIcon, Clock3Icon, CreditCardIcon, UserRoundIcon } from "@lucide/svelte";
+	import { createBookingGet, createBookingUpdateStatus, BookingStatusEnum, createFacilityPaymentMethods } from "$lib/api";
 	import Query from "$lib/components/Query.svelte";
 	import CountdownTimer from "$lib/components/CountdownTimer.svelte";
 	import customInstance from "$lib/api/mutator/customInstance.svelte";
@@ -57,7 +46,11 @@
 				data: { bookingId, status: BookingStatusEnum.Cancelled },
 			});
 			toast.info("Booking cancelled");
-			goto(resolve("/(pages)/outlet/[slug]/[id]", { slug, id: facilityId.toString() }));
+			if (basketUrl) {
+				goto(basketUrl);
+			} else {
+				goto(resolve(`/outlet/${slug}/${facilityId}`));
+			}
 		} catch (error) {
 			console.error("Failed to cancel booking:", error);
 			toast.error("Failed to cancel booking. Please try again.");
@@ -99,6 +92,14 @@
 	};
 
 	const goBackToBasket = async () => {
+		try {
+			await updateStatusMut.mutateAsync({
+				data: { bookingId, status: BookingStatusEnum.Cancelled },
+			});
+		} catch (error) {
+			console.error("Failed to cancel booking on back:", error);
+		}
+
 		if (window.history.length > 1) {
 			window.history.back();
 			return;
@@ -110,19 +111,6 @@
 
 <Query {query} emptyText="Booking not found">
 	<div class="mx-auto flex w-full flex-col gap-6">
-		<Breadcrumb.Root>
-			<Breadcrumb.List>
-				{#if canGoBack}
-					<Breadcrumb.Item>
-						<Breadcrumb.Link href={basketUrl} class="text-xs">Basket</Breadcrumb.Link>
-					</Breadcrumb.Item>
-					<Breadcrumb.Separator />
-				{/if}
-				<Breadcrumb.Item>
-					<Breadcrumb.Page class="text-xs">Payment</Breadcrumb.Page>
-				</Breadcrumb.Item>
-			</Breadcrumb.List>
-		</Breadcrumb.Root>
 		<div class="grid gap-4 pt-4">
 			<Card.Root class="border-border/60 overflow-hidden border shadow-sm">
 				<Card.Header class="border-border/60  border-b">
@@ -130,9 +118,17 @@
 						<div class="space-y-2">
 							<Card.Title class="text-2xl">Payment details</Card.Title>
 							<Card.Description>
-								Your booking is pending. Please proceed to complete booking
+								{#if query.data?.bookingStatus?.id === 1}
+									Your booking is pending. Please proceed to complete booking.
+								{:else if query.data?.bookingStatus?.id === 2}
+									Your booking is confirmed.
+								{:else if query.data?.bookingStatus?.id === 3}
+									Your booking has been cancelled.
+								{:else if query.data?.bookingStatus?.id === 4}
+									Your booking has expired.
+								{/if}
 							</Card.Description>
-							{#if query.data?.expiresAt}
+							{#if query.data?.expiresAt && query.data?.bookingStatus?.id === 1}
 								<CountdownTimer expiresAt={query.data.expiresAt} />
 							{/if}
 						</div>
@@ -141,27 +137,21 @@
 				<Card.Content>
 					<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
 						<div class="rounded-2xl border p-4">
-							<div
-								class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase"
-							>
+							<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
 								<CalendarDaysIcon class="size-4" />
 								Date
 							</div>
 							<p class="mt-3 text-sm font-semibold">Date</p>
 						</div>
 						<div class="rounded-2xl border p-4">
-							<div
-								class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase"
-							>
+							<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
 								<Clock3Icon class="size-4" />
 								Time
 							</div>
 							<p class="mt-3 text-sm font-semibold">Slot Start Time</p>
 						</div>
 						<div class="rounded-2xl border p-4">
-							<div
-								class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase"
-							>
+							<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
 								<UserRoundIcon class="size-4" />
 								Players
 							</div>
@@ -170,9 +160,7 @@
 							</p>
 						</div>
 						<div class="rounded-2xl border p-4">
-							<div
-								class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase"
-							>
+							<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
 								<CreditCardIcon class="size-4" />
 								Outstanding
 							</div>
@@ -181,9 +169,7 @@
 							</p>
 						</div>
 						<div class="rounded-2xl border p-4">
-							<div
-								class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase"
-							>
+							<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
 								<CreditCardIcon class="size-4" />
 								Paid
 							</div>
@@ -246,22 +232,14 @@
 					<div class="mt-4 mb-4 flex items-center justify-between gap-4">
 						<div>
 							<h2 class="text-lg font-semibold">Choose payment method</h2>
-							<p class="text-muted-foreground text-sm">
-								Pick the payment method and proceed to payment
-							</p>
+							<p class="text-muted-foreground text-sm">Pick the payment method and proceed to payment</p>
 						</div>
 					</div>
 
 					{#if paymentMethods.data && (paymentMethods.data.length ?? 0) > 0}
 						<div class="text-muted-foreground mb-4 text-sm">Available payment methods</div>
 
-						<ToggleGroup.Root
-							variant="outline"
-							type="single"
-							class="w-full border"
-							orientation="vertical"
-							bind:value={selectedProvider}
-						>
+						<ToggleGroup.Root variant="outline" type="single" class="w-full border" orientation="vertical" bind:value={selectedProvider}>
 							{#each paymentMethods.data as paymentMethod (paymentMethod.providerName)}
 								<ToggleGroup.Item value={paymentMethod.providerName} class="flex h-fit flex-1 p-4">
 									<CreditCardIcon />
@@ -272,9 +250,7 @@
 					{:else}
 						<Alert.Root variant="destructive">
 							<Alert.Title>No payment methods</Alert.Title>
-							<Alert.Description>
-								This facility do not have any available payment methods.
-							</Alert.Description>
+							<Alert.Description>This facility do not have any available payment methods.</Alert.Description>
 						</Alert.Root>
 					{/if}
 				</Card.Content>
@@ -286,9 +262,7 @@
 								Back
 							</Button>
 						{/if}
-						<Button onclick={cancelBooking} variant="destructive" disabled={isPaying}>
-							Cancel
-						</Button>
+						<Button onclick={cancelBooking} variant="destructive" disabled={isPaying}>Cancel</Button>
 					</div>
 					<Button onclick={initiatePayment} disabled={!selectedProvider || isPaying}>
 						{isPaying ? "Processing..." : "Pay Now"}

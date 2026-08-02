@@ -44,10 +44,7 @@
 					</div>
 				</Card.Header>
 				<Card.Content>
-					<Markdown
-						source={outletQuery.data?.description ?? ""}
-						class="prose-p:text-muted-foreground mb-2 text-sm"
-					/>
+					<Markdown source={outletQuery.data?.description ?? ""} class="prose-p:text-muted-foreground mb-2 text-sm" />
 					<Tags tags={outletQuery.data?.tags ?? ""} />
 					<Separator class="my-4" />
 					<div class="text-muted-foreground text-sm">

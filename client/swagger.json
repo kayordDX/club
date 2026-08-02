@@ -1,8 +1,8 @@
 {
-	"x-generator": "NSwag v14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))",
+	"x-generator": "NSwag v14.7.1.0 (NJsonSchema v11.6.1.0 (Newtonsoft.Json v13.0.0.0))",
 	"openapi": "3.0.0",
 	"info": {
-		"title": "club",
+		"title": "Club.Api",
 		"version": "v1"
 	},
 	"servers": [
@@ -281,6 +281,86 @@
 				"parameters": [
 					{
 						"name": "provider",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"204": {
+						"description": "No Content"
+					}
+				}
+			}
+		},
+		"/payment/initiate": {
+			"post": {
+				"tags": ["Payment"],
+				"operationId": "PaymentInitiate",
+				"requestBody": {
+					"x-name": "PaymentInitiateRequest",
+					"description": "",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/PaymentInitiateRequest"
+							}
+						}
+					},
+					"required": true,
+					"x-position": 1
+				},
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PaymentInitiateResponse"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/payment/form/{provider}/{transactionId}": {
+			"get": {
+				"tags": ["Payment"],
+				"operationId": "PaymentForm",
+				"parameters": [
+					{
+						"name": "provider",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"name": "transactionId",
 						"in": "path",
 						"required": true,
 						"schema": {
@@ -1405,10 +1485,41 @@
 					}
 				}
 			},
+			"PaymentInitiateResponse": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["transactionId", "redirectUrl"],
+				"properties": {
+					"transactionId": {
+						"type": "string"
+					},
+					"redirectUrl": {
+						"type": "string"
+					},
+					"providerReference": {
+						"type": "string",
+						"nullable": true
+					}
+				}
+			},
+			"PaymentInitiateRequest": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["providerName", "bookingId"],
+				"properties": {
+					"bookingId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"providerName": {
+						"type": "string"
+					}
+				}
+			},
 			"PaymentCheckoutResponse": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": ["success", "transactionId"],
+				"required": ["transactionId", "success"],
 				"properties": {
 					"success": {
 						"type": "boolean"
@@ -1424,6 +1535,17 @@
 						"type": "string",
 						"nullable": true
 					},
+					"formActionUrl": {
+						"type": "string",
+						"nullable": true
+					},
+					"formFields": {
+						"type": "object",
+						"nullable": true,
+						"additionalProperties": {
+							"type": "string"
+						}
+					},
 					"status": {
 						"type": "string",
 						"nullable": true
@@ -1437,7 +1559,7 @@
 			"PaymentCheckoutRequest": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": ["amount", "currency", "transactionId"],
+				"required": ["transactionId", "amount", "currency"],
 				"properties": {
 					"amount": {
 						"type": "number",
@@ -1458,17 +1580,7 @@
 			"OutletBasicDTO": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": [
-					"id",
-					"slug",
-					"name",
-					"businessName",
-					"displayName",
-					"outletTypeId",
-					"outletType",
-					"isActive",
-					"facilities"
-				],
+				"required": ["slug", "name", "businessName", "displayName", "id", "outletTypeId", "outletType", "isActive", "facilities"],
 				"properties": {
 					"id": {
 						"type": "integer",
@@ -1511,7 +1623,7 @@
 			"OutletTypeDTO": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": ["id", "name"],
+				"required": ["name", "id"],
 				"properties": {
 					"id": {
 						"type": "integer",
@@ -1525,7 +1637,7 @@
 			"FacilityBasicDTO": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": ["id", "name", "facilityTypeId", "facilityTypeName"],
+				"required": ["name", "facilityTypeName", "id", "facilityTypeId"],
 				"properties": {
 					"id": {
 						"type": "integer",
@@ -1550,14 +1662,7 @@
 			"PaginatedListOfOutlet": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": [
-					"items",
-					"pageNumber",
-					"totalPages",
-					"totalCount",
-					"hasPreviousPage",
-					"hasNextPage"
-				],
+				"required": ["items", "pageNumber", "totalPages", "totalCount", "hasPreviousPage", "hasNextPage"],
 				"properties": {
 					"items": {
 						"type": "array",
@@ -1589,14 +1694,14 @@
 				"type": "object",
 				"additionalProperties": false,
 				"required": [
-					"created",
-					"id",
 					"slug",
 					"name",
-					"businessId",
 					"business",
 					"vatNumber",
 					"displayName",
+					"created",
+					"id",
+					"businessId",
 					"outletTypeId",
 					"outletType",
 					"isActive",
@@ -1712,7 +1817,7 @@
 			"Business": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": ["created", "id", "name", "outlets", "contracts", "contractFields"],
+				"required": ["name", "created", "id", "outlets", "contracts", "contractFields"],
 				"properties": {
 					"created": {
 						"type": "string",
@@ -1763,7 +1868,7 @@
 			"Contract": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": ["created", "id", "name", "businessId", "business"],
+				"required": ["name", "business", "created", "id", "businessId"],
 				"properties": {
 					"created": {
 						"type": "string",
@@ -1803,7 +1908,7 @@
 			"ContractField": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": ["created", "id", "name", "businessId", "business", "contractFieldConfigs"],
+				"required": ["name", "business", "created", "id", "businessId", "contractFieldConfigs"],
 				"properties": {
 					"created": {
 						"type": "string",
@@ -1853,15 +1958,7 @@
 			"ContractFieldConfig": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": [
-					"created",
-					"id",
-					"contractId",
-					"contract",
-					"contractConfigId",
-					"contractField",
-					"isActive"
-				],
+				"required": ["contract", "contractField", "created", "id", "contractId", "contractConfigId", "isActive"],
 				"properties": {
 					"created": {
 						"type": "string",
@@ -1908,7 +2005,7 @@
 			"OutletType": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": ["created", "id", "name"],
+				"required": ["name", "created", "id"],
 				"properties": {
 					"created": {
 						"type": "string",
@@ -1941,18 +2038,7 @@
 			"Facility": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": [
-					"created",
-					"id",
-					"name",
-					"outletId",
-					"outlet",
-					"facilityTypeId",
-					"facilityType",
-					"resources",
-					"slots",
-					"paymentProviderConfigs"
-				],
+				"required": ["name", "outlet", "created", "id", "outletId", "facilityTypeId", "facilityType", "resources", "slots", "paymentProviderConfigs"],
 				"properties": {
 					"created": {
 						"type": "string",
@@ -2037,7 +2123,7 @@
 			"FacilityType": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": ["id", "name"],
+				"required": ["name", "id"],
 				"properties": {
 					"id": {
 						"type": "integer",
@@ -2051,7 +2137,7 @@
 			"Resource": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": ["created", "id", "name", "facilityId", "facility", "isActive", "slots"],
+				"required": ["name", "facility", "created", "id", "facilityId", "isActive", "slots"],
 				"properties": {
 					"created": {
 						"type": "string",
@@ -2100,14 +2186,7 @@
 			"Slot": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": [
-					"created",
-					"id",
-					"startDatetime",
-					"maxBookings",
-					"slotContracts",
-					"extraBookings"
-				],
+				"required": ["startDatetime", "created", "id", "maxBookings", "slotContracts", "extraBookings"],
 				"properties": {
 					"created": {
 						"type": "string",
@@ -2188,16 +2267,7 @@
 			"SlotContract": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": [
-					"created",
-					"id",
-					"slotId",
-					"slot",
-					"contractId",
-					"contract",
-					"price",
-					"canPayLater"
-				],
+				"required": ["created", "id", "slotId", "slot", "contractId", "contract", "price", "canPayLater"],
 				"properties": {
 					"created": {
 						"type": "string",
@@ -2265,7 +2335,7 @@
 			"Validation": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": ["id", "name"],
+				"required": ["name", "id"],
 				"properties": {
 					"id": {
 						"type": "integer",
@@ -2279,7 +2349,7 @@
 			"ExtraBooking": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": ["extraId", "extra", "bookingId", "booking"],
+				"required": ["extraId", "extra", "bookingId", "booking", "amount"],
 				"properties": {
 					"extraId": {
 						"type": "integer",
@@ -2294,23 +2364,17 @@
 					},
 					"booking": {
 						"$ref": "#/components/schemas/Booking"
+					},
+					"amount": {
+						"type": "integer",
+						"format": "int32"
 					}
 				}
 			},
 			"Extra": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": [
-					"id",
-					"facilityId",
-					"facility",
-					"outletId",
-					"name",
-					"code",
-					"price",
-					"isAvailable",
-					"isOnline"
-				],
+				"required": ["id", "facilityId", "facility", "outletId", "name", "code", "price", "isAvailable", "isOnline"],
 				"properties": {
 					"id": {
 						"type": "integer",
@@ -2349,16 +2413,17 @@
 				"type": "object",
 				"additionalProperties": false,
 				"required": [
+					"bookingStatusDate",
 					"created",
 					"id",
 					"bookingStatusId",
 					"bookingStatus",
-					"bookingStatusDate",
 					"isPaid",
 					"amountOutstanding",
 					"amountPaid",
 					"expiresAt",
-					"slotContractBookings"
+					"slotContractBookings",
+					"extraBookings"
 				],
 				"properties": {
 					"created": {
@@ -2428,13 +2493,19 @@
 						"items": {
 							"$ref": "#/components/schemas/SlotContractBooking"
 						}
+					},
+					"extraBookings": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ExtraBooking"
+						}
 					}
 				}
 			},
 			"BookingStatus": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": ["id", "name"],
+				"required": ["name", "id"],
 				"properties": {
 					"id": {
 						"type": "integer",
@@ -2449,14 +2520,14 @@
 				"type": "object",
 				"additionalProperties": false,
 				"required": [
+					"firstName",
+					"lastName",
 					"id",
 					"emailConfirmed",
 					"phoneNumberConfirmed",
 					"twoFactorEnabled",
 					"lockoutEnabled",
 					"accessFailedCount",
-					"firstName",
-					"lastName",
 					"userContracts",
 					"userRoles",
 					"lastSync"
@@ -2550,17 +2621,7 @@
 			"UserContract": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": [
-					"created",
-					"id",
-					"contractId",
-					"contract",
-					"startDate",
-					"price",
-					"isActive",
-					"userId",
-					"user"
-				],
+				"required": ["contract", "startDate", "user", "created", "id", "contractId", "price", "isActive", "userId"],
 				"properties": {
 					"created": {
 						"type": "string",
@@ -2720,17 +2781,7 @@
 			"PaymentProviderConfig": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": [
-					"created",
-					"id",
-					"facilityId",
-					"facility",
-					"providerKey",
-					"type",
-					"iv",
-					"encryptedSettings",
-					"enabled"
-				],
+				"required": ["providerKey", "encryptedSettings", "created", "id", "facilityId", "facility", "type", "iv", "enabled"],
 				"properties": {
 					"created": {
 						"type": "string",
@@ -2790,7 +2841,7 @@
 			"ContractOutlet": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": ["created", "id", "contractId", "contract", "outletId", "outlet", "isActive"],
+				"required": ["contract", "outlet", "created", "id", "contractId", "outletId", "isActive"],
 				"properties": {
 					"created": {
 						"type": "string",
@@ -2847,19 +2898,7 @@
 			"OutletDTO": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": [
-					"id",
-					"slug",
-					"name",
-					"businessId",
-					"business",
-					"vatNumber",
-					"displayName",
-					"outletTypeId",
-					"outletType",
-					"isActive",
-					"facilities"
-				],
+				"required": ["slug", "name", "business", "vatNumber", "displayName", "id", "businessId", "outletTypeId", "outletType", "isActive", "facilities"],
 				"properties": {
 					"id": {
 						"type": "integer",
@@ -2941,7 +2980,7 @@
 			"BusinessDTO": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": ["id", "name"],
+				"required": ["name", "id"],
 				"properties": {
 					"id": {
 						"type": "integer",
@@ -2955,7 +2994,7 @@
 			"FacilityDTO": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": ["id", "name", "outletId", "facilityTypeId", "facilityType"],
+				"required": ["name", "id", "outletId", "facilityTypeId", "facilityType"],
 				"properties": {
 					"id": {
 						"type": "integer",
@@ -3000,7 +3039,7 @@
 			"FacilityTypeDTO": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": ["id", "name"],
+				"required": ["name", "id"],
 				"properties": {
 					"id": {
 						"type": "integer",
@@ -3047,14 +3086,7 @@
 			"PaginatedListOfBookingDTO": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": [
-					"items",
-					"pageNumber",
-					"totalPages",
-					"totalCount",
-					"hasPreviousPage",
-					"hasNextPage"
-				],
+				"required": ["items", "pageNumber", "totalPages", "totalCount", "hasPreviousPage", "hasNextPage"],
 				"properties": {
 					"items": {
 						"type": "array",
@@ -3086,15 +3118,16 @@
 				"type": "object",
 				"additionalProperties": false,
 				"required": [
+					"bookingStatusDate",
 					"id",
 					"bookingStatusId",
 					"bookingStatus",
-					"bookingStatusDate",
 					"isPaid",
 					"amountOutstanding",
 					"amountPaid",
 					"expiresAt",
-					"slotContractBookings"
+					"slotContractBookings",
+					"extraBookings"
 				],
 				"properties": {
 					"id": {
@@ -3145,13 +3178,19 @@
 						"items": {
 							"$ref": "#/components/schemas/SlotContractBookingDTO"
 						}
+					},
+					"extraBookings": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ExtraBookingDTO"
+						}
 					}
 				}
 			},
 			"BookingStatusDTO": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": ["id", "name"],
+				"required": ["name", "id"],
 				"properties": {
 					"id": {
 						"type": "integer",
@@ -3259,7 +3298,7 @@
 			"SlotDTO": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": ["id", "startDatetime", "maxBookings"],
+				"required": ["startDatetime", "id", "maxBookings"],
 				"properties": {
 					"id": {
 						"type": "string",
@@ -3290,6 +3329,57 @@
 					}
 				}
 			},
+			"ExtraBookingDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["extraId", "extra", "bookingId", "amount"],
+				"properties": {
+					"extraId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"extra": {
+						"$ref": "#/components/schemas/ExtraDTO"
+					},
+					"bookingId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"amount": {
+						"type": "integer",
+						"format": "int32"
+					}
+				}
+			},
+			"ExtraDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["id", "facilityId", "outletId", "name", "code", "price"],
+				"properties": {
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"facilityId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"outletId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"name": {
+						"type": "string"
+					},
+					"code": {
+						"type": "string"
+					},
+					"price": {
+						"type": "number",
+						"format": "decimal"
+					}
+				}
+			},
 			"BookingCreateResponse": {
 				"type": "object",
 				"additionalProperties": false,
@@ -3304,12 +3394,18 @@
 			"BookingCreateRequest": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": ["bookings"],
+				"required": ["bookings", "extras"],
 				"properties": {
 					"bookings": {
 						"type": "array",
 						"items": {
 							"$ref": "#/components/schemas/BookingRequest"
+						}
+					},
+					"extras": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/BookingExtraRequest"
 						}
 					}
 				}
@@ -3338,6 +3434,21 @@
 					"cellphone": {
 						"type": "string",
 						"nullable": true
+					}
+				}
+			},
+			"BookingExtraRequest": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["extraId", "amount"],
+				"properties": {
+					"extraId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"amount": {
+						"type": "integer",
+						"format": "int32"
 					}
 				}
 			},
@@ -3433,7 +3544,7 @@
 				"type": "oauth2",
 				"flows": {
 					"implicit": {
-						"authorizationUrl": "https://auth.localhost/realms/kayord/protocol/openid-connect/auth",
+						"authorizationUrl": "https://localhost:8088/realms/kayord/protocol/openid-connect/auth",
 						"scopes": {
 							"openid": "OpenID Connect scope",
 							"profile": "Profile scope",

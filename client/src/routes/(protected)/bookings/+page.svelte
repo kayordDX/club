@@ -106,10 +106,5 @@
 
 <div class="m-4">
 	<PageHeading title="Bookings" description="My Bookings" icon={BookIcon} />
-	<DataTable
-		{table}
-		headerClass="pb-2"
-		isLoading={bookingQuery.isPending}
-		noDataMessage="No bookings"
-	/>
+	<DataTable {table} headerClass="pb-2" isLoading={bookingQuery.isPending} noDataMessage="No bookings" />
 </div>

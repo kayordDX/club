@@ -1,4 +1,5 @@
 using Club.Common;
+using Club.Common.Enums;
 using Club.Common.Extensions;
 using Club.Common.Models;
 using Club.Data;
@@ -25,6 +26,20 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingGetUserRequest, 
             return;
         }
         var results = await _dbContext.Booking.Where(x => x.UserId == userId).ProjectToDto().OrderBy(x => x.Id).GetPagedAsync(r, ct);
+
+        var now = DateTime.UtcNow;
+        foreach (var booking in results.Items)
+        {
+            if (booking.BookingStatusId == (int)BookingStatusEnum.Pending && booking.ExpiresAt < now)
+            {
+                booking.BookingStatusId = (int)BookingStatusEnum.Expired;
+                if (booking.BookingStatus != null)
+                {
+                    booking.BookingStatus.Id = (int)BookingStatusEnum.Expired;
+                    booking.BookingStatus.Name = "Expired";
+                }
+            }
+        }
 
         await Send.OkAsync(results, ct);
     }

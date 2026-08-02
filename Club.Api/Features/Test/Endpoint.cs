@@ -3,7 +3,7 @@ using Keycloak.AuthServices.Sdk.Admin;
 
 namespace Club.Features.Test;
 
-public class Endpoint(IKeycloakUserClient keycloakUserClient) : Endpoint<TestRequest, TestResponse>
+public class Endpoint() : Endpoint<TestRequest, TestResponse>
 {
     public override void Configure()
     {

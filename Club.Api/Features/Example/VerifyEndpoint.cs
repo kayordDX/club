@@ -4,9 +4,8 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Club.Features.Example;
 
-public class VerifyEndpoint(AppDbContext dbContext, UserManager<User> userManager) : Endpoint<ExampleRequest, bool>
+public class VerifyEndpoint(UserManager<User> userManager) : Endpoint<ExampleRequest, bool>
 {
-    private readonly AppDbContext _dbContext = dbContext;
     private readonly UserManager<User> _userManager = userManager;
 
     public override void Configure()

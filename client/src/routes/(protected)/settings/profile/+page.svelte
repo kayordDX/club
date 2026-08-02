@@ -27,9 +27,7 @@
 					<Card.Title>Profile Information</Card.Title>
 					<Card.Description>Current information of logged in user</Card.Description>
 				</div>
-				<Button onclick={() => auth.keycloakAction("UPDATE_PROFILE")} variant="outline">
-					Update Profile
-				</Button>
+				<Button onclick={() => auth.keycloakAction("UPDATE_PROFILE")} variant="outline">Update Profile</Button>
 			</div>
 		</Card.Header>
 		<Card.Content>
@@ -74,9 +72,7 @@
 			<Item.Description>Change current password</Item.Description>
 		</Item.Content>
 		<Item.Actions>
-			<Button onclick={() => auth.keycloakAction("UPDATE_PASSWORD")} variant="outline">
-				Change Password
-			</Button>
+			<Button onclick={() => auth.keycloakAction("UPDATE_PASSWORD")} variant="outline">Change Password</Button>
 		</Item.Actions>
 	</Item.Root>
 
@@ -86,20 +82,12 @@
 			<Item.Description>Configure passkey for passwordless authentication</Item.Description>
 		</Item.Content>
 		<Item.Actions>
-			<Button
-				onclick={() => auth.keycloakAction("webauthn-register-passwordless")}
-				variant="outline"
-			>
-				Configure Passkey
-			</Button>
+			<Button onclick={() => auth.keycloakAction("webauthn-register-passwordless")} variant="outline">Configure Passkey</Button>
 		</Item.Actions>
 	</Item.Root>
 
 	<Query {query} emptyText="No data found">
-		<TwoFactor
-			isTwoFactorEnabled={query.data?.isTwoFactorEnabled ?? false}
-			refetch={query.refetch}
-		/>
+		<TwoFactor isTwoFactorEnabled={query.data?.isTwoFactorEnabled ?? false} refetch={query.refetch} />
 	</Query>
 
 	<Item.Root variant="muted" class="border-destructive border-2">
@@ -108,9 +96,7 @@
 			<Item.Description>Irreversible and destructive actions</Item.Description>
 		</Item.Content>
 		<Item.Actions>
-			<Button onclick={() => auth.keycloakAction("delete_account")} variant="destructive">
-				Delete Account
-			</Button>
+			<Button onclick={() => auth.keycloakAction("delete_account")} variant="destructive">Delete Account</Button>
 		</Item.Actions>
 	</Item.Root>
 </div>

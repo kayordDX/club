@@ -28,6 +28,8 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List
         var dateStart = new DateTime(dateUtc.Year, dateUtc.Month, dateUtc.Day, 0, 0, 0, DateTimeKind.Utc);
         var dateEnd = dateStart.AddDays(1);
 
+        var now = DateTime.UtcNow;
+
         var result = await _dbContext
             .Database.SqlQuery<SlotGetAllResponse>(
                 $"""
@@ -38,7 +40,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List
                     r.name resource_name,
                     s.start_datetime,
                     s.end_datetime,
-                    CAST(COUNT(scb.id) AS integer) booked,
+                    CAST(COUNT(b.id) AS integer) booked,
                     s.max_bookings total
                 FROM slot s
                 LEFT JOIN resource r
@@ -47,9 +49,12 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List
                     ON sc.slot_id = s.id
                 LEFT JOIN slot_contract_booking scb
                     ON scb.slot_contract_id = sc.id
+                LEFT JOIN booking b
+                    ON b.id = scb.booking_id AND (b.booking_status_id != 1 OR b.expires_at >= {now})
                 WHERE s.facility_id = {req.FacilityId}
                   AND s.start_datetime >= {dateStart}
                   AND s.start_datetime < {dateEnd}
+                  AND s.start_datetime > {now}
                 GROUP BY s.id, r.name
                 ORDER BY s.start_datetime
                 """

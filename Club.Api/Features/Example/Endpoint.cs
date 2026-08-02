@@ -7,12 +7,10 @@ namespace Club.Features.Example;
 
 public class Endpoint : EndpointWithoutRequest<string>
 {
-    private readonly AppDbContext _dbContext;
     private readonly UserManager<User> _userManager;
 
-    public Endpoint(AppDbContext dbContext, UserManager<User> userManager)
+    public Endpoint(UserManager<User> userManager)
     {
-        _dbContext = dbContext;
         _userManager = userManager;
     }
 

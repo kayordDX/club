@@ -15,9 +15,7 @@
 <Sidebar.Provider>
 	<Sidebar.Root>
 		<Sidebar.Header class="p-0">
-			<div
-				class="border-border bg-card/50 flex h-14 items-center justify-between border-b p-2 backdrop-blur-sm"
-			>
+			<div class="border-border bg-card/50 flex h-14 items-center justify-between border-b p-2 backdrop-blur-sm">
 				<LogoButton />
 			</div>
 		</Sidebar.Header>
