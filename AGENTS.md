@@ -2,185 +2,116 @@
 
 ## Project Overview
 
-- Aspire orchestrated monorepo with:
-  - `Club.AppHost/` - Aspire AppHost orchestrating the API, frontend, Postgres, Redis, Keycloak, and Mailpit
-  - `Club.Api/` - .NET 10 FastEndpoints backend
-  - `Club.ServiceDefaults/` - Aspire service defaults (OTel, health checks, service discovery)
-  - `Club.Tests/` - Integration and unit tests
-  - `client/` - SvelteKit 5 frontend with TypeScript in `client/src/`
-- Purpose: public booking and member login system with Google OAuth authentication
+Aspire orchestrated monorepo: public booking and member login system with Google OAuth.
+
+| Directory | Purpose |
+|---|---|
+| `Club.AppHost/` | Aspire AppHost — orchestrates API, frontend, Postgres, Redis, Keycloak, Mailpit |
+| `Club.Api/` | .NET 10 FastEndpoints backend |
+| `Club.ServiceDefaults/` | Aspire service defaults (OTel, health checks, service discovery) |
+| `Club.Tests/` | Integration and unit tests |
+| `client/` | SvelteKit 5 frontend (`client/src/`) |
 
 ## Available Skills
 
-- `ui` - Use for `@kayord/ui` / shadcn-svelte components, trigger patterns, forms, inputs, dialogs, dropdowns, and related frontend UI composition.
-- `api` - Use for API and backend work including FastEndpoints, endpoint structure, backend conventions, service registration, EF patterns, and API debugging in `Club.Api/Features/`.
-- `svelte-core-bestpractices` - Use for modern Svelte 5 patterns, reactivity, composition, styling, and performance guidance.
-- `svelte-code-writer` - Use for Svelte documentation lookup and code analysis whenever creating, editing, or reviewing `.svelte`, `.svelte.ts`, or `.svelte.js` files.
+Always invoke the relevant skill before working in that area.
 
-Prefer these skills instead of duplicating their detailed instructions here.
+| Skill | When to use |
+|---|---|
+| `ui` | `@kayord/ui` / shadcn-svelte components, forms, dialogs, dropdowns |
+| `api` | FastEndpoints, backend conventions, EF patterns, `Club.Api/Features/` |
+| `svelte-core-bestpractices` | Svelte 5 patterns, reactivity, composition, styling, performance |
+| `svelte-code-writer` | Any `.svelte`, `.svelte.ts`, or `.svelte.js` file — lookup and code analysis |
 
-## Commands
+## Quality Gates (mandatory — run after every change)
 
-- See `Club.AppHost/Club.AppHost.csproj`, `Club.Api/Club.Api.csproj`, `Club.Tests/`, `client/package.json`, and VS Code tasks for available run, build, test, lint, preview, API generation, and migration commands.
+### Frontend
 
-## Code Style Guidelines
+```sh
+pnpm check   # type-check
+pnpm lint    # lint
+pnpm format  # format
+```
 
-- After any front end changes always run these commands to ensure code quality and consistency:
-  - `pnpm check` - Checks frontend code for errors
-  - `pnpm lint` - Lints frontend code
-  - `pnpm format` - Formats frontend code in case it needs to
-- After any back end changes always make sure the code builds:
-  - `dotnet build` - Builds the backend code
-  - `csharpier check .` - Checks backend code formatting
-  - `csharpier format .` - Format code if needed
+### Backend
 
-### General Formatting
+```sh
+dotnet build        # build
+csharpier check .   # check formatting
+csharpier format .  # fix formatting if needed
+```
 
-- Tabs for frontend files; 4 spaces for backend files
+## Code Style
+
+### Formatting
+
+- Frontend: tabs; Backend: 4 spaces
 - Line length: 100 characters
-- Trailing commas: ES5 style
-- Quotes: double quotes preferred
-- File naming: kebab-case for files, PascalCase for classes and components
+- Trailing commas: ES5; Quotes: double
+- File names: kebab-case; Classes/components: PascalCase
 
 ### Frontend (TypeScript/Svelte)
 
-#### Svelte 5 Runes (Required)
-
-```typescript
-// State variables - $state() is globally available
-let count = $state(0);
-let user = $state<User | null>(null);
-
-// Derived state
-let doubled = $derived(count * 2);
-let complexData = $derived.by(() => {
-  // complex logic here
-  return processedResult;
-});
-
-// Effects (use sparingly, prefer $derived)
-$effect(() => {
-  console.log(`Count is now ${count}`);
-});
-
-// Component props - new syntax
-type Props = {
-  title: string;
-  optional?: boolean;
-};
-let { title, optional = false } = $props();
-```
-
-#### Event Handling
-
-```typescript
-// Modern event handling (not onclick|preventDefault)
-<button onclick={(event) => {
-	event.preventDefault();
-	handleClick();
-}}>Click me</button>
-
-// Instead of legacy svelte:component
-<MyComponent />
-<props.icon />
-```
-
-#### Imports & Exports
-
-```typescript
-// Use const for functions instead of function expressions
-export const fetchUserData = async (id: string) => {
-  return await api.users.getById(id);
-};
-
-// Import organization
-import type { ComponentType } from "svelte";
-import { page } from "$app/stores";
-import { getUserData } from "$lib/api/generated";
-import { Button } from "$lib/components";
-```
-
-#### API Usage
-
-```typescript
-// Use generated API client from src/lib/api/generated/
-import { createQuery } from "@tanstack/svelte-query";
-import { getUsersListUsersGet } from "$lib/api/generated";
-
-const usersQuery = createQuery({
-  queryKey: ["users"],
-  queryFn: () => getUsersListUsersGet(),
-});
-```
-
+- Svelte 5 runes are **mandatory** — use `$state`, `$derived`, `$props`, `$effect`. Use the `svelte-core-bestpractices` skill for patterns.
 - Use generated API clients from `client/src/lib/api/generated/`
-- Custom fetch or mutator logic lives in `client/src/lib/api/mutator/customInstance.svelte.ts`
-- For UI component patterns with `@kayord/ui`, use the `ui` skill
+- Custom fetch/mutator logic lives in `client/src/lib/api/mutator/customInstance.svelte.ts`
+- Use `@tanstack/svelte-query` (`createQuery`, `createMutation`) for data fetching
+- For UI components, use the `ui` skill
 
-### Backend (C# .NET)
+### Backend (C#/.NET)
 
-- Use file-scoped namespaces
-- Keep feature-based organization under `Club.Api/Features/`
-- Keep entities singular and PascalCase
-- Use DTOs from the dedicated `DTO/` area
-- For endpoint structure, service registration, EF conventions, and backend implementation details, use the `api` skill
+- File-scoped namespaces
+- Feature-based layout under `Club.Api/Features/`
+- Entities: singular, PascalCase; DTOs in `DTO/`
+- Never commit secrets — use `dotnet user-secrets` locally
+- Use the `api` skill for endpoint and service patterns
 
-### Testing Conventions
+### Testing
 
-- Frontend unit tests: `ComponentName.svelte.test.ts`, colocated with the component
-- Frontend E2E tests: `feature-name.spec.ts` in `client/e2e/`
-- Backend tests: `ClassNameTests.cs` using xUnit and arrange-act-assert
+- Frontend unit: `ComponentName.svelte.test.ts` colocated with component
+- Frontend E2E: `feature-name.spec.ts` in `client/e2e/`
+- Backend: `ClassNameTests.cs` — xUnit, arrange-act-assert
+- Target a single backend test class: `dotnet test Club.Tests/IntegrationTests/IntegrationTests.csproj -- --filter-class <FullyQualifiedClassName>`
 
-## Key Development Workflows
+## Key Workflows
 
-### Adding New API Endpoint
+### New API Endpoint
 
-1. Create the endpoint in `Club.Api/Features/{FeatureName}/`
-2. Register any required services in `Common/Extensions/`
-3. Regenerate the frontend API client from `client/`
-4. Update frontend usage as needed
+1. Create endpoint in `Club.Api/Features/{FeatureName}/`
+2. Register services in `Common/Extensions/` if needed
+3. Regenerate frontend API client from `client/`
+4. Update frontend usage
 
-For detailed backend endpoint patterns, use the `api` skill.
+→ Use the `api` skill for patterns.
 
-### Adding New Page or Component
+### New Page or Component
 
-1. Create the Svelte file in `client/src/routes/` or `client/src/lib/components/`
-2. Use Svelte 5 runes syntax
-3. Import generated API clients from `$lib/api/generated`
-4. Add tests in the same area when appropriate
+1. Create file in `client/src/routes/` or `client/src/lib/components/`
+2. Use Svelte 5 runes; import from `$lib/api/generated`
+3. Add colocated tests
 
-For Svelte implementation help, use `svelte-core-bestpractices` and `svelte-code-writer`.
-For `@kayord/ui` component work, use the `ui` skill.
+→ Use `svelte-core-bestpractices`, `svelte-code-writer`, and `ui` skills.
 
-### Database Changes
+### Database Change
 
-1. Modify entities in `Club.Api/Entities/`
-2. Add a migration with the normal EF workflow
-3. Update the database
-
-## Important Notes
-
-- Never commit secrets; use `dotnet user-secrets` for local development
-- API-first development: OpenAPI drives client generation
-- Use tabs for frontend code and 4 spaces for backend code
-- Svelte 5 runes are mandatory; avoid legacy Svelte patterns
-- Prefer generated API clients over manual HTTP calls
-- Prefer repo skills for detailed framework-specific guidance instead of repeating that guidance here
+1. Modify entity in `Club.Api/Entities/`
+2. Add EF migration
+3. Apply migration
 
 ## Quick Reference
 
-- AppHost entrypoint: `dotnet run --project Club.AppHost/Club.AppHost.csproj`
-- API docs: `http://localhost:5000/scalar/v1`
-- Aspire AppHost: `http://localhost:15283`
-- Health checks, telemetry, and OpenAPI docs are enabled in development
-- Run API client generation after API changes
-- Use VS Code tasks or CLI for EF migrations
-- Secrets management: `dotnet user-secrets set "Key" "Value"`
+| Item | Value |
+|---|---|
+| Run stack | `dotnet run --project Club.AppHost/Club.AppHost.csproj` |
+| API docs | `http://localhost:5000/scalar/v1` |
+| Aspire dashboard | `http://localhost:15283` |
+| Set secret | `dotnet user-secrets set "Key" "Value"` |
+| EF migrations | VS Code tasks or `dotnet ef` CLI |
+| API client regen | Run from `client/` after API changes |
 
 ## Svelte and MCP Guidance
 
-- If Svelte patterns are unclear, check existing code in the relevant feature directory first
-- Use the Svelte MCP documentation tools when working on Svelte or SvelteKit tasks
-- Use `list-sections` first, then fetch all relevant sections with `get-documentation`
-- Use `svelte-autofixer` whenever writing Svelte code before returning it to the user
-- Only generate a playground link after the user asks for one, and never for code already written into the project
+- Always check existing code in the feature directory before writing new patterns
+- Use Svelte MCP tools: `list-sections` → `get-documentation`
+- Run `svelte-autofixer` on all Svelte code before returning it
+- Never generate a playground link unless explicitly asked
