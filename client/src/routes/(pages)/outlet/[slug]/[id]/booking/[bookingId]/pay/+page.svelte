@@ -2,7 +2,7 @@
 	import { page } from "$app/state";
 	import { resolve } from "$app/paths";
 
-	import { Alert, Badge, Breadcrumb, Button, Card, Table, ToggleGroup } from "@kayord/ui";
+	import { Alert, Badge, Button, Card, Table, ToggleGroup } from "@kayord/ui";
 	import { CalendarDaysIcon, ChevronLeftIcon, Clock3Icon, CreditCardIcon, UserRoundIcon } from "@lucide/svelte";
 	import { createBookingGet, createBookingUpdateStatus, BookingStatusEnum, createFacilityPaymentMethods } from "$lib/api";
 	import Query from "$lib/components/Query.svelte";
