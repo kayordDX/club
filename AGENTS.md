@@ -4,24 +4,24 @@
 
 Aspire orchestrated monorepo: public booking and member login system with Google OAuth.
 
-| Directory | Purpose |
-|---|---|
-| `Club.AppHost/` | Aspire AppHost — orchestrates API, frontend, Postgres, Redis, Keycloak, Mailpit |
-| `Club.Api/` | .NET 10 FastEndpoints backend |
-| `Club.ServiceDefaults/` | Aspire service defaults (OTel, health checks, service discovery) |
-| `Club.Tests/` | Integration and unit tests |
-| `client/` | SvelteKit 5 frontend (`client/src/`) |
+| Directory               | Purpose                                                                         |
+| ----------------------- | ------------------------------------------------------------------------------- |
+| `Club.AppHost/`         | Aspire AppHost — orchestrates API, frontend, Postgres, Redis, Keycloak, Mailpit |
+| `Club.Api/`             | .NET 10 FastEndpoints backend                                                   |
+| `Club.ServiceDefaults/` | Aspire service defaults (OTel, health checks, service discovery)                |
+| `Club.Tests/`           | Integration and unit tests                                                      |
+| `client/`               | SvelteKit 5 frontend (`client/src/`)                                            |
 
 ## Available Skills
 
 Always invoke the relevant skill before working in that area.
 
-| Skill | When to use |
-|---|---|
-| `ui` | `@kayord/ui` / shadcn-svelte components, forms, dialogs, dropdowns |
-| `api` | FastEndpoints, backend conventions, EF patterns, `Club.Api/Features/` |
-| `svelte-core-bestpractices` | Svelte 5 patterns, reactivity, composition, styling, performance |
-| `svelte-code-writer` | Any `.svelte`, `.svelte.ts`, or `.svelte.js` file — lookup and code analysis |
+| Skill                       | When to use                                                                  |
+| --------------------------- | ---------------------------------------------------------------------------- |
+| `ui`                        | `@kayord/ui` / shadcn-svelte components, forms, dialogs, dropdowns           |
+| `api`                       | FastEndpoints, backend conventions, EF patterns, `Club.Api/Features/`        |
+| `svelte-core-bestpractices` | Svelte 5 patterns, reactivity, composition, styling, performance             |
+| `svelte-code-writer`        | Any `.svelte`, `.svelte.ts`, or `.svelte.js` file — lookup and code analysis |
 
 ## Quality Gates (mandatory — run after every change)
 
@@ -46,7 +46,7 @@ csharpier format .  # fix formatting if needed
 ### Formatting
 
 - Frontend: tabs; Backend: 4 spaces
-- Line length: 100 characters
+- Line length: 160 characters
 - Trailing commas: ES5; Quotes: double
 - File names: kebab-case; Classes/components: PascalCase
 
@@ -100,14 +100,14 @@ csharpier format .  # fix formatting if needed
 
 ## Quick Reference
 
-| Item | Value |
-|---|---|
-| Run stack | `dotnet run --project Club.AppHost/Club.AppHost.csproj` |
-| API docs | `http://localhost:5000/scalar/v1` |
-| Aspire dashboard | `http://localhost:15283` |
-| Set secret | `dotnet user-secrets set "Key" "Value"` |
-| EF migrations | VS Code tasks or `dotnet ef` CLI |
-| API client regen | Run from `client/` after API changes |
+| Item             | Value                                                   |
+| ---------------- | ------------------------------------------------------- |
+| Run stack        | `dotnet run --project Club.AppHost/Club.AppHost.csproj` |
+| API docs         | `http://localhost:5000/scalar/v1`                       |
+| Aspire           | `use aspire skills to get details and logs`             |
+| Set secret       | `dotnet user-secrets set "Key" "Value"`                 |
+| EF migrations    | VS Code tasks or `dotnet ef` CLI                        |
+| API client regen | Run from `client/` after API changes                    |
 
 ## Svelte and MCP Guidance
 
