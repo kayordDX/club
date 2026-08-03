@@ -22,6 +22,11 @@
 	});
 
 	const facility = $derived(outlet?.facilities.find((x) => x.id == Number(page.params.id)));
+
+	const facilityHref = $derived.by(() => {
+		const date = page.url.searchParams.get("date");
+		return date ? `${resolve(`/outlet/${page.params.slug}/${page.params.id}`)}?date=${date}` : resolve(`/outlet/${page.params.slug}/${page.params.id}`);
+	});
 </script>
 
 <div class="m-2">
@@ -42,7 +47,7 @@
 				<Breadcrumb.Separator />
 				<Breadcrumb.Item>
 					{#if page.route.id?.includes("/slot/") || page.route.id?.includes("/booking/")}
-						<Breadcrumb.Link href={resolve(`/outlet/${page.params.slug}/${page.params.id}`)} class="text-xs">
+						<Breadcrumb.Link href={facilityHref} class="text-xs">
 							{facility?.name}
 						</Breadcrumb.Link>
 					{:else}

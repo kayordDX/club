@@ -6,6 +6,7 @@
 	import { page } from "$app/state";
 	import { resolve } from "$app/paths";
 	import { cn } from "@kayord/ui/utils";
+	import { createSearchParamsSchema, useSearchParams } from "runed/kit";
 	import { createSlotGetAll } from "$lib/api";
 	import Slots from "./Slots.svelte";
 	import { auth } from "$lib/stores/auth.svelte";
@@ -14,12 +15,22 @@
 		dateStyle: "long",
 	});
 
-	const initialDate = page.url.searchParams.get("date") ?? today(getLocalTimeZone()).toString();
+	const searchParamsSchema = createSearchParamsSchema({
+		date: { type: "string", default: today(getLocalTimeZone()).toString() },
+	});
 
-	let value = $state<DateValue>(parseDate(initialDate));
+	const params = useSearchParams(searchParamsSchema, { noScroll: true });
+
+	const value = $derived.by(() => {
+		try {
+			return parseDate(params.date);
+		} catch {
+			return today(getLocalTimeZone());
+		}
+	});
 
 	const incrementDate = (incrementValue: number) => {
-		value = value.add({ days: incrementValue });
+		params.date = value.add({ days: incrementValue }).toString();
 	};
 
 	const slotsQuery = createSlotGetAll(() => ({
@@ -54,7 +65,13 @@
 					{/snippet}
 				</Popover.Trigger>
 				<Popover.Content class="w-auto p-0">
-					<Calendar bind:value type="single" initialFocus captionLayout="dropdown" />
+					<Calendar
+						{value}
+						onValueChange={(v: DateValue | undefined) => v && (params.date = v.toString())}
+						type="single"
+						initialFocus
+						captionLayout="dropdown"
+					/>
 				</Popover.Content>
 			</Popover.Root>
 		</div>
