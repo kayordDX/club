@@ -1,9 +1,12 @@
 <script lang="ts">
 	import { Card } from "@kayord/ui";
 	import { auth } from "$lib/stores/auth.svelte";
+	import { page } from "$app/state";
 	import LogoButton from "$lib/components/LogoButton.svelte";
 	import LogoutButton from "$lib/components/LogoutButton/LogoutButton.svelte";
 	import LoginButton from "$lib/components/LoginButton/LoginButton.svelte";
+
+	const redirect = page.url.searchParams.get("redirect") ?? undefined;
 </script>
 
 <div class="flex h-screen w-full flex-col items-center">
@@ -17,7 +20,7 @@
 				</Card.Description>
 			</Card.Header>
 			<Card.Content class="flex flex-col items-center">
-				<LoginButton />
+				<LoginButton returnUrl={redirect} />
 				<LogoutButton />
 			</Card.Content>
 			<Card.Footer class="flex flex-col items-center gap-2">

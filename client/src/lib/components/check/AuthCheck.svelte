@@ -15,7 +15,7 @@
 	$effect(() => {
 		if (isProtected) {
 			if (!auth.isLoading && !auth.isAuthenticated) {
-				window.location.href = `${PUBLIC_APP_URL}/login?redirect=${page.url.pathname}`;
+				window.location.href = `${PUBLIC_APP_URL}/login?redirect=${encodeURIComponent(page.url.pathname + page.url.search)}`;
 			}
 		}
 	});

@@ -23,6 +23,7 @@
 	const slotId = $derived(page.params.slot ?? "");
 	const slotCount = $derived(Math.max(1, Number(page.url.searchParams.get("slotCount")) || 1));
 	const selectedDate = $derived(page.url.searchParams.get("date") ?? "");
+	const facilityHref = $derived(selectedDate ? `${resolve(`/outlet/${slug}/${facilityId}`)}?date=${selectedDate}` : resolve(`/outlet/${slug}/${facilityId}`));
 
 	let selectedExtras: Array<SelectedExtra> = $state([]);
 
@@ -144,7 +145,7 @@
 								<Empty.Description>Choose a date on the facility page before continuing with player details.</Empty.Description>
 							</Empty.Header>
 							<Empty.Content>
-								<Button href={resolve(`/outlet/${slug}/${facilityId}`)} variant="outline">
+								<Button href={facilityHref} variant="outline">
 									<ChevronLeftIcon class="size-4" />
 									Back to slots
 								</Button>
@@ -211,19 +212,19 @@
 																	<Card.Description>Enter the details for this player.</Card.Description>
 																</div>
 																<div class="flex items-center gap-2">
-																	{#if index === 0 && auth.isAuthenticated}
-																		<Button
-																			variant="outline"
-																			size="sm"
-																			class="h-6 px-2 text-xs"
-																			onclick={() => {
-																				form.setFieldValue(`players[${index}].name`, auth.user?.profile?.name || "");
-																				form.setFieldValue(`players[${index}].email`, auth.user?.profile?.email || "");
-																			}}
-																		>
-																			Me
-																		</Button>
-																	{/if}
+																	<Button
+																		variant="outline"
+																		size="sm"
+																		class="h-6 px-2 text-xs"
+																		onclick={() => {
+																			form.setFieldValue(`players[${index}].name`, auth.user?.profile?.name || "");
+																			form.setFieldValue(`players[${index}].email`, auth.user?.profile?.email || "");
+																			form.setFieldValue(`players[${index}].cellNo`, auth.user?.profile?.phone_number || "");
+																		}}
+																	>
+																		Me
+																	</Button>
+
 																	<Badge variant="secondary">Required</Badge>
 																</div>
 															</div>
@@ -262,15 +263,11 @@
 							</div>
 						</Card.Content>
 						<Card.Footer class=" flex justify-between border-t">
-							<Button href={resolve(`/outlet/${slug}/${facilityId}`)} variant="ghost">
+							<Button href={facilityHref} variant="ghost">
 								<ChevronLeftIcon class="size-4" />
 								Back to slots
 							</Button>
-							{#if auth.isAuthenticated}
-								<Button type="submit">Book</Button>
-							{:else}
-								<Button onclick={() => auth.login(page.url.pathname + page.url.search)} type="button">Login to Book</Button>
-							{/if}
+							<Button type="submit">Book</Button>
 						</Card.Footer>
 					</Form>
 				{/if}
