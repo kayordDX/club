@@ -107,6 +107,7 @@ public class CreateBookingTests(AppFixture app)
             .FirstAsync(booking => booking.Id == createdBooking.Id, app.Context.CancellationToken);
 
         persistedBooking.AmountOutstanding.ShouldBe(700m);
+        persistedBooking.UserId.ShouldBe(TestClaims.UserIdGuid);
         persistedBooking.ExtraBookings.ShouldHaveSingleItem();
         persistedBooking.ExtraBookings.Single().Amount.ShouldBe(2);
 

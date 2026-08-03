@@ -21,7 +21,7 @@
 	let slotCount = $state(1);
 	let slotContractEnabled = $state(false);
 	const available = $derived(slot.total - slot.booked);
-	const isUnavailable = $derived(available <= 0);
+	const isUnavailable = $derived(available <= 0 || slot.isEnabled === false);
 
 	const availableMutation = createSlotAvailable();
 

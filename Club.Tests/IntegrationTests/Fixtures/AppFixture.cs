@@ -1,7 +1,10 @@
 using Club.Data;
+using Club.Entities;
 using FastEndpoints.Testing;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
@@ -73,6 +76,17 @@ public class AppFixture : AppFixture<Program>, IAsyncLifetime
         {
             services.Remove(redisCacheDescriptor);
         }
+
+        // Authenticate all test requests as a fixed test user (JwtBearer can't reach Keycloak in tests)
+        services
+            .AddAuthentication(options =>
+            {
+                options.DefaultScheme = TestAuthHandler.SchemeName;
+                options.DefaultAuthenticateScheme = TestAuthHandler.SchemeName;
+                options.DefaultChallengeScheme = TestAuthHandler.SchemeName;
+                options.DefaultForbidScheme = TestAuthHandler.SchemeName;
+            })
+            .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.SchemeName, _ => { });
     }
 
     protected override async ValueTask SetupAsync()
@@ -83,6 +97,23 @@ public class AppFixture : AppFixture<Program>, IAsyncLifetime
 
         // Ensure database is created and migrations are applied
         await db.Database.MigrateAsync();
+
+        // Seed the user that authenticated requests resolve to (booking.user_id has an FK to the users table)
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+        if (await userManager.FindByIdAsync(TestClaims.UserId) is null)
+        {
+            await userManager.CreateAsync(
+                new User
+                {
+                    Id = TestClaims.UserIdGuid,
+                    UserName = "test-user",
+                    Email = "test@example.com",
+                    EmailConfirmed = true,
+                    FirstName = "Test",
+                    LastName = "User",
+                }
+            );
+        }
     }
 
     protected override async ValueTask TearDownAsync()

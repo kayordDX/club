@@ -68,6 +68,7 @@ export interface SlotGetAllResponse {
 	endDatetime?: string | null;
 	booked: number;
 	total: number;
+	isEnabled: boolean;
 	isAvailable: boolean;
 }
 

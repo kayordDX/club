@@ -1427,7 +1427,7 @@
 			"SlotGetAllResponse": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": ["id", "startDatetime", "booked", "total", "isAvailable"],
+				"required": ["id", "startDatetime", "booked", "total", "isEnabled", "isAvailable"],
 				"properties": {
 					"id": {
 						"type": "string",
@@ -1463,6 +1463,9 @@
 					"total": {
 						"type": "integer",
 						"format": "int32"
+					},
+					"isEnabled": {
+						"type": "boolean"
 					},
 					"isAvailable": {
 						"type": "boolean"

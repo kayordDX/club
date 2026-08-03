@@ -1,3 +1,4 @@
+using Club.Common;
 using Club.Common.Enums;
 using Club.Data;
 using Club.DTO;
@@ -13,11 +14,16 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingGetRequest, Book
     {
         Get("/booking/{Id}");
         Description(x => x.WithName("BookingGet"));
-        AllowAnonymous();
     }
 
     public override async Task HandleAsync(BookingGetRequest req, CancellationToken ct)
     {
+        if (Helpers.GetCurrentUserId(HttpContext) == null)
+        {
+            await Send.UnauthorizedAsync(ct);
+            return;
+        }
+
         var results = await _dbContext.Booking.ProjectToDto().FirstOrDefaultAsync(x => x.Id == req.Id, ct);
         if (results == null)
         {

@@ -16,11 +16,17 @@ public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : E
     {
         Post("/booking");
         Description(x => x.WithName("BookingCreate"));
-        AllowAnonymous();
     }
 
     public override async Task HandleAsync(BookingCreateRequest req, CancellationToken ct)
     {
+        var userId = Helpers.GetCurrentUserId(HttpContext);
+        if (userId == null)
+        {
+            await Send.UnauthorizedAsync(ct);
+            return;
+        }
+
         if (req.Bookings.Count == 0)
         {
             AddError(r => r.Bookings, "At least one booking is required.");
@@ -123,7 +129,6 @@ public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : E
         var totalPrice = req.Bookings.Sum(br => slotContracts.First(sc => sc.Id == br.SlotContractId && sc.SlotId == br.SlotId).Price);
         var extrasTotal = requestedExtras.Sum(requestedExtra => extras.First(extra => extra.Id == requestedExtra.ExtraId).Price * requestedExtra.Amount);
 
-        var userId = Helpers.GetCurrentUserId(HttpContext);
         var booking = new Entities.Booking
         {
             BookingStatusId = (int)BookingStatusEnum.Pending,

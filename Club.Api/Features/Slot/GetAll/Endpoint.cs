@@ -42,7 +42,8 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List
                     s.start_datetime,
                     s.end_datetime,
                     CAST(COUNT(b.id) AS integer) booked,
-                    s.max_bookings total
+                    s.max_bookings total,
+                    s.start_datetime >= {now} is_enabled
                 FROM slot s
                 LEFT JOIN resource r
                     ON r.id = s.resource_id
@@ -55,9 +56,8 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List
                     AND b.booking_status_id != {(int)BookingStatusEnum.Cancelled}
                     AND (b.booking_status_id != {(int)BookingStatusEnum.Pending} OR b.expires_at >= {now})
                 WHERE s.facility_id = {req.FacilityId}
-                  AND s.start_datetime >= {dateStart}
-                  AND s.start_datetime < {dateEnd}
-                  AND s.start_datetime > {now}
+                    AND s.start_datetime >= {dateStart}
+                    AND s.start_datetime < {dateEnd}
                 GROUP BY s.id, r.name
                 ORDER BY s.start_datetime
                 """

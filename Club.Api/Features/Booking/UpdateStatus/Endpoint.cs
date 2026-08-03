@@ -1,3 +1,4 @@
+using Club.Common;
 using Club.Common.Enums;
 using Club.Data;
 using Microsoft.EntityFrameworkCore;
@@ -12,11 +13,16 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingUpdateStatusRequ
     {
         Put("/booking/status");
         Description(x => x.WithName("BookingUpdateStatus"));
-        AllowAnonymous();
     }
 
     public override async Task HandleAsync(BookingUpdateStatusRequest req, CancellationToken ct)
     {
+        if (Helpers.GetCurrentUserId(HttpContext) == null)
+        {
+            await Send.UnauthorizedAsync(ct);
+            return;
+        }
+
         // Validate if booking exists
         var booking = await _dbContext.Booking.FirstOrDefaultAsync(b => b.Id == req.BookingId, ct);
 

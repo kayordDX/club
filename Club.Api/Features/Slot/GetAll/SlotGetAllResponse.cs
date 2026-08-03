@@ -12,5 +12,6 @@ public class SlotGetAllResponse
     public DateTime? EndDatetime { get; set; }
     public int Booked { get; set; }
     public int Total { get; set; }
+    public bool IsEnabled { get; set; }
     public bool IsAvailable => Booked < Total;
 }
