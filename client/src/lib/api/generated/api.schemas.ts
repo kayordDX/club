@@ -752,6 +752,11 @@ export interface BookingCreateRequest {
 	extras: BookingExtraRequest[];
 }
 
+export interface BookingUpdateRequest {
+	bookings: BookingRequest[];
+	extras: BookingExtraRequest[];
+}
+
 export interface AccountSyncRequest {
 	force: boolean;
 }

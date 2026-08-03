@@ -1,13 +1,16 @@
 <script lang="ts">
-	import { BookIcon } from "@lucide/svelte";
+	import { BookIcon, PencilIcon } from "@lucide/svelte";
+	import { resolve } from "$app/paths";
 	import PageHeading from "../../settings/PageHeading.svelte";
 	import Query from "$lib/components/Query.svelte";
-	import { createBookingGet } from "$lib/api";
+	import { BookingStatusEnum, createBookingGet } from "$lib/api";
 	import { page } from "$app/state";
-	import { Card, Table } from "@kayord/ui";
+	import { Button, Card, Table } from "@kayord/ui";
 
 	const bookingId = $derived(Number(page.params.id) || 0);
 	const query = createBookingGet(() => bookingId);
+	const canEdit = $derived(query.data?.bookingStatus?.id === BookingStatusEnum.Pending);
+	const editHref = $derived(resolve(`/bookings/${bookingId}/edit`));
 
 	const formatDate = (value?: string | null) => {
 		if (!value) return "—";
@@ -28,7 +31,16 @@
 
 <div class="m-4">
 	<Query {query} emptyText="Booking not found">
-		<PageHeading title="Booking" description="Booking details" icon={BookIcon} />
+		<div class="flex items-start justify-between gap-4">
+			<PageHeading title="Booking" description="Booking details" icon={BookIcon} />
+
+			{#if canEdit}
+				<Button href={editHref}>
+					<PencilIcon class="size-4" />
+					Edit booking
+				</Button>
+			{/if}
+		</div>
 
 		<div class="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 			<Card.Root>

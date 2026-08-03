@@ -946,6 +946,49 @@
 						}
 					}
 				}
+			},
+			"put": {
+				"tags": ["Booking"],
+				"operationId": "BookingUpdate",
+				"parameters": [
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					}
+				],
+				"requestBody": {
+					"x-name": "BookingUpdateRequest",
+					"description": "",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/BookingUpdateRequest"
+							}
+						}
+					},
+					"required": true,
+					"x-position": 1
+				},
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"204": {
+						"description": "No Content"
+					}
+				}
 			}
 		},
 		"/booking": {
@@ -3538,6 +3581,25 @@
 				"properties": {
 					"token": {
 						"type": "string"
+					}
+				}
+			},
+			"BookingUpdateRequest": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["bookings", "extras"],
+				"properties": {
+					"bookings": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/BookingRequest"
+						}
+					},
+					"extras": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/BookingExtraRequest"
+						}
 					}
 				}
 			}

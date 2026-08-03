@@ -31,7 +31,7 @@
 			booking: query.data,
 		})
 	);
-	const canGoBack = $derived(canReturnToBasket(query.data));
+	const canGoBack = $derived(canReturnToBasket(query.data) && query.data?.bookingStatus?.id === BookingStatusEnum.Pending);
 
 	const updateStatusMut = createBookingUpdateStatus();
 	const formatCurrency = (value: number) =>
@@ -91,21 +91,9 @@
 		}
 	};
 
-	const goBackToBasket = async () => {
-		try {
-			await updateStatusMut.mutateAsync({
-				data: { bookingId, status: BookingStatusEnum.Cancelled },
-			});
-		} catch (error) {
-			console.error("Failed to cancel booking on back:", error);
-		}
-
-		if (window.history.length > 1) {
-			window.history.back();
-			return;
-		}
-
-		await goto(basketUrl);
+	const goToEditBooking = () => {
+		const returnUrl = page.url.pathname + page.url.search;
+		goto(resolve(`/bookings/${bookingId}/edit?returnUrl=${encodeURIComponent(returnUrl)}`));
 	};
 </script>
 
@@ -257,9 +245,9 @@
 				<Card.Footer class="flex justify-between border-t">
 					<div class="flex gap-2">
 						{#if canGoBack}
-							<Button onclick={goBackToBasket} variant="outline" disabled={isPaying}>
+							<Button onclick={goToEditBooking} variant="outline" disabled={isPaying}>
 								<ChevronLeftIcon class="size-4" />
-								Back
+								Back to edit
 							</Button>
 						{/if}
 						<Button onclick={cancelBooking} variant="destructive" disabled={isPaying}>Cancel</Button>
