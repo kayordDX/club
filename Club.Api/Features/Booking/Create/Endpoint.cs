@@ -7,9 +7,10 @@ using Microsoft.Extensions.Options;
 
 namespace Club.Features.Booking.Create;
 
-public class Endpoint(AppDbContext dbContext) : Endpoint<BookingCreateRequest, BookingCreateResponse>
+public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : Endpoint<BookingCreateRequest, BookingCreateResponse>
 {
     private readonly AppDbContext _dbContext = dbContext;
+    private readonly AppConfig _appConfig = appConfig.Value;
 
     public override void Configure()
     {
@@ -45,6 +46,14 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingCreateRequest, B
         }
 
         var slotIds = req.Bookings.Select(b => b.SlotId).Distinct().ToList();
+
+        // Begin a transaction and lock the affected slot rows so concurrent booking requests for
+        // the same slots are serialized against the capacity check below. Without this, two
+        // simultaneous requests could both pass the availability check and oversell a slot.
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+
+        await _dbContext.Slot.FromSqlInterpolated($"SELECT * FROM slot WHERE id = ANY({slotIds}) ORDER BY id FOR UPDATE").ToListAsync(ct);
+
         var facilityIds = slotContracts
             .Select(sc => sc.Slot.FacilityId)
             .Where(facilityId => facilityId.HasValue)
@@ -54,7 +63,11 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingCreateRequest, B
 
         var now = DateTime.UtcNow;
         var existingCounts = await _dbContext
-            .SlotContractBooking.Where(scb => slotIds.Contains(scb.SlotContract.SlotId) && (scb.Booking.BookingStatusId != (int)BookingStatusEnum.Cancelled) && (scb.Booking.BookingStatusId != (int)BookingStatusEnum.Pending || scb.Booking.ExpiresAt >= now))
+            .SlotContractBooking.Where(scb =>
+                slotIds.Contains(scb.SlotContract.SlotId)
+                && (scb.Booking.BookingStatusId != (int)BookingStatusEnum.Cancelled)
+                && (scb.Booking.BookingStatusId != (int)BookingStatusEnum.Pending || scb.Booking.ExpiresAt >= now)
+            )
             .GroupBy(scb => scb.SlotContract.SlotId)
             .Select(g => new { SlotId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.SlotId, x => x.Count, ct);
@@ -118,7 +131,8 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingCreateRequest, B
             IsPaid = false,
             AmountOutstanding = totalPrice + extrasTotal,
             AmountPaid = 0,
-            ExpiresAt = now.AddMinutes(10),
+            // Clamp the timeout so a misconfigured/zero PendingTimeoutMinutes cannot make bookings expire immediately.
+            ExpiresAt = now.AddMinutes(Math.Max(1, _appConfig.PendingTimeoutMinutes)),
             UserId = userId,
         };
 
@@ -145,6 +159,8 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingCreateRequest, B
         });
         await _dbContext.ExtraBooking.AddRangeAsync(extraBookings, ct);
         await _dbContext.SaveChangesAsync(ct);
+
+        await transaction.CommitAsync(ct);
 
         await Send.OkAsync(new BookingCreateResponse { Id = booking.Id }, ct);
     }

@@ -1,3 +1,4 @@
+using Club.Common.Enums;
 using Club.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -50,7 +51,9 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List
                 LEFT JOIN slot_contract_booking scb
                     ON scb.slot_contract_id = sc.id
                 LEFT JOIN booking b
-                    ON b.id = scb.booking_id AND (b.booking_status_id != 1 OR b.expires_at >= {now})
+                    ON b.id = scb.booking_id
+                    AND b.booking_status_id != {(int)BookingStatusEnum.Cancelled}
+                    AND (b.booking_status_id != {(int)BookingStatusEnum.Pending} OR b.expires_at >= {now})
                 WHERE s.facility_id = {req.FacilityId}
                   AND s.start_datetime >= {dateStart}
                   AND s.start_datetime < {dateEnd}

@@ -210,6 +210,15 @@ internal static class PaymentResultHandler
             return;
         }
 
+        // Both the shopper return (GET) and the gateway's ITN/webhook (POST) can deliver the same
+        // successful result, and either may arrive first. Only apply the payment once so amounts
+        // are not credited twice (e.g. AmountPaid double-incremented) for a single transaction.
+        if (payment.PaymentStatusId == (int)Common.Enums.PaymentStatusEnum.Completed)
+        {
+            logger.LogInformation("Payment '{TransactionId}' is already completed; skipping duplicate processing.", internalTransactionId);
+            return;
+        }
+
         var paymentBooking = await dbContext.PaymentBooking.Include(pb => pb.Booking).FirstOrDefaultAsync(pb => pb.PaymentId == payment.Id, ct);
 
         var bookingId = paymentBooking?.BookingId ?? 0;
@@ -247,19 +256,29 @@ internal static class PaymentResultHandler
         }
         else
         {
-            payment.PaymentStatusId = (int)Common.Enums.PaymentStatusEnum.Failed;
-            payment.PaymentStatusDate = DateTime.UtcNow;
-            payment.ErrorMessage = result.Metadata?.GetValueOrDefault("error");
-
-            await dbContext.SaveChangesAsync(ct);
-
-            await new PaymentFailedEvent
+            if (result.EventType == "payment.pending")
             {
-                TransactionId = internalTransactionId,
-                PaymentId = payment.Id,
-                BookingId = bookingId,
-                ErrorMessage = payment.ErrorMessage,
-            }.PublishAsync(Mode.WaitForNone, ct);
+                // Gateway reported the transaction as pending (e.g. Payfast EFT). Keep the payment in
+                // its pending state instead of marking it failed; a later captured webhook will move it
+                // to completed.
+                logger.LogInformation("Payment '{TransactionId}' is pending; leaving payment in pending state.", internalTransactionId);
+            }
+            else
+            {
+                payment.PaymentStatusId = (int)Common.Enums.PaymentStatusEnum.Failed;
+                payment.PaymentStatusDate = DateTime.UtcNow;
+                payment.ErrorMessage = result.Metadata?.GetValueOrDefault("error");
+
+                await dbContext.SaveChangesAsync(ct);
+
+                await new PaymentFailedEvent
+                {
+                    TransactionId = internalTransactionId,
+                    PaymentId = payment.Id,
+                    BookingId = bookingId,
+                    ErrorMessage = payment.ErrorMessage,
+                }.PublishAsync(Mode.WaitForNone, ct);
+            }
         }
     }
 

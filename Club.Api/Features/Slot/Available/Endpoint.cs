@@ -1,3 +1,4 @@
+using Club.Common.Enums;
 using Club.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,7 +23,13 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<AvailableSlotRequest, b
             ValidationContext.Instance.ThrowError("Slot not found");
         }
 
-        int bookedCount = await _dbContext.SlotContractBooking.Where(x => x.SlotContract.SlotId == r.Id && (x.Booking.BookingStatusId != 1 || x.Booking.ExpiresAt >= DateTime.UtcNow)).CountAsync(ct);
+        int bookedCount = await _dbContext
+            .SlotContractBooking.Where(x =>
+                x.SlotContract.SlotId == r.Id
+                && x.Booking.BookingStatusId != (int)BookingStatusEnum.Cancelled
+                && (x.Booking.BookingStatusId != (int)BookingStatusEnum.Pending || x.Booking.ExpiresAt >= DateTime.UtcNow)
+            )
+            .CountAsync(ct);
         bool result = (slot.MaxBookings - bookedCount) >= (r.SlotCount ?? 1);
         await Send.OkAsync(result, ct);
     }

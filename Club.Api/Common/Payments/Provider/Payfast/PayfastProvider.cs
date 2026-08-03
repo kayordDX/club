@@ -65,17 +65,32 @@ public class PayfastProvider(IPaymentOptionsAccessor<PayfastOptions> optionsAcce
 
         try
         {
-            using var reader = new StreamReader(context.Request.Body, leaveOpen: true);
-            var body = await reader.ReadToEndAsync();
+            var isGetRequest = string.Equals(context.Request.Method, HttpMethods.Get, StringComparison.OrdinalIgnoreCase);
 
-            context.Request.Body.Position = 0;
+            List<KeyValuePair<string, string>> orderedParams;
+            if (isGetRequest)
+            {
+                // Payfast redirects the shopper back to the return/cancel URL via GET with the same
+                // fields appended as query-string parameters (including the signature).
+                orderedParams = context
+                    .Request.Query.Where(queryParam => !string.IsNullOrEmpty(queryParam.Key))
+                    .Select(queryParam => new KeyValuePair<string, string>(queryParam.Key, queryParam.Value.ToString() ?? string.Empty))
+                    .ToList();
+            }
+            else
+            {
+                using var reader = new StreamReader(context.Request.Body, leaveOpen: true);
+                var body = await reader.ReadToEndAsync();
 
-            var parsedData = HttpUtility.ParseQueryString(body);
+                context.Request.Body.Position = 0;
 
-            var orderedParams = parsedData
-                .AllKeys.Where(k => k is not null)
-                .Select(k => new KeyValuePair<string, string>(k!, parsedData[k!] ?? string.Empty))
-                .ToList();
+                var parsedData = HttpUtility.ParseQueryString(body);
+
+                orderedParams = parsedData
+                    .AllKeys.Where(k => k is not null)
+                    .Select(k => new KeyValuePair<string, string>(k!, parsedData[k!] ?? string.Empty))
+                    .ToList();
+            }
 
             var dataDict = new Dictionary<string, string>(StringComparer.Ordinal);
             foreach (var kvp in orderedParams)
@@ -112,9 +127,16 @@ public class PayfastProvider(IPaymentOptionsAccessor<PayfastOptions> optionsAcce
             dataDict.TryGetValue("payment_status", out var paymentStatus);
             paymentStatus ??= "unknown";
 
+            // Only treat the payment as successful when the gateway reports it as captured.
+            // PENDING/CANCELLED/FAILED returns must not mark the payment completed (this is what
+            // previously sent shoppers to the failure page even after a successful card payment,
+            // because the GET return carries no request body).
+            var isCaptured =
+                paymentStatus.Equals("COMPLETE", StringComparison.OrdinalIgnoreCase) || paymentStatus.Equals("COMPLETED", StringComparison.OrdinalIgnoreCase);
+
             return new PaymentResult
             {
-                Success = true,
+                Success = isCaptured,
                 TransactionId = transactionId,
                 EventType = MapPaymentStatusToEvent(paymentStatus),
                 Status = paymentStatus,
