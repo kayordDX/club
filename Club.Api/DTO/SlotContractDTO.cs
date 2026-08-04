@@ -6,6 +6,7 @@ public class SlotContractDTO
     public Guid SlotId { get; set; }
     public SlotDTO Slot { get; set; } = default!;
     public int ContractId { get; set; }
+    public string? ContractName { get; set; }
     public decimal Price { get; set; }
     public int? ValidationId { get; set; }
     public bool CanPayLater { get; set; }

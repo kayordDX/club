@@ -663,6 +663,8 @@ export interface SlotContractDTO {
 	slotId: string;
 	slot: SlotDTO;
 	contractId: number;
+	/** @nullable */
+	contractName?: string | null;
 	price: number;
 	/** @nullable */
 	validationId?: number | null;

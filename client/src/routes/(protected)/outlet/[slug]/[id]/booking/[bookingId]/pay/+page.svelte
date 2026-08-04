@@ -2,12 +2,10 @@
 	import { page } from "$app/state";
 	import { resolve } from "$app/paths";
 
-	import { Alert, Badge, Button, Card, ToggleGroup } from "@kayord/ui";
+	import { Alert, Badge, Button, Card, Table, ToggleGroup } from "@kayord/ui";
 	import { CalendarDaysIcon, ChevronLeftIcon, Clock3Icon, CreditCardIcon, MapPinIcon, StoreIcon, UserRoundIcon } from "@lucide/svelte";
 	import { BookingStatusEnum, createBookingGet, createBookingGetPath, createBookingUpdateStatus, createFacilityPaymentMethods } from "$lib/api";
 	import Query from "$lib/components/Query.svelte";
-	import BookingPlayers from "$lib/components/BookingPlayers.svelte";
-	import BookingExtras from "$lib/components/BookingExtras.svelte";
 	import { formatCurrency, formatDate, formatTime } from "$lib/booking/format";
 	import CountdownTimer from "$lib/components/CountdownTimer.svelte";
 	import customInstance from "$lib/api/mutator/customInstance.svelte";
@@ -28,6 +26,12 @@
 	const path = $derived(pathQuery.data);
 
 	const paymentMethods = createFacilityPaymentMethods(() => facilityId);
+
+	const players = $derived(query.data?.slotContractBookings ?? []);
+	const extras = $derived(query.data?.extraBookings ?? []);
+	const playersTotal = $derived(players.reduce((sum, player) => sum + (player.slotContract?.price ?? 0), 0));
+	const extrasTotal = $derived(extras.reduce((sum, extra) => sum + (extra.extra?.price ?? 0) * (extra.amount ?? 0), 0));
+	const subtotal = $derived(playersTotal + extrasTotal);
 
 	let selectedProvider = $state("");
 	let isPaying = $state(false);
@@ -126,7 +130,7 @@
 					</div>
 				</Card.Header>
 				<Card.Content>
-					<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+					<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
 						<div class="rounded-2xl border p-4">
 							<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
 								<CalendarDaysIcon class="size-4" />
@@ -152,24 +156,6 @@
 							</div>
 							<p class="mt-3 text-sm font-semibold">
 								<Badge>{query.data?.slotContractBookings.length}</Badge>
-							</p>
-						</div>
-						<div class="rounded-2xl border p-4">
-							<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
-								<CreditCardIcon class="size-4" />
-								Outstanding
-							</div>
-							<p class="mt-3 text-sm font-semibold">
-								{formatCurrency(query.data?.amountOutstanding)}
-							</p>
-						</div>
-						<div class="rounded-2xl border p-4">
-							<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
-								<CreditCardIcon class="size-4" />
-								Paid
-							</div>
-							<p class="mt-3 text-sm font-semibold">
-								{formatCurrency(query.data?.amountPaid)}
 							</p>
 						</div>
 					</div>
@@ -199,12 +185,57 @@
 							</div>
 						{/if}
 					</div>
-					<BookingPlayers players={query.data?.slotContractBookings ?? []} />
 
-					{#if (query.data?.extraBookings.length ?? 0) > 0}
-						<div class="text-muted-foreground mt-6 mb-2">Extras</div>
-						<BookingExtras extras={query.data?.extraBookings ?? []} />
-					{/if}
+					<Card.Root class="overflow-hidden p-0">
+						<Table.Root>
+							<Table.Header>
+								<Table.Row>
+									<Table.Head>Player</Table.Head>
+									<Table.Head>Contract</Table.Head>
+									<Table.Head class="text-right">Price</Table.Head>
+								</Table.Row>
+							</Table.Header>
+							<Table.Body>
+								{#each players as player (player.id)}
+									<Table.Row>
+										<Table.Cell class="font-medium">{player.name}</Table.Cell>
+										<Table.Cell class="text-muted-foreground">
+											{#if player.slotContract}
+												{player.slotContract.contractName}
+												{#if player.slotContract.description}
+													{player.slotContract.description}{/if}
+											{:else}
+												—
+											{/if}
+										</Table.Cell>
+										<Table.Cell class="text-right">{formatCurrency(player.slotContract?.price)}</Table.Cell>
+									</Table.Row>
+								{/each}
+								{#each extras as extraBooking (extraBooking.extraId)}
+									<Table.Row>
+										<Table.Cell class="font-medium">{extraBooking.extra.name}</Table.Cell>
+										<Table.Cell class="text-muted-foreground">×{extraBooking.amount}</Table.Cell>
+										<Table.Cell class="text-right">{formatCurrency(extraBooking.extra.price * extraBooking.amount)}</Table.Cell>
+									</Table.Row>
+								{/each}
+							</Table.Body>
+						</Table.Root>
+
+						<div class="border-t px-6 py-4">
+							<div class="flex items-center justify-between gap-4 text-sm">
+								<span class="text-muted-foreground">Subtotal</span>
+								<span>{formatCurrency(subtotal)}</span>
+							</div>
+							<div class="mt-2 flex items-center justify-between gap-4 text-sm">
+								<span class="text-muted-foreground">Paid</span>
+								<span>{formatCurrency(query.data?.amountPaid)}</span>
+							</div>
+							<div class="mt-3 flex items-center justify-between gap-4 border-t pt-3 text-base font-semibold">
+								<span>Outstanding</span>
+								<span>{formatCurrency(query.data?.amountOutstanding)}</span>
+							</div>
+						</div>
+					</Card.Root>
 
 					<div class="mt-4 mb-4 flex items-center justify-between gap-4">
 						<div>

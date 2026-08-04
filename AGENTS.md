@@ -29,6 +29,10 @@ Always invoke the relevant skill before working in that area.
 - `pnpm api` and integration tests (Testcontainers) require Docker + running stack
 - Without Docker/stack: integration tests compile only; hand-edit generated client to match orval output (note this in the PR)
 
+## General Guidelines
+
+- Do not add comments to explain everything. Add comments only where it will add real value.
+
 ## Quality Gates (mandatory — run after every change)
 
 ### Frontend
@@ -66,7 +70,7 @@ csharpier format .  # fix formatting if needed
 - All `goto()`/`href` must use `resolve()` or be typed `ResolvedPathname` (`svelte/no-navigation-without-resolve`)
 - Shared logic/components across routes go in `$lib/` — don't deep-import across route trees
 - `@kayord/ui` facts: `Alert.Root` variants are only `default` | `destructive`; `Button href` accepts `ResolvedPathname`; check `node_modules/@kayord/ui/dist/components/ui/<name>/` for variant defs
-- Booking domain: `BookingDTO` (from `createBookingGet`) already includes `user`, `extraBookings[].extra` (name/price), and `slotContractBookings[].slotContract.slot` (`startDatetime`, `facilityId`). Facility/outlet names come from `createBookingGetPath` → `BookingPathDTO` (`GET /booking/{id}/path`) — do NOT add facility/outlet to `BookingDTO`. Booking pages that show summary details use this pattern (see edit/view/pay pages, `BookingBreadcrumbs`, `getBookingPayUrl`). Shared booking UI/helpers: players & extras tables = `$lib/components/BookingPlayers.svelte` / `BookingExtras.svelte`; en-ZA formatters = `$lib/booking/format.ts` (`formatCurrency`/`formatDate`/`formatTime`/`formatDateTime`) — reuse these instead of redefining per page
+- Booking domain: `BookingDTO` (from `createBookingGet`) already includes `user`, `extraBookings[].extra` (name/price), and `slotContractBookings[].slotContract` (`startDatetime`, `facilityId`, `contractName`, `price`). Facility/outlet names come from `createBookingGetPath` → `BookingPathDTO` (`GET /booking/{id}/path`) — do NOT add facility/outlet to `BookingDTO`. Booking pages that show summary details use this pattern (see edit/view/pay pages, `BookingBreadcrumbs`, `getBookingPayUrl`). Shared booking UI/helpers: players & extras tables = `$lib/components/BookingPlayers.svelte` / `BookingExtras.svelte`; en-ZA formatters = `$lib/booking/format.ts` (`formatCurrency`/`formatDate`/`formatTime`/`formatDateTime`) — reuse these instead of redefining per page
 - For UI components, use the `ui` skill
 
 ### Backend (C#/.NET)
@@ -112,18 +116,11 @@ csharpier format .  # fix formatting if needed
 
 ## Quick Reference
 
-| Item             | Value                                                   |
-| ---------------- | ------------------------------------------------------- |
-| Run stack        | `dotnet run --project Club.AppHost/Club.AppHost.csproj` |
-| API docs         | `http://localhost:5000/scalar/v1`                       |
-| Aspire           | `use aspire skills to get details and logs`             |
-| Set secret       | `dotnet user-secrets set "Key" "Value"`                 |
-| EF migrations    | VS Code tasks or `dotnet ef` CLI                        |
+| Item             | Value                                                                                                              |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Run stack        | `dotnet run --project Club.AppHost/Club.AppHost.csproj`                                                            |
+| API docs         | `http://localhost:5000/scalar/v1`                                                                                  |
+| Aspire           | `use aspire skills to get details and logs`                                                                        |
+| Set secret       | `dotnet user-secrets set "Key" "Value"`                                                                            |
+| EF migrations    | VS Code tasks or `dotnet ef` CLI                                                                                   |
 | API client regen | Requires running API: `pnpm api` from `client/` (mirror orval output if hand-editing; revert empty `swagger.json`) |
-
-## Svelte and MCP Guidance
-
-- Always check existing code in the feature directory before writing new patterns
-- Use Svelte MCP tools: `list-sections` → `get-documentation`
-- Run `svelte-autofixer` on all Svelte code before returning it
-- Never generate a playground link unless explicitly asked
