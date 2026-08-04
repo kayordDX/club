@@ -1,5 +1,5 @@
 <script lang="ts">
-	import PageHeading from "../settings/PageHeading.svelte";
+	import PageHeading from "$lib/components/PageHeading.svelte";
 	import { BookIcon, PencilIcon } from "@lucide/svelte";
 	import { createBookingGetUser, type BookingDTO } from "$lib/api";
 	import {

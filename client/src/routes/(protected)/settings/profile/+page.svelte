@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { UserIcon } from "@lucide/svelte";
-	import PageHeading from "../PageHeading.svelte";
+	import PageHeading from "$lib/components/PageHeading.svelte";
 	import { Avatar, Button, Card, Item, Table } from "@kayord/ui";
 	import { auth } from "$lib/stores/auth.svelte";
 	import { getInitials } from "$lib/util";

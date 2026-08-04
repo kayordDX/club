@@ -11,11 +11,11 @@
 	import BookingDetailsForm from "$lib/components/booking/BookingDetailsForm.svelte";
 	import CountdownTimer from "$lib/components/CountdownTimer.svelte";
 	import Query from "$lib/components/Query.svelte";
-	import PageHeading from "../../../settings/PageHeading.svelte";
+	import PageHeading from "$lib/components/PageHeading.svelte";
 	import { Alert, Badge, Button } from "@kayord/ui";
 	import { ChevronLeftIcon, PencilIcon } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
-	import { buildExtras, buildPlayers } from "./bookingForm";
+	import { buildExtras, buildPlayers } from "$lib/booking/bookingForm";
 
 	const bookingId = $derived(Number(page.params.id) || 0);
 	const query = createBookingGet(() => bookingId);
