@@ -38,6 +38,29 @@ Reach for it when the task mentions any of the following:
 - Add `Description(x => x.WithName("FeatureAction"))` in `Configure()`
 - Prefer generated frontend clients over manual HTTP calls; regenerate after API changes
 
+## Booking Domain (facility/outlet lookup)
+
+Booking summary UIs (edit/view/pay pages) already have what they need — do **not** add facility/outlet to `BookingDTO`.
+
+| Endpoint | Generated client | Returns | Carries |
+| --- | --- | --- | --- |
+| `GET /booking/{id}` | `createBookingGet` | `BookingDTO` | status, `user`, amounts, `extraBookings[].extra` (name/price), `slotContractBookings[].slotContract.slot` (`startDatetime`, `facilityId`) |
+| `GET /booking/{id}/path` | `createBookingGetPath` | `BookingPathDTO` | `outletName`, `outletSlug`, `facilityName`, `facilityId`, `slotStartDatetime` |
+
+- Facility/outlet names for a booking come from `createBookingGetPath` (`/booking/{id}/path`), **not** from `BookingDTO`.
+- The path query powers booking navigation: `BookingBreadcrumbs` (`$lib/components/BookingBreadcrumbs.svelte`) and `getBookingPayUrl` (`$lib/booking/payUrl.ts`).
+- Frontend pattern for booking detail pages (view/edit/pay):
+
+```ts
+const pathQuery = createBookingGetPath(
+	() => bookingId,
+	() => ({ query: { enabled: bookingId > 0 } })
+);
+const path = $derived(pathQuery.data);
+```
+
+- `BookingGetPath` derives facility/outlet from the first `SlotContractBooking → SlotContract → Slot.Facility.Outlet`, so it assumes a booking has at least one slot contract booking.
+
 ## Adding a New Endpoint (Quick Start)
 
 One feature/action = one folder. Copy this end-to-end workflow:

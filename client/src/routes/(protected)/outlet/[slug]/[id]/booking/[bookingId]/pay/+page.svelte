@@ -2,10 +2,13 @@
 	import { page } from "$app/state";
 	import { resolve } from "$app/paths";
 
-	import { Alert, Badge, Button, Card, Table, ToggleGroup } from "@kayord/ui";
-	import { CalendarDaysIcon, ChevronLeftIcon, Clock3Icon, CreditCardIcon, UserRoundIcon } from "@lucide/svelte";
-	import { createBookingGet, createBookingUpdateStatus, BookingStatusEnum, createFacilityPaymentMethods } from "$lib/api";
+	import { Alert, Badge, Button, Card, ToggleGroup } from "@kayord/ui";
+	import { CalendarDaysIcon, ChevronLeftIcon, Clock3Icon, CreditCardIcon, MapPinIcon, StoreIcon, UserRoundIcon } from "@lucide/svelte";
+	import { BookingStatusEnum, createBookingGet, createBookingGetPath, createBookingUpdateStatus, createFacilityPaymentMethods } from "$lib/api";
 	import Query from "$lib/components/Query.svelte";
+	import BookingPlayers from "$lib/components/BookingPlayers.svelte";
+	import BookingExtras from "$lib/components/BookingExtras.svelte";
+	import { formatCurrency, formatDate, formatTime } from "$lib/booking/format";
 	import CountdownTimer from "$lib/components/CountdownTimer.svelte";
 	import customInstance from "$lib/api/mutator/customInstance.svelte";
 	import { toast } from "svelte-sonner";
@@ -17,6 +20,12 @@
 
 	const bookingId = $derived(Number(page.params.bookingId) || 0);
 	const query = createBookingGet(() => bookingId);
+
+	const pathQuery = createBookingGetPath(
+		() => bookingId,
+		() => ({ query: { enabled: bookingId > 0 } })
+	);
+	const path = $derived(pathQuery.data);
 
 	const paymentMethods = createFacilityPaymentMethods(() => facilityId);
 
@@ -34,11 +43,6 @@
 	const canGoBack = $derived(canReturnToBasket(query.data) && query.data?.bookingStatus?.id === BookingStatusEnum.Pending);
 
 	const updateStatusMut = createBookingUpdateStatus();
-	const formatCurrency = (value: number) =>
-		new Intl.NumberFormat("en-ZA", {
-			style: "currency",
-			currency: "ZAR",
-		}).format(value);
 
 	const cancelBooking = async () => {
 		try {
@@ -128,14 +132,18 @@
 								<CalendarDaysIcon class="size-4" />
 								Date
 							</div>
-							<p class="mt-3 text-sm font-semibold">Date</p>
+							<p class="mt-3 text-sm font-semibold">
+								{formatDate(query.data?.slotContractBookings?.[0]?.slotContract?.slot?.startDatetime)}
+							</p>
 						</div>
 						<div class="rounded-2xl border p-4">
 							<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
 								<Clock3Icon class="size-4" />
 								Time
 							</div>
-							<p class="mt-3 text-sm font-semibold">Slot Start Time</p>
+							<p class="mt-3 text-sm font-semibold">
+								{formatTime(query.data?.slotContractBookings?.[0]?.slotContract?.slot?.startDatetime)}
+							</p>
 						</div>
 						<div class="rounded-2xl border p-4">
 							<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
@@ -152,7 +160,7 @@
 								Outstanding
 							</div>
 							<p class="mt-3 text-sm font-semibold">
-								R {query.data?.amountOutstanding.toFixed(2)}
+								{formatCurrency(query.data?.amountOutstanding)}
 							</p>
 						</div>
 						<div class="rounded-2xl border p-4">
@@ -161,59 +169,41 @@
 								Paid
 							</div>
 							<p class="mt-3 text-sm font-semibold">
-								R {query.data?.amountPaid.toFixed(2)}
+								{formatCurrency(query.data?.amountPaid)}
 							</p>
 						</div>
 					</div>
 
-					<div class="text-muted-foreground mt-8 mb-2">User Summary</div>
-					<Card.Root class="overflow-hidden p-0">
-						<Table.Root>
-							<Table.Header>
-								<Table.Row>
-									<Table.Head>Name</Table.Head>
-									<Table.Head>Cell No</Table.Head>
-									<Table.Head>Email</Table.Head>
-								</Table.Row>
-							</Table.Header>
-							<Table.Body>
-								{#each query.data?.slotContractBookings as player (player.id)}
-									<Table.Row>
-										<Table.Cell>{player.name}</Table.Cell>
-										<Table.Cell>{player.cellphone}</Table.Cell>
-										<Table.Cell>{player.email}</Table.Cell>
-									</Table.Row>
-								{/each}
-							</Table.Body>
-						</Table.Root>
-					</Card.Root>
+					<div class="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 rounded-2xl border p-4 text-sm">
+						<span class="text-muted-foreground flex items-center gap-2">
+							<StoreIcon class="size-4" />
+							Outlet:
+							<span class="text-foreground font-semibold">{path?.outletName ?? "—"}</span>
+						</span>
+						<span class="text-muted-foreground flex items-center gap-2">
+							<MapPinIcon class="size-4" />
+							Facility:
+							<span class="text-foreground font-semibold">{path?.facilityName ?? "—"}</span>
+						</span>
+					</div>
+
+					<div class="mt-8 mb-2 flex items-center justify-between gap-4">
+						<div class="text-muted-foreground">User Summary</div>
+						{#if query.data?.user}
+							<div class="text-muted-foreground text-sm">
+								Booked by
+								<span class="text-foreground font-semibold">
+									{query.data.user.firstName}
+									{query.data.user.lastName}
+								</span>
+							</div>
+						{/if}
+					</div>
+					<BookingPlayers players={query.data?.slotContractBookings ?? []} />
 
 					{#if (query.data?.extraBookings.length ?? 0) > 0}
 						<div class="text-muted-foreground mt-6 mb-2">Extras</div>
-						<Card.Root class="overflow-hidden p-0">
-							<Table.Root>
-								<Table.Header>
-									<Table.Row>
-										<Table.Head>Extra</Table.Head>
-										<Table.Head>Price</Table.Head>
-										<Table.Head>Amount</Table.Head>
-										<Table.Head>Total</Table.Head>
-									</Table.Row>
-								</Table.Header>
-								<Table.Body>
-									{#each query.data?.extraBookings as extraBooking (extraBooking.extraId)}
-										<Table.Row>
-											<Table.Cell>{extraBooking.extra.name}</Table.Cell>
-											<Table.Cell>{formatCurrency(extraBooking.extra.price)}</Table.Cell>
-											<Table.Cell>{extraBooking.amount}</Table.Cell>
-											<Table.Cell>
-												{formatCurrency(extraBooking.extra.price * extraBooking.amount)}
-											</Table.Cell>
-										</Table.Row>
-									{/each}
-								</Table.Body>
-							</Table.Root>
-						</Card.Root>
+						<BookingExtras extras={query.data?.extraBookings ?? []} />
 					{/if}
 
 					<div class="mt-4 mb-4 flex items-center justify-between gap-4">

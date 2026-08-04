@@ -95,6 +95,8 @@ dotnet user-secrets list --project Club.Api/Club.Api.csproj
 
 ```bash
 pnpm --dir client dev
+# bash command to remove evals/ folder from .agents/skills/aspire*
+rm -rf .agents/skills/aspire*/evals/
 ```
 
 ## Principles

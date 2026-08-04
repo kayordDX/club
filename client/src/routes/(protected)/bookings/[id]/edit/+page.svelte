@@ -10,6 +10,7 @@
 	import CountdownTimer from "$lib/components/CountdownTimer.svelte";
 	import { getBookingPayUrl } from "$lib/booking/payUrl";
 	import PageHeading from "../../../settings/PageHeading.svelte";
+	import { formatCurrency, formatDate, formatTime } from "$lib/booking/format";
 	import { Alert, Badge, Button, Card } from "@kayord/ui";
 	import { CalendarDaysIcon, ChevronLeftIcon, Clock3Icon, CreditCardIcon, PencilIcon, UserRoundIcon } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
@@ -100,21 +101,6 @@
 			.map((player) => contracts.find((contract) => contract.id === Number(player.contractId))?.price ?? 0)
 			.reduce((sum, price) => sum + price, 0) + getSelectedExtrasTotal(selectedExtras)
 	);
-
-	const formatCurrency = (value: number) =>
-		new Intl.NumberFormat("en-ZA", {
-			style: "currency",
-			currency: "ZAR",
-		}).format(value);
-
-	const formatTime = (datetime?: string | null) => {
-		if (!datetime) return "";
-		return new Date(datetime).toLocaleTimeString("en-ZA", {
-			hour: "2-digit",
-			minute: "2-digit",
-			hour12: false,
-		});
-	};
 </script>
 
 <Query {query} emptyText="Booking not found">
@@ -145,7 +131,7 @@
 							<div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
 								<div class="space-y-2">
 									<Card.Title class="text-2xl">Edit booking details</Card.Title>
-									<Card.Description class="max-w-2xl text-sm leading-6">
+									<Card.Description class="text-sm leading-6">
 										Update the player details, review the summary, and save your changes. Payment can be completed from the pay page.
 									</Card.Description>
 									{#if booking?.expiresAt}
@@ -165,7 +151,7 @@
 											Date
 										</div>
 										<p class="mt-3 text-sm font-semibold">
-											{booking?.slotContractBookings?.[0]?.slotContract?.slot?.startDatetime?.slice(0, 10) ?? "—"}
+											{formatDate(booking?.slotContractBookings?.[0]?.slotContract?.slot?.startDatetime)}
 										</p>
 									</div>
 									<div class="rounded-2xl border p-4">
