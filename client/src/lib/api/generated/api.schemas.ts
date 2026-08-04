@@ -718,6 +718,17 @@ export interface BookingDTO {
 	extraBookings: ExtraBookingDTO[];
 }
 
+export interface BookingPathDTO {
+	bookingId: number;
+	outletId: number;
+	outletSlug: string;
+	outletName: string;
+	facilityId: number;
+	facilityName: string;
+	slotId: string;
+	slotStartDatetime: string;
+}
+
 export interface PaginatedListOfBookingDTO {
 	items: BookingDTO[];
 	pageNumber: number;

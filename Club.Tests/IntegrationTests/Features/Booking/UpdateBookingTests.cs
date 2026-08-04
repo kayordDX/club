@@ -2,6 +2,7 @@ using Club.Common.Enums;
 using Club.Data;
 using Club.Entities;
 using Club.Features.Booking.Create;
+using Club.Features.Booking.GetPath;
 using Club.Features.Booking.Update;
 using Club.Features.Booking.UpdateStatus;
 using IntegrationTests.Fixtures;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using BookingCreateEndpoint = Club.Features.Booking.Create.Endpoint;
+using BookingGetPathEndpoint = Club.Features.Booking.GetPath.Endpoint;
 using BookingUpdateEndpoint = Club.Features.Booking.Update.Endpoint;
 using BookingUpdateStatusEndpoint = Club.Features.Booking.UpdateStatus.Endpoint;
 
@@ -211,6 +213,48 @@ public class UpdateBookingTests(AppFixture app)
 
         // Assert
         updateResponse.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task GetBookingPath_ReturnsOutletAndFacilityForBreadcrumbs()
+    {
+        // Arrange
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var (slot, slotContract, _, _) = await CreateBookingSetup(db);
+        var createRequest = new BookingCreateRequest
+        {
+            Bookings =
+            [
+                new BookingRequest
+                {
+                    SlotId = slot.Id,
+                    SlotContractId = slotContract.Id,
+                    Name = "Jaco Taute",
+                    Email = "jaco@example.com",
+                    Cellphone = "0842502311",
+                },
+            ],
+        };
+
+        var (createResponse, createdBooking) = await app.Client.POSTAsync<BookingCreateEndpoint, BookingCreateRequest, BookingCreateResponse>(createRequest);
+        createResponse.IsSuccessStatusCode.ShouldBeTrue();
+
+        // Act
+        var (getResponse, path) = await app.Client.GETAsync<BookingGetPathEndpoint, BookingGetPathRequest, BookingPathDTO>(
+            new BookingGetPathRequest { Id = createdBooking.Id }
+        );
+
+        // Assert
+        getResponse.IsSuccessStatusCode.ShouldBeTrue();
+        path.ShouldNotBeNull();
+        path.BookingId.ShouldBe(createdBooking.Id);
+        path.FacilityId.ShouldBe(slot.FacilityId!.Value);
+        path.SlotId.ShouldBe(slot.Id);
+        path.OutletSlug.ShouldNotBeNullOrEmpty();
+        path.OutletName.ShouldNotBeNullOrEmpty();
+        path.FacilityName.ShouldNotBeNullOrEmpty();
     }
 
     private static async Task<(Club.Entities.Slot Slot, SlotContract SlotContract, Extra Extra, int FacilityId)> CreateBookingSetup(AppDbContext db)

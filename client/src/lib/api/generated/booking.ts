@@ -22,6 +22,7 @@ import type {
 	BookingCreateResponse,
 	BookingDTO,
 	BookingGetUserParams,
+	BookingPathDTO,
 	BookingUpdateRequest,
 	BookingUpdateStatusRequest,
 	InternalErrorResponse,
@@ -183,6 +184,56 @@ export function createBookingGet<TData = Awaited<ReturnType<typeof bookingGet>>,
 	queryClient?: () => QueryClient
 ): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 	const query = createQuery(() => getBookingGetQueryOptions(id(), options?.()), queryClient) as CreateQueryResult<TData, TError> & {
+		queryKey: DataTag<QueryKey, TData, TError>;
+	};
+
+	return query;
+}
+
+export const getBookingGetPathUrl = (id: number) => {
+	return `/booking/${id}/path`;
+};
+
+export const bookingGetPath = async (id: number, options?: Parameters<typeof customInstance>[1]): Promise<BookingPathDTO> => {
+	return customInstance<BookingPathDTO>(getBookingGetPathUrl(id), {
+		...options,
+		method: "GET",
+	});
+};
+
+export const getBookingGetPathQueryKey = (id: number) => {
+	return [`/booking/${id}/path`] as const;
+};
+
+export const getBookingGetPathQueryOptions = <TData = Awaited<ReturnType<typeof bookingGetPath>>, TError = ErrorType<InternalErrorResponse>>(
+	id: number,
+	options?: { query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof bookingGetPath>>, TError, TData>>; request?: SecondParameter<typeof customInstance> }
+) => {
+	const { query: queryOptions, request: requestOptions } = options ?? {};
+
+	const queryKey = queryOptions?.queryKey ?? getBookingGetPathQueryKey(id);
+
+	const queryFn: QueryFunction<Awaited<ReturnType<typeof bookingGetPath>>> = ({ signal }) => bookingGetPath(id, { signal, ...requestOptions });
+
+	return { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions } as CreateQueryOptions<
+		Awaited<ReturnType<typeof bookingGetPath>>,
+		TError,
+		TData
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type BookingGetPathQueryResult = NonNullable<Awaited<ReturnType<typeof bookingGetPath>>>;
+export type BookingGetPathQueryError = ErrorType<InternalErrorResponse>;
+
+export function createBookingGetPath<TData = Awaited<ReturnType<typeof bookingGetPath>>, TError = ErrorType<InternalErrorResponse>>(
+	id: () => number,
+	options?: () => {
+		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof bookingGetPath>>, TError, TData>>;
+		request?: SecondParameter<typeof customInstance>;
+	},
+	queryClient?: () => QueryClient
+): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+	const query = createQuery(() => getBookingGetPathQueryOptions(id(), options?.()), queryClient) as CreateQueryResult<TData, TError> & {
 		queryKey: DataTag<QueryKey, TData, TError>;
 	};
 
