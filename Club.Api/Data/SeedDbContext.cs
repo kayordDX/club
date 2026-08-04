@@ -493,7 +493,7 @@ public static class SeedDbContext
         }
     }
 
-    private static async Task EnsureSlotCoverage(AppDbContext dbContext, CancellationToken ct)
+    public static async Task EnsureSlotCoverage(AppDbContext dbContext, CancellationToken ct)
     {
         var resources = await dbContext.Resource.Include(r => r.Facility).ToListAsync(ct);
 
