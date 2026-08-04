@@ -131,7 +131,7 @@
 							<div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
 								<div class="space-y-2">
 									<Card.Title class="text-2xl">Edit booking details</Card.Title>
-									<Card.Description class="max-w-2xl text-sm leading-6">
+									<Card.Description class="text-sm leading-6">
 										Update the player details, review the summary, and save your changes. Payment can be completed from the pay page.
 									</Card.Description>
 									{#if booking?.expiresAt}
