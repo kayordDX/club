@@ -7,35 +7,25 @@ namespace Club.Data;
 
 public static class SeedDbContext
 {
+    private const int SlotCoverageDays = 7;
+
     public static async Task SeedData(AppDbContext dbContext, CancellationToken ct)
     {
-        // Temp drop all for now
-        // await db.Database.ExecuteSqlAsync($"""
-        //     DROP SCHEMA public CASCADE;
-        //     CREATE SCHEMA public;
-        //     GRANT ALL ON SCHEMA public TO online;
-        // """, ct);
+        await SeedBookingStatuses(dbContext, ct);
+        await SeedPaymentTypes(dbContext, ct);
+        await SeedPaymentStatuses(dbContext, ct);
+        await dbContext.SaveChangesAsync(ct);
 
-        await dbContext.Database.ExecuteSqlRawAsync("delete from slot_contract_booking;", ct);
-        await dbContext.Database.ExecuteSqlRawAsync("delete from extra_booking;", ct);
-        await dbContext.Database.ExecuteSqlRawAsync("delete from slot;", ct);
-        await dbContext.Database.ExecuteSqlRawAsync("delete from extra;", ct);
-        await dbContext.Database.ExecuteSqlRawAsync("delete from resource;", ct);
-        await dbContext.Database.ExecuteSqlRawAsync("delete from contract;", ct);
-        await dbContext.Database.ExecuteSqlRawAsync("delete from contract_field;", ct);
-        await dbContext.Database.ExecuteSqlRawAsync("delete from validation;", ct);
-        await dbContext.Business.ExecuteDeleteAsync(ct);
-        await dbContext.Database.ExecuteSqlRawAsync("ALTER SEQUENCE validation_id_seq RESTART WITH 1;", ct);
-        await dbContext.Database.ExecuteSqlRawAsync("ALTER SEQUENCE contract_id_seq RESTART WITH 1;", ct);
-        await dbContext.Database.ExecuteSqlRawAsync("ALTER SEQUENCE facility_id_seq RESTART WITH 1;", ct);
-        await dbContext.Database.ExecuteSqlRawAsync("delete from facility_type;", ct);
-        await dbContext.Database.ExecuteSqlRawAsync("ALTER SEQUENCE resource_id_seq RESTART WITH 1;", ct);
-        await dbContext.Database.ExecuteSqlRawAsync("ALTER SEQUENCE facility_type_id_seq RESTART WITH 1;", ct);
-        await dbContext.Database.ExecuteSqlRawAsync("ALTER SEQUENCE outlet_id_seq RESTART WITH 1;", ct);
-        await dbContext.Database.ExecuteSqlRawAsync("ALTER SEQUENCE extra_id_seq RESTART WITH 1;", ct);
+        await SeedReferenceData(dbContext, ct);
+        await EnsureSlotCoverage(dbContext, ct);
+    }
 
-        await dbContext.Database.ExecuteSqlRawAsync("delete from booking_status;", ct);
-        await dbContext.Database.ExecuteSqlRawAsync("ALTER SEQUENCE booking_status_id_seq RESTART WITH 4;", ct);
+    private static async Task SeedBookingStatuses(AppDbContext dbContext, CancellationToken ct)
+    {
+        if (await dbContext.BookingStatus.AnyAsync(ct))
+        {
+            return;
+        }
 
         await dbContext.BookingStatus.AddRangeAsync(
             [
@@ -46,7 +36,10 @@ public static class SeedDbContext
             ],
             ct
         );
+    }
 
+    private static async Task SeedPaymentTypes(AppDbContext dbContext, CancellationToken ct)
+    {
         var paymentTypes = await dbContext.PaymentType.Select(x => x.Name).ToListAsync(ct);
 
         if (!paymentTypes.Contains("Pay on arrival"))
@@ -63,7 +56,10 @@ public static class SeedDbContext
         {
             await dbContext.PaymentType.AddAsync(new PaymentType { Id = (int)Common.Enums.PaymentTypeEnum.EFT, Name = "EFT" }, ct);
         }
+    }
 
+    private static async Task SeedPaymentStatuses(AppDbContext dbContext, CancellationToken ct)
+    {
         var paymentStatuses = await dbContext.PaymentStatus.Select(x => x.Name).ToListAsync(ct);
 
         if (!paymentStatuses.Contains("Pending"))
@@ -85,9 +81,10 @@ public static class SeedDbContext
         {
             await dbContext.PaymentStatus.AddAsync(new PaymentStatus { Id = (int)Common.Enums.PaymentStatusEnum.Refunded, Name = "Refunded" }, ct);
         }
+    }
 
-        await dbContext.SaveChangesAsync(ct);
-
+    private static async Task SeedReferenceData(AppDbContext dbContext, CancellationToken ct)
+    {
         if (!dbContext.Business.Any())
         {
             var business = new Business { Name = "Business" };
@@ -381,111 +378,156 @@ public static class SeedDbContext
             };
             await dbContext.ContractField.AddAsync(contractField1, ct);
 
-            // Create hourly slots for today and the next 7 days with slight daily variation
+            // Create hourly slots for the next week with slight daily variation
             var today = DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
             var resources = new[] { resource1, resource2, resource3, resource4 };
             var random = new Random();
 
-            for (int dayOffset = 0; dayOffset <= 7; dayOffset++)
+            for (int dayOffset = 0; dayOffset < SlotCoverageDays; dayOffset++)
             {
-                var day = today.AddDays(dayOffset);
-                var startHour = 8 + random.Next(0, 2);
-                var slotCount = random.Next(3, 6);
-
-                foreach (var resource in resources)
-                {
-                    var resourceStartHour = startHour;
-
-                    if (resource.Name == "Court 2")
-                    {
-                        resourceStartHour += random.Next(0, 2);
-                    }
-
-                    for (int slotIndex = 0; slotIndex < slotCount; slotIndex++)
-                    {
-                        var startTime = day.AddHours(resourceStartHour + slotIndex);
-                        var endTime = startTime.AddHours(1);
-
-                        if (resource.Name == "1st" || resource.Name == "10th")
-                        {
-                            var id = Guid.CreateVersion7();
-                            await dbContext.Slot.AddAsync(
-                                new Slot
-                                {
-                                    Id = id,
-                                    StartDatetime = startTime,
-                                    EndDatetime = endTime,
-                                    Resource = resource,
-                                    Facility = resource.Facility,
-                                    MaxBookings = 4,
-                                },
-                                ct
-                            );
-                            await dbContext.SlotContract.AddAsync(
-                                new SlotContract
-                                {
-                                    Contract = contract1,
-                                    Price = 50,
-                                    SlotId = id,
-                                    Validation = validation2,
-                                    Description = "9 Holes",
-                                },
-                                ct
-                            );
-                            await dbContext.SlotContract.AddAsync(
-                                new SlotContract
-                                {
-                                    Contract = contract1,
-                                    Price = 100,
-                                    SlotId = id,
-                                    Validation = validation2,
-                                    Description = "18 Holes",
-                                },
-                                ct
-                            );
-                        }
-                        else
-                        {
-                            var id = Guid.CreateVersion7();
-                            await dbContext.Slot.AddAsync(
-                                new Slot
-                                {
-                                    Id = id,
-                                    StartDatetime = startTime,
-                                    EndDatetime = endTime,
-                                    Resource = resource,
-                                    Facility = resource.Facility,
-                                },
-                                ct
-                            );
-                            await dbContext.SlotContract.AddAsync(
-                                new SlotContract
-                                {
-                                    Contract = contract2,
-                                    Price = 40,
-                                    SlotId = id,
-                                    Validation = validation1,
-                                    Description = "Member",
-                                },
-                                ct
-                            );
-                            await dbContext.SlotContract.AddAsync(
-                                new SlotContract
-                                {
-                                    Contract = contract2,
-                                    Price = 100,
-                                    SlotId = id,
-                                    Validation = validation1,
-                                    Description = "Guest",
-                                },
-                                ct
-                            );
-                        }
-                    }
-                }
+                CreateSlotsForDay(dbContext, resources, contract1, contract2, validation1, validation2, today.AddDays(dayOffset), random);
             }
 
             await dbContext.SaveChangesAsync(ct);
         }
+    }
+
+    private static void CreateSlotsForDay(
+        AppDbContext dbContext,
+        IReadOnlyList<Resource> resources,
+        Contract guestContract,
+        Contract memberContract,
+        Validation loginValidation,
+        Validation hnaValidation,
+        DateTime day,
+        Random random
+    )
+    {
+        var startHour = 8 + random.Next(0, 2);
+        var slotCount = random.Next(3, 6);
+
+        foreach (var resource in resources)
+        {
+            var resourceStartHour = startHour;
+
+            if (resource.Name == "Court 2")
+            {
+                resourceStartHour += random.Next(0, 2);
+            }
+
+            for (int slotIndex = 0; slotIndex < slotCount; slotIndex++)
+            {
+                var startTime = day.AddHours(resourceStartHour + slotIndex);
+                var endTime = startTime.AddHours(1);
+
+                if (resource.Name == "1st" || resource.Name == "10th")
+                {
+                    var id = Guid.CreateVersion7();
+                    dbContext.Slot.Add(
+                        new Slot
+                        {
+                            Id = id,
+                            StartDatetime = startTime,
+                            EndDatetime = endTime,
+                            Resource = resource,
+                            Facility = resource.Facility,
+                            MaxBookings = 4,
+                        }
+                    );
+                    dbContext.SlotContract.Add(
+                        new SlotContract
+                        {
+                            Contract = guestContract,
+                            Price = 50,
+                            SlotId = id,
+                            Validation = hnaValidation,
+                            Description = "9 Holes",
+                        }
+                    );
+                    dbContext.SlotContract.Add(
+                        new SlotContract
+                        {
+                            Contract = guestContract,
+                            Price = 100,
+                            SlotId = id,
+                            Validation = hnaValidation,
+                            Description = "18 Holes",
+                        }
+                    );
+                }
+                else
+                {
+                    var id = Guid.CreateVersion7();
+                    dbContext.Slot.Add(
+                        new Slot
+                        {
+                            Id = id,
+                            StartDatetime = startTime,
+                            EndDatetime = endTime,
+                            Resource = resource,
+                            Facility = resource.Facility,
+                        }
+                    );
+                    dbContext.SlotContract.Add(
+                        new SlotContract
+                        {
+                            Contract = memberContract,
+                            Price = 40,
+                            SlotId = id,
+                            Validation = loginValidation,
+                            Description = "Member",
+                        }
+                    );
+                    dbContext.SlotContract.Add(
+                        new SlotContract
+                        {
+                            Contract = memberContract,
+                            Price = 100,
+                            SlotId = id,
+                            Validation = loginValidation,
+                            Description = "Guest",
+                        }
+                    );
+                }
+            }
+        }
+    }
+
+    private static async Task EnsureSlotCoverage(AppDbContext dbContext, CancellationToken ct)
+    {
+        var resources = await dbContext.Resource.Include(r => r.Facility).ToListAsync(ct);
+
+        if (resources.Count == 0)
+        {
+            return;
+        }
+
+        var guestContract = await dbContext.Contract.FirstOrDefaultAsync(c => c.Name == "Guest", ct);
+        var memberContract = await dbContext.Contract.FirstOrDefaultAsync(c => c.Name == "Member", ct);
+        var loginValidation = await dbContext.Validation.FirstOrDefaultAsync(v => v.Name == "Login", ct);
+        var hnaValidation = await dbContext.Validation.FirstOrDefaultAsync(v => v.Name == "HNA Verify", ct);
+
+        if (guestContract is null || memberContract is null || loginValidation is null || hnaValidation is null)
+        {
+            return;
+        }
+
+        var today = DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
+        var random = new Random();
+
+        for (int dayOffset = 0; dayOffset < SlotCoverageDays; dayOffset++)
+        {
+            var day = today.AddDays(dayOffset);
+            var dayEnd = day.AddDays(1);
+
+            if (await dbContext.Slot.AnyAsync(s => s.StartDatetime >= day && s.StartDatetime < dayEnd, ct))
+            {
+                continue;
+            }
+
+            CreateSlotsForDay(dbContext, resources, guestContract, memberContract, loginValidation, hnaValidation, day, random);
+        }
+
+        await dbContext.SaveChangesAsync(ct);
     }
 }
