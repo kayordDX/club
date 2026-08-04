@@ -1,3 +1,6 @@
+using System.Text.Json.Serialization;
+using NpgsqlTypes;
+
 namespace Club.Entities;
 
 public class Outlet : AuditableEntity
@@ -20,6 +23,13 @@ public class Outlet : AuditableEntity
     public int OutletTypeId { get; set; }
     public OutletType OutletType { get; set; } = default!;
     public bool IsActive { get; set; }
+
+    /// <summary>
+    /// PostgreSQL full-text search vector, generated from name, display name,
+    /// description, address and tags. Backed by a GIN index for fast lookups.
+    /// </summary>
+    [JsonIgnore]
+    public NpgsqlTsVector SearchVector { get; set; } = null!;
     public ICollection<Facility> Facilities { get; set; } = [];
     public ICollection<Extra> Extras { get; set; } = [];
     public ICollection<ContractOutlet> ContractOutlets { get; set; } = [];

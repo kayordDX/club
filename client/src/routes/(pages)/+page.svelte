@@ -1,10 +1,26 @@
-<script>
+<script lang="ts">
 	import Search from "./Search.svelte";
 	import { createOutletGetAll } from "$lib/api";
 	import Outlet from "./Outlet.svelte";
 	import LoginButton from "$lib/components/LoginButton/LoginButton.svelte";
 
-	const query = createOutletGetAll();
+	let searchTerm = $state("");
+	let draft = $state("");
+
+	// `draft` is what the input holds; `searchTerm` is the committed value sent to
+	// the backend so we only search on submit, not on every keystroke.
+	function commitSearch() {
+		searchTerm = draft.trim();
+	}
+
+	function clearSearch() {
+		searchTerm = "";
+		draft = "";
+	}
+
+	// When a search term is present it is resolved against the outlet full-text
+	// search vector. An empty term lists all outlets.
+	const query = createOutletGetAll(() => (searchTerm ? { search: searchTerm } : {}));
 	let data = $derived(query.data?.items ?? []);
 </script>
 
@@ -16,10 +32,23 @@
 		</p>
 		<LoginButton />
 	</div>
-	<Search />
+	<Search bind:draft onsearch={commitSearch} />
+	{#if searchTerm}
+		<div class="text-muted-foreground mb-6 flex items-center justify-center gap-2 text-sm">
+			<span>
+				{data.length}
+				{data.length === 1 ? "result" : "results"} for &ldquo;{searchTerm}&rdquo;
+			</span>
+			<button class="text-primary hover:underline" onclick={clearSearch} data-testid="clear-search"> Clear </button>
+		</div>
+	{/if}
 	<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-2">
 		{#each data as outlet (outlet.id)}
 			<Outlet {outlet} />
+		{:else}
+			{#if searchTerm}
+				<p class="text-muted-foreground col-span-full py-12 text-center" data-testid="no-results">No clubs found matching your search.</p>
+			{/if}
 		{/each}
 	</div>
 </main>

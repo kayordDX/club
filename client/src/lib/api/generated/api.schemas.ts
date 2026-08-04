@@ -833,6 +833,10 @@ export type OutletGetAllParams = {
 	 * @nullable
 	 */
 	pageSize?: number | null;
+	/**
+	 * @nullable
+	 */
+	search?: string | null;
 };
 
 export type ExampleVerifyParams = {
