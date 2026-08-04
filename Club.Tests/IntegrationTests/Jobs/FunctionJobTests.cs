@@ -124,7 +124,11 @@ public class FunctionJobTests(AppFixture app)
 
         var updatedPendingBooking = await db.Booking.AsNoTracking().SingleAsync(x => x.Id == expiredPendingBooking.Id, app.Context.CancellationToken);
         var updatedConfirmedBooking = await db.Booking.AsNoTracking().SingleAsync(x => x.Id == confirmedBooking.Id, app.Context.CancellationToken);
-        var remainingSlotBookings = await db.SlotContractBooking.AsNoTracking().OrderBy(x => x.BookingId).ToListAsync(app.Context.CancellationToken);
+        var remainingSlotBookings = await db
+            .SlotContractBooking.AsNoTracking()
+            .Where(x => x.BookingId == expiredPendingBooking.Id || x.BookingId == confirmedBooking.Id)
+            .OrderBy(x => x.BookingId)
+            .ToListAsync(app.Context.CancellationToken);
 
         updatedPendingBooking.BookingStatusId.ShouldBe((int)BookingStatusEnum.Expired);
         updatedConfirmedBooking.BookingStatusId.ShouldBe((int)BookingStatusEnum.Confirmed);

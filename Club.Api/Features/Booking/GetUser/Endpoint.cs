@@ -4,6 +4,7 @@ using Club.Common.Extensions;
 using Club.Common.Models;
 using Club.Data;
 using Club.DTO;
+using Microsoft.EntityFrameworkCore;
 
 namespace Club.Features.Booking.GetUser;
 
@@ -25,7 +26,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingGetUserRequest, 
             await Send.UnauthorizedAsync(ct);
             return;
         }
-        var results = await _dbContext.Booking.Where(x => x.UserId == userId).ProjectToDto().OrderBy(x => x.Id).GetPagedAsync(r, ct);
+        var results = await _dbContext.Booking.Where(x => x.UserId == userId).AsSplitQuery().ProjectToDto().OrderBy(x => x.Id).GetPagedAsync(r, ct);
 
         var now = DateTime.UtcNow;
         foreach (var booking in results.Items)

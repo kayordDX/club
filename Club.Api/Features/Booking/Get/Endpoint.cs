@@ -24,7 +24,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingGetRequest, Book
             return;
         }
 
-        var results = await _dbContext.Booking.ProjectToDto().FirstOrDefaultAsync(x => x.Id == req.Id, ct);
+        var results = await _dbContext.Booking.AsSplitQuery().ProjectToDto().FirstOrDefaultAsync(x => x.Id == req.Id, ct);
         if (results == null)
         {
             await Send.NotFoundAsync(ct);
