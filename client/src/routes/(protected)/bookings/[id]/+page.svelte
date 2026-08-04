@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { BookIcon, PencilIcon } from "@lucide/svelte";
 	import { resolve } from "$app/paths";
-	import PageHeading from "../../settings/PageHeading.svelte";
+	import PageHeading from "$lib/components/PageHeading.svelte";
 	import Query from "$lib/components/Query.svelte";
 	import BookingPlayers from "$lib/components/BookingPlayers.svelte";
 	import BookingExtras from "$lib/components/BookingExtras.svelte";

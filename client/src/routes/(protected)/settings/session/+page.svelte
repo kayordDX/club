@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createAccountSession, createAccountSessionRevokeAll } from "$lib/api";
 	import { ShieldBanIcon, ShieldIcon } from "@lucide/svelte";
-	import PageHeading from "../PageHeading.svelte";
+	import PageHeading from "$lib/components/PageHeading.svelte";
 	import Query from "$lib/components/Query.svelte";
 	import Session from "./Session.svelte";
 	import { Button } from "@kayord/ui";

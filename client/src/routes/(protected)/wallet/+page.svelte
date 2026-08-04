@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Badge, Button, Card } from "@kayord/ui";
-	import PageHeading from "../settings/PageHeading.svelte";
+	import PageHeading from "$lib/components/PageHeading.svelte";
 	import { WalletIcon, BanknoteArrowUpIcon, BanknoteArrowDownIcon, WalletMinimalIcon } from "@lucide/svelte";
 </script>
 

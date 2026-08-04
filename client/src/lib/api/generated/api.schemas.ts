@@ -634,6 +634,27 @@ export interface BookingUpdateStatusRequest {
 	status: BookingStatusEnum;
 }
 
+export interface BookingRequest {
+	slotId: string;
+	slotContractId: number;
+	/** @nullable */
+	name?: string | null;
+	/** @nullable */
+	email?: string | null;
+	/** @nullable */
+	cellphone?: string | null;
+}
+
+export interface BookingExtraRequest {
+	extraId: number;
+	amount: number;
+}
+
+export interface BookingUpdateRequest {
+	bookings: BookingRequest[];
+	extras: BookingExtraRequest[];
+}
+
 export interface BookingStatusDTO {
 	id: number;
 	name: string;
@@ -720,6 +741,15 @@ export interface BookingDTO {
 	extraBookings: ExtraBookingDTO[];
 }
 
+export interface PaginatedListOfBookingDTO {
+	items: BookingDTO[];
+	pageNumber: number;
+	totalPages: number;
+	totalCount: number;
+	hasPreviousPage: boolean;
+	hasNextPage: boolean;
+}
+
 export interface BookingPathDTO {
 	bookingId: number;
 	outletId: number;
@@ -731,33 +761,8 @@ export interface BookingPathDTO {
 	slotStartDatetime: string;
 }
 
-export interface PaginatedListOfBookingDTO {
-	items: BookingDTO[];
-	pageNumber: number;
-	totalPages: number;
-	totalCount: number;
-	hasPreviousPage: boolean;
-	hasNextPage: boolean;
-}
-
 export interface BookingCreateResponse {
 	id: number;
-}
-
-export interface BookingRequest {
-	slotId: string;
-	slotContractId: number;
-	/** @nullable */
-	name?: string | null;
-	/** @nullable */
-	email?: string | null;
-	/** @nullable */
-	cellphone?: string | null;
-}
-
-export interface BookingExtraRequest {
-	extraId: number;
-	amount: number;
 }
 
 export interface BookingCreateRequest {
@@ -765,9 +770,41 @@ export interface BookingCreateRequest {
 	extras: BookingExtraRequest[];
 }
 
-export interface BookingUpdateRequest {
+export interface AdminBookingUpdateStatusRequest {
+	status: BookingStatusEnum;
+}
+
+export interface AdminBookingUpdateRequest {
 	bookings: BookingRequest[];
 	extras: BookingExtraRequest[];
+}
+
+export interface AdminBookingDTO {
+	id: number;
+	bookingStatusId: number;
+	bookingStatusName: string;
+	bookingStatusDate: string;
+	/** @nullable */
+	slotStartDatetime?: string | null;
+	/** @nullable */
+	userId?: string | null;
+	/** @nullable */
+	customerName?: string | null;
+	playerCount: number;
+	extraCount: number;
+	isPaid: boolean;
+	amountPaid: number;
+	amountOutstanding: number;
+	expiresAt: string;
+}
+
+export interface PaginatedListOfAdminBookingDTO {
+	items: AdminBookingDTO[];
+	pageNumber: number;
+	totalPages: number;
+	totalCount: number;
+	hasPreviousPage: boolean;
+	hasNextPage: boolean;
 }
 
 export interface AccountSyncRequest {
@@ -820,6 +857,10 @@ export type OutletGetAllParams = {
 	/**
 	 * @nullable
 	 */
+	search?: string | null;
+	/**
+	 * @nullable
+	 */
 	sorts?: string | null;
 	/**
 	 * @nullable
@@ -833,10 +874,6 @@ export type OutletGetAllParams = {
 	 * @nullable
 	 */
 	pageSize?: number | null;
-	/**
-	 * @nullable
-	 */
-	search?: string | null;
 };
 
 export type ExampleVerifyParams = {
@@ -844,6 +881,25 @@ export type ExampleVerifyParams = {
 };
 
 export type BookingGetUserParams = {
+	/**
+	 * @nullable
+	 */
+	sorts?: string | null;
+	/**
+	 * @nullable
+	 */
+	filters?: string | null;
+	/**
+	 * @nullable
+	 */
+	page?: number | null;
+	/**
+	 * @nullable
+	 */
+	pageSize?: number | null;
+};
+
+export type AdminBookingGetAllParams = {
 	/**
 	 * @nullable
 	 */

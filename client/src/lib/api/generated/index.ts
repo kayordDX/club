@@ -1,5 +1,6 @@
 export * from "./account";
 export * from "./api.schemas";
+export * from "./admin";
 export * from "./booking";
 export * from "./example";
 export * from "./extra";
