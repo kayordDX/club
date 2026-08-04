@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "skills": {
+    "aspire": {
+      "source": "microsoft/aspire-skills",
+      "sourceType": "github",
+      "skillPath": "skills/aspire/SKILL.md",
+      "computedHash": "4dbe3320602a522ab7b34547091b8fbaaa07b0b7bff4c293400e7918463c3686"
+    },
+    "aspire-monitoring": {
+      "source": "microsoft/aspire-skills",
+      "sourceType": "github",
+      "skillPath": "skills/aspire-monitoring/SKILL.md",
+      "computedHash": "1e4826d4647df16c0a147dc93f8250e8c44d756bf36ac5c1f8bf1283d99625ae"
+    },
+    "aspire-orchestration": {
+      "source": "microsoft/aspire-skills",
+      "sourceType": "github",
+      "skillPath": "skills/aspire-orchestration/SKILL.md",
+      "computedHash": "a32ed6e897412fce309998a5c45f735210c6dda117fe22d3e3bb1025e4068ea6"
+    },
+    "svelte-code-writer": {
+      "source": "sveltejs/ai-tools",
+      "sourceType": "github",
+      "skillPath": "plugins/claude/svelte/skills/svelte-code-writer/SKILL.md",
+      "computedHash": "6f78193a79906175595ce8e4ca8d726da350eb99035a9544b6553620df5673a1"
+    },
+    "svelte-core-bestpractices": {
+      "source": "sveltejs/ai-tools",
+      "sourceType": "github",
+      "skillPath": "plugins/claude/svelte/skills/svelte-core-bestpractices/SKILL.md",
+      "computedHash": "98b4ee346ac45e13740c9f3353b604d5c6e844c96cdc8867052fa961cbdb525d"
+    },
+    "tanstack-form": {
+      "source": "exceptionless/exceptionless",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/tanstack-form/SKILL.md",
+      "computedHash": "94bca380d19a669374c0ee33fef98209872db2af653cd6f791fcaf98eb51cd89"
+    }
+  }
+}

@@ -20,6 +20,13 @@ mkcert -cert-file ./container/traefik/certs/local-cert.pem -key-file ./container
 # copy certs to ./container/traefik/certs
 ```
 
+## Skills
+
+```bash
+# update Skills
+npx skills update
+```
+
 ## Run with Aspire
 
 Start the full local stack through the AppHost:

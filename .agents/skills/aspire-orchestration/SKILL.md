@@ -8,6 +8,9 @@ description: >-
   "proxies missing in aspire ps", "--include-hidden", "aspire integration list",
   "aspire integration search", "default watch", "hot reload". INVOKES: aspire CLI
   (start, stop, wait, ps, resource, integration, add, init, doctor, update, restore).
+  DO NOT USE FOR: deploy / publish / destroy / pipeline steps (use aspire-deployment),
+  logs / traces / metrics / dashboard run (use aspire-monitoring), AppHost code edits or
+  resource wiring (use aspireify).
   FOR SINGLE OPERATIONS: Run the aspire CLI command directly.
 license: MIT
 metadata:
@@ -146,7 +149,7 @@ The same rule applies to any "file in use", "cannot access the file", or
 
 | Scenario | Route To |
 |----------|----------|
-| AppHost wiring after `aspire init` (scan repo, add resources, ServiceDefaults/OTel) | → `aspireify` skill ([`../aspireify/SKILL.md`](../aspireify/SKILL.md)) or project-local `.agents/skills/aspireify/SKILL.md` |
+| AppHost wiring after `aspire init` (scan repo, add resources, ServiceDefaults/OTel) | → `aspireify` skill ([`aspireify/SKILL.md`](https://github.com/microsoft/aspire-skills/blob/main/skills/aspireify/SKILL.md)) or project-local `.agents/skills/aspireify/SKILL.md` |
 | Browser logs (`Aspire.Hosting.Browsers` / `WithBrowserLogs()`) and dashboard authoring | → `aspireify` skill (code edits) and `aspire-monitoring` (discovery) |
 | Custom resource commands (`WithCommand`, `ExecuteCommandResult`, `HttpCommandResultMode`) | → `aspireify` skill |
 | Lifecycle hooks (`SubscribeBeforeStart`, `SubscribeAfterResourcesCreated`, BeforeStart pipeline phase) | → `aspireify` skill |
@@ -179,9 +182,9 @@ Current rules to apply when handing off:
 
 After `aspire init` drops a skeleton AppHost + `aspire.config.json`, route AppHost wiring
 (scan repo → propose resource graph → edit AppHost → wire `Aspire.ServiceDefaults` / OTel →
-validate via `aspire start`) to the in-plugin **aspireify** skill: [`../aspireify/SKILL.md`](../aspireify/SKILL.md).
+validate via `aspire start`) to the in-plugin **aspireify** skill: [`aspireify/SKILL.md`](https://github.com/microsoft/aspire-skills/blob/main/skills/aspireify/SKILL.md).
 For first-run flows that only need the skeleton drop, see the in-plugin **aspire-init** skill:
-[`../aspire-init/SKILL.md`](../aspire-init/SKILL.md). This orchestration skill stays focused
+[`aspire-init/SKILL.md`](https://github.com/microsoft/aspire-skills/blob/main/skills/aspire-init/SKILL.md). This orchestration skill stays focused
 on lifecycle (start/stop/wait/restart) and never edits AppHost code itself.
 
 ## Project-Local Skill Precedence
