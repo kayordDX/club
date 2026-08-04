@@ -92,8 +92,7 @@
 	};
 
 	const goToEditBooking = () => {
-		const returnUrl = page.url.pathname + page.url.search;
-		goto(resolve(`/bookings/${bookingId}/edit?returnUrl=${encodeURIComponent(returnUrl)}`));
+		goto(resolve(`/bookings/${bookingId}/edit`));
 	};
 </script>
 

@@ -2,12 +2,12 @@
 	import { page } from "$app/state";
 	import { resolve } from "$app/paths";
 	import { goto } from "$app/navigation";
-	import type { ResolvedPathname } from "$app/types";
 	import { useQueryClient } from "@tanstack/svelte-query";
-	import { BookingStatusEnum, createBookingGet, createBookingUpdate, createSlotGetContracts } from "$lib/api";
+	import { BookingStatusEnum, createBookingGet, createBookingGetPath, createBookingUpdate, createSlotGetContracts } from "$lib/api";
 	import { createAppForm, Form } from "$lib/components/Form";
 	import Query from "$lib/components/Query.svelte";
 	import BookingBreadcrumbs from "$lib/components/BookingBreadcrumbs.svelte";
+	import { getBookingPayUrl } from "$lib/booking/payUrl";
 	import PageHeading from "../../../settings/PageHeading.svelte";
 	import { Alert, Badge, Button, Card } from "@kayord/ui";
 	import { CalendarDaysIcon, ChevronLeftIcon, Clock3Icon, CreditCardIcon, PencilIcon, UserRoundIcon } from "@lucide/svelte";
@@ -21,6 +21,14 @@
 	const query = createBookingGet(() => bookingId);
 	const booking = $derived(query.data);
 	const isPending = $derived(booking?.bookingStatus?.id === BookingStatusEnum.Pending);
+
+	const pathQuery = createBookingGetPath(
+		() => bookingId,
+		() => ({ query: { enabled: bookingId > 0 } })
+	);
+	const path = $derived(pathQuery.data);
+	const slotCount = $derived(booking?.slotContractBookings?.length ?? 0);
+	const bookingHref = $derived(resolve(`/bookings/${bookingId}`));
 
 	const slotId = $derived(booking?.slotContractBookings?.[0]?.slotContract?.slotId ?? "");
 	const contractsQuery = createSlotGetContracts(
@@ -46,10 +54,6 @@
 
 	const updateMutation = createBookingUpdate();
 	const queryClient = useQueryClient();
-
-	const rawReturnUrl = $derived(page.url.searchParams.get("returnUrl"));
-	const returnUrl = $derived(rawReturnUrl && rawReturnUrl.startsWith("/") && !rawReturnUrl.startsWith("//") ? (rawReturnUrl as ResolvedPathname) : null);
-	const bookingHref = $derived(resolve(`/bookings/${bookingId}`));
 
 	const form = createAppForm(() => ({
 		defaultValues: {
@@ -80,7 +84,8 @@
 				toast.success("Booking updated");
 				queryClient.invalidateQueries({ queryKey: [`/booking/${bookingId}`] });
 				queryClient.invalidateQueries({ queryKey: ["/booking/user"] });
-				await goto(returnUrl ?? bookingHref);
+				const nextPayUrl = path ? getBookingPayUrl(bookingId, path, value.players.length) : null;
+				await goto(nextPayUrl ?? bookingHref);
 			} catch {
 				toast.error("Failed to update booking. Please try again.");
 			}
@@ -112,7 +117,7 @@
 </script>
 
 <Query {query} emptyText="Booking not found">
-	<BookingBreadcrumbs {bookingId}>
+	<BookingBreadcrumbs {bookingId} {pathQuery} {slotCount}>
 		<div class="m-2">
 			<PageHeading title="Edit Booking" description={`Booking #${bookingId}`} icon={PencilIcon} />
 

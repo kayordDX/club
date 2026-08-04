@@ -1,33 +1,36 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
-	import { createBookingGetPath } from "$lib/api";
-	import Query from "$lib/components/Query.svelte";
+	import type { ResolvedPathname } from "$app/types";
+	import type { QueryObserverResult } from "@tanstack/svelte-query";
 	import { Breadcrumb } from "@kayord/ui";
 	import { HouseIcon } from "@lucide/svelte";
+	import Query from "$lib/components/Query.svelte";
+	import type { BookingPathDTO } from "$lib/api";
+	import { getBookingPayUrl } from "$lib/booking/payUrl";
 	import type { Snippet } from "svelte";
 
 	type Props = {
 		bookingId: number;
+		pathQuery: QueryObserverResult<BookingPathDTO, unknown>;
+		slotCount: number;
 		children?: Snippet;
 	};
 
-	let { bookingId, children }: Props = $props();
+	let { bookingId, pathQuery, slotCount, children }: Props = $props();
 
-	const query = createBookingGetPath(
-		() => bookingId,
-		() => ({ query: { enabled: bookingId > 0 } })
-	);
-	const path = $derived(query.data);
+	const path = $derived(pathQuery.data);
 
 	const facilityHref = $derived.by(() => {
 		if (!path) return "/";
 		const date = path.slotStartDatetime?.slice(0, 10);
 		return date ? `${resolve(`/outlet/${path.outletSlug}/${path.facilityId}`)}?date=${date}` : resolve(`/outlet/${path.outletSlug}/${path.facilityId}`);
 	});
+
+	const paymentHref = $derived(path ? getBookingPayUrl(bookingId, path, slotCount) : ("/" as ResolvedPathname));
 </script>
 
 <div class="m-2">
-	<Query {query} emptyText="Unable to load booking path">
+	<Query query={pathQuery} emptyText="Unable to load booking path">
 		<Breadcrumb.Root>
 			<Breadcrumb.List>
 				<Breadcrumb.Item>
@@ -49,7 +52,11 @@
 				</Breadcrumb.Item>
 				<Breadcrumb.Separator />
 				<Breadcrumb.Item>
-					<Breadcrumb.Page class="text-xs">Edit Booking</Breadcrumb.Page>
+					<Breadcrumb.Page class="text-xs">Player Details</Breadcrumb.Page>
+				</Breadcrumb.Item>
+				<Breadcrumb.Separator />
+				<Breadcrumb.Item>
+					<Breadcrumb.Link href={paymentHref} class="text-xs">Payment</Breadcrumb.Link>
 				</Breadcrumb.Item>
 			</Breadcrumb.List>
 		</Breadcrumb.Root>
