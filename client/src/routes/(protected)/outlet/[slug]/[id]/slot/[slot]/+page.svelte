@@ -2,279 +2,101 @@
 	import { goto } from "$app/navigation";
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
-	import { createBookingCreate } from "$lib/api";
 	import type { ResolvedPathname } from "$app/types";
 
-	const bookingMutation = createBookingCreate();
-
-	import { createSlotGetAll, createSlotGetContracts } from "$lib/api";
-	import { auth } from "$lib/stores/auth.svelte";
-	import { applyFirstPlayerContract, createPlayers } from "$lib/booking/players";
-	import { createAppForm, Form } from "$lib/components/Form";
-	import Query from "$lib/components/Query.svelte";
-	import { Badge, Button, Card, Empty } from "@kayord/ui";
-	import { CalendarDaysIcon, ChevronLeftIcon, Clock3Icon, CreditCardIcon, UserRoundIcon } from "@lucide/svelte";
+	import { createBookingCreate } from "$lib/api";
+	import { createPlayers } from "$lib/booking/players";
+	import BookingDetailsForm from "$lib/components/booking/BookingDetailsForm.svelte";
+	import { Button, Card, Empty } from "@kayord/ui";
+	import { ChevronLeftIcon } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
-	import { playersSchema, type Players, type SelectedExtra } from "./schema";
-	import Extras from "./Extras.svelte";
-	import { getSelectedExtrasTotal } from "./pricing";
 
 	const slug = $derived(page.params.slug ?? "");
 	const facilityId = $derived(Number(page.params.id) || 0);
 	const slotId = $derived(page.params.slot ?? "");
 	const slotCount = $derived(Math.max(1, Number(page.url.searchParams.get("slotCount")) || 1));
 	const selectedDate = $derived(page.url.searchParams.get("date") ?? "");
-	const facilityHref = $derived(selectedDate ? `${resolve(`/outlet/${slug}/${facilityId}`)}?date=${selectedDate}` : resolve(`/outlet/${slug}/${facilityId}`));
-
-	let selectedExtras: Array<SelectedExtra> = $state([]);
-
-	const slotQuery = createSlotGetAll(
-		() => ({
-			facilityId,
-			date: selectedDate,
-		}),
-		() => ({ query: { enabled: facilityId > 0 && !!selectedDate } })
+	const facilityHref = $derived(
+		(selectedDate ? `${resolve(`/outlet/${slug}/${facilityId}`)}?date=${selectedDate}` : resolve(`/outlet/${slug}/${facilityId}`)) as ResolvedPathname
 	);
 
-	const contractsQuery = createSlotGetContracts(() => slotId);
+	const bookingMutation = createBookingCreate();
 
-	const slot = $derived(slotQuery.data?.find((item) => item.id === slotId));
-	const contracts = $derived(contractsQuery.data ?? []);
-	const contractItems = $derived(
-		contracts.map((contract) => ({
-			value: contract.id.toString(),
-			label: `${contract.contractName} ${contract.description} - R ${contract.price.toFixed(2)}`,
-		}))
-	);
+	const handleSubmit = async ({
+		players,
+		extras,
+	}: {
+		players: { name: string; cellNo: string; email: string; contractId: string }[];
+		extras: { id: number; amount: number }[];
+	}) => {
+		try {
+			const bookings = players.map((player) => ({
+				slotId,
+				slotContractId: Number(player.contractId),
+				name: player.name,
+				cellphone: player.cellNo,
+				email: player.email,
+			}));
 
-	const formatCurrency = (value: number) =>
-		new Intl.NumberFormat("en-ZA", {
-			style: "currency",
-			currency: "ZAR",
-		}).format(value);
+			const bookingResponse = await bookingMutation.mutateAsync({
+				data: {
+					bookings,
+					extras: extras.map((extra) => ({
+						extraId: extra.id,
+						amount: extra.amount,
+					})),
+				},
+			});
 
-	const formatTime = (datetime?: string | null) => {
-		if (!datetime) return "";
-		return new Date(datetime).toLocaleTimeString("en-ZA", {
-			hour: "2-digit",
-			minute: "2-digit",
-			hour12: false,
-		});
-	};
-
-	const form = createAppForm(() => ({
-		defaultValues: {
-			players: createPlayers(slotCount),
-		} satisfies Players,
-		validators: {
-			onChange: playersSchema,
-		},
-		onSubmit: async ({ value }) => {
-			try {
-				const bookings = value.players.map((player) => ({
-					slotId,
-					slotContractId: Number(player.contractId),
-					name: player.name,
-					cellphone: player.cellNo,
-					email: player.email,
-				}));
-
-				const bookingResponse = await bookingMutation.mutateAsync({
-					data: {
-						bookings,
-						extras: selectedExtras.map((extra) => ({
-							extraId: extra.id,
-							amount: extra.amount,
-						})),
-					},
-				});
-
-				const paymentParams = new URLSearchParams({
-					slotId,
-					slotCount: slotCount.toString(),
-					date: selectedDate,
-				});
-
-				await goto(`${resolve(`/outlet/${slug}/${facilityId}/booking/${bookingResponse.id}/pay`)}?${paymentParams.toString()}` as ResolvedPathname);
-			} catch {
-				toast.error("Failed to create booking. Please try again.");
-			} finally {
-				toast.info("Created booking");
-			}
-		},
-	}));
-
-	const getPriceFromContractId = (contractId: string) => contracts.find((c) => c.id === Number(contractId))?.price ?? 0;
-
-	// Form reactivity
-	const players = form.useStore((state) => state.values.players);
-
-	// When the first player picks a contract, fill in any other players that don't
-	// have a contract yet. Players that already have a contract are never overridden.
-	let lastFirstContractId = $state("");
-	$effect(() => {
-		const firstContractId = players.current?.[0]?.contractId ?? "";
-		if (firstContractId && firstContractId !== lastFirstContractId) {
-			lastFirstContractId = firstContractId;
-			form.setFieldValue("players", (prev) => applyFirstPlayerContract(prev));
+			const paymentParams = new URLSearchParams({
+				slotId,
+				slotCount: slotCount.toString(),
+				date: selectedDate,
+			});
+			toast.info("Created booking");
+			await goto(`${resolve(`/outlet/${slug}/${facilityId}/booking/${bookingResponse.id}/pay`)}?${paymentParams.toString()}` as ResolvedPathname);
+		} catch {
+			toast.error("Failed to create booking. Please try again.");
 		}
-	});
-
-	const totalPrice = $derived(
-		(players.current ?? []).map((c) => getPriceFromContractId(c.contractId)).reduce((sum, price) => sum + price, 0) + getSelectedExtrasTotal(selectedExtras)
-	);
+	};
 </script>
 
 <div class="mx-auto flex w-full flex-col gap-6">
 	<div class="grid gap-4 pt-4">
-		<Card.Root class="border-border/60 overflow-hidden border shadow-sm">
-			<Card.Header class="border-border/60  border-b">
-				<div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-					<div class="space-y-2">
-						<Card.Title class="text-2xl">Add each player's details</Card.Title>
-						<Card.Description class="max-w-2xl text-sm leading-6">
-							Capture the booking information for all {slotCount} players, review the summary, and then choose how you want to pay.
-						</Card.Description>
-					</div>
-				</div>
-			</Card.Header>
-
-			<Query query={contractsQuery} emptyText="No booking contracts are available for this slot yet.">
-				{#if !selectedDate}
-					<Card.Content class="p-6">
-						<Empty.Root>
-							<Empty.Header>
-								<Empty.Title>Select a date first</Empty.Title>
-								<Empty.Description>Choose a date on the facility page before continuing with player details.</Empty.Description>
-							</Empty.Header>
-							<Empty.Content>
-								<Button href={facilityHref} variant="outline">
-									<ChevronLeftIcon class="size-4" />
-									Back to slots
-								</Button>
-							</Empty.Content>
-						</Empty.Root>
-					</Card.Content>
-				{:else}
-					<Form {form}>
-						<Card.Content class="space-y-6 p-6">
-							<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-								<div class="rounded-2xl border p-4">
-									<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
-										<CalendarDaysIcon class="size-4" />
-										Date
-									</div>
-									<p class="mt-3 text-sm font-semibold">{selectedDate}</p>
-								</div>
-								<div class="rounded-2xl border p-4">
-									<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
-										<Clock3Icon class="size-4" />
-										Time
-									</div>
-									<p class="mt-3 text-sm font-semibold">
-										{slot ? `${formatTime(slot.startDatetime)} - ${formatTime(slot.endDatetime)}` : "Selected slot"}
-									</p>
-								</div>
-								<div class="rounded-2xl border p-4">
-									<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
-										<UserRoundIcon class="size-4" />
-										Players
-									</div>
-									<p class="mt-3 text-sm font-semibold">{slotCount} total</p>
-								</div>
-								<div class="rounded-2xl border p-4">
-									<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
-										<CreditCardIcon class="size-4" />
-										Total
-									</div>
-									<p class="mt-3 text-sm font-semibold">
-										{formatCurrency(totalPrice)}
-									</p>
-								</div>
-							</div>
-
-							<div class="space-y-4">
-								<div class="flex items-center justify-between gap-4">
-									<div class="mt-4">
-										<h2 class="text-lg font-semibold">User information</h2>
-										<p class="text-muted-foreground text-sm">Add the contact details for each user included in this booking.</p>
-									</div>
-									<Badge variant="outline">{slotCount} users</Badge>
-								</div>
-
-								<div class="space-y-4">
-									<form.Field name="players">
-										{#snippet children(field)}
-											<div class="flex flex-col gap-4">
-												{#each field.state.value as player, index (player)}
-													<Card.Root>
-														<Card.Header class="pb-4">
-															<div class="flex items-center justify-between gap-4">
-																<div>
-																	<Card.Title class="text-base">User {index + 1}</Card.Title>
-																	<Card.Description>Enter the details for this player.</Card.Description>
-																</div>
-																<div class="flex items-center gap-2">
-																	<Button
-																		variant="outline"
-																		size="sm"
-																		class="h-6 px-2 text-xs"
-																		onclick={() => {
-																			form.setFieldValue(`players[${index}].name`, auth.user?.profile?.name || "");
-																			form.setFieldValue(`players[${index}].email`, auth.user?.profile?.email || "");
-																			form.setFieldValue(`players[${index}].cellNo`, auth.user?.profile?.phone_number || "");
-																		}}
-																	>
-																		Me
-																	</Button>
-
-																	<Badge variant="secondary">Required</Badge>
-																</div>
-															</div>
-														</Card.Header>
-														<Card.Content>
-															<div class="grid gap-4 md:grid-cols-2">
-																<form.AppField name={`players[${index}].contractId`}>
-																	{#snippet children(field)}
-																		<field.Select label="Contract" items={contractItems} />
-																	{/snippet}
-																</form.AppField>
-																<form.AppField name={`players[${index}].name`}>
-																	{#snippet children(field)}
-																		<field.Input label="Name" placeholder="Player full name" />
-																	{/snippet}
-																</form.AppField>
-																<form.AppField name={`players[${index}].cellNo`}>
-																	{#snippet children(field)}
-																		<field.Input label="Cell No" placeholder="e.g. 082 123 4567" />
-																	{/snippet}
-																</form.AppField>
-																<form.AppField name={`players[${index}].email`}>
-																	{#snippet children(field)}
-																		<field.Input label="Email" type="text" placeholder="player@email.com" />
-																	{/snippet}
-																</form.AppField>
-															</div>
-															<Extras {facilityId} bind:selectedExtras />
-														</Card.Content>
-													</Card.Root>
-												{/each}
-											</div>
-										{/snippet}
-									</form.Field>
-								</div>
-							</div>
-						</Card.Content>
-						<Card.Footer class=" flex justify-between border-t">
-							<Button href={facilityHref} variant="ghost">
+		{#if !selectedDate}
+			<Card.Root class="border-border/60 overflow-hidden border shadow-sm">
+				<Card.Content class="p-6">
+					<Empty.Root>
+						<Empty.Header>
+							<Empty.Title>Select a date first</Empty.Title>
+							<Empty.Description>Choose a date on the facility page before continuing with player details.</Empty.Description>
+						</Empty.Header>
+						<Empty.Content>
+							<Button href={facilityHref} variant="outline">
 								<ChevronLeftIcon class="size-4" />
 								Back to slots
 							</Button>
-							<Button type="submit">Book</Button>
-						</Card.Footer>
-					</Form>
-				{/if}
-			</Query>
-		</Card.Root>
+						</Empty.Content>
+					</Empty.Root>
+				</Card.Content>
+			</Card.Root>
+		{:else}
+			<BookingDetailsForm
+				title="Add each player's details"
+				description={`Capture the booking information for all ${slotCount} players, review the summary, and then choose how you want to pay.`}
+				submitLabel="Book"
+				submittingLabel="Creating..."
+				isSubmitting={bookingMutation.isPending}
+				backHref={facilityHref}
+				backLabel="Back to slots"
+				{slotId}
+				{facilityId}
+				date={selectedDate}
+				dateLabel={selectedDate}
+				initialPlayers={createPlayers(slotCount)}
+				initialExtras={[]}
+				onSubmit={handleSubmit}
+			/>
+		{/if}
 	</div>
 </div>

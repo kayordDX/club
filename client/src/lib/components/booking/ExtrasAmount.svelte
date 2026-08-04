@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button, Input } from "@kayord/ui";
 	import { MinusIcon, PlusIcon } from "@lucide/svelte";
-	import type { SelectedExtra } from "./schema";
+	import type { SelectedExtra } from "$lib/booking/schema";
 
 	type Props = {
 		selectedExtras: Array<SelectedExtra>;

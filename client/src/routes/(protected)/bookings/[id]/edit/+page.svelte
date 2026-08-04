@@ -3,22 +3,18 @@
 	import { resolve } from "$app/paths";
 	import { goto } from "$app/navigation";
 	import { useQueryClient } from "@tanstack/svelte-query";
-	import { BookingStatusEnum, createBookingGet, createBookingGetPath, createBookingUpdate, createSlotGetAll, createSlotGetContracts } from "$lib/api";
-	import { auth } from "$lib/stores/auth.svelte";
-	import { applyFirstPlayerContract, applyProfileToPlayer } from "$lib/booking/players";
-	import { createAppForm, Form } from "$lib/components/Form";
-	import Query from "$lib/components/Query.svelte";
-	import BookingBreadcrumbs from "$lib/components/BookingBreadcrumbs.svelte";
-	import CountdownTimer from "$lib/components/CountdownTimer.svelte";
+
+	import { BookingStatusEnum, createBookingGet, createBookingGetPath, createBookingUpdate } from "$lib/api";
 	import { getBookingPayUrl } from "$lib/booking/payUrl";
+	import { formatDate } from "$lib/booking/format";
+	import BookingBreadcrumbs from "$lib/components/BookingBreadcrumbs.svelte";
+	import BookingDetailsForm from "$lib/components/booking/BookingDetailsForm.svelte";
+	import CountdownTimer from "$lib/components/CountdownTimer.svelte";
+	import Query from "$lib/components/Query.svelte";
 	import PageHeading from "../../../settings/PageHeading.svelte";
-	import { formatCurrency, formatDate, formatTime } from "$lib/booking/format";
-	import { Alert, Badge, Button, Card } from "@kayord/ui";
-	import { CalendarDaysIcon, ChevronLeftIcon, Clock3Icon, CreditCardIcon, PencilIcon, PlusIcon, Trash2Icon, UserRoundIcon } from "@lucide/svelte";
+	import { Alert, Badge, Button } from "@kayord/ui";
+	import { ChevronLeftIcon, PencilIcon } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
-	import { playersSchema, type Players, type SelectedExtra } from "../../../outlet/[slug]/[id]/slot/[slot]/schema";
-	import Extras from "../../../outlet/[slug]/[id]/slot/[slot]/Extras.svelte";
-	import { getSelectedExtrasTotal } from "../../../outlet/[slug]/[id]/slot/[slot]/pricing";
 	import { buildExtras, buildPlayers } from "./bookingForm";
 
 	const bookingId = $derived(Number(page.params.id) || 0);
@@ -31,117 +27,58 @@
 		() => ({ query: { enabled: bookingId > 0 } })
 	);
 	const path = $derived(pathQuery.data);
-	const slotCount = $derived(booking?.slotContractBookings?.length ?? 0);
 	const bookingHref = $derived(resolve(`/bookings/${bookingId}`));
 
 	const slotId = $derived(booking?.slotContractBookings?.[0]?.slotContract?.slotId ?? "");
-	const contractsQuery = createSlotGetContracts(
-		() => slotId,
-		() => ({ query: { enabled: !!slotId } })
-	);
-	const contracts = $derived(contractsQuery.data ?? []);
-	const contractItems = $derived(
-		contracts.map((contract) => ({
-			value: contract.id.toString(),
-			label: `${contract.contractName} ${contract.description} - R ${contract.price.toFixed(2)}`,
-		}))
-	);
-
+	const slotStartDatetime = $derived(booking?.slotContractBookings?.[0]?.slotContract?.slot?.startDatetime ?? null);
+	const slotEndDatetime = $derived(booking?.slotContractBookings?.[0]?.slotContract?.slot?.endDatetime ?? null);
+	const slotDate = $derived(slotStartDatetime?.slice(0, 10) ?? "");
 	const facilityId = $derived(booking?.slotContractBookings?.[0]?.slotContract?.slot?.facilityId ?? 0);
-	const slotDate = $derived(booking?.slotContractBookings?.[0]?.slotContract?.slot?.startDatetime?.slice(0, 10) ?? "");
-
-	// The slot query's booked count includes this booking's own players, so add them back
-	// to get the number of players that could still be added to the slot.
-	const slotsQuery = createSlotGetAll(
-		() => ({ facilityId, date: slotDate }),
-		() => ({ query: { enabled: facilityId > 0 && !!slotDate } })
-	);
-	const slot = $derived(slotsQuery.data?.find((item) => item.id === slotId));
 	const ownPlayerCount = $derived(booking?.slotContractBookings?.length ?? 0);
-	const remainingSlots = $derived(slot ? slot.total - slot.booked + ownPlayerCount : undefined);
-
-	let selectedExtras: Array<SelectedExtra> = $state([]);
-	let hydrated = $state(false);
-	$effect(() => {
-		if (booking && !hydrated) {
-			hydrated = true;
-			selectedExtras = buildExtras(booking);
-		}
-	});
 
 	const updateMutation = createBookingUpdate();
 	const queryClient = useQueryClient();
 
-	const form = createAppForm(() => ({
-		defaultValues: {
-			players: buildPlayers(booking),
-		} satisfies Players,
-		validators: {
-			onChange: playersSchema,
-		},
-		onSubmit: async ({ value }) => {
-			try {
-				await updateMutation.mutateAsync({
-					id: bookingId,
-					data: {
-						bookings: value.players.map((player) => ({
-							slotId,
-							slotContractId: Number(player.contractId),
-							name: player.name,
-							cellphone: player.cellNo,
-							email: player.email,
-						})),
-						extras: selectedExtras.map((extra) => ({
-							extraId: extra.id,
-							amount: extra.amount,
-						})),
-					},
-				});
+	const handleSubmit = async ({
+		players,
+		extras,
+	}: {
+		players: { name: string; cellNo: string; email: string; contractId: string }[];
+		extras: { id: number; amount: number }[];
+	}) => {
+		try {
+			await updateMutation.mutateAsync({
+				id: bookingId,
+				data: {
+					bookings: players.map((player) => ({
+						slotId,
+						slotContractId: Number(player.contractId),
+						name: player.name,
+						cellphone: player.cellNo,
+						email: player.email,
+					})),
+					extras: extras.map((extra) => ({
+						extraId: extra.id,
+						amount: extra.amount,
+					})),
+				},
+			});
 
-				toast.success("Booking updated");
-				queryClient.invalidateQueries({ queryKey: [`/booking/${bookingId}`] });
-				queryClient.invalidateQueries({ queryKey: ["/booking/user"] });
-				const nextPayUrl = path ? getBookingPayUrl(bookingId, path, value.players.length) : null;
-				await goto(nextPayUrl ?? bookingHref);
-			} catch (error) {
-				const message =
-					error instanceof Error && error.cause ? String(error.cause) : error instanceof Error ? error.message : "Failed to update booking. Please try again.";
-				toast.error(message);
-			}
-		},
-	}));
-
-	const players = form.useStore((state) => state.values.players);
-
-	// When the first player picks a contract, fill in any other players that don't
-	// have a contract yet. Players that already have a contract are never overridden.
-	let lastFirstContractId = $state("");
-	$effect(() => {
-		const firstContractId = players.current?.[0]?.contractId ?? "";
-		if (firstContractId && firstContractId !== lastFirstContractId) {
-			lastFirstContractId = firstContractId;
-			form.setFieldValue("players", (prev) => applyFirstPlayerContract(prev));
+			toast.success("Booking updated");
+			queryClient.invalidateQueries({ queryKey: [`/booking/${bookingId}`] });
+			queryClient.invalidateQueries({ queryKey: ["/booking/user"] });
+			const nextPayUrl = path ? getBookingPayUrl(bookingId, path, players.length) : null;
+			await goto(nextPayUrl ?? bookingHref);
+		} catch (error) {
+			const message =
+				error instanceof Error && error.cause ? String(error.cause) : error instanceof Error ? error.message : "Failed to update booking. Please try again.";
+			toast.error(message);
 		}
-	});
-
-	const addPlayer = () => {
-		const firstContractId = players.current?.[0]?.contractId ?? "";
-		form.setFieldValue("players", (prev) => [...prev, { name: "", cellNo: "", email: "", contractId: firstContractId }]);
 	};
-
-	const removePlayer = (index: number) => {
-		form.setFieldValue("players", (prev) => prev.filter((_, i) => i !== index));
-	};
-
-	const totalPrice = $derived(
-		(players.current ?? [])
-			.map((player) => contracts.find((contract) => contract.id === Number(player.contractId))?.price ?? 0)
-			.reduce((sum, price) => sum + price, 0) + getSelectedExtrasTotal(selectedExtras)
-	);
 </script>
 
 <Query {query} emptyText="Booking not found">
-	<BookingBreadcrumbs {bookingId} {pathQuery} {slotCount}>
+	<BookingBreadcrumbs {bookingId} {pathQuery} slotCount={ownPlayerCount}>
 		<div class="m-2">
 			<PageHeading title="Edit Booking" description={`Booking #${bookingId}`} icon={PencilIcon} />
 
@@ -163,173 +100,34 @@
 				</div>
 			{:else}
 				<div class="mx-auto mt-4 flex w-full flex-col gap-6">
-					<Card.Root class="border-border/60 overflow-hidden border shadow-sm">
-						<Card.Header class="border-border/60 border-b">
-							<div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-								<div class="space-y-2">
-									<Card.Title class="text-2xl">Edit booking details</Card.Title>
-									<Card.Description class="text-sm leading-6">
-										Update the player details, review the summary, and save your changes. Payment can be completed from the pay page.
-									</Card.Description>
-									{#if booking?.expiresAt}
-										<CountdownTimer expiresAt={booking.expiresAt} />
-									{/if}
-								</div>
-								<Badge variant="outline">Status: {booking?.bookingStatus?.name}</Badge>
-							</div>
-						</Card.Header>
-
-						<Form {form}>
-							<Card.Content class="space-y-6 p-6">
-								<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-									<div class="rounded-2xl border p-4">
-										<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
-											<CalendarDaysIcon class="size-4" />
-											Date
-										</div>
-										<p class="mt-3 text-sm font-semibold">
-											{formatDate(booking?.slotContractBookings?.[0]?.slotContract?.slot?.startDatetime)}
-										</p>
-									</div>
-									<div class="rounded-2xl border p-4">
-										<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
-											<Clock3Icon class="size-4" />
-											Time
-										</div>
-										<p class="mt-3 text-sm font-semibold">
-											{formatTime(booking?.slotContractBookings?.[0]?.slotContract?.slot?.startDatetime)} - {formatTime(
-												booking?.slotContractBookings?.[0]?.slotContract?.slot?.endDatetime
-											)}
-										</p>
-									</div>
-									<div class="rounded-2xl border p-4">
-										<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
-											<UserRoundIcon class="size-4" />
-											Players
-										</div>
-										<p class="mt-3 text-sm font-semibold">{players.current?.length ?? 0} total</p>
-									</div>
-									<div class="rounded-2xl border p-4">
-										<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
-											<CreditCardIcon class="size-4" />
-											Total
-										</div>
-										<p class="mt-3 text-sm font-semibold">{formatCurrency(totalPrice)}</p>
-									</div>
-								</div>
-
-								<div class="space-y-4">
-									<div class="flex flex-wrap items-center justify-between gap-4">
-										<div>
-											<h2 class="text-lg font-semibold">User information</h2>
-											<p class="text-muted-foreground text-sm">Update the contact details for each user included in this booking.</p>
-										</div>
-										<div class="flex flex-wrap items-center gap-2">
-											{#if remainingSlots !== undefined}
-												<span class="text-muted-foreground text-sm">{remainingSlots} of {slot?.total} slot(s) remaining</span>
-											{/if}
-											<Badge variant="outline">{players.current?.length ?? 0} users</Badge>
-											<Button
-												variant="outline"
-												size="sm"
-												onclick={addPlayer}
-												disabled={remainingSlots !== undefined && (players.current?.length ?? 0) >= remainingSlots}
-											>
-												<PlusIcon class="size-4" />
-												Add player
-											</Button>
-										</div>
-									</div>
-
-									<div class="space-y-4">
-										<form.Field name="players">
-											{#snippet children(field)}
-												<div class="flex flex-col gap-4">
-													{#each field.state.value as player, index (index)}
-														<Card.Root>
-															<Card.Header class="pb-4">
-																<div class="flex items-center justify-between gap-4">
-																	<Card.Title class="text-base">{player.name || `User ${index + 1}`}</Card.Title>
-																	<div class="flex items-center gap-2">
-																		<Button
-																			variant="outline"
-																			size="sm"
-																			class="h-6 px-2 text-xs"
-																			onclick={() => form.setFieldValue(`players[${index}]`, (current) => applyProfileToPlayer(current, auth.user?.profile))}
-																		>
-																			Me
-																		</Button>
-																		<Button
-																			variant="ghost"
-																			size="sm"
-																			class="h-6 px-2 text-xs"
-																			onclick={() => removePlayer(index)}
-																			disabled={(field.state.value?.length ?? 0) <= 1}
-																			aria-label={`Remove player ${index + 1}`}
-																		>
-																			<Trash2Icon class="size-3" />
-																		</Button>
-																	</div>
-																</div>
-															</Card.Header>
-															<Card.Content>
-																<div class="grid gap-4 md:grid-cols-2">
-																	<form.AppField name={`players[${index}].contractId`}>
-																		{#snippet children(field)}
-																			<field.Select label="Contract" items={contractItems} />
-																		{/snippet}
-																	</form.AppField>
-																	<form.AppField name={`players[${index}].name`}>
-																		{#snippet children(field)}
-																			<field.Input label="Name" placeholder="Player full name" />
-																		{/snippet}
-																	</form.AppField>
-																	<form.AppField name={`players[${index}].cellNo`}>
-																		{#snippet children(field)}
-																			<field.Input label="Cell No" placeholder="e.g. 082 123 4567" />
-																		{/snippet}
-																	</form.AppField>
-																	<form.AppField name={`players[${index}].email`}>
-																		{#snippet children(field)}
-																			<field.Input label="Email" type="text" placeholder="player@email.com" />
-																		{/snippet}
-																	</form.AppField>
-																</div>
-															</Card.Content>
-														</Card.Root>
-													{/each}
-												</div>
-											{/snippet}
-										</form.Field>
-									</div>
-								</div>
-
-								<div class="space-y-4">
-									<div class="flex items-center justify-between gap-4">
-										<div>
-											<h2 class="text-lg font-semibold">Extras</h2>
-											<p class="text-muted-foreground text-sm">Add or remove extras for this booking.</p>
-										</div>
-									</div>
-									<Extras facilityId={booking?.slotContractBookings?.[0]?.slotContract?.slot?.facilityId ?? 0} bind:selectedExtras />
-								</div>
-							</Card.Content>
-							<Card.Footer class="flex justify-between border-t">
-								<Button href={bookingHref} variant="ghost">
-									<ChevronLeftIcon class="size-4" />
-									Back to booking
-								</Button>
-								<div class="flex items-center gap-3">
-									<span class="text-muted-foreground text-sm">
-										Total: {formatCurrency(totalPrice)}
-									</span>
-									<Button type="submit" disabled={updateMutation.isPending}>
-										{updateMutation.isPending ? "Saving..." : "Save changes"}
-									</Button>
-								</div>
-							</Card.Footer>
-						</Form>
-					</Card.Root>
+					<BookingDetailsForm
+						title="Edit booking details"
+						description="Update the player details, review the summary, and save your changes. Payment can be completed from the pay page."
+						submitLabel="Save changes"
+						submittingLabel="Saving..."
+						isSubmitting={updateMutation.isPending}
+						backHref={bookingHref}
+						backLabel="Back to booking"
+						{slotId}
+						{facilityId}
+						date={slotDate}
+						dateLabel={formatDate(slotStartDatetime)}
+						{slotStartDatetime}
+						{slotEndDatetime}
+						initialPlayers={buildPlayers(booking)}
+						initialExtras={buildExtras(booking)}
+						{ownPlayerCount}
+						onSubmit={handleSubmit}
+					>
+						{#snippet headerExtra()}
+							{#if booking?.expiresAt}
+								<CountdownTimer expiresAt={booking.expiresAt} />
+							{/if}
+						{/snippet}
+						{#snippet statusExtra()}
+							<Badge variant="outline">Status: {booking?.bookingStatus?.name}</Badge>
+						{/snippet}
+					</BookingDetailsForm>
 				</div>
 			{/if}
 		</div>
