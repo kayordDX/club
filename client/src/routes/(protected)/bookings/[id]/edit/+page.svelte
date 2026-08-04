@@ -3,7 +3,9 @@
 	import { resolve } from "$app/paths";
 	import { goto } from "$app/navigation";
 	import { useQueryClient } from "@tanstack/svelte-query";
-	import { BookingStatusEnum, createBookingGet, createBookingGetPath, createBookingUpdate, createSlotGetContracts } from "$lib/api";
+	import { BookingStatusEnum, createBookingGet, createBookingGetPath, createBookingUpdate, createSlotGetAll, createSlotGetContracts } from "$lib/api";
+	import { auth } from "$lib/stores/auth.svelte";
+	import { applyFirstPlayerContract, applyProfileToPlayer } from "$lib/booking/players";
 	import { createAppForm, Form } from "$lib/components/Form";
 	import Query from "$lib/components/Query.svelte";
 	import BookingBreadcrumbs from "$lib/components/BookingBreadcrumbs.svelte";
@@ -11,7 +13,7 @@
 	import { getBookingPayUrl } from "$lib/booking/payUrl";
 	import PageHeading from "../../../settings/PageHeading.svelte";
 	import { Alert, Badge, Button, Card } from "@kayord/ui";
-	import { CalendarDaysIcon, ChevronLeftIcon, Clock3Icon, CreditCardIcon, PencilIcon, UserRoundIcon } from "@lucide/svelte";
+	import { CalendarDaysIcon, ChevronLeftIcon, Clock3Icon, CreditCardIcon, PencilIcon, PlusIcon, Trash2Icon, UserRoundIcon } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
 	import { playersSchema, type Players, type SelectedExtra } from "../../../outlet/[slug]/[id]/slot/[slot]/schema";
 	import Extras from "../../../outlet/[slug]/[id]/slot/[slot]/Extras.svelte";
@@ -43,6 +45,19 @@
 			label: `${contract.contractName} ${contract.description} - R ${contract.price.toFixed(2)}`,
 		}))
 	);
+
+	const facilityId = $derived(booking?.slotContractBookings?.[0]?.slotContract?.slot?.facilityId ?? 0);
+	const slotDate = $derived(booking?.slotContractBookings?.[0]?.slotContract?.slot?.startDatetime?.slice(0, 10) ?? "");
+
+	// The slot query's booked count includes this booking's own players, so add them back
+	// to get the number of players that could still be added to the slot.
+	const slotsQuery = createSlotGetAll(
+		() => ({ facilityId, date: slotDate }),
+		() => ({ query: { enabled: facilityId > 0 && !!slotDate } })
+	);
+	const slot = $derived(slotsQuery.data?.find((item) => item.id === slotId));
+	const ownPlayerCount = $derived(booking?.slotContractBookings?.length ?? 0);
+	const remainingSlots = $derived(slot ? slot.total - slot.booked + ownPlayerCount : undefined);
 
 	let selectedExtras: Array<SelectedExtra> = $state([]);
 	let hydrated = $state(false);
@@ -87,13 +102,35 @@
 				queryClient.invalidateQueries({ queryKey: ["/booking/user"] });
 				const nextPayUrl = path ? getBookingPayUrl(bookingId, path, value.players.length) : null;
 				await goto(nextPayUrl ?? bookingHref);
-			} catch {
-				toast.error("Failed to update booking. Please try again.");
+			} catch (error) {
+				const message =
+					error instanceof Error && error.cause ? String(error.cause) : error instanceof Error ? error.message : "Failed to update booking. Please try again.";
+				toast.error(message);
 			}
 		},
 	}));
 
 	const players = form.useStore((state) => state.values.players);
+
+	// When the first player picks a contract, fill in any other players that don't
+	// have a contract yet. Players that already have a contract are never overridden.
+	let lastFirstContractId = $state("");
+	$effect(() => {
+		const firstContractId = players.current?.[0]?.contractId ?? "";
+		if (firstContractId && firstContractId !== lastFirstContractId) {
+			lastFirstContractId = firstContractId;
+			form.setFieldValue("players", (prev) => applyFirstPlayerContract(prev));
+		}
+	});
+
+	const addPlayer = () => {
+		const firstContractId = players.current?.[0]?.contractId ?? "";
+		form.setFieldValue("players", (prev) => [...prev, { name: "", cellNo: "", email: "", contractId: firstContractId }]);
+	};
+
+	const removePlayer = (index: number) => {
+		form.setFieldValue("players", (prev) => prev.filter((_, i) => i !== index));
+	};
 
 	const totalPrice = $derived(
 		(players.current ?? [])
@@ -196,12 +233,26 @@
 								</div>
 
 								<div class="space-y-4">
-									<div class="flex items-center justify-between gap-4">
+									<div class="flex flex-wrap items-center justify-between gap-4">
 										<div>
 											<h2 class="text-lg font-semibold">User information</h2>
 											<p class="text-muted-foreground text-sm">Update the contact details for each user included in this booking.</p>
 										</div>
-										<Badge variant="outline">{players.current?.length ?? 0} users</Badge>
+										<div class="flex flex-wrap items-center gap-2">
+											{#if remainingSlots !== undefined}
+												<span class="text-muted-foreground text-sm">{remainingSlots} of {slot?.total} slot(s) remaining</span>
+											{/if}
+											<Badge variant="outline">{players.current?.length ?? 0} users</Badge>
+											<Button
+												variant="outline"
+												size="sm"
+												onclick={addPlayer}
+												disabled={remainingSlots !== undefined && (players.current?.length ?? 0) >= remainingSlots}
+											>
+												<PlusIcon class="size-4" />
+												Add player
+											</Button>
+										</div>
 									</div>
 
 									<div class="space-y-4">
@@ -211,7 +262,29 @@
 													{#each field.state.value as player, index (index)}
 														<Card.Root>
 															<Card.Header class="pb-4">
-																<Card.Title class="text-base">{player.name || `User ${index + 1}`}</Card.Title>
+																<div class="flex items-center justify-between gap-4">
+																	<Card.Title class="text-base">{player.name || `User ${index + 1}`}</Card.Title>
+																	<div class="flex items-center gap-2">
+																		<Button
+																			variant="outline"
+																			size="sm"
+																			class="h-6 px-2 text-xs"
+																			onclick={() => form.setFieldValue(`players[${index}]`, (current) => applyProfileToPlayer(current, auth.user?.profile))}
+																		>
+																			Me
+																		</Button>
+																		<Button
+																			variant="ghost"
+																			size="sm"
+																			class="h-6 px-2 text-xs"
+																			onclick={() => removePlayer(index)}
+																			disabled={(field.state.value?.length ?? 0) <= 1}
+																			aria-label={`Remove player ${index + 1}`}
+																		>
+																			<Trash2Icon class="size-3" />
+																		</Button>
+																	</div>
+																</div>
 															</Card.Header>
 															<Card.Content>
 																<div class="grid gap-4 md:grid-cols-2">
