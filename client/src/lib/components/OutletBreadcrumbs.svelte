@@ -66,7 +66,9 @@
 				{#if page.route.id?.includes("/booking/")}
 					<Breadcrumb.Separator />
 					<Breadcrumb.Item>
-						{#if page.url.searchParams.get("slotId")}
+						{#if page.params.bookingId}
+							<Breadcrumb.Link href={resolve(`/bookings/${page.params.bookingId}/edit`)} class="text-xs">Player Details</Breadcrumb.Link>
+						{:else if page.url.searchParams.get("slotId")}
 							<Breadcrumb.Link
 								href={resolve(`/outlet/${page.params.slug}/${page.params.id}/slot/${page.url.searchParams.get("slotId")}?${page.url.searchParams.toString()}`)}
 								class="text-xs"

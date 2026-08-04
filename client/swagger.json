@@ -946,6 +946,49 @@
 						}
 					}
 				}
+			},
+			"put": {
+				"tags": ["Booking"],
+				"operationId": "BookingUpdate",
+				"parameters": [
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					}
+				],
+				"requestBody": {
+					"x-name": "BookingUpdateRequest",
+					"description": "",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/BookingUpdateRequest"
+							}
+						}
+					},
+					"required": true,
+					"x-position": 1
+				},
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"204": {
+						"description": "No Content"
+					}
+				}
 			}
 		},
 		"/booking": {
@@ -1306,6 +1349,45 @@
 						"Keycloak": []
 					}
 				]
+			}
+		},
+		"/booking/{id}/path": {
+			"get": {
+				"tags": ["Booking"],
+				"operationId": "BookingGetPath",
+				"parameters": [
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					}
+				],
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BookingPathDTO"
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 	},
@@ -3538,6 +3620,61 @@
 				"properties": {
 					"token": {
 						"type": "string"
+					}
+				}
+			},
+			"BookingUpdateRequest": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["bookings", "extras"],
+				"properties": {
+					"bookings": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/BookingRequest"
+						}
+					},
+					"extras": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/BookingExtraRequest"
+						}
+					}
+				}
+			},
+			"BookingPathDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["bookingId", "outletId", "outletSlug", "outletName", "facilityId", "facilityName", "slotId", "slotStartDatetime"],
+				"properties": {
+					"bookingId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"outletId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"outletSlug": {
+						"type": "string"
+					},
+					"outletName": {
+						"type": "string"
+					},
+					"facilityId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"facilityName": {
+						"type": "string"
+					},
+					"slotId": {
+						"type": "string",
+						"format": "uuid"
+					},
+					"slotStartDatetime": {
+						"type": "string",
+						"format": "date-time"
 					}
 				}
 			}

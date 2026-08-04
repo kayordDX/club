@@ -1,6 +1,6 @@
 <script lang="ts">
 	import PageHeading from "../settings/PageHeading.svelte";
-	import { BookIcon } from "@lucide/svelte";
+	import { BookIcon, PencilIcon } from "@lucide/svelte";
 	import { createBookingGetUser, type BookingDTO } from "$lib/api";
 	import {
 		type ColumnDef,
@@ -15,6 +15,7 @@
 	import { Actions } from "@kayord/ui";
 	import { goto } from "$app/navigation";
 	import { resolve } from "$app/paths";
+	import { BookingStatusEnum } from "$lib/api";
 
 	const bookingQuery = createBookingGetUser();
 	let data = $derived(bookingQuery.data?.items ?? []);
@@ -89,6 +90,10 @@
 	const openBooking = (bookingId: number) => {
 		goto(resolve(`/bookings/${bookingId}`));
 	};
+
+	const openEditBooking = (bookingId: number) => {
+		goto(resolve(`/bookings/${bookingId}/edit`));
+	};
 </script>
 
 {#snippet viewBooking(booking: BookingDTO)}
@@ -100,6 +105,16 @@
 				class: "truncate",
 				action: () => openBooking(booking.id),
 			},
+			...(booking.bookingStatus?.id === BookingStatusEnum.Pending
+				? [
+						{
+							icon: PencilIcon,
+							text: "Edit Booking",
+							class: "truncate",
+							action: () => openEditBooking(booking.id),
+						},
+					]
+				: []),
 		]}
 	/>
 {/snippet}
