@@ -3,30 +3,22 @@
 	import { resolve } from "$app/paths";
 	import PageHeading from "../../settings/PageHeading.svelte";
 	import Query from "$lib/components/Query.svelte";
-	import { BookingStatusEnum, createBookingGet } from "$lib/api";
+	import BookingPlayers from "$lib/components/BookingPlayers.svelte";
+	import BookingExtras from "$lib/components/BookingExtras.svelte";
+	import { formatCurrency, formatDate, formatDateTime, formatTime } from "$lib/booking/format";
+	import { BookingStatusEnum, createBookingGet, createBookingGetPath } from "$lib/api";
 	import { page } from "$app/state";
-	import { Button, Card, Table } from "@kayord/ui";
+	import { Button, Card } from "@kayord/ui";
 
 	const bookingId = $derived(Number(page.params.id) || 0);
 	const query = createBookingGet(() => bookingId);
+	const pathQuery = createBookingGetPath(
+		() => bookingId,
+		() => ({ query: { enabled: bookingId > 0 } })
+	);
+	const path = $derived(pathQuery.data);
 	const canEdit = $derived(query.data?.bookingStatus?.id === BookingStatusEnum.Pending);
 	const editHref = $derived(resolve(`/bookings/${bookingId}/edit`));
-
-	const formatDate = (value?: string | null) => {
-		if (!value) return "—";
-
-		return new Date(value).toLocaleString();
-	};
-
-	const formatCurrency = (value?: number | null) => {
-		if (value == null) return "—";
-
-		return new Intl.NumberFormat("en-ZA", {
-			style: "currency",
-			currency: "ZAR",
-			minimumFractionDigits: 2,
-		}).format(value);
-	};
 </script>
 
 <div class="m-4">
@@ -54,21 +46,48 @@
 					</div>
 
 					<div>
+						<div class="text-muted-foreground text-sm">Date</div>
+						<div>{formatDate(query.data?.slotContractBookings?.[0]?.slotContract?.slot?.startDatetime)}</div>
+					</div>
+
+					<div>
+						<div class="text-muted-foreground text-sm">Time</div>
+						<div>{formatTime(query.data?.slotContractBookings?.[0]?.slotContract?.slot?.startDatetime)}</div>
+					</div>
+
+					<div>
 						<div class="text-muted-foreground text-sm">Status</div>
 						<div>{query.data?.bookingStatus?.name ?? "—"}</div>
 					</div>
 
 					<div>
 						<div class="text-muted-foreground text-sm">Status updated</div>
-						<div>{formatDate(query.data?.bookingStatusDate)}</div>
+						<div>{formatDateTime(query.data?.bookingStatusDate)}</div>
 					</div>
 
 					{#if query.data?.bookingStatus?.id === 1}
 						<div>
 							<div class="text-muted-foreground text-sm">Expires at</div>
-							<div>{formatDate(query.data?.expiresAt)}</div>
+							<div>{formatDateTime(query.data?.expiresAt)}</div>
 						</div>
 					{/if}
+				</Card.Content>
+			</Card.Root>
+
+			<Card.Root>
+				<Card.Header>
+					<Card.Title>Facility</Card.Title>
+				</Card.Header>
+				<Card.Content class="space-y-3">
+					<div>
+						<div class="text-muted-foreground text-sm">Outlet</div>
+						<div>{path?.outletName ?? "—"}</div>
+					</div>
+
+					<div>
+						<div class="text-muted-foreground text-sm">Facility</div>
+						<div>{path?.facilityName ?? "—"}</div>
+					</div>
 				</Card.Content>
 			</Card.Root>
 
@@ -96,7 +115,7 @@
 
 			<Card.Root>
 				<Card.Header>
-					<Card.Title>User</Card.Title>
+					<Card.Title>Booked by</Card.Title>
 				</Card.Header>
 				<Card.Content class="space-y-3">
 					<div>
@@ -114,30 +133,22 @@
 				</Card.Header>
 				<Card.Content>
 					{#if query.data?.slotContractBookings?.length}
-						<div class="space-y-3">
-							<Card.Root class="overflow-hidden p-0">
-								<Table.Root>
-									<Table.Header>
-										<Table.Row>
-											<Table.Head>Name</Table.Head>
-											<Table.Head>Cell No</Table.Head>
-											<Table.Head>Email</Table.Head>
-										</Table.Row>
-									</Table.Header>
-									<Table.Body>
-										{#each query.data?.slotContractBookings as player (player.id)}
-											<Table.Row>
-												<Table.Cell>{player.name}</Table.Cell>
-												<Table.Cell>{player.cellphone}</Table.Cell>
-												<Table.Cell>{player.email}</Table.Cell>
-											</Table.Row>
-										{/each}
-									</Table.Body>
-								</Table.Root>
-							</Card.Root>
-						</div>
+						<BookingPlayers players={query.data.slotContractBookings} />
 					{:else}
 						<div class="text-muted-foreground">No slot contract bookings.</div>
+					{/if}
+				</Card.Content>
+			</Card.Root>
+
+			<Card.Root class="md:col-span-2 xl:col-span-3">
+				<Card.Header>
+					<Card.Title>Extras</Card.Title>
+				</Card.Header>
+				<Card.Content>
+					{#if query.data?.extraBookings?.length}
+						<BookingExtras extras={query.data.extraBookings} />
+					{:else}
+						<div class="text-muted-foreground">No extras booked.</div>
 					{/if}
 				</Card.Content>
 			</Card.Root>
