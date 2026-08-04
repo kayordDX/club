@@ -3,7 +3,7 @@
 	import { CirclePlusIcon, TrashIcon } from "@lucide/svelte";
 
 	import { createExtraGetFacility } from "$lib/api";
-	import type { SelectedExtra } from "./schema";
+	import type { SelectedExtra } from "$lib/booking/schema";
 	import ExtrasAmount from "./ExtrasAmount.svelte";
 
 	let open = $state(false);
