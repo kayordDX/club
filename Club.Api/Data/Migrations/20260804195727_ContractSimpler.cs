@@ -26,11 +26,6 @@ namespace Club.Data.Migrations
                 name: "ix_contract_business_id",
                 table: "contract");
 
-            migrationBuilder.RenameColumn(
-                name: "business_id",
-                table: "contract",
-                newName: "frequency");
-
             migrationBuilder.AddColumn<DateTime>(
                 name: "end_date",
                 table: "contract",
@@ -65,6 +60,33 @@ namespace Club.Data.Migrations
                 type: "timestamp with time zone",
                 nullable: false,
                 defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
+
+            // Existing contracts were previously tied to a business. Backfill their
+            // new required facility_id from a facility of that business before the FK
+            // is added, otherwise the default 0 fails the foreign key check.
+            migrationBuilder.Sql(
+                """
+                UPDATE contract
+                SET facility_id = sub.facility_id
+                FROM (
+                    SELECT c.id AS contract_id, MIN(f.id) AS facility_id
+                    FROM contract c
+                    JOIN outlet o ON o.business_id = c.business_id
+                    JOIN facility f ON f.outlet_id = o.id
+                    GROUP BY c.id
+                ) sub
+                WHERE contract.id = sub.contract_id;
+
+                UPDATE contract
+                SET facility_id = (SELECT id FROM facility ORDER BY id LIMIT 1)
+                WHERE facility_id = 0
+                  AND EXISTS (SELECT 1 FROM facility);
+                """);
+
+            migrationBuilder.RenameColumn(
+                name: "business_id",
+                table: "contract",
+                newName: "frequency");
 
             migrationBuilder.CreateTable(
                 name: "booking_item",
