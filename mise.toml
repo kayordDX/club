@@ -19,7 +19,7 @@ if [[ ! "$usage_name" =~ ^[A-Z].{4,}$ ]]; then
     echo "Error: Migration name must start with an uppercase letter and be > 4 characters."
     exit 1
 fi
-dotnet ef migrations add $usage_name --project Club.Api/Club.Api.csproj -c ${usage_context?} -o Club.Api/Data/Migrations
+dotnet ef migrations add $usage_name --project Club.Api/Club.Api.csproj -c ${usage_context?} -o Data/Migrations
 """
 
 [tasks.efrm]

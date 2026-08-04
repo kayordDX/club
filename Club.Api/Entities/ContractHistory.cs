@@ -1,8 +1,9 @@
 namespace Club.Entities;
 
-public class Contract : AuditableEntity
+public class ContractHistory : AuditableEntity
 {
     public int Id { get; set; }
+    public int ContractId { get; set; }
     public required string Name { get; set; }
     public decimal Price { get; set; }
     public int Frequency { get; set; } = 12;

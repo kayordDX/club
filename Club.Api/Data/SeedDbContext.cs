@@ -358,8 +358,8 @@ public static class SeedDbContext
             await dbContext.Resource.AddAsync(resource3, ct);
             await dbContext.Resource.AddAsync(resource4, ct);
 
-            var contract1 = new Contract { Name = "Guest", Business = business };
-            var contract2 = new Contract { Name = "Member", Business = business };
+            var contract1 = new Contract { Name = "Guest", Facility = facility1, Price = 0 };
+            var contract2 = new Contract { Name = "Member", Facility = facility1, Price = 7000 };
 
             await dbContext.Contract.AddAsync(contract1, ct);
             await dbContext.Contract.AddAsync(contract2, ct);
@@ -368,15 +368,6 @@ public static class SeedDbContext
             var validation2 = new Validation { Name = "HNA Verify", Id = 2 };
             await dbContext.Validation.AddAsync(validation1, ct);
             await dbContext.Validation.AddAsync(validation2, ct);
-
-            var contractField1 = new ContractField
-            {
-                Id = 1,
-                Name = "Price",
-                FieldValidation = "decimal",
-                Business = business,
-            };
-            await dbContext.ContractField.AddAsync(contractField1, ct);
 
             // Create hourly slots for the next week with slight daily variation
             var today = DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);

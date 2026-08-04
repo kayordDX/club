@@ -12,6 +12,6 @@ public class ContractEntityConfig : IEntityTypeConfiguration<Contract>
 
         builder.Property(c => c.Created).HasDefaultValue(DateTime.MinValue);
 
-        builder.HasOne(c => c.Business).WithMany(b => b.Contracts).HasForeignKey(c => c.BusinessId).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne(c => c.Facility).WithMany(b => b.Contracts).HasForeignKey(c => c.FacilityId).OnDelete(DeleteBehavior.Restrict);
     }
 }

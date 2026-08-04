@@ -18,11 +18,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IHttpContextAc
     }
 
     public DbSet<Booking> Booking => Set<Booking>();
+    public DbSet<BookingItem> BookingItem => Set<BookingItem>();
     public DbSet<BookingStatus> BookingStatus => Set<BookingStatus>();
     public DbSet<Business> Business => Set<Business>();
     public DbSet<Contract> Contract => Set<Contract>();
-    public DbSet<ContractField> ContractField => Set<ContractField>();
-    public DbSet<ContractFieldConfig> ContractFieldConfig => Set<ContractFieldConfig>();
+    public DbSet<ContractHistory> ContractHistory => Set<ContractHistory>();
     public DbSet<ContractOutlet> ContractOutlet => Set<ContractOutlet>();
     public DbSet<EmailLog> EmailLog => Set<EmailLog>();
     public DbSet<Extra> Extra => Set<Extra>();
@@ -40,6 +40,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IHttpContextAc
     public DbSet<Slot> Slot => Set<Slot>();
     public DbSet<SlotContract> SlotContract => Set<SlotContract>();
     public DbSet<SlotContractBooking> SlotContractBooking => Set<SlotContractBooking>();
+    public DbSet<SlotConfig> SlotConfig => Set<SlotConfig>();
+    public DbSet<SlotConfigType> SlotConfigType => Set<SlotConfigType>();
     public DbSet<UserContract> UserContract => Set<UserContract>();
     public DbSet<Validation> Validation => Set<Validation>();
 

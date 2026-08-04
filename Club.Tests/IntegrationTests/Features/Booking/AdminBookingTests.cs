@@ -216,8 +216,8 @@ public class AdminBookingTests(AppFixture app)
         var contract = new Contract
         {
             Name = $"Contract_{Guid.NewGuid()}",
-            BusinessId = outlet.BusinessId,
-            Business = outlet.Business,
+            FacilityId = facility.Id,
+            Facility = facility,
         };
         db.Contract.Add(contract);
         await db.SaveChangesAsync();
