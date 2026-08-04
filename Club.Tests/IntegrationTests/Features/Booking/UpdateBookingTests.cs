@@ -90,6 +90,105 @@ public class UpdateBookingTests(AppFixture app)
     }
 
     [Fact]
+    public async Task UpdateBooking_WhenPlayersExceedAvailability_ReturnsConflict()
+    {
+        // Arrange
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var (slot, slotContract, _, _) = await CreateBookingSetup(db);
+
+        // Fill the slot (MaxBookings = 4) with two separate bookings of two players each.
+        var createFirst = new BookingCreateRequest
+        {
+            Bookings =
+            [
+                new BookingRequest
+                {
+                    SlotId = slot.Id,
+                    SlotContractId = slotContract.Id,
+                    Name = "Player One",
+                    Email = "one@example.com",
+                    Cellphone = "0825551001",
+                },
+                new BookingRequest
+                {
+                    SlotId = slot.Id,
+                    SlotContractId = slotContract.Id,
+                    Name = "Player Two",
+                    Email = "two@example.com",
+                    Cellphone = "0825551002",
+                },
+            ],
+        };
+        var (firstResponse, firstBooking) = await app.Client.POSTAsync<BookingCreateEndpoint, BookingCreateRequest, BookingCreateResponse>(createFirst);
+        firstResponse.IsSuccessStatusCode.ShouldBeTrue();
+
+        var createSecond = new BookingCreateRequest
+        {
+            Bookings =
+            [
+                new BookingRequest
+                {
+                    SlotId = slot.Id,
+                    SlotContractId = slotContract.Id,
+                    Name = "Player Three",
+                    Email = "three@example.com",
+                    Cellphone = "0825551003",
+                },
+                new BookingRequest
+                {
+                    SlotId = slot.Id,
+                    SlotContractId = slotContract.Id,
+                    Name = "Player Four",
+                    Email = "four@example.com",
+                    Cellphone = "0825551004",
+                },
+            ],
+        };
+        var (secondResponse, _) = await app.Client.POSTAsync<BookingCreateEndpoint, BookingCreateRequest, BookingCreateResponse>(createSecond);
+        secondResponse.IsSuccessStatusCode.ShouldBeTrue();
+
+        // Act - try to grow the first booking from 2 to 3 players while the slot is full.
+        var updateRequest = new BookingUpdateRequest
+        {
+            Id = firstBooking.Id,
+            Bookings =
+            [
+                new BookingRequest
+                {
+                    SlotId = slot.Id,
+                    SlotContractId = slotContract.Id,
+                    Name = "Player One",
+                    Email = "one@example.com",
+                    Cellphone = "0825551001",
+                },
+                new BookingRequest
+                {
+                    SlotId = slot.Id,
+                    SlotContractId = slotContract.Id,
+                    Name = "Player Two",
+                    Email = "two@example.com",
+                    Cellphone = "0825551002",
+                },
+                new BookingRequest
+                {
+                    SlotId = slot.Id,
+                    SlotContractId = slotContract.Id,
+                    Name = "Player Five",
+                    Email = "five@example.com",
+                    Cellphone = "0825551005",
+                },
+            ],
+        };
+
+        var updateResponse = await app.Client.PUTAsync<BookingUpdateEndpoint, BookingUpdateRequest>(updateRequest);
+
+        // Assert
+        updateResponse.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+    }
+
+    [Fact]
     public async Task UpdateBooking_WhenNotPending_ReturnsBadRequest()
     {
         // Arrange

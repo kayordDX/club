@@ -1,12 +1,8 @@
 import type { BookingDTO } from "$lib/api";
+import type { PlayerDraft } from "$lib/booking/players";
 import type { SelectedExtra } from "../../../outlet/[slug]/[id]/slot/[slot]/schema";
 
-export type PlayerFormValues = {
-	name: string;
-	cellNo: string;
-	email: string;
-	contractId: string;
-};
+export type PlayerFormValues = PlayerDraft;
 
 /**
  * Maps the current booking's slot contract bookings to tanstack form player values.

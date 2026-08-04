@@ -9,6 +9,7 @@
 
 	import { createSlotGetAll, createSlotGetContracts } from "$lib/api";
 	import { auth } from "$lib/stores/auth.svelte";
+	import { applyFirstPlayerContract, createPlayers } from "$lib/booking/players";
 	import { createAppForm, Form } from "$lib/components/Form";
 	import Query from "$lib/components/Query.svelte";
 	import { Badge, Button, Card, Empty } from "@kayord/ui";
@@ -61,15 +62,6 @@
 		});
 	};
 
-	function createPlayers(count: number) {
-		return Array.from({ length: count }, () => ({
-			name: "",
-			cellNo: "",
-			email: "",
-			contractId: "",
-		}));
-	}
-
 	const form = createAppForm(() => ({
 		defaultValues: {
 			players: createPlayers(slotCount),
@@ -116,6 +108,17 @@
 
 	// Form reactivity
 	const players = form.useStore((state) => state.values.players);
+
+	// When the first player picks a contract, fill in any other players that don't
+	// have a contract yet. Players that already have a contract are never overridden.
+	let lastFirstContractId = $state("");
+	$effect(() => {
+		const firstContractId = players.current?.[0]?.contractId ?? "";
+		if (firstContractId && firstContractId !== lastFirstContractId) {
+			lastFirstContractId = firstContractId;
+			form.setFieldValue("players", (prev) => applyFirstPlayerContract(prev));
+		}
+	});
 
 	const totalPrice = $derived(
 		(players.current ?? []).map((c) => getPriceFromContractId(c.contractId)).reduce((sum, price) => sum + price, 0) + getSelectedExtrasTotal(selectedExtras)
