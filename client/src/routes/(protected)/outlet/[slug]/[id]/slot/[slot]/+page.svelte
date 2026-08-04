@@ -53,12 +53,10 @@
 				slotCount: slotCount.toString(),
 				date: selectedDate,
 			});
-
+			toast.info("Created booking");
 			await goto(`${resolve(`/outlet/${slug}/${facilityId}/booking/${bookingResponse.id}/pay`)}?${paymentParams.toString()}` as ResolvedPathname);
 		} catch {
 			toast.error("Failed to create booking. Please try again.");
-		} finally {
-			toast.info("Created booking");
 		}
 	};
 </script>
