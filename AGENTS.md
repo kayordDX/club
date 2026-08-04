@@ -23,6 +23,12 @@ Always invoke the relevant skill before working in that area.
 | `svelte-core-bestpractices` | Svelte 5 patterns, reactivity, composition, styling, performance             |
 | `svelte-code-writer`        | Any `.svelte`, `.svelte.ts`, or `.svelte.js` file — lookup and code analysis |
 
+## Environment
+
+- First run: `pnpm install` in `client/`
+- `pnpm api` and integration tests (Testcontainers) require Docker + running stack
+- Without Docker/stack: integration tests compile only; hand-edit generated client to match orval output (note this in the PR)
+
 ## Quality Gates (mandatory — run after every change)
 
 ### Frontend
@@ -56,6 +62,10 @@ csharpier format .  # fix formatting if needed
 - Use generated API clients from `client/src/lib/api/generated/`
 - Custom fetch/mutator logic lives in `client/src/lib/api/mutator/customInstance.svelte.ts`
 - Use `@tanstack/svelte-query` (`createQuery`, `createMutation`) for data fetching
+- Use tanstack svelte-form (`createAppForm` in `$lib/components/Form`) for forms
+- All `goto()`/`href` must use `resolve()` or be typed `ResolvedPathname` (`svelte/no-navigation-without-resolve`)
+- Shared logic/components across routes go in `$lib/` — don't deep-import across route trees
+- `@kayord/ui` facts: `Alert.Root` variants are only `default` | `destructive`; `Button href` accepts `ResolvedPathname`; check `node_modules/@kayord/ui/dist/components/ui/<name>/` for variant defs
 - For UI components, use the `ui` skill
 
 ### Backend (C#/.NET)
@@ -72,6 +82,7 @@ csharpier format .  # fix formatting if needed
 - Frontend E2E: `feature-name.spec.ts` in `client/e2e/`
 - Backend: `ClassNameTests.cs` — xUnit, arrange-act-assert
 - Target a single backend test class: `dotnet test Club.Tests/IntegrationTests/IntegrationTests.csproj -- --filter-class <FullyQualifiedClassName>`
+- FastEndpoints.Testing client: `POSTAsync`/`GETAsync<TEndpoint,TReq,TRes>` returns `(HttpResponseMessage, TRes?)` tuple; `PUTAsync<TEndpoint,TReq>` returns `HttpResponseMessage` directly
 
 ## Key Workflows
 
@@ -79,7 +90,7 @@ csharpier format .  # fix formatting if needed
 
 1. Create endpoint in `Club.Api/Features/{FeatureName}/`
 2. Register services in `Common/Extensions/` if needed
-3. Regenerate frontend API client from `client/`
+3. Regenerate frontend API client from `client/` (requires running API). Hand-edits must mirror orval output exactly (see `paymentCheckout`/`facilityGet` in `generated/`). If `swagger.json` is empty, something is wrong — revert it
 4. Update frontend usage
 
 → Use the `api` skill for patterns.
@@ -107,7 +118,7 @@ csharpier format .  # fix formatting if needed
 | Aspire           | `use aspire skills to get details and logs`             |
 | Set secret       | `dotnet user-secrets set "Key" "Value"`                 |
 | EF migrations    | VS Code tasks or `dotnet ef` CLI                        |
-| API client regen | Run from `client/` after API changes                    |
+| API client regen | Requires running API: `pnpm api` from `client/` (mirror orval output if hand-editing; revert empty `swagger.json`) |
 
 ## Svelte and MCP Guidance
 
