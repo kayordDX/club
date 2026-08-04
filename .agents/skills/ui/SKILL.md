@@ -13,18 +13,50 @@ description: >
 
 Use @kayord/ui shadcn-svelte components (bits-ui) for UI. Import with namespace pattern.
 
+## Adding New Components (Quick Start)
+
+There are two ways to "add" a component:
+
+### 1. Use an @kayord/ui component — no install needed
+
+All components ship in the `@kayord/ui` npm package; there is **no `shadcn add` step** and nothing to install.
+
+1. **Find the component** — see what's available and its variants:
+   - `client/node_modules/@kayord/ui/dist/components/ui/<name>/` — check `variant`/`default` defs here (AGENTS.md rule)
+   - <https://github.com/kayordDX/ui> (docs based on <https://www.shadcn-svelte.com/>)
+2. **Import it** from the package in one line:
+
+```svelte
+<script lang="ts">
+    import { Dialog, Button, Card, Sheet, Popover, DropdownMenu, Tooltip, Input, Badge } from "@kayord/ui";
+</script>
+```
+
+3. **Use sub-components** via dot notation: `<Dialog.Root>`, `<Dialog.Content>`, `<Dialog.Footer>`, `<Card.Header>`, etc.
+
+### 2. Create a new custom component (project-specific UI)
+
+For UI not covered by @kayord/ui, create a custom component:
+
+1. **Create the file** at `client/src/lib/components/<component-name>.svelte` (kebab-case; use a folder like `Form/` or `Header/` for compound components with an `index.ts`)
+2. **Use Svelte 5 runes** — `$props`, `$state`, `$derived`, `$effect` (see `svelte-core-bestpractices`; run `svelte-autofixer` before returning code)
+3. **Compose @kayord/ui primitives inside** — build from `Button`/`Card`/`Input` etc. rather than re-styling raw elements
+4. **Add a colocated unit test** `ComponentName.svelte.test.ts` in the same folder
+5. **Export it** from `client/src/lib/components/index.ts` if shared across routes
+6. **Run quality gates**: `pnpm check && pnpm lint && pnpm format` (from `client/`)
+
 ## Import Pattern
 
 ```svelte
 <script lang="ts">
     import { Dialog } from "@kayord/ui";
-    import { DropdownMenu} from "@kayord/ui";
+    import { DropdownMenu } from "@kayord/ui";
     import { Tooltip } from "@kayord/ui";
     import { Button } from "@kayord/ui";
     import { Input } from "@kayord/ui";
     import { Card } from "@kayord/ui";
-    
-    // They can all be in single import example
+
+    // Or combine them all in a single import:
     import { Dialog, Button, Card } from "@kayord/ui";
 </script>
 ```

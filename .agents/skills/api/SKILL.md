@@ -1,6 +1,6 @@
 ---
 name: api
-description: Use this skill for API and backend work in the Club project. Apply it when creating, editing, reviewing, or debugging FastEndpoints code under `api/src/club/Features/`, and whenever a request mentions the API, backend, endpoints, DTOs, EF, or client generation.
+description: Use this skill for API and backend work in the Club project. Apply it when creating, editing, reviewing, or debugging FastEndpoints code under `Club.Api/Features/`, and whenever a request mentions the API, backend, endpoints, DTOs, EF, or client generation.
 ---
 
 # API Skill
@@ -21,29 +21,49 @@ Reach for it when the task mentions any of the following:
 ## What This Project Uses
 
 - Backend framework: FastEndpoints on .NET 10
-- API code location: `api/src/club/Features/`
-- Shared DTO location: `api/src/club/DTO/`
-- Entities: `api/src/club/Entities/`
-- Service registration: `api/src/club/Common/Extensions/`
+- API code location: `Club.Api/Features/`
+- Shared DTO location: `Club.Api/DTO/`
+- Entities: `Club.Api/Entities/`
+- Service registration: `Club.Api/Common/Extensions/`
 - Dev API docs: `http://localhost:5000/scalar/v1`
 
 ## Core Rules
 
-- Keep API work feature-based under `api/src/club/Features/`
-- Use file-scoped namespaces
+- Keep API work feature-based under `Club.Api/Features/`
+- Use file-scoped namespaces (`Club.Features.[Feature].[Action]`)
 - Name endpoint files `Endpoint.cs`
 - Put request models next to the endpoint in the same action folder
-- Keep DTOs in `api/src/club/DTO/` unless there is a clear local-only reason not to
+- Keep DTOs in `Club.Api/DTO/` unless there is a clear local-only reason not to
 - Pass `CancellationToken` through async database and service calls
 - Add `Description(x => x.WithName("FeatureAction"))` in `Configure()`
 - Prefer generated frontend clients over manual HTTP calls; regenerate after API changes
+
+## Adding a New Endpoint (Quick Start)
+
+One feature/action = one folder. Copy this end-to-end workflow:
+
+1. **Create the folder structure:**
+
+```bash
+mkdir -p Club.Api/Features/{FeatureName}/{ActionName}
+```
+
+2. **Add `Endpoint.cs`** (template below)
+3. **Add a request DTO** if the action takes input: `[Feature][Action]Request.cs`
+4. **Reuse or add a response DTO** under `Club.Api/DTO/`
+5. **Register services** if needed in `Club.Api/Common/Extensions/`
+6. **Build:** `dotnet build Club.Api/Club.Api.csproj`
+7. **Regenerate the frontend client** (needs the API running): `pnpm api` from `client/`
+8. **Update frontend usage** to the generated client in `client/src/lib/api/generated/`
+
+> Integration tests live in `Club.Tests/IntegrationTests/Features/` (xUnit + FastEndpoints.Testing). Target a single class: `dotnet test Club.Tests/IntegrationTests/IntegrationTests.csproj -- --filter-class <FullyQualifiedClassName>`
 
 ## Folder Pattern
 
 Use this structure for new endpoints:
 
 ```text
-api/src/club/Features/
+Club.Api/Features/
 └── FeatureName/
     └── ActionName/
         ├── Endpoint.cs
@@ -53,10 +73,10 @@ api/src/club/Features/
 Examples:
 
 ```text
-Features/Outlet/Get/Endpoint.cs
-Features/Outlet/Get/OutletGetRequest.cs
-Features/Account/Login/Endpoint.cs
-Features/Slot/Edit/SlotEditRequest.cs
+Club.Api/Features/Outlet/Get/Endpoint.cs
+Club.Api/Features/Outlet/Get/OutletGetRequest.cs
+Club.Api/Features/Account/Login/Endpoint.cs
+Club.Api/Features/Slot/Edit/SlotEditRequest.cs
 ```
 
 ## Naming Conventions
@@ -181,16 +201,7 @@ Generated client output lives in:
 
 ## Recommended Workflow
 
-For a new endpoint:
-
-1. Create `Features/[Feature]/[Action]/`
-2. Add `Endpoint.cs`
-3. Add request DTO if needed
-4. Reuse or add DTOs under `DTO/`
-5. Register services if needed in `Common/Extensions/`
-6. Build or test the API
-7. Run `pnpm run api` in `client/`
-8. Update frontend usage to the generated client
+For a new endpoint, follow [Adding a New Endpoint (Quick Start)](#adding-a-new-endpoint-quick-start) — it is the single source of truth for the end-to-end flow.
 
 ## Testing and Verification
 
@@ -205,7 +216,7 @@ Useful commands:
 
 ```bash
 dotnet build Club.Api/Club.Api.csproj
-dotnet test api/tests/
+dotnet test Club.Tests/IntegrationTests/IntegrationTests.csproj
 ```
 
 ## Common Pitfalls
