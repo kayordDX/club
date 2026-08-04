@@ -7,6 +7,7 @@
 	import { createAppForm, Form } from "$lib/components/Form";
 	import Query from "$lib/components/Query.svelte";
 	import BookingBreadcrumbs from "$lib/components/BookingBreadcrumbs.svelte";
+	import CountdownTimer from "$lib/components/CountdownTimer.svelte";
 	import { getBookingPayUrl } from "$lib/booking/payUrl";
 	import PageHeading from "../../../settings/PageHeading.svelte";
 	import { Alert, Badge, Button, Card } from "@kayord/ui";
@@ -147,6 +148,9 @@
 									<Card.Description class="max-w-2xl text-sm leading-6">
 										Update the player details, review the summary, and save your changes. Payment can be completed from the pay page.
 									</Card.Description>
+									{#if booking?.expiresAt}
+										<CountdownTimer expiresAt={booking.expiresAt} />
+									{/if}
 								</div>
 								<Badge variant="outline">Status: {booking?.bookingStatus?.name}</Badge>
 							</div>
