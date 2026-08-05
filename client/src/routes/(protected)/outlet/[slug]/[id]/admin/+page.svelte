@@ -159,7 +159,14 @@
 					<SearchIcon class="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
 					<Input type="search" placeholder="Search booking #" bind:value={searchInput} class="w-48 pl-9" />
 				</div>
-				<Select.Root type="single" value={statusValue} onValueChange={(v) => (statusValue = v ?? "all")}>
+				<Select.Root
+					type="single"
+					value={statusValue}
+					onValueChange={(v) => {
+						statusValue = v ?? "all";
+						pagination.pageIndex = 0;
+					}}
+				>
 					<Select.Trigger class="w-40">{status ? statusLabel(status) : "All statuses"}</Select.Trigger>
 					<Select.Content>
 						<Select.Item value="all" label="All statuses">All statuses</Select.Item>
