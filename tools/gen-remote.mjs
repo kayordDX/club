@@ -3,16 +3,11 @@
 // For each operation it emits a `query` (GET) or `command` (other) that wraps the
 // orval-generated server transport in src/lib/server/api/generated/<tag>.ts.
 //
-// Run: `node tools/gen-remote.mjs`  (also wired into `pnpm api`)
+// Validation schemas come from orval's `zod` client output
+// (src/lib/server/api/schemas/<tag>.ts): {OpId}QueryParams, {OpId}Body.
+// Path params use inline primitive Zod to keep bare single-value ergonomics.
 //
-// Conventions encoded here:
-//  - Remote functions take ONE argument, so path/query/body are bundled into one
-//    object: path params by name, query params under `params`, body under `body`.
-//  - Path params get real Zod validation; body & query params are type-checked via
-//    z.custom<T>() (the .NET API / FastEndpoints remains the validation source of
-//    truth for complex payloads). Swap to real Zod by referencing orval's `zod`
-//    client output if you want deep client-side validation.
-//  - Operations with no required inputs use the no-arg overload.
+// Run: `node tools/gen-remote.mjs`  (also wired into `pnpm api`)
 import { readFileSync, writeFileSync, rmSync, mkdirSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -22,6 +17,7 @@ const CLIENT = resolve(__dirname, "..", "client");
 const SPEC_PATH = resolve(CLIENT, "swagger.json");
 const OUT_DIR = resolve(CLIENT, "src/lib/api/remote");
 const TRANSPORT_BASE = "$lib/server/api/generated";
+const SCHEMAS_BASE = "$lib/server/api/schemas";
 
 const spec = JSON.parse(readFileSync(SPEC_PATH, "utf8"));
 
@@ -41,9 +37,8 @@ const zodForType = (type) => {
 };
 
 const camel = (opId) => opId[0].toLowerCase() + opId.slice(1);
-const nameFromRef = (ref) => ref.split("/").pop();
 
-/** @type {Map<string, { imports: Set<string>, lines: string[] }>} */
+/** @type {Map<string, { schemaImports: Set<string>, lines: string[] }>} */
 const byTag = new Map();
 
 for (const [path, methods] of Object.entries(spec.paths ?? {})) {
@@ -59,50 +54,46 @@ for (const [path, methods] of Object.entries(spec.paths ?? {})) {
 		const pathParams = params.filter((p) => p.in === "path");
 		const queryParams = params.filter((p) => p.in === "query");
 		const requiredQuery = queryParams.filter((p) => p.required);
-		const bodyRef = op.requestBody?.content?.["application/json"]?.schema?.$ref;
-		const bodyType = bodyRef ? nameFromRef(bodyRef) : null;
+		const hasBody = !!op.requestBody?.content?.["application/json"]?.schema?.$ref;
 
-		const imports = new Set();
+		const schemaImports = new Set();
 
-		// No required input (only optional query, or nothing) → no-arg overload.
-		const hasMeaningful = pathParams.length > 0 || !!bodyType || requiredQuery.length > 0;
-
-		let line;
-		if (!hasMeaningful) {
-			line = `export const ${fnName} = ${kind}(async () => api.${fnName}());`;
-		} else {
-			// A "slot" is one positional argument to the orval transport.
-			// Each: { arg, schema } where `arg` is the JS binding name.
-			const slots = [];
-			for (const p of pathParams) {
-				slots.push({ arg: p.name, schema: zodForType(p.schema?.type) });
-			}
-			if (queryParams.length) {
-				const paramsType = `${opId}Params`;
-				imports.add(paramsType);
-				const optional = requiredQuery.length === 0 ? ".optional()" : "";
-				slots.push({ arg: "params", schema: `z.custom<${paramsType}>()${optional}` });
-			}
-			if (bodyType) {
-				imports.add(bodyType);
-				slots.push({ arg: "body", schema: `z.custom<${bodyType}>()` });
-			}
-
-			if (slots.length === 1) {
-				// Single input → bare schema (idiomatic: getPost(slug)).
-				const s = slots[0];
-				line = `export const ${fnName} = ${kind}(${s.schema}, async (${s.arg}) => api.${fnName}(${s.arg}));`;
-			} else {
-				// Multiple inputs → one object argument keyed by name.
-				const entries = slots.map((s) => `${s.arg}: ${s.schema}`);
-				const keys = slots.map((s) => s.arg);
-				line = `export const ${fnName} = ${kind}(z.object({ ${entries.join(", ")} }), async ({ ${keys.join(", ")} }) => api.${fnName}(${keys.join(", ")}));`;
-			}
+		// A "slot" is one positional argument to the orval transport.
+		const slots = [];
+		for (const p of pathParams) {
+			slots.push({ arg: p.name, schema: zodForType(p.schema?.type) });
+		}
+		if (queryParams.length) {
+			// ALL query params are exposed via the generated {OpId}QueryParams schema.
+			const qSchema = `${opId}QueryParams`;
+			schemaImports.add(qSchema);
+			const optional = requiredQuery.length === 0 ? ".optional()" : "";
+			slots.push({ arg: "params", schema: `${qSchema}${optional}` });
+		}
+		if (hasBody) {
+			const bSchema = `${opId}Body`;
+			schemaImports.add(bSchema);
+			slots.push({ arg: "body", schema: bSchema });
 		}
 
-		if (!byTag.has(tag)) byTag.set(tag, { imports: new Set(), lines: [] });
+		let line;
+		if (slots.length === 0) {
+			// Truly input-less operation → no-arg overload.
+			line = `export const ${fnName} = ${kind}(async () => api.${fnName}());`;
+		} else if (slots.length === 1) {
+			// Single input → bare schema (idiomatic: getPost(slug)).
+			const s = slots[0];
+			line = `export const ${fnName} = ${kind}(${s.schema}, async (${s.arg}) => api.${fnName}(${s.arg}));`;
+		} else {
+			// Multiple inputs → one object argument keyed by name.
+			const entries = slots.map((s) => `${s.arg}: ${s.schema}`);
+			const keys = slots.map((s) => s.arg);
+			line = `export const ${fnName} = ${kind}(z.object({ ${entries.join(", ")} }), async ({ ${keys.join(", ")} }) => api.${fnName}(${keys.join(", ")}));`;
+		}
+
+		if (!byTag.has(tag)) byTag.set(tag, { schemaImports: new Set(), lines: [] });
 		const bucket = byTag.get(tag);
-		for (const t of imports) bucket.imports.add(t);
+		for (const s of schemaImports) bucket.schemaImports.add(s);
 		bucket.lines.push(line);
 	}
 }
@@ -113,26 +104,27 @@ mkdirSync(OUT_DIR, { recursive: true });
 
 const header =
 	"// GENERATED from swagger.json by tools/gen-remote.mjs — do not edit manually.\n" +
-	"// Remote functions (query/command) wrapping the orval-generated server transport.\n";
+	"// Remote functions (query/command) wrapping the orval-generated server transport.\n" +
+	"// Validation schemas come from orval's zod client output.\n";
 
 let total = 0;
-for (const [tag, { imports, lines }] of byTag) {
-	const types = [...imports].sort();
-	const typeImport = types.length
-		? `import type { ${types.join(", ")} } from "${TRANSPORT_BASE}/server.schemas";\n`
+for (const [tag, { schemaImports, lines }] of byTag) {
+	const schemas = [...schemaImports].sort();
+	const schemaImport = schemas.length
+		? `import { ${schemas.join(", ")} } from "${SCHEMAS_BASE}/${tag}";\n`
 		: "";
 	const content =
 		`${header}\n` +
 		`import { query, command } from "$app/server";\n` +
 		`import { z } from "zod";\n` +
 		`import * as api from "${TRANSPORT_BASE}/${tag}";\n` +
-		typeImport +
+		schemaImport +
 		"\n" +
 		lines.join("\n") +
 		"\n";
 	writeFileSync(resolve(OUT_DIR, `${tag}.remote.ts`), content);
 	total += lines.length;
-	console.log(`  ✓ ${tag}.remote.ts (${lines.length} functions)`);
+	console.log(`  \u2713 ${tag}.remote.ts (${lines.length} functions)`);
 }
 
 console.log(`\nGenerated ${total} remote functions across ${byTag.size} files → src/lib/api/remote/`);

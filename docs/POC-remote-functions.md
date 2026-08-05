@@ -104,25 +104,29 @@ The entire API layer is generated from `swagger.json` — no API path, method, t
 
 ```
 swagger.json
-  ├─(orval, svelte-query)─▶ src/lib/api/generated/**        browser query/mutation hooks
-  ├─(orval, fetch)────────▶ src/lib/server/api/generated/**  server typed fetch (transport)
-  └─(tools/gen-remote.mjs)▶ src/lib/api/remote/*.remote.ts   remote query/command wrappers
+  ├─(orval, svelte-query)─▶ src/lib/api/generated/**            browser query/mutation hooks
+  ├─(orval, fetch)────────▶ src/lib/server/api/generated/**    server typed fetch (transport)
+  ├─(orval, zod)──────────▶ src/lib/server/api/schemas/**     Zod validation schemas
+  └─(tools/gen-remote.mjs)▶ src/lib/api/remote/*.remote.ts     remote query/command wrappers
 ```
 
-`pnpm api` runs all three (`api:swagger` → `api:orval` → `api:remote` → `format`). The only
+`pnpm api` runs all four (`api:swagger` → `api:orval` → `api:remote` → `format`). The only
 hand-authored API-adjacent code is `src/lib/server/api/client.ts` (the auth-attaching mutator)
 and `tools/gen-remote.mjs` itself — both are stable, one-time infrastructure.
 
 ### `gen-remote.mjs` conventions
 
 - `GET` → `query`, other methods → `command`.
+- **All params are included.** Path params use inline Zod (`z.number().int()`); query params
+  use the generated `{OpId}QueryParams` schema; bodies use the generated `{OpId}Body` schema.
 - Single-input ops (one path param, one body, or one query group) use a **bare** schema —
   the idiomatic SvelteKit form (`query(z.number(), async (id) => ...)`, like the docs’ `getPost(slug)`).
 - Multi-input ops use one object argument keyed by name (path params by name, `params`, `body`).
-- Ops with no required input use the no-arg overload.
-- Path params get real Zod validation; bodies/query params pass through typed (`z.custom<T>()`)
-  because the .NET API / FastEndpoints is the validation source of truth. To get deep
-  client-side validation instead, generate orval’s `zod` client and reference those schemas.
+- Ops with no query params at all use the no-arg overload; optional query-only ops expose the
+  params schema as `.optional()` so they’re callable with or without arguments
+  (`bookingGetUser()` or `bookingGetUser({ page: 1 })`).
+- Bodies/query params are **real Zod validation** (not passthrough), so inputs are validated
+  server-side at the remote boundary before the .NET API is even called.
 
 ## Evaluating viability — what to look for
 

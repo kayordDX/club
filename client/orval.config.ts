@@ -46,4 +46,17 @@ export default defineConfig({
 			},
 		},
 	},
+	// NEW: Zod schemas (Standard Schema) used for remote-function validation.
+	zodSchemas: {
+		input: "./swagger.json",
+		output: {
+			mode: "tags",
+			workspace: "./src/lib/server/api/schemas",
+			target: "schemas.ts",
+			client: "zod",
+			prettier: true,
+			headers: false,
+			clean: true,
+		},
+	},
 });
