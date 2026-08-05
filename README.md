@@ -2,6 +2,32 @@
 
 The public site to book and login as member.
 
+## Diagram
+
+```mermaid
+architecture-beta
+    group club(server)[Club]
+
+    service db(database)[Postgres] in club
+    service redis(database)[Redis] in club
+    service api(server)[api] in club
+    service svelte(internet)[Svelte] in club
+    service keycloak(internet)[Kaycloak] in club
+
+    svelte:B -- T:api
+    db:L -- R:api
+    redis:R -- L:api
+    keycloak:T -- B:api
+```
+
+## Principles
+
+- Simplicity
+- Re-use same UI for members guests and staff where possible
+- URLs should be deterministic.
+- Mobile First
+- Code first DB design
+
 ## Structure
 
 - `Club.AppHost/` - Aspire AppHost for local orchestration
@@ -10,21 +36,12 @@ The public site to book and login as member.
 - `Club.Tests/` - backend integration and unit tests
 - `client/` - SvelteKit frontend
 
-## Setup
-
-```bash
-mkcert -install
-mkdir -p ./container/traefik/certs
-# rm -rf ./container/traefik/certs
-mkcert -cert-file ./container/traefik/certs/local-cert.pem -key-file ./container/traefik/certs/local-key.pem "localhost" "*.localhost" "auth.localhost"
-# copy certs to ./container/traefik/certs
-```
-
 ## Skills
 
 ```bash
 # update Skills
 npx skills update
+rm -rf .agents/skills/aspire*/evals/
 ```
 
 ## Run with Aspire
@@ -32,15 +49,20 @@ npx skills update
 Start the full local stack through the AppHost:
 
 ```bash
+aspire start
+aspire stop
+aspire run
+# Direct Run API
 dotnet run --project Club.AppHost/Club.AppHost.csproj
+pnpm --dir client dev
 ```
 
 This orchestrates the API, frontend, Postgres, Redis, Keycloak, and Mailpit for local development.
 
 Useful local endpoints when the AppHost is running:
 
-- Aspire AppHost: `http://localhost:15283`
 - API docs: `http://localhost:5000/scalar/v1`
+- API docs: `http://localhost:5000/tickerq/dashboard/`
 - Frontend: `http://localhost:5173`
 - Keycloak realm: `http://localhost:8088/realms/kayord`
 
@@ -53,7 +75,6 @@ dotnet tool update --all
 
 # List updates
 dotnet list package --outdated
-# Update packages
 dotnet package update
 
 # ef
@@ -88,91 +109,3 @@ dotnet user-secrets set "AWS:SecretAccessKey" "secret" --project Club.Api/Club.A
 
 dotnet user-secrets list --project Club.Api/Club.Api.csproj
 ```
-
-## Client (Front End)
-
-### Start
-
-```bash
-pnpm --dir client dev
-# bash command to remove evals/ folder from .agents/skills/aspire*
-rm -rf .agents/skills/aspire*/evals/
-```
-
-## Principles
-
-- Simplicity
-- Guests should be able to book
-- Re-use same UI for members guests and staff where possible
-- URLs should be deterministic.
-- Mobile First
-- Code first DB design
-
-### Diagram
-
-```mermaid
-architecture-beta
-    group club(server)[Club]
-
-    service db(database)[Postgres] in club
-    service redis(database)[Redis] in club
-    service api(server)[api] in club
-    service svelte(internet)[Svelte] in club
-    service keycloak(internet)[Kaycloak] in club
-
-    svelte:B -- T:api
-    db:L -- R:api
-    redis:R -- L:api
-    keycloak:T -- B:api
-```
-
-### Temp Booking validation types?
-
-Types of validation checks
-
-- Pre Check (This check happens before a booking is created) - Check if slots are available. Only allow if you lower price if you are part of it.
-- Check (This check happens before booking status can become confirmed)
-
-- Logged in
-- Has Contract (Needs params, can be comma seperated list?)
-- Has Handicap
-
-- Other option can book for guests. All should be members?
-
-Payments can you allow no payment and accept payment on arrival?
-
-Payment Options?
-
-- Pay before
-- Pay on arrival
-- Deposit %
-
-### Auth Plan
-
-Sync user accounts with identity
-Call /users endpoint in identity and sync
-Add column lastSync to users table.
-Only update if lastUpdate is older than 24 hours.
-
-## Facility Information
-
-Outlet
-Description
-Address
-GPSLink
-Tags
-Contact Number
-Email Address
-
-Facility
-Facility Name
-Contact Number
-Email Address
-
-Operating Hours
-Rule
-
-## Clean up
-
-- Remove old code
-- UserManager.FindByEmailAsync() remove all these type of references
