@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { bookingGet, bookingGetPath } from "$lib/api/booking.remote";
+	import { bookingGet, bookingGetPath } from "$lib/api/remote/booking.remote";
 	import { resolve } from "$app/paths";
 	import { formatDate, formatTime, formatCurrency } from "$lib/booking/format";
 	import { Button, Card } from "@kayord/ui";

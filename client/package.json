@@ -18,9 +18,10 @@
 		"test": "pnpm run test:unit -- --run && pnpm run test:e2e",
 		"test:e2e": "playwright test",
 		"test:install": "pnpm exec playwright install chromium",
-		"api": "pnpm run api:swagger && pnpm run api:orval && pnpm run format",
+		"api": "pnpm run api:swagger && pnpm run api:orval && pnpm run api:remote && pnpm run format",
 		"api:swagger": "curl http://localhost:5000/openapi/v1.json > swagger.json",
-		"api:orval": "orval"
+		"api:orval": "orval",
+		"api:remote": "node ../tools/gen-remote.mjs"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^2.1.0",
