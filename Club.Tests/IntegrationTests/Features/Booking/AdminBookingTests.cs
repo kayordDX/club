@@ -84,6 +84,138 @@ public class AdminBookingTests(AppFixture app)
     }
 
     [Fact]
+    public async Task AdminBookingGetAll_WithFiltersQuery_FiltersByDerivedExpiredStatus()
+    {
+        // Arrange - lowercase query params mirror what the generated frontend client sends
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var (slot, slotContract, facilityId) = await CreateBookingSetup(db);
+        await AssignManagerRole(db, facilityId);
+
+        var (createResponse, createdBooking) = await app.Client.POSTAsync<BookingCreateEndpoint, BookingCreateRequest, BookingCreateResponse>(
+            new BookingCreateRequest
+            {
+                Bookings =
+                [
+                    new BookingRequest
+                    {
+                        SlotId = slot.Id,
+                        SlotContractId = slotContract.Id,
+                        Name = "Jaco Taute",
+                        Email = "jaco@example.com",
+                        Cellphone = "0842502311",
+                    },
+                ],
+            }
+        );
+        createResponse.IsSuccessStatusCode.ShouldBeTrue();
+
+        // Push the pending booking past its expiry so it reads as Expired (derived status).
+        var booking = await db.Booking.FirstAsync(b => b.Id == createdBooking.Id, app.Context.CancellationToken);
+        booking.ExpiresAt = DateTime.UtcNow.AddDays(-1);
+        await db.SaveChangesAsync(app.Context.CancellationToken);
+
+        // Act - filter by Expired includes the derived-expired booking
+        var expiredIds = await GetItemIdsAsync($"/admin/facility/{facilityId}/booking?filters={Uri.EscapeDataString("bookingStatusId == 4")}");
+        // filtering by Pending must not surface it (it has effectively expired)
+        var pendingIds = await GetItemIdsAsync($"/admin/facility/{facilityId}/booking?filters={Uri.EscapeDataString("bookingStatusId == 1")}");
+
+        // Assert
+        expiredIds.ShouldContain(createdBooking.Id);
+        pendingIds.ShouldNotContain(createdBooking.Id);
+    }
+
+    [Fact]
+    public async Task AdminBookingGetAll_WithFiltersQuery_FiltersByBookingId()
+    {
+        // Arrange
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var (slot, slotContract, facilityId) = await CreateBookingSetup(db);
+        await AssignManagerRole(db, facilityId);
+
+        var (_, createdBooking) = await app.Client.POSTAsync<BookingCreateEndpoint, BookingCreateRequest, BookingCreateResponse>(
+            new BookingCreateRequest
+            {
+                Bookings =
+                [
+                    new BookingRequest
+                    {
+                        SlotId = slot.Id,
+                        SlotContractId = slotContract.Id,
+                        Name = "Jaco Taute",
+                        Email = "jaco@example.com",
+                        Cellphone = "0842502311",
+                    },
+                ],
+            }
+        );
+
+        // Act
+        var matched = await GetItemIdsAsync($"/admin/facility/{facilityId}/booking?filters={Uri.EscapeDataString($"id == {createdBooking.Id}")}");
+        var missed = await GetItemIdsAsync($"/admin/facility/{facilityId}/booking?filters={Uri.EscapeDataString("id == 999999")}");
+
+        // Assert
+        matched.ShouldHaveSingleItem();
+        matched.ShouldContain(createdBooking.Id);
+        missed.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task AdminBookingGetAll_IncludesFacilityAndSlotTimes()
+    {
+        // Arrange
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var (slot, slotContract, facilityId) = await CreateBookingSetup(db);
+        await AssignManagerRole(db, facilityId);
+
+        var (createResponse, createdBooking) = await app.Client.POSTAsync<BookingCreateEndpoint, BookingCreateRequest, BookingCreateResponse>(
+            new BookingCreateRequest
+            {
+                Bookings =
+                [
+                    new BookingRequest
+                    {
+                        SlotId = slot.Id,
+                        SlotContractId = slotContract.Id,
+                        Name = "Jaco Taute",
+                        Email = "jaco@example.com",
+                        Cellphone = "0842502311",
+                    },
+                ],
+            }
+        );
+        createResponse.IsSuccessStatusCode.ShouldBeTrue();
+
+        // Act
+        var response = await app.Client.GetAsync(
+            $"/admin/facility/{facilityId}/booking?filters={Uri.EscapeDataString($"id == {createdBooking.Id}")}",
+            app.Context.CancellationToken
+        );
+        response.IsSuccessStatusCode.ShouldBeTrue();
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(app.Context.CancellationToken));
+        var item = document.RootElement.GetProperty("items").EnumerateArray().Single();
+
+        // Assert - the new summary fields are populated
+        item.GetProperty("facilityName").GetString().ShouldBe("Admin Facility");
+        item.GetProperty("slotStartDatetime").GetString().ShouldNotBeNullOrEmpty();
+        item.GetProperty("slotEndDatetime").GetString().ShouldNotBeNullOrEmpty();
+        item.GetProperty("playerCount").GetInt32().ShouldBe(1);
+    }
+
+    private async Task<int[]> GetItemIdsAsync(string pathAndQuery)
+    {
+        var response = await app.Client.GetAsync(pathAndQuery, app.Context.CancellationToken);
+        response.IsSuccessStatusCode.ShouldBeTrue();
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync(app.Context.CancellationToken));
+        return document.RootElement.GetProperty("items").EnumerateArray().Select(i => i.GetProperty("id").GetInt32()).ToArray();
+    }
+
+    [Fact]
     public async Task AdminBookingUpdateStatus_WhenManager_ChangesStatusWithoutRemovingPlayers()
     {
         // Arrange

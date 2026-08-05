@@ -26,7 +26,7 @@ import type {
 	BookingUpdateRequest,
 	BookingUpdateStatusRequest,
 	InternalErrorResponse,
-	PaginatedListOfBookingDTO,
+	PaginatedListOfBookingSummaryDTO,
 } from "./api.schemas";
 
 import { customInstance } from "../mutator/customInstance.svelte";
@@ -193,8 +193,11 @@ export const getBookingGetUserUrl = (params?: BookingGetUserParams) => {
 	return stringifiedParams.length > 0 ? `/booking/user?${stringifiedParams}` : `/booking/user`;
 };
 
-export const bookingGetUser = async (params?: BookingGetUserParams, options?: Parameters<typeof customInstance>[1]): Promise<PaginatedListOfBookingDTO> => {
-	return customInstance<PaginatedListOfBookingDTO>(getBookingGetUserUrl(params), {
+export const bookingGetUser = async (
+	params?: BookingGetUserParams,
+	options?: Parameters<typeof customInstance>[1]
+): Promise<PaginatedListOfBookingSummaryDTO> => {
+	return customInstance<PaginatedListOfBookingSummaryDTO>(getBookingGetUserUrl(params), {
 		...options,
 		method: "GET",
 	});
