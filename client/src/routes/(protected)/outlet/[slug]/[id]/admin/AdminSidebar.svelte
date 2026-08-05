@@ -31,12 +31,10 @@
 </script>
 
 <Sidebar.Root variant="sidebar">
-	<Sidebar.Header>
-		<Sidebar.Menu>
-			<Sidebar.MenuItem class="flex items-center justify-start">
-				<LogoButton />
-			</Sidebar.MenuItem>
-		</Sidebar.Menu>
+	<Sidebar.Header class="p-0">
+		<div class="border-border bg-card/50 flex h-14 items-center justify-between border-b p-2 backdrop-blur-sm">
+			<LogoButton />
+		</div>
 	</Sidebar.Header>
 	<Sidebar.Content class="px-1">
 		<Sidebar.Group class="gap-1">
