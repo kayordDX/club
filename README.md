@@ -118,7 +118,7 @@ architecture-beta
     service redis(database)[Redis] in club
     service api(server)[api] in club
     service svelte(internet)[Svelte] in club
-    service keycloak(auth)[Kaycloak] in club
+    service keycloak(internet)[Kaycloak] in club
 
     svelte:B -- T:api
     db:L -- R:api
