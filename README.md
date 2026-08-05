@@ -118,10 +118,12 @@ architecture-beta
     service redis(database)[Redis] in club
     service api(server)[api] in club
     service svelte(internet)[Svelte] in club
+    service keycloak(auth)[Kaycloak] in club
 
     svelte:B -- T:api
     db:L -- R:api
     redis:R -- L:api
+    keycloak:T -- B:api
 ```
 
 ### Temp Booking validation types?
