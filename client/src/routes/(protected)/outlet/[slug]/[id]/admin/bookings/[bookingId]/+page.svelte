@@ -24,7 +24,7 @@
 	);
 	const booking = $derived(query.data);
 
-	const listHref = $derived(resolve(`/outlet/${page.params.slug}/${page.params.id}/admin`));
+	const listHref = $derived(resolve(`/outlet/${page.params.slug}/${page.params.id}/admin/bookings`));
 
 	const slotId = $derived(booking?.slotContractBookings?.[0]?.slotContract?.slotId ?? "");
 	const slotStartDatetime = $derived(booking?.slotContractBookings?.[0]?.slotContract?.slot?.startDatetime ?? null);
