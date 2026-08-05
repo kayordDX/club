@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
-	import { Sidebar, Collapsible } from "@kayord/ui";
+	import LogoButton from "$lib/components/LogoButton.svelte";
+	import { Collapsible, Sidebar } from "@kayord/ui";
 	import { BookIcon, BuildingIcon, ChevronLeftIcon, ChevronRightIcon, CreditCardIcon, StoreIcon } from "@lucide/svelte";
 
 	const slug = $derived(page.params.slug ?? "");
@@ -29,7 +30,14 @@
 	});
 </script>
 
-<aside class="bg-sidebar text-sidebar-foreground w-full shrink-0 rounded-lg border md:sticky md:top-2 md:w-64">
+<Sidebar.Root variant="sidebar">
+	<Sidebar.Header>
+		<Sidebar.Menu>
+			<Sidebar.MenuItem class="flex items-center justify-start">
+				<LogoButton />
+			</Sidebar.MenuItem>
+		</Sidebar.Menu>
+	</Sidebar.Header>
 	<Sidebar.Content class="px-1">
 		<Sidebar.Group class="gap-1">
 			<Sidebar.GroupLabel>Management</Sidebar.GroupLabel>
@@ -139,4 +147,4 @@
 			</Sidebar.Menu>
 		</Sidebar.Group>
 	</Sidebar.Content>
-</aside>
+</Sidebar.Root>
