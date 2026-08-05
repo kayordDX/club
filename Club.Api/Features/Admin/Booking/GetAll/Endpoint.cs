@@ -1,3 +1,4 @@
+using Club.Common;
 using Club.Common.Enums;
 using Club.Common.Extensions;
 using Club.Common.Models;
@@ -20,18 +21,25 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<AdminBookingGetAllReque
 
     public override async Task HandleAsync(AdminBookingGetAllRequest req, CancellationToken ct)
     {
+        var now = DateTime.UtcNow;
         var query = (
             from b in _dbContext.Booking
             where b.SlotContractBookings.Any(scb => scb.SlotContract.Slot.FacilityId == req.FacilityId)
             select new AdminBookingDTO
             {
                 Id = b.Id,
-                BookingStatusId = b.BookingStatusId,
-                BookingStatusName = b.BookingStatus.Name,
+                // Expired is a derived state: pending bookings past their expiry read as Expired
+                // so they can be filtered and displayed consistently with the rest of the statuses.
+                BookingStatusId =
+                    (b.BookingStatusId == (int)BookingStatusEnum.Pending && b.ExpiresAt < now) ? (int)BookingStatusEnum.Expired : b.BookingStatusId,
+                BookingStatusName =
+                    (b.BookingStatusId == (int)BookingStatusEnum.Pending && b.ExpiresAt < now) ? nameof(BookingStatusEnum.Expired) : b.BookingStatus.Name,
                 BookingStatusDate = b.BookingStatusDate,
                 SlotStartDatetime = b.SlotContractBookings.Min(scb => (DateTime?)scb.SlotContract.Slot.StartDatetime),
+                SlotEndDatetime = b.SlotContractBookings.Max(scb => scb.SlotContract.Slot.EndDatetime),
                 UserId = b.UserId,
                 CustomerName = b.User != null ? b.User.FirstName + " " + b.User.LastName : null,
+                FacilityName = b.SlotContractBookings.Select(scb => scb.SlotContract.Slot.Facility!.Name).FirstOrDefault(),
                 PlayerCount = b.SlotContractBookings.Count,
                 ExtraCount = b.ExtraBookings.Count,
                 IsPaid = b.IsPaid,
@@ -42,16 +50,6 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<AdminBookingGetAllReque
         ).OrderByDescending(x => x.SlotStartDatetime ?? DateTime.MinValue);
 
         var results = await query.GetPagedAsync(req, ct);
-
-        var now = DateTime.UtcNow;
-        foreach (var booking in results.Items)
-        {
-            if (booking.BookingStatusId == (int)BookingStatusEnum.Pending && booking.ExpiresAt < now)
-            {
-                booking.BookingStatusId = (int)BookingStatusEnum.Expired;
-                booking.BookingStatusName = "Expired";
-            }
-        }
 
         await Send.OkAsync(results, ct);
     }

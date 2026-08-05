@@ -5,7 +5,7 @@
 	import { toast } from "svelte-sonner";
 
 	import { BookingStatusEnum, createAdminBookingGet, createAdminBookingUpdate, createAdminBookingUpdateStatus } from "$lib/api";
-	import { BOOKING_STATUS_OPTIONS, statusBadgeVariant, statusLabel } from "$lib/admin/booking";
+	import { BOOKING_STATUS_OPTIONS, statusBadgeVariant, statusLabel } from "$lib/booking/status";
 	import { formatCurrency, formatDate } from "$lib/booking/format";
 	import { buildExtras, buildPlayers } from "$lib/booking/bookingForm";
 	import PageHeading from "$lib/components/PageHeading.svelte";

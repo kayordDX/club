@@ -1,63 +1,95 @@
 <script lang="ts">
 	import PageHeading from "$lib/components/PageHeading.svelte";
-	import { BookIcon, PencilIcon } from "@lucide/svelte";
-	import { createBookingGetUser, type BookingDTO } from "$lib/api";
-	import {
-		type ColumnDef,
-		type Updater,
-		type PaginationState,
-		type SortingState,
-		getPaginationRowModel,
-		getFilteredRowModel,
-		getSortedRowModel,
-	} from "@tanstack/table-core";
+	import { BookIcon, PencilIcon, SearchIcon } from "@lucide/svelte";
+	import { BookingStatusEnum, createBookingGetUser, type BookingSummaryDTO } from "$lib/api";
+	import { type ColumnDef, type Updater, type PaginationState, type SortingState, getPaginationRowModel, getSortedRowModel } from "@tanstack/table-core";
 	import { DataTable, createShadTable, renderSnippet } from "@kayord/ui/data-table";
-	import { Actions } from "@kayord/ui";
+	import { Actions, Badge, Input, Select } from "@kayord/ui";
 	import { goto } from "$app/navigation";
 	import { resolve } from "$app/paths";
-	import { BookingStatusEnum } from "$lib/api";
+	import { BOOKING_STATUS_OPTIONS, statusBadgeVariant, statusLabel } from "$lib/booking/status";
+	import { formatCurrency, formatDate, formatTime } from "$lib/booking/format";
+	import { buildBookingFilters, sortingToQueryKitSorts } from "$lib/booking/querykit";
 
-	const bookingQuery = createBookingGetUser();
+	let pagination: PaginationState = $state({ pageIndex: 0, pageSize: 10 });
+	let sorting: SortingState = $state([{ id: "slotStartDatetime", desc: true }]);
+
+	// "all" keeps the single-select value non-empty while meaning "no status filter".
+	let statusValue = $state("all");
+	let status = $derived(statusValue === "all" ? null : Number(statusValue));
+
+	let searchInput = $state("");
+	let search = $state("");
+	$effect(() => {
+		const value = searchInput;
+		const timer = setTimeout(() => {
+			search = value;
+			pagination.pageIndex = 0;
+		}, 350);
+		return () => clearTimeout(timer);
+	});
+
+	const params = $derived.by(() => {
+		const p: Record<string, string | number> = {
+			page: pagination.pageIndex + 1,
+			pageSize: pagination.pageSize,
+		};
+		const filters = buildBookingFilters({ status, search });
+		if (filters) p.filters = filters;
+		const sorts = sortingToQueryKitSorts(sorting);
+		if (sorts) p.sorts = sorts;
+		return p;
+	});
+
+	const bookingQuery = createBookingGetUser(() => params);
 	let data = $derived(bookingQuery.data?.items ?? []);
 	let rowCount = $derived(bookingQuery.data?.totalCount ?? 0);
 
-	const columns: ColumnDef<BookingDTO>[] = [
+	const columns: ColumnDef<BookingSummaryDTO>[] = [
+		{ header: "#", accessorKey: "id", size: 60 },
 		{
-			header: "Booking Date",
-			accessorKey: "bookingStatusDate",
-			size: 1000,
+			header: "Facility",
+			accessorKey: "facilityName",
+			cell: (item) => item.row.original.facilityName ?? "—",
+		},
+		{
+			header: "Date",
+			accessorKey: "slotStartDatetime",
+			cell: (item) => formatDate(item.row.original.slotStartDatetime),
+		},
+		{
+			header: "Time",
+			id: "time",
+			cell: (item) => `${formatTime(item.row.original.slotStartDatetime)} – ${formatTime(item.row.original.slotEndDatetime)}`,
+			enableSorting: false,
 		},
 		{
 			header: "Status",
-			accessorKey: "bookingStatus.name",
-			size: 1000,
+			accessorKey: "bookingStatusId",
+			cell: (item) => renderSnippet(statusCell, item.row.original),
 		},
+		{ header: "Players", accessorKey: "playerCount", size: 80 },
 		{
-			header: "Amount Outstanding",
+			header: "Outstanding",
 			accessorKey: "amountOutstanding",
-			size: 1000,
+			cell: (item) => formatCurrency(item.row.original.amountOutstanding),
 		},
 		{
 			header: "",
-			accessorKey: "name",
+			id: "actions",
 			cell: (item) => renderSnippet(viewBooking, item.row.original),
 			size: 10,
 			enableSorting: false,
 		},
 	];
 
-	let pagination: PaginationState = $state({ pageIndex: 0, pageSize: 10 });
 	const setPagination = (updater: Updater<PaginationState>) => {
-		if (updater instanceof Function) {
-			pagination = updater(pagination);
-		} else pagination = updater;
+		pagination = updater instanceof Function ? updater(pagination) : updater;
 	};
 
-	let sorting: SortingState = $state([]);
 	const setSorting = (updater: Updater<SortingState>) => {
-		if (updater instanceof Function) {
-			sorting = updater(sorting);
-		} else sorting = updater;
+		sorting = updater instanceof Function ? updater(sorting) : updater;
+		pagination.pageIndex = 0;
 	};
 
 	const table = createShadTable({
@@ -65,7 +97,6 @@
 		get data() {
 			return data;
 		},
-		getFilteredRowModel: getFilteredRowModel(),
 		manualPagination: true,
 		manualFiltering: true,
 		manualSorting: true,
@@ -96,7 +127,13 @@
 	};
 </script>
 
-{#snippet viewBooking(booking: BookingDTO)}
+{#snippet statusCell(booking: BookingSummaryDTO)}
+	<Badge variant={statusBadgeVariant(booking.bookingStatusId)}>
+		{statusLabel(booking.bookingStatusId)}
+	</Badge>
+{/snippet}
+
+{#snippet viewBooking(booking: BookingSummaryDTO)}
 	<Actions
 		actions={[
 			{
@@ -105,7 +142,7 @@
 				class: "truncate",
 				action: () => openBooking(booking.id),
 			},
-			...(booking.bookingStatus?.id === BookingStatusEnum.Pending
+			...(booking.bookingStatusId === BookingStatusEnum.Pending
 				? [
 						{
 							icon: PencilIcon,
@@ -121,5 +158,30 @@
 
 <div class="m-4">
 	<PageHeading title="Bookings" description="My Bookings" icon={BookIcon} />
-	<DataTable {table} headerClass="pb-2" isLoading={bookingQuery.isPending} noDataMessage="No bookings" />
+	<DataTable {table} isLoading={bookingQuery.isPending} noDataMessage="No bookings">
+		{#snippet leftToolbar()}
+			<div class="flex items-center gap-2">
+				<div class="relative">
+					<SearchIcon class="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+					<Input type="search" placeholder="Search booking #" bind:value={searchInput} class="w-48 pl-9" />
+				</div>
+				<Select.Root
+					type="single"
+					value={statusValue}
+					onValueChange={(v) => {
+						statusValue = v ?? "all";
+						pagination.pageIndex = 0;
+					}}
+				>
+					<Select.Trigger class="w-40">{status ? statusLabel(status) : "All statuses"}</Select.Trigger>
+					<Select.Content>
+						<Select.Item value="all" label="All statuses">All statuses</Select.Item>
+						{#each BOOKING_STATUS_OPTIONS as option (option.value)}
+							<Select.Item value={String(option.value)} label={option.label}>{option.label}</Select.Item>
+						{/each}
+					</Select.Content>
+				</Select.Root>
+			</div>
+		{/snippet}
+	</DataTable>
 </div>

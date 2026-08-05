@@ -787,9 +787,13 @@ export interface AdminBookingDTO {
 	/** @nullable */
 	slotStartDatetime?: string | null;
 	/** @nullable */
+	slotEndDatetime?: string | null;
+	/** @nullable */
 	userId?: string | null;
 	/** @nullable */
 	customerName?: string | null;
+	/** @nullable */
+	facilityName?: string | null;
 	playerCount: number;
 	extraCount: number;
 	isPaid: boolean;
@@ -842,6 +846,33 @@ export interface AccountCredentialResponse {
 
 export interface CredentialDisableRequest {
 	token: string;
+}
+
+export interface BookingSummaryDTO {
+	id: number;
+	bookingStatusId: number;
+	bookingStatusName: string;
+	bookingStatusDate: string;
+	/** @nullable */
+	facilityName?: string | null;
+	/** @nullable */
+	slotStartDatetime?: string | null;
+	/** @nullable */
+	slotEndDatetime?: string | null;
+	playerCount: number;
+	amountOutstanding: number;
+	amountPaid: number;
+	isPaid: boolean;
+	expiresAt: string;
+}
+
+export interface PaginatedListOfBookingSummaryDTO {
+	items: BookingSummaryDTO[];
+	pageNumber: number;
+	totalPages: number;
+	totalCount: number;
+	hasPreviousPage: boolean;
+	hasNextPage: boolean;
 }
 
 export type TestParams = {
