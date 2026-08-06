@@ -2,12 +2,6 @@ import type { Handle } from "@sveltejs/kit";
 import { getSession, deleteSession } from "$lib/server/auth/session";
 import { refreshTokens, SESSION_COOKIE } from "$lib/server/auth/oidc";
 
-/**
- * Resolves the cookie session into `event.locals` for every request.
- *
- * Auth *enforcement* is done per-route in `+layout.server.ts` load functions,
- * not here — so the existing client-side-auth SPA routes are unaffected.
- */
 export const handle: Handle = async ({ event, resolve }) => {
 	const sid = event.cookies.get(SESSION_COOKIE);
 
