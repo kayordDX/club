@@ -4,6 +4,7 @@
 	import { Sidebar } from "@kayord/ui";
 	import AdminSidebar from "./AdminSidebar.svelte";
 	import Header from "$lib/components/Header/Header.svelte";
+	import PageBoundary from "$lib/components/PageBoundary.svelte";
 	import { setRolesContext } from "$lib/auth";
 
 	let { data, children } = $props();
@@ -23,7 +24,9 @@
 			<AdminSidebar />
 			<main class="w-full">
 				<Header leftHeader={test} />
-				{@render children?.()}
+				<PageBoundary>
+					{@render children?.()}
+				</PageBoundary>
 			</main>
 		</Sidebar.Provider>
 	</RoleCheck>

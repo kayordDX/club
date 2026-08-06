@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { afterNavigate } from "$app/navigation";
-	import Header from "$lib/components/Header/Header.svelte";
 	import { Alert, Badge, Button, Skeleton } from "@kayord/ui";
 	import { CircleAlertIcon, FrownIcon } from "@lucide/svelte";
 	import { type HttpError } from "@sveltejs/kit";
@@ -8,11 +7,11 @@
 
 	type Props = {
 		children?: Snippet;
-		pending?: Snippet;
+		pendingSnippet?: Snippet;
 		disablePending?: boolean;
 	};
 
-	let { children, pending, disablePending = false }: Props = $props();
+	let { children, pendingSnippet, disablePending = false }: Props = $props();
 
 	// svelte-ignore non_reactive_update
 	let resetBoundary: (() => void) | undefined;
@@ -25,8 +24,6 @@
 <svelte:boundary>
 	{#snippet failed(error, reset)}
 		{@const _ = resetBoundary = reset}
-		<Header />
-
 		<div class="p-4">
 			<Alert.Root variant="destructive">
 				<CircleAlertIcon class="animate-pulse" />
@@ -48,8 +45,8 @@
 
 	{#snippet pending()}
 		{#if !disablePending}
-			{#if pending}
-				{@render pending()}
+			{#if pendingSnippet}
+				{@render pendingSnippet()}
 			{:else}
 				<div class="m-4 space-y-3">
 					<Skeleton class="h-8 w-1/3" />
