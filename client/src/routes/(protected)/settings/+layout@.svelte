@@ -25,7 +25,7 @@
 		<Sidebar.Rail />
 	</Sidebar.Root>
 	<Sidebar.Inset>
-		<AuthCheck isProtected={true}>
+		<AuthCheck>
 			<Header leftHeader={sidebarTrigger} />
 			{@render children?.()}
 		</AuthCheck>

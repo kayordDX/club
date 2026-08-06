@@ -1,8 +1,9 @@
 <script lang="ts">
 	import Search from "./Search.svelte";
-	import { createOutletGetAll } from "$lib/api";
+	import { outletGetAll } from "$lib/api/remote/outlet.remote";
 	import Outlet from "./Outlet.svelte";
 	import LoginButton from "$lib/components/LoginButton/LoginButton.svelte";
+	import { Loader } from "@kayord/ui";
 
 	let searchTerm = $state("");
 	let draft = $state("");
@@ -18,10 +19,8 @@
 		draft = "";
 	}
 
-	// When a search term is present it is resolved against the outlet full-text
-	// search vector. An empty term lists all outlets.
-	const query = createOutletGetAll(() => (searchTerm ? { search: searchTerm } : {}));
-	let data = $derived(query.data?.items ?? []);
+	// Reactive remote query — re-fetches when the committed search term changes.
+	const outlets = $derived(outletGetAll(searchTerm ? { search: searchTerm } : undefined));
 </script>
 
 <main class="container mx-auto px-4 py-8">
@@ -35,20 +34,21 @@
 	<Search bind:draft onsearch={commitSearch} />
 	{#if searchTerm}
 		<div class="text-muted-foreground mb-6 flex items-center justify-center gap-2 text-sm">
-			<span>
-				{data.length}
-				{data.length === 1 ? "result" : "results"} for &ldquo;{searchTerm}&rdquo;
-			</span>
+			<span> searching for &ldquo;{searchTerm}&rdquo; </span>
 			<button class="text-primary hover:underline" onclick={clearSearch} data-testid="clear-search"> Clear </button>
 		</div>
 	{/if}
-	<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-2">
-		{#each data as outlet (outlet.id)}
-			<Outlet {outlet} />
+	{#await outlets}
+		<Loader class="my-4" />
+	{:then res}
+		{#if searchTerm && res.items.length === 0}
+			<p class="text-muted-foreground py-12 text-center" data-testid="no-results">No clubs found matching your search.</p>
 		{:else}
-			{#if searchTerm}
-				<p class="text-muted-foreground col-span-full py-12 text-center" data-testid="no-results">No clubs found matching your search.</p>
-			{/if}
-		{/each}
-	</div>
+			<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-2">
+				{#each res.items as outlet (outlet.id)}
+					<Outlet {outlet} />
+				{/each}
+			</div>
+		{/if}
+	{/await}
 </main>

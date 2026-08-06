@@ -150,8 +150,10 @@ export interface UserJWT {
 export interface SessionUser {
 	sub: string;
 	username: string;
+	name: string;
 	email: string;
 	firstName: string;
 	lastName: string;
+	phone_number?: string;
 	picture?: string;
 }

@@ -28,9 +28,11 @@ export interface OidcTokens {
 export interface OidcProfile {
 	sub: string;
 	preferredUsername: string;
+	name: string;
 	email: string;
 	givenName: string;
 	familyName: string;
+	phone_number?: string;
 	picture?: string;
 }
 
@@ -154,9 +156,11 @@ export async function getUserinfo(accessToken: string): Promise<OidcProfile> {
 	return {
 		sub: String(u.sub ?? ""),
 		preferredUsername: String(u.preferred_username ?? ""),
+		name: String(u.name ?? ""),
 		email: String(u.email ?? ""),
 		givenName: String(u.given_name ?? ""),
 		familyName: String(u.family_name ?? ""),
+		phone_number: u.phone_number ? String(u.phone_number) : undefined,
 		picture: u.picture ? String(u.picture) : undefined,
 	};
 }

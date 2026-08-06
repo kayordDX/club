@@ -1,23 +1,20 @@
+// Server-side equivalent of the client `customInstance.svelte.ts`.
+//
+// Attaches the caller's access token (from the session) to every call to the
+// .NET API when present. Does NOT throw when there is no token — public
+// endpoints (outlet/facility browsing) are reachable unauthenticated.
 import { getRequestEvent } from "$app/server";
 import { error } from "@sveltejs/kit";
 import { PUBLIC_API_URL } from "$env/static/public";
 
-/**
- * Server-side mutator used by the orval `fetch` client output
- * (src/lib/server/api/generated/**). Attaches the caller's access token
- * (from the session, never sent to the browser) to every call to the .NET API.
- */
-export const customServerInstance = async <T>(url: string, options: RequestInit = {}): Promise<T> => {
+export async function customServerInstance<T>(url: string, init: RequestInit = {}): Promise<T> {
 	const accessToken = getRequestEvent().locals.accessToken;
-	if (!accessToken) {
-		throw error(401, "Not authenticated");
-	}
 
 	const res = await fetch(`${PUBLIC_API_URL}${url}`, {
-		...options,
+		...init,
 		headers: {
-			...(options.headers ?? {}),
-			authorization: `Bearer ${accessToken}`,
+			...(init.headers ?? {}),
+			...(accessToken ? { authorization: `Bearer ${accessToken}` } : {}),
 		},
 	});
 
@@ -28,7 +25,7 @@ export const customServerInstance = async <T>(url: string, options: RequestInit 
 	}
 	if (res.status === 204) return undefined as T;
 	return (await res.json()) as T;
-};
+}
 
 export default customServerInstance;
 

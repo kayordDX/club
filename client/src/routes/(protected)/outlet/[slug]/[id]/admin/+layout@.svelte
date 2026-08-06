@@ -1,27 +1,23 @@
 <script lang="ts">
 	import RoleCheck from "$lib/components/check/RoleCheck.svelte";
+	import AuthCheck from "$lib/components/check/AuthCheck.svelte";
 	import { Sidebar } from "@kayord/ui";
 	import AdminSidebar from "./AdminSidebar.svelte";
-	import AuthCheck from "$lib/components/check/AuthCheck.svelte";
 	import Header from "$lib/components/Header/Header.svelte";
-	import { onMount } from "svelte";
-	import { auth } from "$lib/stores/auth.svelte";
-	import { page } from "$app/state";
+	import { setRolesContext } from "$lib/auth";
 
-	let { children } = $props();
-
-	onMount(async () => {
-		if (auth.isAuthenticated) {
-			await auth.getRoles(Number(page.params.id));
-		}
-	});
+	let { data, children } = $props();
+	// The @ reset detaches this layout from the outlet layout, so re-publish
+	// roles into context for RoleCheck.
+	// svelte-ignore state_referenced_locally
+	setRolesContext(data.roles);
 </script>
 
 {#snippet test()}
 	<Sidebar.Trigger />
 {/snippet}
 
-<AuthCheck isProtected={true}>
+<AuthCheck>
 	<RoleCheck roles={["MANAGER"]}>
 		<Sidebar.Provider>
 			<AdminSidebar />

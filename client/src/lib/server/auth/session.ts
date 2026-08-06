@@ -26,9 +26,11 @@ export function toSessionUser(p: OidcProfile): SessionUser {
 	return {
 		sub: p.sub,
 		username: p.preferredUsername,
+		name: p.name || [p.givenName, p.familyName].filter(Boolean).join(" ") || p.preferredUsername,
 		email: p.email,
 		firstName: p.givenName,
 		lastName: p.familyName,
+		phone_number: p.phone_number,
 		picture: p.picture,
 	};
 }

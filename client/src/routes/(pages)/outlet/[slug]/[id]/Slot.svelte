@@ -8,7 +8,7 @@
 	import { ChevronRightIcon, CircleDotIcon, CircleQuestionMark, ClockIcon, MinusIcon, PlusIcon } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
 	import { goto } from "$app/navigation";
-	import { auth } from "$lib/stores/auth.svelte";
+	import { useUser } from "$lib/auth";
 
 	type Props = {
 		slot: SlotGetAllResponse;
@@ -17,6 +17,8 @@
 	};
 
 	let { slot, selectedDate, refetch }: Props = $props();
+
+	const user = useUser();
 
 	let slotCount = $state(1);
 	let slotContractEnabled = $state(false);
@@ -35,10 +37,10 @@
 			});
 			if (isAvailable) {
 				const bookingUrl = resolve(`/outlet/${page.params.slug}/${page.params.id}/slot/${slot.id}?slotCount=${slotCount ?? 1}&date=${selectedDate}`);
-				if (auth.isAuthenticated) {
+				if (user) {
 					goto(bookingUrl);
 				} else {
-					auth.login(bookingUrl);
+					window.location.href = `/auth/login?next=${encodeURIComponent(bookingUrl)}`;
 				}
 			} else {
 				toast.error("Not enough slots available");

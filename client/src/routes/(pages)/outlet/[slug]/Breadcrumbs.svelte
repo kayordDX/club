@@ -1,29 +1,27 @@
 <script lang="ts">
 	import { page } from "$app/state";
-	import { createOutletGetBasic } from "$lib/api";
+	import { outletGetBasic } from "$lib/api/remote/outlet.remote";
 	import { Breadcrumb } from "@kayord/ui";
-	import Query from "$lib/components/Query.svelte";
+	import Await from "$lib/components/Await.svelte";
 	import { HouseIcon } from "@lucide/svelte";
 
-	const query = createOutletGetBasic(
-		() => page.params.slug ?? "",
-		() => ({ query: { staleTime: 1000 * 60 * 5 } })
-	);
-	const outlet = $derived(query.data);
+	const outlet = outletGetBasic(page.params.slug ?? "");
 </script>
 
-<Query {query} emptyText="Unable to load outlet">
-	<Breadcrumb.Root class="mb-4">
-		<Breadcrumb.List>
-			<Breadcrumb.Item>
-				<Breadcrumb.Link href="/">
-					<HouseIcon class="size-3" />
-				</Breadcrumb.Link>
-			</Breadcrumb.Item>
-			<Breadcrumb.Separator />
-			<Breadcrumb.Item>
-				<Breadcrumb.Page class="text-xs">{outlet!.name}</Breadcrumb.Page>
-			</Breadcrumb.Item>
-		</Breadcrumb.List>
-	</Breadcrumb.Root>
-</Query>
+<Await promise={outlet} emptyText="Unable to load outlet">
+	{#snippet children(o)}
+		<Breadcrumb.Root class="mb-4">
+			<Breadcrumb.List>
+				<Breadcrumb.Item>
+					<Breadcrumb.Link href="/">
+						<HouseIcon class="size-3" />
+					</Breadcrumb.Link>
+				</Breadcrumb.Item>
+				<Breadcrumb.Separator />
+				<Breadcrumb.Item>
+					<Breadcrumb.Page class="text-xs">{o.name}</Breadcrumb.Page>
+				</Breadcrumb.Item>
+			</Breadcrumb.List>
+		</Breadcrumb.Root>
+	{/snippet}
+</Await>

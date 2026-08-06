@@ -1,28 +1,13 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
-	import { auth } from "$lib/stores/auth.svelte";
-	import { Loader } from "@kayord/ui";
-	import { page } from "$app/state";
-	import { PUBLIC_APP_URL } from "$env/static/public";
 
+	// Protection is now enforced server-side in +layout.server.ts. This component
+	// is kept as a pass-through so existing templates don't need to change.
 	interface Props {
 		children?: Snippet;
-		isProtected?: boolean;
 	}
 
-	let { children, isProtected }: Props = $props();
-
-	$effect(() => {
-		if (isProtected) {
-			if (!auth.isLoading && !auth.isAuthenticated) {
-				window.location.href = `${PUBLIC_APP_URL}/login?redirect=${encodeURIComponent(page.url.pathname + page.url.search)}`;
-			}
-		}
-	});
+	let { children }: Props = $props();
 </script>
 
-{#if auth.isLoading}
-	<Loader class="text-primary absolute inset-0 m-auto" />
-{:else}
-	{@render children?.()}
-{/if}
+{@render children?.()}

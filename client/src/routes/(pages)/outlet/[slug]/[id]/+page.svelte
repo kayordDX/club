@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Popover, ButtonGroup } from "@kayord/ui";
+	import { Button, Popover, ButtonGroup, Loader } from "@kayord/ui";
 	import { Calendar } from "@kayord/ui/calendar";
 	import { CalendarIcon, ChevronRightIcon, ChevronLeftIcon, BuildingIcon, UserCogIcon } from "@lucide/svelte";
 	import { parseDate, today, getLocalTimeZone, DateFormatter, type DateValue } from "@internationalized/date";
@@ -7,9 +7,11 @@
 	import { resolve } from "$app/paths";
 	import { cn } from "@kayord/ui/utils";
 	import { createSearchParamsSchema, useSearchParams } from "runed/kit";
-	import { createSlotGetAll } from "$lib/api";
+	import { slotGetAll } from "$lib/api/remote/slot.remote";
+	import { useUser } from "$lib/auth";
 	import Slots from "./Slots.svelte";
-	import { auth } from "$lib/stores/auth.svelte";
+
+	const user = useUser();
 
 	const df = new DateFormatter("en-ZA", {
 		dateStyle: "long",
@@ -33,11 +35,13 @@
 		params.date = value.add({ days: incrementValue }).toString();
 	};
 
-	const slotsQuery = createSlotGetAll(() => ({
-		facilityId: Number(page.params.id),
-		date: value.toString(),
-	}));
-	const slotsData = $derived(slotsQuery.data ?? []);
+	// Reactive remote query — re-fetches when the facility or selected date changes.
+	const slots = $derived(
+		slotGetAll({
+			facilityId: Number(page.params.id),
+			date: value.toString(),
+		})
+	);
 </script>
 
 <div class="flex flex-row items-center gap-2">
@@ -77,7 +81,7 @@
 		</div>
 	</div>
 	<div class="flex items-center gap-2">
-		{#if auth.isManager}
+		{#if user}
 			<Button variant="destructive" href={resolve(`/outlet/${page.params.slug}/${page.params.id}/admin`)}>
 				<UserCogIcon />
 				Admin
@@ -90,5 +94,9 @@
 	</div>
 </div>
 <div>
-	<Slots slots={slotsData} selectedDate={value.toString()} refetch={slotsQuery.refetch} />
+	{#await slots}
+		<Loader class="my-4" />
+	{:then res}
+		<Slots slots={res} selectedDate={value.toString()} refetch={() => slots.refresh()} />
+	{/await}
 </div>

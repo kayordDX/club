@@ -1,6 +1,7 @@
 import { UserManager, type UserManagerSettings, User } from "oidc-client-ts";
 import { type UserRoleBasicDTO } from "$lib/api";
 import { PUBLIC_IDENTITY_URL, PUBLIC_APP_URL, PUBLIC_API_URL } from "$env/static/public";
+import { browser } from "$app/environment";
 
 export type KeycloakAction =
 	| "UPDATE_PASSWORD"
@@ -13,7 +14,7 @@ export type KeycloakAction =
 	| "delete_account";
 
 class Auth {
-	private userManager: UserManager;
+	private userManager?: UserManager;
 
 	#user = $state<User | null>(null);
 	#cachedFacilityId = $state<number | undefined>(undefined);
@@ -22,6 +23,8 @@ class Auth {
 	#isSyncing = $state(false);
 
 	constructor(settings: UserManagerSettings) {
+		// SSR-safe: oidc-client-ts touches browser APIs at construction.
+		if (!browser) return;
 		this.userManager = new UserManager(settings);
 		this.init();
 	}
@@ -93,6 +96,7 @@ class Auth {
 	}
 
 	private setupEventListeners() {
+		if (!this.userManager) return;
 		this.userManager.events.addUserLoaded(async (user) => {
 			this.#user = user;
 			await this.syncUser();
@@ -137,6 +141,7 @@ class Auth {
 	}
 
 	login = async (returnUrl?: string) => {
+		if (!this.userManager) return;
 		await this.userManager.signinRedirect({
 			prompt: "select_account",
 			state: returnUrl ? { returnUrl } : undefined,
@@ -148,11 +153,13 @@ class Auth {
 	};
 
 	logout = async () => {
+		if (!this.userManager) return;
 		console.log("logging out", this.userManager);
 		await this.userManager.signoutRedirect();
 	};
 
 	keycloakAction = async (action: KeycloakAction) => {
+		if (!this.userManager) return;
 		try {
 			await this.userManager.signinRedirect({
 				extraQueryParams: { kc_action: action },
@@ -164,6 +171,7 @@ class Auth {
 	};
 
 	otpLevel = async () => {
+		if (!this.userManager) return;
 		await this.userManager.signinRedirect({
 			extraQueryParams: {
 				prompt: "login", // Override global select_account; force full re-auth
@@ -173,6 +181,7 @@ class Auth {
 	};
 
 	async handleCallback() {
+		if (!this.userManager) throw new Error("no userManager");
 		try {
 			const user = await this.userManager.signinCallback();
 			if (user == undefined) {
