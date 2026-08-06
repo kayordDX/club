@@ -4,19 +4,6 @@
  * Club.Api
  * OpenAPI spec version: v1
  */
-import { createMutation, createQuery } from "@tanstack/svelte-query";
-import type {
-	CreateMutationOptions,
-	CreateMutationResult,
-	CreateQueryOptions,
-	CreateQueryResult,
-	DataTag,
-	MutationFunction,
-	QueryClient,
-	QueryFunction,
-	QueryKey,
-} from "@tanstack/svelte-query";
-
 import type {
 	BookingCreateRequest,
 	BookingCreateResponse,
@@ -29,10 +16,29 @@ import type {
 	PaginatedListOfBookingSummaryDTO,
 } from "./api.schemas";
 
-import { customInstance } from "../mutator/customInstance.svelte";
-import type { ErrorType, BodyType } from "../mutator/customInstance.svelte";
+export type bookingUpdateStatusResponse204 = {
+	data: void;
+	status: 204;
+};
 
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+export type bookingUpdateStatusResponse401 = {
+	data: void;
+	status: 401;
+};
+
+export type bookingUpdateStatusResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
+
+export type bookingUpdateStatusResponseSuccess = bookingUpdateStatusResponse204 & {
+	headers: Headers;
+};
+export type bookingUpdateStatusResponseError = (bookingUpdateStatusResponse401 | bookingUpdateStatusResponse500) & {
+	headers: Headers;
+};
+
+export type bookingUpdateStatusResponse = bookingUpdateStatusResponseSuccess | bookingUpdateStatusResponseError;
 
 export const getBookingUpdateStatusUrl = () => {
 	return `/booking/status`;
@@ -40,144 +46,126 @@ export const getBookingUpdateStatusUrl = () => {
 
 export const bookingUpdateStatus = async (
 	bookingUpdateStatusRequest: BookingUpdateStatusRequest,
-	options?: Parameters<typeof customInstance>[1]
-): Promise<void> => {
-	return customInstance<void>(getBookingUpdateStatusUrl(), {
+	options?: RequestInit
+): Promise<bookingUpdateStatusResponse> => {
+	const res = await fetch(getBookingUpdateStatusUrl(), {
 		...options,
 		method: "PUT",
 		headers: { "Content-Type": "application/json", ...options?.headers },
 		body: JSON.stringify(bookingUpdateStatusRequest),
 	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: bookingUpdateStatusResponse["data"] = body ? JSON.parse(body) : undefined;
+	return { data, status: res.status, headers: res.headers } as bookingUpdateStatusResponse;
 };
 
-export const getBookingUpdateStatusMutationOptions = <TError = ErrorType<void | InternalErrorResponse>, TContext = unknown>(options?: {
-	mutation?: CreateMutationOptions<Awaited<ReturnType<typeof bookingUpdateStatus>>, TError, { data: BodyType<BookingUpdateStatusRequest> }, TContext>;
-	request?: SecondParameter<typeof customInstance>;
-}): CreateMutationOptions<Awaited<ReturnType<typeof bookingUpdateStatus>>, TError, { data: BodyType<BookingUpdateStatusRequest> }, TContext> => {
-	const mutationKey = ["bookingUpdateStatus"];
-	const { mutation: mutationOptions, request: requestOptions } = options
-		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
-			? options
-			: { ...options, mutation: { ...options.mutation, mutationKey } }
-		: { mutation: { mutationKey }, request: undefined };
-
-	const mutationFn: MutationFunction<Awaited<ReturnType<typeof bookingUpdateStatus>>, { data: BodyType<BookingUpdateStatusRequest> }> = (props) => {
-		const { data } = props ?? {};
-
-		return bookingUpdateStatus(data, requestOptions);
-	};
-
-	return { mutationFn, ...mutationOptions };
+export type bookingUpdateResponse204 = {
+	data: void;
+	status: 204;
 };
 
-export type BookingUpdateStatusMutationResult = NonNullable<Awaited<ReturnType<typeof bookingUpdateStatus>>>;
-export type BookingUpdateStatusMutationBody = BodyType<BookingUpdateStatusRequest>;
-export type BookingUpdateStatusMutationError = ErrorType<void | InternalErrorResponse>;
-
-export const createBookingUpdateStatus = <TError = ErrorType<void | InternalErrorResponse>, TContext = unknown>(
-	options?: () => {
-		mutation?: CreateMutationOptions<Awaited<ReturnType<typeof bookingUpdateStatus>>, TError, { data: BodyType<BookingUpdateStatusRequest> }, TContext>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateMutationResult<Awaited<ReturnType<typeof bookingUpdateStatus>>, TError, { data: BodyType<BookingUpdateStatusRequest> }, TContext> => {
-	return createMutation(() => ({ ...getBookingUpdateStatusMutationOptions(options?.()) }), queryClient);
+export type bookingUpdateResponse401 = {
+	data: void;
+	status: 401;
 };
+
+export type bookingUpdateResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
+
+export type bookingUpdateResponseSuccess = bookingUpdateResponse204 & {
+	headers: Headers;
+};
+export type bookingUpdateResponseError = (bookingUpdateResponse401 | bookingUpdateResponse500) & {
+	headers: Headers;
+};
+
+export type bookingUpdateResponse = bookingUpdateResponseSuccess | bookingUpdateResponseError;
+
 export const getBookingUpdateUrl = (id: number) => {
 	return `/booking/${id}`;
 };
 
-export const bookingUpdate = async (id: number, bookingUpdateRequest: BookingUpdateRequest, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
-	return customInstance<void>(getBookingUpdateUrl(id), {
+export const bookingUpdate = async (id: number, bookingUpdateRequest: BookingUpdateRequest, options?: RequestInit): Promise<bookingUpdateResponse> => {
+	const res = await fetch(getBookingUpdateUrl(id), {
 		...options,
 		method: "PUT",
 		headers: { "Content-Type": "application/json", ...options?.headers },
 		body: JSON.stringify(bookingUpdateRequest),
 	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: bookingUpdateResponse["data"] = body ? JSON.parse(body) : undefined;
+	return { data, status: res.status, headers: res.headers } as bookingUpdateResponse;
 };
 
-export const getBookingUpdateMutationOptions = <TError = ErrorType<void | InternalErrorResponse>, TContext = unknown>(options?: {
-	mutation?: CreateMutationOptions<Awaited<ReturnType<typeof bookingUpdate>>, TError, { id: number; data: BodyType<BookingUpdateRequest> }, TContext>;
-	request?: SecondParameter<typeof customInstance>;
-}): CreateMutationOptions<Awaited<ReturnType<typeof bookingUpdate>>, TError, { id: number; data: BodyType<BookingUpdateRequest> }, TContext> => {
-	const mutationKey = ["bookingUpdate"];
-	const { mutation: mutationOptions, request: requestOptions } = options
-		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
-			? options
-			: { ...options, mutation: { ...options.mutation, mutationKey } }
-		: { mutation: { mutationKey }, request: undefined };
-
-	const mutationFn: MutationFunction<Awaited<ReturnType<typeof bookingUpdate>>, { id: number; data: BodyType<BookingUpdateRequest> }> = (props) => {
-		const { id, data } = props ?? {};
-
-		return bookingUpdate(id, data, requestOptions);
-	};
-
-	return { mutationFn, ...mutationOptions };
+export type bookingGetResponse200 = {
+	data: BookingDTO;
+	status: 200;
 };
 
-export type BookingUpdateMutationResult = NonNullable<Awaited<ReturnType<typeof bookingUpdate>>>;
-export type BookingUpdateMutationBody = BodyType<BookingUpdateRequest>;
-export type BookingUpdateMutationError = ErrorType<void | InternalErrorResponse>;
-
-export const createBookingUpdate = <TError = ErrorType<void | InternalErrorResponse>, TContext = unknown>(
-	options?: () => {
-		mutation?: CreateMutationOptions<Awaited<ReturnType<typeof bookingUpdate>>, TError, { id: number; data: BodyType<BookingUpdateRequest> }, TContext>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateMutationResult<Awaited<ReturnType<typeof bookingUpdate>>, TError, { id: number; data: BodyType<BookingUpdateRequest> }, TContext> => {
-	return createMutation(() => ({ ...getBookingUpdateMutationOptions(options?.()) }), queryClient);
+export type bookingGetResponse401 = {
+	data: void;
+	status: 401;
 };
+
+export type bookingGetResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
+
+export type bookingGetResponseSuccess = bookingGetResponse200 & {
+	headers: Headers;
+};
+export type bookingGetResponseError = (bookingGetResponse401 | bookingGetResponse500) & {
+	headers: Headers;
+};
+
+export type bookingGetResponse = bookingGetResponseSuccess | bookingGetResponseError;
+
 export const getBookingGetUrl = (id: number) => {
 	return `/booking/${id}`;
 };
 
-export const bookingGet = async (id: number, options?: Parameters<typeof customInstance>[1]): Promise<BookingDTO> => {
-	return customInstance<BookingDTO>(getBookingGetUrl(id), {
+export const bookingGet = async (id: number, options?: RequestInit): Promise<bookingGetResponse> => {
+	const res = await fetch(getBookingGetUrl(id), {
 		...options,
 		method: "GET",
 	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: bookingGetResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as bookingGetResponse;
 };
 
-export const getBookingGetQueryKey = (id: number) => {
-	return [`/booking/${id}`] as const;
+export type bookingGetUserResponse200 = {
+	data: PaginatedListOfBookingSummaryDTO;
+	status: 200;
 };
 
-export const getBookingGetQueryOptions = <TData = Awaited<ReturnType<typeof bookingGet>>, TError = ErrorType<void | InternalErrorResponse>>(
-	id: number,
-	options?: { query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof bookingGet>>, TError, TData>>; request?: SecondParameter<typeof customInstance> }
-) => {
-	const { query: queryOptions, request: requestOptions } = options ?? {};
-
-	const queryKey = queryOptions?.queryKey ?? getBookingGetQueryKey(id);
-
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof bookingGet>>> = ({ signal }) => bookingGet(id, { signal, ...requestOptions });
-
-	return { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions } as CreateQueryOptions<
-		Awaited<ReturnType<typeof bookingGet>>,
-		TError,
-		TData
-	> & { queryKey: DataTag<QueryKey, TData, TError> };
+export type bookingGetUserResponse401 = {
+	data: void;
+	status: 401;
 };
 
-export type BookingGetQueryResult = NonNullable<Awaited<ReturnType<typeof bookingGet>>>;
-export type BookingGetQueryError = ErrorType<void | InternalErrorResponse>;
+export type bookingGetUserResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
 
-export function createBookingGet<TData = Awaited<ReturnType<typeof bookingGet>>, TError = ErrorType<void | InternalErrorResponse>>(
-	id: () => number,
-	options?: () => {
-		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof bookingGet>>, TError, TData>>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-	const query = createQuery(() => getBookingGetQueryOptions(id(), options?.()), queryClient) as CreateQueryResult<TData, TError> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
+export type bookingGetUserResponseSuccess = bookingGetUserResponse200 & {
+	headers: Headers;
+};
+export type bookingGetUserResponseError = (bookingGetUserResponse401 | bookingGetUserResponse500) & {
+	headers: Headers;
+};
 
-	return query;
-}
+export type bookingGetUserResponse = bookingGetUserResponseSuccess | bookingGetUserResponseError;
 
 export const getBookingGetUserUrl = (params?: BookingGetUserParams) => {
 	const normalizedParams = new URLSearchParams();
@@ -193,149 +181,96 @@ export const getBookingGetUserUrl = (params?: BookingGetUserParams) => {
 	return stringifiedParams.length > 0 ? `/booking/user?${stringifiedParams}` : `/booking/user`;
 };
 
-export const bookingGetUser = async (
-	params?: BookingGetUserParams,
-	options?: Parameters<typeof customInstance>[1]
-): Promise<PaginatedListOfBookingSummaryDTO> => {
-	return customInstance<PaginatedListOfBookingSummaryDTO>(getBookingGetUserUrl(params), {
+export const bookingGetUser = async (params?: BookingGetUserParams, options?: RequestInit): Promise<bookingGetUserResponse> => {
+	const res = await fetch(getBookingGetUserUrl(params), {
 		...options,
 		method: "GET",
 	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: bookingGetUserResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as bookingGetUserResponse;
 };
 
-export const getBookingGetUserQueryKey = (params?: BookingGetUserParams) => {
-	return [`/booking/user`, ...(params ? [params] : [])] as const;
+export type bookingGetPathResponse200 = {
+	data: BookingPathDTO;
+	status: 200;
 };
 
-export const getBookingGetUserQueryOptions = <TData = Awaited<ReturnType<typeof bookingGetUser>>, TError = ErrorType<void | InternalErrorResponse>>(
-	params?: BookingGetUserParams,
-	options?: { query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof bookingGetUser>>, TError, TData>>; request?: SecondParameter<typeof customInstance> }
-) => {
-	const { query: queryOptions, request: requestOptions } = options ?? {};
-
-	const queryKey = queryOptions?.queryKey ?? getBookingGetUserQueryKey(params);
-
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof bookingGetUser>>> = ({ signal }) => bookingGetUser(params, { signal, ...requestOptions });
-
-	return { queryKey, queryFn, ...queryOptions } as CreateQueryOptions<Awaited<ReturnType<typeof bookingGetUser>>, TError, TData> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
+export type bookingGetPathResponse401 = {
+	data: void;
+	status: 401;
 };
 
-export type BookingGetUserQueryResult = NonNullable<Awaited<ReturnType<typeof bookingGetUser>>>;
-export type BookingGetUserQueryError = ErrorType<void | InternalErrorResponse>;
+export type bookingGetPathResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
 
-export function createBookingGetUser<TData = Awaited<ReturnType<typeof bookingGetUser>>, TError = ErrorType<void | InternalErrorResponse>>(
-	params?: () => BookingGetUserParams,
-	options?: () => {
-		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof bookingGetUser>>, TError, TData>>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-	const query = createQuery(() => getBookingGetUserQueryOptions(params?.(), options?.()), queryClient) as CreateQueryResult<TData, TError> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
+export type bookingGetPathResponseSuccess = bookingGetPathResponse200 & {
+	headers: Headers;
+};
+export type bookingGetPathResponseError = (bookingGetPathResponse401 | bookingGetPathResponse500) & {
+	headers: Headers;
+};
 
-	return query;
-}
+export type bookingGetPathResponse = bookingGetPathResponseSuccess | bookingGetPathResponseError;
 
 export const getBookingGetPathUrl = (id: number) => {
 	return `/booking/${id}/path`;
 };
 
-export const bookingGetPath = async (id: number, options?: Parameters<typeof customInstance>[1]): Promise<BookingPathDTO> => {
-	return customInstance<BookingPathDTO>(getBookingGetPathUrl(id), {
+export const bookingGetPath = async (id: number, options?: RequestInit): Promise<bookingGetPathResponse> => {
+	const res = await fetch(getBookingGetPathUrl(id), {
 		...options,
 		method: "GET",
 	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: bookingGetPathResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as bookingGetPathResponse;
 };
 
-export const getBookingGetPathQueryKey = (id: number) => {
-	return [`/booking/${id}/path`] as const;
+export type bookingCreateResponse200 = {
+	data: BookingCreateResponse;
+	status: 200;
 };
 
-export const getBookingGetPathQueryOptions = <TData = Awaited<ReturnType<typeof bookingGetPath>>, TError = ErrorType<void | InternalErrorResponse>>(
-	id: number,
-	options?: { query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof bookingGetPath>>, TError, TData>>; request?: SecondParameter<typeof customInstance> }
-) => {
-	const { query: queryOptions, request: requestOptions } = options ?? {};
-
-	const queryKey = queryOptions?.queryKey ?? getBookingGetPathQueryKey(id);
-
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof bookingGetPath>>> = ({ signal }) => bookingGetPath(id, { signal, ...requestOptions });
-
-	return { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions } as CreateQueryOptions<
-		Awaited<ReturnType<typeof bookingGetPath>>,
-		TError,
-		TData
-	> & { queryKey: DataTag<QueryKey, TData, TError> };
+export type bookingCreateResponse401 = {
+	data: void;
+	status: 401;
 };
 
-export type BookingGetPathQueryResult = NonNullable<Awaited<ReturnType<typeof bookingGetPath>>>;
-export type BookingGetPathQueryError = ErrorType<void | InternalErrorResponse>;
+export type bookingCreateResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
 
-export function createBookingGetPath<TData = Awaited<ReturnType<typeof bookingGetPath>>, TError = ErrorType<void | InternalErrorResponse>>(
-	id: () => number,
-	options?: () => {
-		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof bookingGetPath>>, TError, TData>>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-	const query = createQuery(() => getBookingGetPathQueryOptions(id(), options?.()), queryClient) as CreateQueryResult<TData, TError> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
+export type bookingCreateResponseSuccess = bookingCreateResponse200 & {
+	headers: Headers;
+};
+export type bookingCreateResponseError = (bookingCreateResponse401 | bookingCreateResponse500) & {
+	headers: Headers;
+};
 
-	return query;
-}
+export type bookingCreateResponse = bookingCreateResponseSuccess | bookingCreateResponseError;
 
 export const getBookingCreateUrl = () => {
 	return `/booking`;
 };
 
-export const bookingCreate = async (
-	bookingCreateRequest: BookingCreateRequest,
-	options?: Parameters<typeof customInstance>[1]
-): Promise<BookingCreateResponse> => {
-	return customInstance<BookingCreateResponse>(getBookingCreateUrl(), {
+export const bookingCreate = async (bookingCreateRequest: BookingCreateRequest, options?: RequestInit): Promise<bookingCreateResponse> => {
+	const res = await fetch(getBookingCreateUrl(), {
 		...options,
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...options?.headers },
 		body: JSON.stringify(bookingCreateRequest),
 	});
-};
 
-export const getBookingCreateMutationOptions = <TError = ErrorType<void | InternalErrorResponse>, TContext = unknown>(options?: {
-	mutation?: CreateMutationOptions<Awaited<ReturnType<typeof bookingCreate>>, TError, { data: BodyType<BookingCreateRequest> }, TContext>;
-	request?: SecondParameter<typeof customInstance>;
-}): CreateMutationOptions<Awaited<ReturnType<typeof bookingCreate>>, TError, { data: BodyType<BookingCreateRequest> }, TContext> => {
-	const mutationKey = ["bookingCreate"];
-	const { mutation: mutationOptions, request: requestOptions } = options
-		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
-			? options
-			: { ...options, mutation: { ...options.mutation, mutationKey } }
-		: { mutation: { mutationKey }, request: undefined };
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
 
-	const mutationFn: MutationFunction<Awaited<ReturnType<typeof bookingCreate>>, { data: BodyType<BookingCreateRequest> }> = (props) => {
-		const { data } = props ?? {};
-
-		return bookingCreate(data, requestOptions);
-	};
-
-	return { mutationFn, ...mutationOptions };
-};
-
-export type BookingCreateMutationResult = NonNullable<Awaited<ReturnType<typeof bookingCreate>>>;
-export type BookingCreateMutationBody = BodyType<BookingCreateRequest>;
-export type BookingCreateMutationError = ErrorType<void | InternalErrorResponse>;
-
-export const createBookingCreate = <TError = ErrorType<void | InternalErrorResponse>, TContext = unknown>(
-	options?: () => {
-		mutation?: CreateMutationOptions<Awaited<ReturnType<typeof bookingCreate>>, TError, { data: BodyType<BookingCreateRequest> }, TContext>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateMutationResult<Awaited<ReturnType<typeof bookingCreate>>, TError, { data: BodyType<BookingCreateRequest> }, TContext> => {
-	return createMutation(() => ({ ...getBookingCreateMutationOptions(options?.()) }), queryClient);
+	const data: bookingCreateResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as bookingCreateResponse;
 };

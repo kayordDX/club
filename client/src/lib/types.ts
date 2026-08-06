@@ -155,5 +155,7 @@ export interface SessionUser {
 	firstName: string;
 	lastName: string;
 	phone_number?: string;
+	phone_number_verified?: boolean;
+	email_verified?: boolean;
 	picture?: string;
 }

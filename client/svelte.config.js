@@ -16,6 +16,8 @@ const config = {
 			remoteFunctions: true,
 		},
 	},
+	// Svelte compiler experimental: await expressions in components, used with
+	// <svelte:boundary> for remote-function data loading.
 	compilerOptions: {
 		experimental: {
 			async: true,

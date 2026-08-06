@@ -28,7 +28,7 @@
 
 <svelte:boundary>
 	<!-- 1. Error Fallback: Shown if the query throws -->
-	{#snippet failed(error, reset)}
+	{#snippet failed(_error, reset)}
 		<button onclick={reset}>oops! try again</button>
 	{/snippet}
 

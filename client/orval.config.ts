@@ -1,30 +1,24 @@
 import { defineConfig } from "orval";
 
 export default defineConfig({
-	// Existing client: svelte-query hooks consumed in the browser.
+	// Client-accessible types/enums (api.schemas.ts). The per-tag fetch functions
+	// are unused — the app uses SvelteKit remote functions for all fetching — but
+	// this client emits the shared TS types/enums (BookingStatusEnum, ...) without
+	// needing @tanstack/svelte-query.
 	api: {
 		input: "./swagger.json",
 		output: {
 			mode: "tags",
 			workspace: "./src/lib/api/generated",
 			target: "api.ts",
-			client: "svelte-query",
+			client: "fetch",
 			prettier: true,
 			headers: false,
 			clean: true,
-			override: {
-				fetch: {
-					includeHttpResponseReturnType: false,
-				},
-				mutator: {
-					path: "../mutator/customInstance.svelte.ts",
-					name: "customInstance",
-				},
-			},
+			// Mutator deliberately omitted: generated fetch functions are dead code.
 		},
 	},
-	// NEW: plain typed fetch functions for the SvelteKit server (consumed by
-	// .remote.ts). Same swagger.json, different client + server-side mutator.
+	// Server-side typed fetch (transport) consumed by .remote.ts.
 	serverApi: {
 		input: "./swagger.json",
 		output: {
@@ -46,7 +40,7 @@ export default defineConfig({
 			},
 		},
 	},
-	// NEW: Zod schemas (Standard Schema) used for remote-function validation.
+	// Zod validation schemas used by remote functions.
 	zodSchemas: {
 		input: "./swagger.json",
 		output: {

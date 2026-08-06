@@ -51,9 +51,6 @@ importers:
       '@tanstack/svelte-form':
         specifier: ^1.33.3
         version: 1.33.3(svelte@5.56.8(@typescript-eslint/types@8.65.0))
-      '@tanstack/svelte-query':
-        specifier: ^6.1.38
-        version: 6.1.38(svelte@5.56.8(@typescript-eslint/types@8.65.0))
       '@tanstack/table-core':
         specifier: ^8.21.3
         version: 8.21.3
@@ -87,9 +84,6 @@ importers:
       mode-watcher:
         specifier: ^1.1.0
         version: 1.1.0(svelte@5.56.8(@typescript-eslint/types@8.65.0))
-      oidc-client-ts:
-        specifier: ^3.5.0
-        version: 3.5.0
       orval:
         specifier: ^8.23.0
         version: 8.23.0(prettier@3.9.6)(typescript@6.0.3)
@@ -1054,9 +1048,6 @@ packages:
     resolution: {integrity: sha512-y/xtNPNt/YeyoVxE/JCx+T7yjEzpezmbb+toK8DDD1P4m7Kzs5YR956+7OKexG3f8aXgC3rLZl7b1V+yNUSy5w==}
     engines: {node: '>=18'}
 
-  '@tanstack/query-core@5.101.4':
-    resolution: {integrity: sha512-gNwcvOJcRbLWPOLG/2OBm+zM+Yv+MKsXKEOWC57USuZDEsI71hEErQsiEGx5wX9rzWWkfwM0fVSPoiIFSsxfiw==}
-
   '@tanstack/store@0.11.0':
     resolution: {integrity: sha512-WlzzCt3xi0G6pCAJu1U+2jiECwabETDpQDi3hfkFZvJii9AuZqEKbOiVarX1/bWhTNjU486yQtJCCasi/0q+Cw==}
 
@@ -1064,11 +1055,6 @@ packages:
     resolution: {integrity: sha512-Ao/UBr9RNxoHQvPOMgypWIuzkzoPf2MRVnTWQscPLaoDfx/UplbJIW/H/4AWefl6TNUv+YdVHZjWlsEkxXsMgA==}
     peerDependencies:
       svelte: ^5.0.0
-
-  '@tanstack/svelte-query@6.1.38':
-    resolution: {integrity: sha512-oV5S/+uAot23p3lJChLAHr82+8ApgQMyIgroWPpN0d6Y6TlThRbLSXnhx6CoUk6AkwlCPxf9vh4SOHa0eXHiWg==}
-    peerDependencies:
-      svelte: ^5.25.0
 
   '@tanstack/svelte-store@0.12.0':
     resolution: {integrity: sha512-XhXlU3jIO/WxikfeVczRdsAvRWzsLBh8Ic6sC7nzfzvMbPut7ZSdCbE7/usfm0bMjVGMmZmyzZy2xRu73QYWAA==}
@@ -2082,10 +2068,6 @@ packages:
   obug@2.1.4:
     resolution: {integrity: sha512-4a+OsYv9UktOJKE+l1A4OufDgdRF9PifWj+tJnHURo/P+WOxpG4GzUFL9qCalmWauao6ogiG+QvnCovwPoyAWA==}
     engines: {node: '>=12.20.0'}
-
-  oidc-client-ts@3.5.0:
-    resolution: {integrity: sha512-l2q8l9CTCTOlbX+AnK4p3M+4CEpKpyQhle6blQkdFhm0IsBqsxm15bYaSa11G7pWdsYr6epdsRZxJpCyCRbT8A==}
-    engines: {node: '>=18'}
 
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
@@ -3483,19 +3465,12 @@ snapshots:
 
   '@tanstack/pacer-lite@0.1.1': {}
 
-  '@tanstack/query-core@5.101.4': {}
-
   '@tanstack/store@0.11.0': {}
 
   '@tanstack/svelte-form@1.33.3(svelte@5.56.8(@typescript-eslint/types@8.65.0))':
     dependencies:
       '@tanstack/form-core': 1.33.3
       '@tanstack/svelte-store': 0.12.0(svelte@5.56.8(@typescript-eslint/types@8.65.0))
-      svelte: 5.56.8(@typescript-eslint/types@8.65.0)
-
-  '@tanstack/svelte-query@6.1.38(svelte@5.56.8(@typescript-eslint/types@8.65.0))':
-    dependencies:
-      '@tanstack/query-core': 5.101.4
       svelte: 5.56.8(@typescript-eslint/types@8.65.0)
 
   '@tanstack/svelte-store@0.12.0(svelte@5.56.8(@typescript-eslint/types@8.65.0))':
@@ -4502,10 +4477,6 @@ snapshots:
       unicorn-magic: 0.3.0
 
   obug@2.1.4: {}
-
-  oidc-client-ts@3.5.0:
-    dependencies:
-      jwt-decode: 4.0.0
 
   optionator@0.9.4:
     dependencies:

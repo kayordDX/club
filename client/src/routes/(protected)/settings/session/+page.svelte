@@ -1,25 +1,21 @@
 <script lang="ts">
-	import { createAccountSession, createAccountSessionRevokeAll } from "$lib/api";
+	import { accountSession, accountSessionRevokeAll } from "$lib/api/remote/account.remote";
 	import { ShieldBanIcon, ShieldIcon } from "@lucide/svelte";
 	import PageHeading from "$lib/components/PageHeading.svelte";
-	import Query from "$lib/components/Query.svelte";
 	import Session from "./Session.svelte";
 	import { Button } from "@kayord/ui";
 	import { toast } from "svelte-sonner";
-	import { auth } from "$lib/stores/auth.svelte";
 
-	const query = createAccountSession();
-
-	const mutation = createAccountSessionRevokeAll();
+	const sessions = await accountSession();
 
 	let isRevoking = $state(false);
 	const revokeAll = async () => {
 		try {
 			isRevoking = true;
-			await mutation.mutateAsync();
+			await accountSessionRevokeAll();
 			toast.info("Successfully revoked all sessions");
-			query.refetch();
-			auth.logout();
+			// Full navigation back through the server session (all sessions gone).
+			window.location.href = "/";
 		} catch {
 			toast.error("Error revoking all sessions");
 		} finally {
@@ -30,22 +26,20 @@
 
 <div class="m-4">
 	<PageHeading title="Sessions" description="Manage your active sessions across devices." icon={ShieldIcon} />
-	<Query {query} emptyText="No sessions found">
-		<div class="space-y-2">
-			<div class="flex items-center justify-between">
-				<div class="text-muted-foreground mt-6 text-sm">
-					Sessions ({query.data?.length})
-				</div>
-				{#if (query.data?.length ?? 0) > 0}
-					<Button variant="ghost" size="sm" class="text-destructive hover:text-destructive" disabled={isRevoking} onclick={revokeAll}>
-						<ShieldBanIcon />
-						Revoke All
-					</Button>
-				{/if}
+	<div class="space-y-2">
+		<div class="flex items-center justify-between">
+			<div class="text-muted-foreground mt-6 text-sm">
+				Sessions ({sessions?.length})
 			</div>
-			{#each query.data as session (session.id)}
-				<Session {session} refetch={query.refetch} />
-			{/each}
+			{#if (sessions?.length ?? 0) > 0}
+				<Button variant="ghost" size="sm" class="text-destructive hover:text-destructive" disabled={isRevoking} onclick={revokeAll}>
+					<ShieldBanIcon />
+					Revoke All
+				</Button>
+			{/if}
 		</div>
-	</Query>
+		{#each sessions ?? [] as session (session.id)}
+			<Session {session} />
+		{/each}
+	</div>
 </div>

@@ -4,19 +4,6 @@
  * Club.Api
  * OpenAPI spec version: v1
  */
-import { createMutation, createQuery } from "@tanstack/svelte-query";
-import type {
-	CreateMutationOptions,
-	CreateMutationResult,
-	CreateQueryOptions,
-	CreateQueryResult,
-	DataTag,
-	MutationFunction,
-	QueryClient,
-	QueryFunction,
-	QueryKey,
-} from "@tanstack/svelte-query";
-
 import type {
 	AccountCredentialResponse,
 	AccountSessionResponse,
@@ -28,383 +15,339 @@ import type {
 	UserRoleBasicDTO,
 } from "./api.schemas";
 
-import { customInstance } from "../mutator/customInstance.svelte";
-import type { ErrorType, BodyType } from "../mutator/customInstance.svelte";
+export type accountSyncResponse204 = {
+	data: void;
+	status: 204;
+};
 
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+export type accountSyncResponse401 = {
+	data: void;
+	status: 401;
+};
+
+export type accountSyncResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
+
+export type accountSyncResponseSuccess = accountSyncResponse204 & {
+	headers: Headers;
+};
+export type accountSyncResponseError = (accountSyncResponse401 | accountSyncResponse500) & {
+	headers: Headers;
+};
+
+export type accountSyncResponse = accountSyncResponseSuccess | accountSyncResponseError;
 
 export const getAccountSyncUrl = () => {
 	return `/account/sync`;
 };
 
-export const accountSync = async (accountSyncRequest: AccountSyncRequest, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
-	return customInstance<void>(getAccountSyncUrl(), {
+export const accountSync = async (accountSyncRequest: AccountSyncRequest, options?: RequestInit): Promise<accountSyncResponse> => {
+	const res = await fetch(getAccountSyncUrl(), {
 		...options,
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...options?.headers },
 		body: JSON.stringify(accountSyncRequest),
 	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: accountSyncResponse["data"] = body ? JSON.parse(body) : undefined;
+	return { data, status: res.status, headers: res.headers } as accountSyncResponse;
 };
 
-export const getAccountSyncMutationOptions = <TError = ErrorType<void | InternalErrorResponse>, TContext = unknown>(options?: {
-	mutation?: CreateMutationOptions<Awaited<ReturnType<typeof accountSync>>, TError, { data: BodyType<AccountSyncRequest> }, TContext>;
-	request?: SecondParameter<typeof customInstance>;
-}): CreateMutationOptions<Awaited<ReturnType<typeof accountSync>>, TError, { data: BodyType<AccountSyncRequest> }, TContext> => {
-	const mutationKey = ["accountSync"];
-	const { mutation: mutationOptions, request: requestOptions } = options
-		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
-			? options
-			: { ...options, mutation: { ...options.mutation, mutationKey } }
-		: { mutation: { mutationKey }, request: undefined };
-
-	const mutationFn: MutationFunction<Awaited<ReturnType<typeof accountSync>>, { data: BodyType<AccountSyncRequest> }> = (props) => {
-		const { data } = props ?? {};
-
-		return accountSync(data, requestOptions);
-	};
-
-	return { mutationFn, ...mutationOptions };
+export type accountSessionResponse200 = {
+	data: AccountSessionResponse[];
+	status: 200;
 };
 
-export type AccountSyncMutationResult = NonNullable<Awaited<ReturnType<typeof accountSync>>>;
-export type AccountSyncMutationBody = BodyType<AccountSyncRequest>;
-export type AccountSyncMutationError = ErrorType<void | InternalErrorResponse>;
-
-export const createAccountSync = <TError = ErrorType<void | InternalErrorResponse>, TContext = unknown>(
-	options?: () => {
-		mutation?: CreateMutationOptions<Awaited<ReturnType<typeof accountSync>>, TError, { data: BodyType<AccountSyncRequest> }, TContext>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateMutationResult<Awaited<ReturnType<typeof accountSync>>, TError, { data: BodyType<AccountSyncRequest> }, TContext> => {
-	return createMutation(() => ({ ...getAccountSyncMutationOptions(options?.()) }), queryClient);
+export type accountSessionResponse401 = {
+	data: void;
+	status: 401;
 };
+
+export type accountSessionResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
+
+export type accountSessionResponseSuccess = accountSessionResponse200 & {
+	headers: Headers;
+};
+export type accountSessionResponseError = (accountSessionResponse401 | accountSessionResponse500) & {
+	headers: Headers;
+};
+
+export type accountSessionResponse = accountSessionResponseSuccess | accountSessionResponseError;
+
 export const getAccountSessionUrl = () => {
 	return `/account/session`;
 };
 
-export const accountSession = async (options?: Parameters<typeof customInstance>[1]): Promise<AccountSessionResponse[]> => {
-	return customInstance<AccountSessionResponse[]>(getAccountSessionUrl(), {
+export const accountSession = async (options?: RequestInit): Promise<accountSessionResponse> => {
+	const res = await fetch(getAccountSessionUrl(), {
 		...options,
 		method: "GET",
 	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: accountSessionResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as accountSessionResponse;
 };
 
-export const getAccountSessionQueryKey = () => {
-	return [`/account/session`] as const;
+export type accountSessionRevokeAllResponse204 = {
+	data: void;
+	status: 204;
 };
 
-export const getAccountSessionQueryOptions = <TData = Awaited<ReturnType<typeof accountSession>>, TError = ErrorType<void | InternalErrorResponse>>(options?: {
-	query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof accountSession>>, TError, TData>>;
-	request?: SecondParameter<typeof customInstance>;
-}) => {
-	const { query: queryOptions, request: requestOptions } = options ?? {};
-
-	const queryKey = queryOptions?.queryKey ?? getAccountSessionQueryKey();
-
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof accountSession>>> = ({ signal }) => accountSession({ signal, ...requestOptions });
-
-	return { queryKey, queryFn, ...queryOptions } as CreateQueryOptions<Awaited<ReturnType<typeof accountSession>>, TError, TData> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
+export type accountSessionRevokeAllResponse401 = {
+	data: void;
+	status: 401;
 };
 
-export type AccountSessionQueryResult = NonNullable<Awaited<ReturnType<typeof accountSession>>>;
-export type AccountSessionQueryError = ErrorType<void | InternalErrorResponse>;
+export type accountSessionRevokeAllResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
 
-export function createAccountSession<TData = Awaited<ReturnType<typeof accountSession>>, TError = ErrorType<void | InternalErrorResponse>>(
-	options?: () => {
-		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof accountSession>>, TError, TData>>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-	const query = createQuery(() => getAccountSessionQueryOptions(options?.()), queryClient) as CreateQueryResult<TData, TError> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
+export type accountSessionRevokeAllResponseSuccess = accountSessionRevokeAllResponse204 & {
+	headers: Headers;
+};
+export type accountSessionRevokeAllResponseError = (accountSessionRevokeAllResponse401 | accountSessionRevokeAllResponse500) & {
+	headers: Headers;
+};
 
-	return query;
-}
+export type accountSessionRevokeAllResponse = accountSessionRevokeAllResponseSuccess | accountSessionRevokeAllResponseError;
 
 export const getAccountSessionRevokeAllUrl = () => {
 	return `/account/session/revokeAll`;
 };
 
-export const accountSessionRevokeAll = async (options?: Parameters<typeof customInstance>[1]): Promise<void> => {
-	return customInstance<void>(getAccountSessionRevokeAllUrl(), {
+export const accountSessionRevokeAll = async (options?: RequestInit): Promise<accountSessionRevokeAllResponse> => {
+	const res = await fetch(getAccountSessionRevokeAllUrl(), {
 		...options,
 		method: "POST",
 	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: accountSessionRevokeAllResponse["data"] = body ? JSON.parse(body) : undefined;
+	return { data, status: res.status, headers: res.headers } as accountSessionRevokeAllResponse;
 };
 
-export const getAccountSessionRevokeAllMutationOptions = <TError = ErrorType<void | InternalErrorResponse>, TContext = unknown>(options?: {
-	mutation?: CreateMutationOptions<Awaited<ReturnType<typeof accountSessionRevokeAll>>, TError, void, TContext>;
-	request?: SecondParameter<typeof customInstance>;
-}): CreateMutationOptions<Awaited<ReturnType<typeof accountSessionRevokeAll>>, TError, void, TContext> => {
-	const mutationKey = ["accountSessionRevokeAll"];
-	const { mutation: mutationOptions, request: requestOptions } = options
-		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
-			? options
-			: { ...options, mutation: { ...options.mutation, mutationKey } }
-		: { mutation: { mutationKey }, request: undefined };
-
-	const mutationFn: MutationFunction<Awaited<ReturnType<typeof accountSessionRevokeAll>>, void> = () => {
-		return accountSessionRevokeAll(requestOptions);
-	};
-
-	return { mutationFn, ...mutationOptions };
+export type accountSessionRevokeResponse204 = {
+	data: void;
+	status: 204;
 };
 
-export type AccountSessionRevokeAllMutationResult = NonNullable<Awaited<ReturnType<typeof accountSessionRevokeAll>>>;
-
-export type AccountSessionRevokeAllMutationError = ErrorType<void | InternalErrorResponse>;
-
-export const createAccountSessionRevokeAll = <TError = ErrorType<void | InternalErrorResponse>, TContext = unknown>(
-	options?: () => {
-		mutation?: CreateMutationOptions<Awaited<ReturnType<typeof accountSessionRevokeAll>>, TError, void, TContext>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateMutationResult<Awaited<ReturnType<typeof accountSessionRevokeAll>>, TError, void, TContext> => {
-	return createMutation(() => ({ ...getAccountSessionRevokeAllMutationOptions(options?.()) }), queryClient);
+export type accountSessionRevokeResponse401 = {
+	data: void;
+	status: 401;
 };
+
+export type accountSessionRevokeResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
+
+export type accountSessionRevokeResponseSuccess = accountSessionRevokeResponse204 & {
+	headers: Headers;
+};
+export type accountSessionRevokeResponseError = (accountSessionRevokeResponse401 | accountSessionRevokeResponse500) & {
+	headers: Headers;
+};
+
+export type accountSessionRevokeResponse = accountSessionRevokeResponseSuccess | accountSessionRevokeResponseError;
+
 export const getAccountSessionRevokeUrl = () => {
 	return `/account/session/revoke`;
 };
 
 export const accountSessionRevoke = async (
 	accountSessionRevokeRequest: AccountSessionRevokeRequest,
-	options?: Parameters<typeof customInstance>[1]
-): Promise<void> => {
-	return customInstance<void>(getAccountSessionRevokeUrl(), {
+	options?: RequestInit
+): Promise<accountSessionRevokeResponse> => {
+	const res = await fetch(getAccountSessionRevokeUrl(), {
 		...options,
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...options?.headers },
 		body: JSON.stringify(accountSessionRevokeRequest),
 	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: accountSessionRevokeResponse["data"] = body ? JSON.parse(body) : undefined;
+	return { data, status: res.status, headers: res.headers } as accountSessionRevokeResponse;
 };
 
-export const getAccountSessionRevokeMutationOptions = <TError = ErrorType<void | InternalErrorResponse>, TContext = unknown>(options?: {
-	mutation?: CreateMutationOptions<Awaited<ReturnType<typeof accountSessionRevoke>>, TError, { data: BodyType<AccountSessionRevokeRequest> }, TContext>;
-	request?: SecondParameter<typeof customInstance>;
-}): CreateMutationOptions<Awaited<ReturnType<typeof accountSessionRevoke>>, TError, { data: BodyType<AccountSessionRevokeRequest> }, TContext> => {
-	const mutationKey = ["accountSessionRevoke"];
-	const { mutation: mutationOptions, request: requestOptions } = options
-		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
-			? options
-			: { ...options, mutation: { ...options.mutation, mutationKey } }
-		: { mutation: { mutationKey }, request: undefined };
-
-	const mutationFn: MutationFunction<Awaited<ReturnType<typeof accountSessionRevoke>>, { data: BodyType<AccountSessionRevokeRequest> }> = (props) => {
-		const { data } = props ?? {};
-
-		return accountSessionRevoke(data, requestOptions);
-	};
-
-	return { mutationFn, ...mutationOptions };
+export type accountRoleResponse200 = {
+	data: UserRoleBasicDTO[];
+	status: 200;
 };
 
-export type AccountSessionRevokeMutationResult = NonNullable<Awaited<ReturnType<typeof accountSessionRevoke>>>;
-export type AccountSessionRevokeMutationBody = BodyType<AccountSessionRevokeRequest>;
-export type AccountSessionRevokeMutationError = ErrorType<void | InternalErrorResponse>;
-
-export const createAccountSessionRevoke = <TError = ErrorType<void | InternalErrorResponse>, TContext = unknown>(
-	options?: () => {
-		mutation?: CreateMutationOptions<Awaited<ReturnType<typeof accountSessionRevoke>>, TError, { data: BodyType<AccountSessionRevokeRequest> }, TContext>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateMutationResult<Awaited<ReturnType<typeof accountSessionRevoke>>, TError, { data: BodyType<AccountSessionRevokeRequest> }, TContext> => {
-	return createMutation(() => ({ ...getAccountSessionRevokeMutationOptions(options?.()) }), queryClient);
+export type accountRoleResponse400 = {
+	data: ErrorResponse;
+	status: 400;
 };
+
+export type accountRoleResponse401 = {
+	data: void;
+	status: 401;
+};
+
+export type accountRoleResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
+
+export type accountRoleResponseSuccess = accountRoleResponse200 & {
+	headers: Headers;
+};
+export type accountRoleResponseError = (accountRoleResponse400 | accountRoleResponse401 | accountRoleResponse500) & {
+	headers: Headers;
+};
+
+export type accountRoleResponse = accountRoleResponseSuccess | accountRoleResponseError;
+
 export const getAccountRoleUrl = (facilityId: number) => {
 	return `/account/role/${facilityId}`;
 };
 
-export const accountRole = async (facilityId: number, options?: Parameters<typeof customInstance>[1]): Promise<UserRoleBasicDTO[]> => {
-	return customInstance<UserRoleBasicDTO[]>(getAccountRoleUrl(facilityId), {
+export const accountRole = async (facilityId: number, options?: RequestInit): Promise<accountRoleResponse> => {
+	const res = await fetch(getAccountRoleUrl(facilityId), {
 		...options,
 		method: "GET",
 	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: accountRoleResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as accountRoleResponse;
 };
 
-export const getAccountRoleQueryKey = (facilityId: number) => {
-	return [`/account/role/${facilityId}`] as const;
+export type accountCredentialResponse200 = {
+	data: AccountCredentialResponse;
+	status: 200;
 };
 
-export const getAccountRoleQueryOptions = <TData = Awaited<ReturnType<typeof accountRole>>, TError = ErrorType<ErrorResponse | void | InternalErrorResponse>>(
-	facilityId: number,
-	options?: { query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof accountRole>>, TError, TData>>; request?: SecondParameter<typeof customInstance> }
-) => {
-	const { query: queryOptions, request: requestOptions } = options ?? {};
-
-	const queryKey = queryOptions?.queryKey ?? getAccountRoleQueryKey(facilityId);
-
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof accountRole>>> = ({ signal }) => accountRole(facilityId, { signal, ...requestOptions });
-
-	return { queryKey, queryFn, enabled: facilityId !== null && facilityId !== undefined, ...queryOptions } as CreateQueryOptions<
-		Awaited<ReturnType<typeof accountRole>>,
-		TError,
-		TData
-	> & { queryKey: DataTag<QueryKey, TData, TError> };
+export type accountCredentialResponse401 = {
+	data: void;
+	status: 401;
 };
 
-export type AccountRoleQueryResult = NonNullable<Awaited<ReturnType<typeof accountRole>>>;
-export type AccountRoleQueryError = ErrorType<ErrorResponse | void | InternalErrorResponse>;
+export type accountCredentialResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
 
-export function createAccountRole<TData = Awaited<ReturnType<typeof accountRole>>, TError = ErrorType<ErrorResponse | void | InternalErrorResponse>>(
-	facilityId: () => number,
-	options?: () => {
-		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof accountRole>>, TError, TData>>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-	const query = createQuery(() => getAccountRoleQueryOptions(facilityId(), options?.()), queryClient) as CreateQueryResult<TData, TError> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
+export type accountCredentialResponseSuccess = accountCredentialResponse200 & {
+	headers: Headers;
+};
+export type accountCredentialResponseError = (accountCredentialResponse401 | accountCredentialResponse500) & {
+	headers: Headers;
+};
 
-	return query;
-}
+export type accountCredentialResponse = accountCredentialResponseSuccess | accountCredentialResponseError;
 
 export const getAccountCredentialUrl = () => {
 	return `/account/credential`;
 };
 
-export const accountCredential = async (options?: Parameters<typeof customInstance>[1]): Promise<AccountCredentialResponse> => {
-	return customInstance<AccountCredentialResponse>(getAccountCredentialUrl(), {
+export const accountCredential = async (options?: RequestInit): Promise<accountCredentialResponse> => {
+	const res = await fetch(getAccountCredentialUrl(), {
 		...options,
 		method: "GET",
 	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: accountCredentialResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as accountCredentialResponse;
 };
 
-export const getAccountCredentialQueryKey = () => {
-	return [`/account/credential`] as const;
+export type accountCredentialDisableTokenResponse204 = {
+	data: void;
+	status: 204;
 };
 
-export const getAccountCredentialQueryOptions = <
-	TData = Awaited<ReturnType<typeof accountCredential>>,
-	TError = ErrorType<void | InternalErrorResponse>,
->(options?: {
-	query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof accountCredential>>, TError, TData>>;
-	request?: SecondParameter<typeof customInstance>;
-}) => {
-	const { query: queryOptions, request: requestOptions } = options ?? {};
-
-	const queryKey = queryOptions?.queryKey ?? getAccountCredentialQueryKey();
-
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof accountCredential>>> = ({ signal }) => accountCredential({ signal, ...requestOptions });
-
-	return { queryKey, queryFn, ...queryOptions } as CreateQueryOptions<Awaited<ReturnType<typeof accountCredential>>, TError, TData> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
+export type accountCredentialDisableTokenResponse401 = {
+	data: void;
+	status: 401;
 };
 
-export type AccountCredentialQueryResult = NonNullable<Awaited<ReturnType<typeof accountCredential>>>;
-export type AccountCredentialQueryError = ErrorType<void | InternalErrorResponse>;
+export type accountCredentialDisableTokenResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
 
-export function createAccountCredential<TData = Awaited<ReturnType<typeof accountCredential>>, TError = ErrorType<void | InternalErrorResponse>>(
-	options?: () => {
-		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof accountCredential>>, TError, TData>>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-	const query = createQuery(() => getAccountCredentialQueryOptions(options?.()), queryClient) as CreateQueryResult<TData, TError> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
+export type accountCredentialDisableTokenResponseSuccess = accountCredentialDisableTokenResponse204 & {
+	headers: Headers;
+};
+export type accountCredentialDisableTokenResponseError = (accountCredentialDisableTokenResponse401 | accountCredentialDisableTokenResponse500) & {
+	headers: Headers;
+};
 
-	return query;
-}
+export type accountCredentialDisableTokenResponse = accountCredentialDisableTokenResponseSuccess | accountCredentialDisableTokenResponseError;
 
 export const getAccountCredentialDisableTokenUrl = () => {
 	return `/account/credential/disableToken`;
 };
 
-export const accountCredentialDisableToken = async (options?: Parameters<typeof customInstance>[1]): Promise<void> => {
-	return customInstance<void>(getAccountCredentialDisableTokenUrl(), {
+export const accountCredentialDisableToken = async (options?: RequestInit): Promise<accountCredentialDisableTokenResponse> => {
+	const res = await fetch(getAccountCredentialDisableTokenUrl(), {
 		...options,
 		method: "POST",
 	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: accountCredentialDisableTokenResponse["data"] = body ? JSON.parse(body) : undefined;
+	return { data, status: res.status, headers: res.headers } as accountCredentialDisableTokenResponse;
 };
 
-export const getAccountCredentialDisableTokenMutationOptions = <TError = ErrorType<void | InternalErrorResponse>, TContext = unknown>(options?: {
-	mutation?: CreateMutationOptions<Awaited<ReturnType<typeof accountCredentialDisableToken>>, TError, void, TContext>;
-	request?: SecondParameter<typeof customInstance>;
-}): CreateMutationOptions<Awaited<ReturnType<typeof accountCredentialDisableToken>>, TError, void, TContext> => {
-	const mutationKey = ["accountCredentialDisableToken"];
-	const { mutation: mutationOptions, request: requestOptions } = options
-		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
-			? options
-			: { ...options, mutation: { ...options.mutation, mutationKey } }
-		: { mutation: { mutationKey }, request: undefined };
-
-	const mutationFn: MutationFunction<Awaited<ReturnType<typeof accountCredentialDisableToken>>, void> = () => {
-		return accountCredentialDisableToken(requestOptions);
-	};
-
-	return { mutationFn, ...mutationOptions };
+export type accountCredentialDisableResponse204 = {
+	data: void;
+	status: 204;
 };
 
-export type AccountCredentialDisableTokenMutationResult = NonNullable<Awaited<ReturnType<typeof accountCredentialDisableToken>>>;
-
-export type AccountCredentialDisableTokenMutationError = ErrorType<void | InternalErrorResponse>;
-
-export const createAccountCredentialDisableToken = <TError = ErrorType<void | InternalErrorResponse>, TContext = unknown>(
-	options?: () => {
-		mutation?: CreateMutationOptions<Awaited<ReturnType<typeof accountCredentialDisableToken>>, TError, void, TContext>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateMutationResult<Awaited<ReturnType<typeof accountCredentialDisableToken>>, TError, void, TContext> => {
-	return createMutation(() => ({ ...getAccountCredentialDisableTokenMutationOptions(options?.()) }), queryClient);
+export type accountCredentialDisableResponse401 = {
+	data: void;
+	status: 401;
 };
+
+export type accountCredentialDisableResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
+
+export type accountCredentialDisableResponseSuccess = accountCredentialDisableResponse204 & {
+	headers: Headers;
+};
+export type accountCredentialDisableResponseError = (accountCredentialDisableResponse401 | accountCredentialDisableResponse500) & {
+	headers: Headers;
+};
+
+export type accountCredentialDisableResponse = accountCredentialDisableResponseSuccess | accountCredentialDisableResponseError;
+
 export const getAccountCredentialDisableUrl = () => {
 	return `/account/credential/disable`;
 };
 
 export const accountCredentialDisable = async (
 	credentialDisableRequest: CredentialDisableRequest,
-	options?: Parameters<typeof customInstance>[1]
-): Promise<void> => {
-	return customInstance<void>(getAccountCredentialDisableUrl(), {
+	options?: RequestInit
+): Promise<accountCredentialDisableResponse> => {
+	const res = await fetch(getAccountCredentialDisableUrl(), {
 		...options,
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...options?.headers },
 		body: JSON.stringify(credentialDisableRequest),
 	});
-};
 
-export const getAccountCredentialDisableMutationOptions = <TError = ErrorType<void | InternalErrorResponse>, TContext = unknown>(options?: {
-	mutation?: CreateMutationOptions<Awaited<ReturnType<typeof accountCredentialDisable>>, TError, { data: BodyType<CredentialDisableRequest> }, TContext>;
-	request?: SecondParameter<typeof customInstance>;
-}): CreateMutationOptions<Awaited<ReturnType<typeof accountCredentialDisable>>, TError, { data: BodyType<CredentialDisableRequest> }, TContext> => {
-	const mutationKey = ["accountCredentialDisable"];
-	const { mutation: mutationOptions, request: requestOptions } = options
-		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
-			? options
-			: { ...options, mutation: { ...options.mutation, mutationKey } }
-		: { mutation: { mutationKey }, request: undefined };
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
 
-	const mutationFn: MutationFunction<Awaited<ReturnType<typeof accountCredentialDisable>>, { data: BodyType<CredentialDisableRequest> }> = (props) => {
-		const { data } = props ?? {};
-
-		return accountCredentialDisable(data, requestOptions);
-	};
-
-	return { mutationFn, ...mutationOptions };
-};
-
-export type AccountCredentialDisableMutationResult = NonNullable<Awaited<ReturnType<typeof accountCredentialDisable>>>;
-export type AccountCredentialDisableMutationBody = BodyType<CredentialDisableRequest>;
-export type AccountCredentialDisableMutationError = ErrorType<void | InternalErrorResponse>;
-
-export const createAccountCredentialDisable = <TError = ErrorType<void | InternalErrorResponse>, TContext = unknown>(
-	options?: () => {
-		mutation?: CreateMutationOptions<Awaited<ReturnType<typeof accountCredentialDisable>>, TError, { data: BodyType<CredentialDisableRequest> }, TContext>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateMutationResult<Awaited<ReturnType<typeof accountCredentialDisable>>, TError, { data: BodyType<CredentialDisableRequest> }, TContext> => {
-	return createMutation(() => ({ ...getAccountCredentialDisableMutationOptions(options?.()) }), queryClient);
+	const data: accountCredentialDisableResponse["data"] = body ? JSON.parse(body) : undefined;
+	return { data, status: res.status, headers: res.headers } as accountCredentialDisableResponse;
 };

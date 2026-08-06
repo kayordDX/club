@@ -1,26 +1,22 @@
 <script lang="ts">
 	import type { AccountSessionResponse } from "$lib/api";
-	import { createAccountSessionRevoke } from "$lib/api";
+	import { accountSessionRevoke } from "$lib/api/remote/account.remote";
 	import { Button, Card, Tooltip } from "@kayord/ui";
 	import { ClockCheckIcon, NetworkIcon, ShieldXIcon, TimerIcon } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
 
 	type Props = {
 		session: AccountSessionResponse;
-		refetch: () => void;
 	};
 
-	let { session, refetch }: Props = $props();
-
-	const mutation = createAccountSessionRevoke();
+	let { session }: Props = $props();
 
 	let isRevoking = $state(false);
 	const revoke = async () => {
 		try {
 			if (session.id == null) return;
 			isRevoking = true;
-			await mutation.mutateAsync({ data: { id: session.id } });
-			refetch();
+			await accountSessionRevoke({ id: session.id });
 			toast.info("Successfully revoked session");
 		} catch {
 			toast.error("Error revoking session");

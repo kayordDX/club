@@ -4,23 +4,23 @@
 	import { page } from "$app/state";
 	import type { ResolvedPathname } from "$app/types";
 
-	import { createBookingCreate } from "$lib/api";
+	import { bookingCreate } from "$lib/api/remote/booking.remote";
 	import { createPlayers } from "$lib/booking/players";
 	import BookingDetailsForm from "$lib/components/booking/BookingDetailsForm.svelte";
 	import { Button, Card, Empty } from "@kayord/ui";
 	import { ChevronLeftIcon } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
 
-	const slug = $derived(page.params.slug ?? "");
-	const facilityId = $derived(Number(page.params.id) || 0);
-	const slotId = $derived(page.params.slot ?? "");
-	const slotCount = $derived(Math.max(1, Number(page.url.searchParams.get("slotCount")) || 1));
-	const selectedDate = $derived(page.url.searchParams.get("date") ?? "");
-	const facilityHref = $derived(
-		(selectedDate ? `${resolve(`/outlet/${slug}/${facilityId}`)}?date=${selectedDate}` : resolve(`/outlet/${slug}/${facilityId}`)) as ResolvedPathname
-	);
+	const slug = page.params.slug ?? "";
+	const facilityId = Number(page.params.id) || 0;
+	const slotId = page.params.slot ?? "";
+	const slotCount = Math.max(1, Number(page.url.searchParams.get("slotCount")) || 1);
+	const selectedDate = page.url.searchParams.get("date") ?? "";
+	const facilityHref = (
+		selectedDate ? `${resolve(`/outlet/${slug}/${facilityId}`)}?date=${selectedDate}` : resolve(`/outlet/${slug}/${facilityId}`)
+	) as ResolvedPathname;
 
-	const bookingMutation = createBookingCreate();
+	let isSubmitting = $state(false);
 
 	const handleSubmit = async ({
 		players,
@@ -30,6 +30,7 @@
 		extras: { id: number; amount: number }[];
 	}) => {
 		try {
+			isSubmitting = true;
 			const bookings = players.map((player) => ({
 				slotId,
 				slotContractId: Number(player.contractId),
@@ -38,14 +39,12 @@
 				email: player.email,
 			}));
 
-			const bookingResponse = await bookingMutation.mutateAsync({
-				data: {
-					bookings,
-					extras: extras.map((extra) => ({
-						extraId: extra.id,
-						amount: extra.amount,
-					})),
-				},
+			const bookingResponse = await bookingCreate({
+				bookings,
+				extras: extras.map((extra) => ({
+					extraId: extra.id,
+					amount: extra.amount,
+				})),
 			});
 
 			const paymentParams = new URLSearchParams({
@@ -57,6 +56,8 @@
 			await goto(`${resolve(`/outlet/${slug}/${facilityId}/booking/${bookingResponse.id}/pay`)}?${paymentParams.toString()}` as ResolvedPathname);
 		} catch {
 			toast.error("Failed to create booking. Please try again.");
+		} finally {
+			isSubmitting = false;
 		}
 	};
 </script>
@@ -86,7 +87,7 @@
 				description={`Capture the booking information for all ${slotCount} players, review the summary, and then choose how you want to pay.`}
 				submitLabel="Book"
 				submittingLabel="Creating..."
-				isSubmitting={bookingMutation.isPending}
+				{isSubmitting}
 				backHref={facilityHref}
 				backLabel="Back to slots"
 				{slotId}

@@ -33,6 +33,8 @@ export interface OidcProfile {
 	givenName: string;
 	familyName: string;
 	phone_number?: string;
+	phone_number_verified?: boolean;
+	email_verified?: boolean;
 	picture?: string;
 }
 
@@ -73,7 +75,7 @@ export function randomToken(bytes = 24): string {
 	return randomBytes(bytes).toString("base64url");
 }
 
-export async function getAuthorizationUrl(state: string, challenge: string): Promise<string> {
+export async function getAuthorizationUrl(state: string, challenge: string, kcAction?: string | null): Promise<string> {
 	const d = await discover();
 	const params = new URLSearchParams({
 		response_type: "code",
@@ -85,6 +87,7 @@ export async function getAuthorizationUrl(state: string, challenge: string): Pro
 		code_challenge_method: "S256",
 		prompt: "select_account",
 	});
+	if (kcAction) params.set("kc_action", kcAction);
 	return `${d.authorization_endpoint}?${params.toString()}`;
 }
 
@@ -161,6 +164,8 @@ export async function getUserinfo(accessToken: string): Promise<OidcProfile> {
 		givenName: String(u.given_name ?? ""),
 		familyName: String(u.family_name ?? ""),
 		phone_number: u.phone_number ? String(u.phone_number) : undefined,
+		phone_number_verified: u.phone_number_verified === true,
+		email_verified: u.email_verified === true,
 		picture: u.picture ? String(u.picture) : undefined,
 	};
 }

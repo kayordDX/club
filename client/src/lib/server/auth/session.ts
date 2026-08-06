@@ -31,6 +31,8 @@ export function toSessionUser(p: OidcProfile): SessionUser {
 		firstName: p.givenName,
 		lastName: p.familyName,
 		phone_number: p.phone_number,
+		phone_number_verified: p.phone_number_verified,
+		email_verified: p.email_verified,
 		picture: p.picture,
 	};
 }

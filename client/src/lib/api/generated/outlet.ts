@@ -4,65 +4,61 @@
  * Club.Api
  * OpenAPI spec version: v1
  */
-import { createQuery } from "@tanstack/svelte-query";
-import type { CreateQueryOptions, CreateQueryResult, DataTag, QueryClient, QueryFunction, QueryKey } from "@tanstack/svelte-query";
-
 import type { InternalErrorResponse, OutletBasicDTO, OutletDTO, OutletGetAllParams, PaginatedListOfOutlet } from "./api.schemas";
 
-import { customInstance } from "../mutator/customInstance.svelte";
-import type { ErrorType } from "../mutator/customInstance.svelte";
+export type outletGetBasicResponse200 = {
+	data: OutletBasicDTO;
+	status: 200;
+};
 
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+export type outletGetBasicResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
+
+export type outletGetBasicResponseSuccess = outletGetBasicResponse200 & {
+	headers: Headers;
+};
+export type outletGetBasicResponseError = outletGetBasicResponse500 & {
+	headers: Headers;
+};
+
+export type outletGetBasicResponse = outletGetBasicResponseSuccess | outletGetBasicResponseError;
 
 export const getOutletGetBasicUrl = (slug: string) => {
 	return `/outlet/basic/${slug}`;
 };
 
-export const outletGetBasic = async (slug: string, options?: Parameters<typeof customInstance>[1]): Promise<OutletBasicDTO> => {
-	return customInstance<OutletBasicDTO>(getOutletGetBasicUrl(slug), {
+export const outletGetBasic = async (slug: string, options?: RequestInit): Promise<outletGetBasicResponse> => {
+	const res = await fetch(getOutletGetBasicUrl(slug), {
 		...options,
 		method: "GET",
 	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: outletGetBasicResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as outletGetBasicResponse;
 };
 
-export const getOutletGetBasicQueryKey = (slug: string) => {
-	return [`/outlet/basic/${slug}`] as const;
+export type outletGetAllResponse200 = {
+	data: PaginatedListOfOutlet;
+	status: 200;
 };
 
-export const getOutletGetBasicQueryOptions = <TData = Awaited<ReturnType<typeof outletGetBasic>>, TError = ErrorType<InternalErrorResponse>>(
-	slug: string,
-	options?: { query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof outletGetBasic>>, TError, TData>>; request?: SecondParameter<typeof customInstance> }
-) => {
-	const { query: queryOptions, request: requestOptions } = options ?? {};
-
-	const queryKey = queryOptions?.queryKey ?? getOutletGetBasicQueryKey(slug);
-
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof outletGetBasic>>> = ({ signal }) => outletGetBasic(slug, { signal, ...requestOptions });
-
-	return { queryKey, queryFn, enabled: slug !== null && slug !== undefined, ...queryOptions } as CreateQueryOptions<
-		Awaited<ReturnType<typeof outletGetBasic>>,
-		TError,
-		TData
-	> & { queryKey: DataTag<QueryKey, TData, TError> };
+export type outletGetAllResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
 };
 
-export type OutletGetBasicQueryResult = NonNullable<Awaited<ReturnType<typeof outletGetBasic>>>;
-export type OutletGetBasicQueryError = ErrorType<InternalErrorResponse>;
+export type outletGetAllResponseSuccess = outletGetAllResponse200 & {
+	headers: Headers;
+};
+export type outletGetAllResponseError = outletGetAllResponse500 & {
+	headers: Headers;
+};
 
-export function createOutletGetBasic<TData = Awaited<ReturnType<typeof outletGetBasic>>, TError = ErrorType<InternalErrorResponse>>(
-	slug: () => string,
-	options?: () => {
-		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof outletGetBasic>>, TError, TData>>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-	const query = createQuery(() => getOutletGetBasicQueryOptions(slug(), options?.()), queryClient) as CreateQueryResult<TData, TError> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
-
-	return query;
-}
+export type outletGetAllResponse = outletGetAllResponseSuccess | outletGetAllResponseError;
 
 export const getOutletGetAllUrl = (params?: OutletGetAllParams) => {
 	const normalizedParams = new URLSearchParams();
@@ -78,146 +74,84 @@ export const getOutletGetAllUrl = (params?: OutletGetAllParams) => {
 	return stringifiedParams.length > 0 ? `/outlet?${stringifiedParams}` : `/outlet`;
 };
 
-export const outletGetAll = async (params?: OutletGetAllParams, options?: Parameters<typeof customInstance>[1]): Promise<PaginatedListOfOutlet> => {
-	return customInstance<PaginatedListOfOutlet>(getOutletGetAllUrl(params), {
+export const outletGetAll = async (params?: OutletGetAllParams, options?: RequestInit): Promise<outletGetAllResponse> => {
+	const res = await fetch(getOutletGetAllUrl(params), {
 		...options,
 		method: "GET",
 	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: outletGetAllResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as outletGetAllResponse;
 };
 
-export const getOutletGetAllQueryKey = (params?: OutletGetAllParams) => {
-	return [`/outlet`, ...(params ? [params] : [])] as const;
+export type outletGetResponse200 = {
+	data: OutletDTO;
+	status: 200;
 };
 
-export const getOutletGetAllQueryOptions = <TData = Awaited<ReturnType<typeof outletGetAll>>, TError = ErrorType<InternalErrorResponse>>(
-	params?: OutletGetAllParams,
-	options?: { query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof outletGetAll>>, TError, TData>>; request?: SecondParameter<typeof customInstance> }
-) => {
-	const { query: queryOptions, request: requestOptions } = options ?? {};
-
-	const queryKey = queryOptions?.queryKey ?? getOutletGetAllQueryKey(params);
-
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof outletGetAll>>> = ({ signal }) => outletGetAll(params, { signal, ...requestOptions });
-
-	return { queryKey, queryFn, ...queryOptions } as CreateQueryOptions<Awaited<ReturnType<typeof outletGetAll>>, TError, TData> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
+export type outletGetResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
 };
 
-export type OutletGetAllQueryResult = NonNullable<Awaited<ReturnType<typeof outletGetAll>>>;
-export type OutletGetAllQueryError = ErrorType<InternalErrorResponse>;
+export type outletGetResponseSuccess = outletGetResponse200 & {
+	headers: Headers;
+};
+export type outletGetResponseError = outletGetResponse500 & {
+	headers: Headers;
+};
 
-export function createOutletGetAll<TData = Awaited<ReturnType<typeof outletGetAll>>, TError = ErrorType<InternalErrorResponse>>(
-	params?: () => OutletGetAllParams,
-	options?: () => {
-		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof outletGetAll>>, TError, TData>>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-	const query = createQuery(() => getOutletGetAllQueryOptions(params?.(), options?.()), queryClient) as CreateQueryResult<TData, TError> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
-
-	return query;
-}
+export type outletGetResponse = outletGetResponseSuccess | outletGetResponseError;
 
 export const getOutletGetUrl = (slug: string) => {
 	return `/outlet/${slug}`;
 };
 
-export const outletGet = async (slug: string, options?: Parameters<typeof customInstance>[1]): Promise<OutletDTO> => {
-	return customInstance<OutletDTO>(getOutletGetUrl(slug), {
+export const outletGet = async (slug: string, options?: RequestInit): Promise<outletGetResponse> => {
+	const res = await fetch(getOutletGetUrl(slug), {
 		...options,
 		method: "GET",
 	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: outletGetResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as outletGetResponse;
 };
 
-export const getOutletGetQueryKey = (slug: string) => {
-	return [`/outlet/${slug}`] as const;
+export type outletAdminGetResponse200 = {
+	data: OutletDTO;
+	status: 200;
 };
 
-export const getOutletGetQueryOptions = <TData = Awaited<ReturnType<typeof outletGet>>, TError = ErrorType<InternalErrorResponse>>(
-	slug: string,
-	options?: { query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof outletGet>>, TError, TData>>; request?: SecondParameter<typeof customInstance> }
-) => {
-	const { query: queryOptions, request: requestOptions } = options ?? {};
-
-	const queryKey = queryOptions?.queryKey ?? getOutletGetQueryKey(slug);
-
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof outletGet>>> = ({ signal }) => outletGet(slug, { signal, ...requestOptions });
-
-	return { queryKey, queryFn, enabled: slug !== null && slug !== undefined, ...queryOptions } as CreateQueryOptions<
-		Awaited<ReturnType<typeof outletGet>>,
-		TError,
-		TData
-	> & { queryKey: DataTag<QueryKey, TData, TError> };
+export type outletAdminGetResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
 };
 
-export type OutletGetQueryResult = NonNullable<Awaited<ReturnType<typeof outletGet>>>;
-export type OutletGetQueryError = ErrorType<InternalErrorResponse>;
+export type outletAdminGetResponseSuccess = outletAdminGetResponse200 & {
+	headers: Headers;
+};
+export type outletAdminGetResponseError = outletAdminGetResponse500 & {
+	headers: Headers;
+};
 
-export function createOutletGet<TData = Awaited<ReturnType<typeof outletGet>>, TError = ErrorType<InternalErrorResponse>>(
-	slug: () => string,
-	options?: () => {
-		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof outletGet>>, TError, TData>>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-	const query = createQuery(() => getOutletGetQueryOptions(slug(), options?.()), queryClient) as CreateQueryResult<TData, TError> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
-
-	return query;
-}
+export type outletAdminGetResponse = outletAdminGetResponseSuccess | outletAdminGetResponseError;
 
 export const getOutletAdminGetUrl = (slug: string) => {
 	return `/outlet/${slug}/admin`;
 };
 
-export const outletAdminGet = async (slug: string, options?: Parameters<typeof customInstance>[1]): Promise<OutletDTO> => {
-	return customInstance<OutletDTO>(getOutletAdminGetUrl(slug), {
+export const outletAdminGet = async (slug: string, options?: RequestInit): Promise<outletAdminGetResponse> => {
+	const res = await fetch(getOutletAdminGetUrl(slug), {
 		...options,
 		method: "GET",
 	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: outletAdminGetResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as outletAdminGetResponse;
 };
-
-export const getOutletAdminGetQueryKey = (slug: string) => {
-	return [`/outlet/${slug}/admin`] as const;
-};
-
-export const getOutletAdminGetQueryOptions = <TData = Awaited<ReturnType<typeof outletAdminGet>>, TError = ErrorType<InternalErrorResponse>>(
-	slug: string,
-	options?: { query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof outletAdminGet>>, TError, TData>>; request?: SecondParameter<typeof customInstance> }
-) => {
-	const { query: queryOptions, request: requestOptions } = options ?? {};
-
-	const queryKey = queryOptions?.queryKey ?? getOutletAdminGetQueryKey(slug);
-
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof outletAdminGet>>> = ({ signal }) => outletAdminGet(slug, { signal, ...requestOptions });
-
-	return { queryKey, queryFn, enabled: slug !== null && slug !== undefined, ...queryOptions } as CreateQueryOptions<
-		Awaited<ReturnType<typeof outletAdminGet>>,
-		TError,
-		TData
-	> & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export type OutletAdminGetQueryResult = NonNullable<Awaited<ReturnType<typeof outletAdminGet>>>;
-export type OutletAdminGetQueryError = ErrorType<InternalErrorResponse>;
-
-export function createOutletAdminGet<TData = Awaited<ReturnType<typeof outletAdminGet>>, TError = ErrorType<InternalErrorResponse>>(
-	slug: () => string,
-	options?: () => {
-		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof outletAdminGet>>, TError, TData>>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-	const query = createQuery(() => getOutletAdminGetQueryOptions(slug(), options?.()), queryClient) as CreateQueryResult<TData, TError> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
-
-	return query;
-}

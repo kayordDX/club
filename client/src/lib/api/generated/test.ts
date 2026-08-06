@@ -4,62 +4,76 @@
  * Club.Api
  * OpenAPI spec version: v1
  */
-import { createQuery } from "@tanstack/svelte-query";
-import type { CreateQueryOptions, CreateQueryResult, DataTag, QueryClient, QueryFunction, QueryKey } from "@tanstack/svelte-query";
-
 import type { ErrorResponse, InternalErrorResponse, TestParams, TestResponse } from "./api.schemas";
 
-import { customInstance } from "../mutator/customInstance.svelte";
-import type { ErrorType } from "../mutator/customInstance.svelte";
+export type testAnotherResponse204 = {
+	data: void;
+	status: 204;
+};
 
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+export type testAnotherResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
+
+export type testAnotherResponseSuccess = testAnotherResponse204 & {
+	headers: Headers;
+};
+export type testAnotherResponseError = testAnotherResponse500 & {
+	headers: Headers;
+};
+
+export type testAnotherResponse = testAnotherResponseSuccess | testAnotherResponseError;
 
 export const getTestAnotherUrl = () => {
 	return `/test/another`;
 };
 
-export const testAnother = async (options?: Parameters<typeof customInstance>[1]): Promise<void> => {
-	return customInstance<void>(getTestAnotherUrl(), {
+export const testAnother = async (options?: RequestInit): Promise<testAnotherResponse> => {
+	const res = await fetch(getTestAnotherUrl(), {
 		...options,
 		method: "GET",
 	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: testAnotherResponse["data"] = body ? JSON.parse(body) : undefined;
+	return { data, status: res.status, headers: res.headers } as testAnotherResponse;
 };
 
-export const getTestAnotherQueryKey = () => {
-	return [`/test/another`] as const;
+export type testResponse200 = {
+	data: TestResponse;
+	status: 200;
 };
 
-export const getTestAnotherQueryOptions = <TData = Awaited<ReturnType<typeof testAnother>>, TError = ErrorType<InternalErrorResponse>>(options?: {
-	query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof testAnother>>, TError, TData>>;
-	request?: SecondParameter<typeof customInstance>;
-}) => {
-	const { query: queryOptions, request: requestOptions } = options ?? {};
-
-	const queryKey = queryOptions?.queryKey ?? getTestAnotherQueryKey();
-
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof testAnother>>> = ({ signal }) => testAnother({ signal, ...requestOptions });
-
-	return { queryKey, queryFn, ...queryOptions } as CreateQueryOptions<Awaited<ReturnType<typeof testAnother>>, TError, TData> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
+export type testResponse400 = {
+	data: ErrorResponse;
+	status: 400;
 };
 
-export type TestAnotherQueryResult = NonNullable<Awaited<ReturnType<typeof testAnother>>>;
-export type TestAnotherQueryError = ErrorType<InternalErrorResponse>;
+export type testResponse401 = {
+	data: void;
+	status: 401;
+};
 
-export function createTestAnother<TData = Awaited<ReturnType<typeof testAnother>>, TError = ErrorType<InternalErrorResponse>>(
-	options?: () => {
-		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof testAnother>>, TError, TData>>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-	const query = createQuery(() => getTestAnotherQueryOptions(options?.()), queryClient) as CreateQueryResult<TData, TError> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
+export type testResponse403 = {
+	data: void;
+	status: 403;
+};
 
-	return query;
-}
+export type testResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
+
+export type testResponseSuccess = testResponse200 & {
+	headers: Headers;
+};
+export type testResponseError = (testResponse400 | testResponse401 | testResponse403 | testResponse500) & {
+	headers: Headers;
+};
+
+export type testResponse = testResponseSuccess | testResponseError;
 
 export const getTestUrl = (params: TestParams) => {
 	const normalizedParams = new URLSearchParams();
@@ -75,43 +89,14 @@ export const getTestUrl = (params: TestParams) => {
 	return stringifiedParams.length > 0 ? `/test?${stringifiedParams}` : `/test`;
 };
 
-export const test = async (params: TestParams, options?: Parameters<typeof customInstance>[1]): Promise<TestResponse> => {
-	return customInstance<TestResponse>(getTestUrl(params), {
+export const test = async (params: TestParams, options?: RequestInit): Promise<testResponse> => {
+	const res = await fetch(getTestUrl(params), {
 		...options,
 		method: "GET",
 	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: testResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as testResponse;
 };
-
-export const getTestQueryKey = (params?: TestParams) => {
-	return [`/test`, ...(params ? [params] : [])] as const;
-};
-
-export const getTestQueryOptions = <TData = Awaited<ReturnType<typeof test>>, TError = ErrorType<ErrorResponse | void | InternalErrorResponse>>(
-	params: TestParams,
-	options?: { query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof test>>, TError, TData>>; request?: SecondParameter<typeof customInstance> }
-) => {
-	const { query: queryOptions, request: requestOptions } = options ?? {};
-
-	const queryKey = queryOptions?.queryKey ?? getTestQueryKey(params);
-
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof test>>> = ({ signal }) => test(params, { signal, ...requestOptions });
-
-	return { queryKey, queryFn, ...queryOptions } as CreateQueryOptions<Awaited<ReturnType<typeof test>>, TError, TData> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
-};
-
-export type TestQueryResult = NonNullable<Awaited<ReturnType<typeof test>>>;
-export type TestQueryError = ErrorType<ErrorResponse | void | InternalErrorResponse>;
-
-export function createTest<TData = Awaited<ReturnType<typeof test>>, TError = ErrorType<ErrorResponse | void | InternalErrorResponse>>(
-	params: () => TestParams,
-	options?: () => { query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof test>>, TError, TData>>; request?: SecondParameter<typeof customInstance> },
-	queryClient?: () => QueryClient
-): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-	const query = createQuery(() => getTestQueryOptions(params(), options?.()), queryClient) as CreateQueryResult<TData, TError> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
-
-	return query;
-}
