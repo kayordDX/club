@@ -27,6 +27,6 @@
 <ModeWatcher defaultMode="dark" />
 <Toaster onclick={handleToasterClick} />
 
-<PageBoundary disablePending={true}>
+<PageBoundary>
 	{@render children?.()}
 </PageBoundary>

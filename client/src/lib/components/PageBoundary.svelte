@@ -1,17 +1,15 @@
 <script lang="ts">
 	import { afterNavigate } from "$app/navigation";
-	import { Alert, Badge, Button, Skeleton } from "@kayord/ui";
+	import { Alert, Badge, Button } from "@kayord/ui";
 	import { CircleAlertIcon, FrownIcon } from "@lucide/svelte";
 	import { type HttpError } from "@sveltejs/kit";
 	import type { Snippet } from "svelte";
 
 	type Props = {
 		children?: Snippet;
-		pendingSnippet?: Snippet;
-		disablePending?: boolean;
 	};
 
-	let { children, pendingSnippet, disablePending = false }: Props = $props();
+	let { children }: Props = $props();
 
 	// svelte-ignore non_reactive_update
 	let resetBoundary: (() => void) | undefined;
@@ -41,20 +39,6 @@
 				</Alert.Description>
 			</Alert.Root>
 		</div>
-	{/snippet}
-
-	{#snippet pending()}
-		{#if !disablePending}
-			{#if pendingSnippet}
-				{@render pendingSnippet()}
-			{:else}
-				<div class="m-4 space-y-3">
-					<Skeleton class="h-8 w-1/3" />
-					<Skeleton class="h-4 w-2/3" />
-					<Skeleton class="h-24" />
-				</div>
-			{/if}
-		{/if}
 	{/snippet}
 
 	{@render children?.()}
