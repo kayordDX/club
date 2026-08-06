@@ -1,6 +1,6 @@
 import { redirect } from "@sveltejs/kit";
 import { PUBLIC_API_URL } from "$env/static/public";
-import { exchangeCode, getUserinfo, SESSION_COOKIE } from "$lib/server/auth/oidc";
+import { exchangeCode, getUserinfo, profileFromClaims, SESSION_COOKIE } from "$lib/server/auth/oidc";
 import { consumePendingLogin, createSession } from "$lib/server/auth/session";
 
 // GET /auth/callback?code=...&state=...
@@ -16,14 +16,29 @@ export async function GET({ url, cookies }) {
 		throw redirect(303, "/login?error=missing_params");
 	}
 
+	// State lookup + openid-client's own state/iss validation both guard the code.
 	const pending = consumePendingLogin(state);
 	if (!pending) {
-		// State mismatch / expired / replay — restart login.
 		throw redirect(303, "/login?error=state_mismatch");
 	}
 
-	const tokens = await exchangeCode(code, pending.verifier);
-	const profile = await getUserinfo(tokens.accessToken);
+	let result;
+	try {
+		result = await exchangeCode(url, {
+			expectedState: state,
+			pkceCodeVerifier: pending.verifier,
+		});
+	} catch (e) {
+		console.warn("OIDC code exchange failed", e);
+		throw redirect(303, "/login?error=exchange_failed");
+	}
+
+	const { tokens } = result;
+	const profile = await getUserinfo(tokens.accessToken, result.subject).catch(() =>
+		// Keycloak unreachable mid-login: fall back to the (verified) id_token claims.
+		profileFromClaims(result.claims)
+	);
+
 	const session = createSession(profile, tokens);
 
 	// Provision the user in the API's user table (booking.user_id has an FK to it).

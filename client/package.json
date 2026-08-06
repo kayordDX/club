@@ -68,6 +68,7 @@
 		"zod": "^4.4.3"
 	},
 	"dependencies": {
-		"@humanspeak/svelte-markdown": "^1.8.5"
+		"@humanspeak/svelte-markdown": "^1.8.5",
+		"openid-client": "^6.8.4"
 	}
 }

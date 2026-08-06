@@ -9,5 +9,5 @@ export async function GET({ url }) {
 	const action = url.searchParams.get("action");
 	const { verifier, challenge } = createPkce();
 	const state = createPendingLogin(verifier, next);
-	throw redirect(303, await getAuthorizationUrl(state, challenge, action));
+	throw redirect(303, await getAuthorizationUrl(state, challenge, { kcAction: action }));
 }
