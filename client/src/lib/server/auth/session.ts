@@ -1,26 +1,50 @@
-// In-memory session store — POC ONLY.
+// Stateless, encrypted-cookie session for the BFF.
 //
-// Limitations: does not survive server restarts and is single-instance.
-// For production, back this with Redis (already in the Aspire stack) keyed by
-// the session id cookie. The API surface here maps 1:1 onto a Redis impl.
-import type { OidcProfile, OidcTokens } from "./oidc";
-import { randomToken } from "./oidc";
+// Why no server-side store? With Keycloak as the source of truth, the access +
+// refresh tokens it issues ARE the session. Carrying them in an HttpOnly,
+// encrypted, chunked cookie means:
+//   • the hooks hot path is pure CPU (decrypt + compare) — no Redis/DB round-trip,
+//     works across multiple instances with zero shared state, survives restarts;
+//   • logout is instant (delete the cookie), no store to invalidate.
+//
+// The opaque `sid` cookie + in-memory/Redis map approach needs an I/O hop on
+// every request; this avoids it. The refresh token never reaches the browser
+// (only the encrypted, HttpOnly cookie does), so it stays server-side only.
+import { env } from "$env/dynamic/private";
+import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
+import type { Cookies } from "@sveltejs/kit";
 import type { SessionUser } from "$lib/types";
+import type { OidcProfile, OidcTokens } from "./oidc";
+import { PKCE_COOKIE, SESSION_COOKIE } from "./oidc";
 
-export interface Session {
-	id: string;
+export interface SessionPayload {
 	user: SessionUser;
 	tokens: OidcTokens;
 }
 
-interface PendingLogin {
+/** Carried in a short-lived cookie between the authorize redirect and callback. */
+export interface PendingLogin {
+	state: string;
+	nonce: string;
 	verifier: string;
 	next: string;
-	createdAt: number;
 }
 
-const sessions = new Map<string, Session>();
-const pending = new Map<string, PendingLogin>();
+// Browsers cap one cookie at ~4KB; the token payload (Keycloak JWTs are large)
+// is split into chunks and reassembled on read.
+const CHUNK_SIZE = 3500;
+const MAX_CHUNKS = 6;
+
+const SESSION_MAX_AGE = 60 * 60 * 24 * 7; // 7 days, rolled forward on refresh
+const PENDING_MAX_AGE = 10 * 60; // 10 minutes for the redirect dance
+
+export interface CookieOptions {
+	path: "/";
+	httpOnly: true;
+	sameSite: "lax";
+	secure: boolean;
+	maxAge: number;
+}
 
 export function toSessionUser(p: OidcProfile): SessionUser {
 	return {
@@ -37,35 +61,149 @@ export function toSessionUser(p: OidcProfile): SessionUser {
 	};
 }
 
-export function createPendingLogin(verifier: string, next: string): string {
-	const state = randomToken();
-	pending.set(state, { verifier, next, createdAt: Date.now() });
-	return state;
+// --- symmetric key ---------------------------------------------------------
+
+let cachedKey: Buffer | undefined;
+let ephemeralDevKey: string | undefined;
+
+function getKey(): Buffer {
+	if (cachedKey) return cachedKey;
+
+	const secret = env.SESSION_SECRET;
+	if (secret) {
+		if (secret.length < 32) {
+			throw new Error("SESSION_SECRET must be at least 32 characters");
+		}
+		cachedKey = createHash("sha256").update(secret).digest();
+		return cachedKey;
+	}
+
+	if (env.NODE_ENV === "production") {
+		throw new Error("SESSION_SECRET must be set in production");
+	}
+
+	// Dev convenience: a random per-process key so things work with zero config.
+	// Sessions won't survive a restart — that's fine locally.
+	if (!ephemeralDevKey) {
+		ephemeralDevKey = randomBytes(32).toString("base64");
+		console.warn("[auth] SESSION_SECRET not set — using an ephemeral dev key. Sessions will not survive a restart.");
+	}
+	cachedKey = createHash("sha256").update(ephemeralDevKey).digest();
+	return cachedKey;
 }
 
-export function consumePendingLogin(state: string): PendingLogin | undefined {
-	const entry = pending.get(state);
-	if (entry) pending.delete(state);
-	return entry;
+// --- AEAD seal/unseal (AES-256-GCM) ---------------------------------------
+
+function seal(plaintext: string): string {
+	const key = getKey();
+	const iv = randomBytes(12);
+	const cipher = createCipheriv("aes-256-gcm", key, iv);
+	const ciphertext = Buffer.concat([cipher.update(plaintext, "utf8"), cipher.final()]);
+	const tag = cipher.getAuthTag();
+	// base64url contains no ".", so this round-trips cleanly.
+	return `${iv.toString("base64url")}.${ciphertext.toString("base64url")}.${tag.toString("base64url")}`;
 }
 
-export function createSession(profile: OidcProfile, tokens: OidcTokens): Session {
-	const id = randomToken(32);
-	const session: Session = { id, user: toSessionUser(profile), tokens };
-	sessions.set(id, session);
-	return session;
+function unseal(value: string): string | undefined {
+	const parts = value.split(".");
+	if (parts.length !== 3) return undefined;
+	const [ivB, ctB, tagB] = parts;
+	try {
+		const decipher = createDecipheriv("aes-256-gcm", getKey(), Buffer.from(ivB, "base64url"));
+		decipher.setAuthTag(Buffer.from(tagB, "base64url"));
+		const plaintext = Buffer.concat([decipher.update(Buffer.from(ctB, "base64url")), decipher.final()]);
+		return plaintext.toString("utf8");
+	} catch {
+		// Tampered, truncated, or sealed with a different key → treat as no session.
+		return undefined;
+	}
 }
 
-export function getSession(id: string): Session | undefined {
-	return sessions.get(id);
+// --- chunked cookie helpers ------------------------------------------------
+
+function chunkName(base: string, i: number): string {
+	return i === 0 ? base : `${base}.${i}`;
 }
 
-export function deleteSession(id: string): void {
-	sessions.delete(id);
+function readChunked(cookies: Cookies, base: string): string | undefined {
+	let value = "";
+	for (let i = 0; i < MAX_CHUNKS; i++) {
+		const part = cookies.get(chunkName(base, i));
+		if (part === undefined) return i === 0 ? undefined : value; // no cookie, or ran out of chunks
+		value += part;
+	}
+	return value;
 }
 
-// Drop stale pending logins (>10 min) so memory doesn't grow unbounded.
-setInterval(() => {
-	const cutoff = Date.now() - 10 * 60 * 1000;
-	for (const [k, v] of pending) if (v.createdAt < cutoff) pending.delete(k);
-}, 60_000).unref();
+function clearChunked(cookies: Cookies, base: string): void {
+	for (let i = 0; i < MAX_CHUNKS; i++) {
+		const name = chunkName(base, i);
+		if (cookies.get(name) === undefined && i > 0) break;
+		cookies.delete(name, { path: "/" });
+	}
+}
+
+function writeChunked(cookies: Cookies, base: string, value: string, opts: CookieOptions): void {
+	// Remove any higher-index chunks left over from a previously larger value.
+	clearChunked(cookies, base);
+	const chunks: string[] = [];
+	for (let i = 0; i < value.length; i += CHUNK_SIZE) chunks.push(value.slice(i, i + CHUNK_SIZE));
+	if (chunks.length > MAX_CHUNKS) {
+		throw new Error(`session payload too large (${value.length} bytes, ${chunks.length} chunks)`);
+	}
+	for (let i = 0; i < chunks.length; i++) cookies.set(chunkName(base, i), chunks[i], opts);
+}
+
+// --- session API -----------------------------------------------------------
+
+export function readSession(cookies: Cookies): SessionPayload | undefined {
+	const sealed = readChunked(cookies, SESSION_COOKIE);
+	if (!sealed) return undefined;
+	const json = unseal(sealed);
+	if (!json) return undefined;
+	try {
+		return JSON.parse(json) as SessionPayload;
+	} catch {
+		return undefined;
+	}
+}
+
+export function writeSession(cookies: Cookies, payload: SessionPayload, secure: boolean): void {
+	writeChunked(cookies, SESSION_COOKIE, seal(JSON.stringify(payload)), {
+		path: "/",
+		httpOnly: true,
+		sameSite: "lax",
+		secure,
+		maxAge: SESSION_MAX_AGE,
+	});
+}
+
+export function clearSession(cookies: Cookies): void {
+	clearChunked(cookies, SESSION_COOKIE);
+}
+
+// --- pending login (PKCE verifier + nonce) ---------------------------------
+
+export function setPendingLogin(cookies: Cookies, data: PendingLogin, secure: boolean): void {
+	cookies.set(PKCE_COOKIE, seal(JSON.stringify(data)), {
+		path: "/",
+		httpOnly: true,
+		sameSite: "lax",
+		secure,
+		maxAge: PENDING_MAX_AGE,
+	});
+}
+
+/** Reads and clears the pending-login cookie in one step. */
+export function consumePendingLogin(cookies: Cookies): PendingLogin | undefined {
+	const sealed = cookies.get(PKCE_COOKIE);
+	if (!sealed) return undefined;
+	cookies.delete(PKCE_COOKIE, { path: "/" });
+	const json = unseal(sealed);
+	if (!json) return undefined;
+	try {
+		return JSON.parse(json) as PendingLogin;
+	} catch {
+		return undefined;
+	}
+}

@@ -22,6 +22,8 @@ const ISSUER = PUBLIC_IDENTITY_URL;
 const REDIRECT_URI = `${PUBLIC_APP_URL}/auth/callback`;
 
 export const SESSION_COOKIE = "sid";
+/** Short-lived cookie holding the PKCE verifier + nonce between redirect & callback. */
+export const PKCE_COOKIE = "pkce";
 
 const CLIENT_METADATA: Partial<oidc.ClientMetadata> = {
 	// Public client: authenticate at the token endpoint with `client_id` only.
@@ -85,10 +87,6 @@ export function createPkce(): { verifier: string; challenge: string } {
 
 export const randomState = oidc.randomState;
 export const randomNonce = oidc.randomNonce;
-
-export function randomToken(bytes = 24): string {
-	return randomBytes(bytes).toString("base64url");
-}
 
 export async function getAuthorizationUrl(state: string, challenge: string, opts: { nonce?: string; kcAction?: string | null } = {}): Promise<string> {
 	const config = await getConfig();
