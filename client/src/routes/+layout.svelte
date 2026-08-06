@@ -4,7 +4,7 @@
 	import { ModeWatcher } from "mode-watcher";
 	import { Toaster, toast } from "svelte-sonner";
 	import { setUserContext } from "$lib/auth";
-	import ErrorBoundary from "$lib/components/ErrorBoundary.svelte";
+	import PageBoundary from "$lib/components/PageBoundary.svelte";
 
 	let { children, data } = $props();
 
@@ -27,6 +27,6 @@
 <ModeWatcher defaultMode="dark" />
 <Toaster onclick={handleToasterClick} />
 
-<ErrorBoundary>
+<PageBoundary disablePending={true}>
 	{@render children?.()}
-</ErrorBoundary>
+</PageBoundary>

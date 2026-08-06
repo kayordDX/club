@@ -10,8 +10,7 @@
 	import { slotGetAll } from "$lib/api/remote/slot.remote";
 	import { useUser } from "$lib/auth";
 	import Slots from "./Slots.svelte";
-	import ErrorBoundary from "$lib/components/ErrorBoundary.svelte";
-	import { invalidateAll } from "$app/navigation";
+	import PageBoundary from "$lib/components/PageBoundary.svelte";
 
 	const user = useUser();
 
@@ -96,11 +95,11 @@
 	</div>
 </div>
 <div>
-	<ErrorBoundary>
+	<PageBoundary>
 		{#if slots.loading}
 			<Loader />
 		{:else}
 			<Slots slots={await slots} selectedDate={value.toString()} refetch={() => slots.refresh()} />
 		{/if}
-	</ErrorBoundary>
+	</PageBoundary>
 </div>

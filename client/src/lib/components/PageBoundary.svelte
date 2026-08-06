@@ -4,8 +4,15 @@
 	import { Alert, Badge, Button, Skeleton } from "@kayord/ui";
 	import { CircleAlertIcon, FrownIcon } from "@lucide/svelte";
 	import { type HttpError } from "@sveltejs/kit";
+	import type { Snippet } from "svelte";
 
-	let { children } = $props();
+	type Props = {
+		children?: Snippet;
+		pending?: Snippet;
+		disablePending?: boolean;
+	};
+
+	let { children, pending, disablePending = false }: Props = $props();
 
 	// svelte-ignore non_reactive_update
 	let resetBoundary: (() => void) | undefined;
@@ -40,11 +47,17 @@
 	{/snippet}
 
 	{#snippet pending()}
-		<div class="m-4 space-y-3">
-			<Skeleton class="h-8 w-1/3" />
-			<Skeleton class="h-4 w-2/3" />
-			<Skeleton class="h-24" />
-		</div>
+		{#if !disablePending}
+			{#if pending}
+				{@render pending()}
+			{:else}
+				<div class="m-4 space-y-3">
+					<Skeleton class="h-8 w-1/3" />
+					<Skeleton class="h-4 w-2/3" />
+					<Skeleton class="h-24" />
+				</div>
+			{/if}
+		{/if}
 	{/snippet}
 
 	{@render children?.()}
