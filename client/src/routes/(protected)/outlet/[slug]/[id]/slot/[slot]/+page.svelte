@@ -30,6 +30,7 @@
 		extras: { id: number; amount: number }[];
 	}) => {
 		try {
+			console.log("here I am", players, extras);
 			isSubmitting = true;
 			const bookings = players.map((player) => ({
 				slotId,

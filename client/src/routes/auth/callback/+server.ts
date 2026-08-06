@@ -1,4 +1,5 @@
 import { redirect } from "@sveltejs/kit";
+import { PUBLIC_API_URL } from "$env/static/public";
 import { exchangeCode, getUserinfo, SESSION_COOKIE } from "$lib/server/auth/oidc";
 import { consumePendingLogin, createSession } from "$lib/server/auth/session";
 
@@ -24,6 +25,17 @@ export async function GET({ url, cookies }) {
 	const tokens = await exchangeCode(code, pending.verifier);
 	const profile = await getUserinfo(tokens.accessToken);
 	const session = createSession(profile, tokens);
+
+	// Provision the user in the API's user table (booking.user_id has an FK to it).
+	// Runs server-side at login so the user row exists before any booking write.
+	await fetch(`${PUBLIC_API_URL}/account/sync`, {
+		method: "POST",
+		headers: {
+			authorization: `Bearer ${tokens.accessToken}`,
+			"content-type": "application/json",
+		},
+		body: JSON.stringify({ force: false }),
+	}).catch((e) => console.warn("account/sync failed at login", e));
 
 	cookies.set(SESSION_COOKIE, session.id, {
 		path: "/",
