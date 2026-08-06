@@ -10,6 +10,8 @@
 	import { slotGetAll } from "$lib/api/remote/slot.remote";
 	import { useUser } from "$lib/auth";
 	import Slots from "./Slots.svelte";
+	import ErrorBoundary from "$lib/components/ErrorBoundary.svelte";
+	import { invalidateAll } from "$app/navigation";
 
 	const user = useUser();
 
@@ -39,7 +41,7 @@
 	const slots = $derived(
 		slotGetAll({
 			facilityId: Number(page.params.id),
-			date: value.toString(),
+			date: value.toDate(getLocalTimeZone()).toISOString(),
 		})
 	);
 </script>
@@ -94,9 +96,11 @@
 	</div>
 </div>
 <div>
-	{#await slots}
-		<Loader class="my-4" />
-	{:then res}
-		<Slots slots={res} selectedDate={value.toString()} refetch={() => slots.refresh()} />
-	{/await}
+	<ErrorBoundary>
+		{#if slots.loading}
+			<Loader />
+		{:else}
+			<Slots slots={await slots} selectedDate={value.toString()} refetch={() => slots.refresh()} />
+		{/if}
+	</ErrorBoundary>
 </div>
