@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Popover, ButtonGroup, Loader } from "@kayord/ui";
+	import { Button, Popover, ButtonGroup, Loader, Skeleton } from "@kayord/ui";
 	import { Calendar } from "@kayord/ui/calendar";
 	import { CalendarIcon, ChevronRightIcon, ChevronLeftIcon, BuildingIcon, UserCogIcon } from "@lucide/svelte";
 	import { parseDate, today, getLocalTimeZone, DateFormatter, type DateValue } from "@internationalized/date";
@@ -45,7 +45,7 @@
 	);
 </script>
 
-<div class="flex flex-row items-center gap-2">
+<div class="flex flex-row items-center gap-2 px-1">
 	<div class="flex w-full flex-col gap-2">
 		<div class="flex-row gap-4 py-4 sm:flex">
 			<div class="hidden flex-col sm:flex">
@@ -94,10 +94,17 @@
 		</Button>
 	</div>
 </div>
-<div>
+<div class="px-1">
 	<PageBoundary>
 		{#if slots.loading}
-			<Loader />
+			<div class="flex flex-col gap-2">
+				<Skeleton class="h-25 w-full" />
+				<Skeleton class="h-25 w-full" />
+				<Skeleton class="h-25 w-full" />
+				<Skeleton class="h-25 w-full" />
+				<Skeleton class="h-25 w-full" />
+				<Skeleton class="h-25 w-full" />
+			</div>
 		{:else}
 			<Slots slots={await slots} selectedDate={value.toString()} refetch={() => slots.refresh()} />
 		{/if}

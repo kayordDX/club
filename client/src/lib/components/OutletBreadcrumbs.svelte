@@ -2,12 +2,12 @@
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
 	import { outletGetBasic } from "$lib/api/remote/outlet.remote";
-	import { Breadcrumb, Loader } from "@kayord/ui";
+	import { Breadcrumb, Loader, Skeleton } from "@kayord/ui";
 	import { HouseIcon } from "@lucide/svelte";
 
 	let { children } = $props();
 
-	const outlet = outletGetBasic(page.params.slug ?? "");
+	const outlet = $derived(await outletGetBasic(page.params.slug ?? ""));
 	const facilityName = (o: { facilities: { id: number; name?: string | null }[] }) => o.facilities.find((x) => x.id == Number(page.params.id))?.name ?? "—";
 
 	const facilityHref = $derived.by(() => {
@@ -16,10 +16,13 @@
 	});
 </script>
 
-<div class="m-2">
-	{#await outlet}
-		<Loader class="my-4" />
-	{:then o}
+<svelte:boundary>
+	{#snippet pending()}
+		<div class="m-2">
+			<Skeleton class="h-4 w-95" />
+		</div>
+	{/snippet}
+	<div class="m-2">
 		<Breadcrumb.Root>
 			<Breadcrumb.List>
 				<Breadcrumb.Item>
@@ -30,18 +33,18 @@
 				<Breadcrumb.Separator />
 				<Breadcrumb.Item>
 					<Breadcrumb.Link href={resolve(`/outlet/${page.params.slug}`)} class="text-xs">
-						{o.name}
+						{outlet.name}
 					</Breadcrumb.Link>
 				</Breadcrumb.Item>
 				<Breadcrumb.Separator />
 				<Breadcrumb.Item>
 					{#if page.route.id?.includes("/slot/") || page.route.id?.includes("/booking/")}
 						<Breadcrumb.Link href={facilityHref} class="text-xs">
-							{facilityName(o)}
+							{facilityName(outlet)}
 						</Breadcrumb.Link>
 					{:else}
 						<Breadcrumb.Page class="text-xs">
-							{facilityName(o)}
+							{facilityName(outlet)}
 						</Breadcrumb.Page>
 					{/if}
 				</Breadcrumb.Item>
@@ -74,6 +77,6 @@
 				{/if}
 			</Breadcrumb.List>
 		</Breadcrumb.Root>
-	{/await}
-	{@render children?.()}
-</div>
+	</div>
+</svelte:boundary>
+{@render children?.()}
