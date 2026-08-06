@@ -3,7 +3,8 @@
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
 	import PageHeading from "$lib/components/PageHeading.svelte";
-	import { createAdminBookingGetAll, type AdminBookingDTO } from "$lib/api";
+	import { adminBookingGetAll } from "$lib/api/remote/admin.remote";
+	import type { AdminBookingDTO, PaginatedListOfAdminBookingDTO } from "$lib/api";
 	import { BOOKING_STATUS_OPTIONS, statusBadgeVariant, statusLabel } from "$lib/booking/status";
 	import { buildBookingFilters, sortingToQueryKitSorts } from "$lib/booking/querykit";
 	import { formatCurrency, formatDate, formatTime } from "$lib/booking/format";
@@ -44,12 +45,23 @@
 		return p;
 	});
 
-	const bookingQuery = createAdminBookingGetAll(
-		() => facilityId,
-		() => params
-	);
-	let data = $derived(bookingQuery.data?.items ?? []);
-	let rowCount = $derived(bookingQuery.data?.totalCount ?? 0);
+	// Reactive remote fetch — re-runs whenever params change (pagination/sort/filter).
+	let result = $state<PaginatedListOfAdminBookingDTO | undefined>();
+	let isLoading = $state(true);
+	$effect(() => {
+		const p = params;
+		isLoading = true;
+		adminBookingGetAll({ facilityId, params: p })
+			.then((r) => {
+				result = r;
+				isLoading = false;
+			})
+			.catch(() => {
+				isLoading = false;
+			});
+	});
+	let data = $derived(result?.items ?? []);
+	let rowCount = $derived(result?.totalCount ?? 0);
 
 	const columns: ColumnDef<AdminBookingDTO>[] = [
 		{ header: "#", accessorKey: "id", size: 60 },
@@ -152,7 +164,7 @@
 
 <div class="m-4">
 	<PageHeading title="Bookings" description="Manage every booking for this facility — change status and edit details." icon={BookIcon} />
-	<DataTable {table} headerClass="pb-2" isLoading={bookingQuery.isPending} noDataMessage="No bookings">
+	<DataTable {table} headerClass="pb-2" {isLoading} noDataMessage="No bookings">
 		{#snippet leftToolbar()}
 			<div class="flex items-center gap-2">
 				<div class="relative">

@@ -4,224 +4,168 @@
  * Club.Api
  * OpenAPI spec version: v1
  */
-import { createMutation, createQuery } from "@tanstack/svelte-query";
-import type {
-	CreateMutationOptions,
-	CreateMutationResult,
-	CreateQueryOptions,
-	CreateQueryResult,
-	DataTag,
-	MutationFunction,
-	QueryClient,
-	QueryFunction,
-	QueryKey,
-} from "@tanstack/svelte-query";
-
 import type { InternalErrorResponse, PaymentCheckoutRequest, PaymentCheckoutResponse, PaymentInitiateRequest, PaymentInitiateResponse } from "./api.schemas";
 
-import { customInstance } from "../mutator/customInstance.svelte";
-import type { ErrorType, BodyType } from "../mutator/customInstance.svelte";
+export type paymentResultGetResponse204 = {
+	data: void;
+	status: 204;
+};
 
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+export type paymentResultGetResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
+
+export type paymentResultGetResponseSuccess = paymentResultGetResponse204 & {
+	headers: Headers;
+};
+export type paymentResultGetResponseError = paymentResultGetResponse500 & {
+	headers: Headers;
+};
+
+export type paymentResultGetResponse = paymentResultGetResponseSuccess | paymentResultGetResponseError;
 
 export const getPaymentResultGetUrl = (provider: string) => {
 	return `/payment/result/${provider}`;
 };
 
-export const paymentResultGet = async (provider: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
-	return customInstance<void>(getPaymentResultGetUrl(provider), {
+export const paymentResultGet = async (provider: string, options?: RequestInit): Promise<paymentResultGetResponse> => {
+	const res = await fetch(getPaymentResultGetUrl(provider), {
 		...options,
 		method: "GET",
 	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: paymentResultGetResponse["data"] = body ? JSON.parse(body) : undefined;
+	return { data, status: res.status, headers: res.headers } as paymentResultGetResponse;
 };
 
-export const getPaymentResultGetQueryKey = (provider: string) => {
-	return [`/payment/result/${provider}`] as const;
+export type paymentResultPostResponse204 = {
+	data: void;
+	status: 204;
 };
 
-export const getPaymentResultGetQueryOptions = <TData = Awaited<ReturnType<typeof paymentResultGet>>, TError = ErrorType<InternalErrorResponse>>(
-	provider: string,
-	options?: {
-		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof paymentResultGet>>, TError, TData>>;
-		request?: SecondParameter<typeof customInstance>;
-	}
-) => {
-	const { query: queryOptions, request: requestOptions } = options ?? {};
-
-	const queryKey = queryOptions?.queryKey ?? getPaymentResultGetQueryKey(provider);
-
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof paymentResultGet>>> = ({ signal }) => paymentResultGet(provider, { signal, ...requestOptions });
-
-	return { queryKey, queryFn, enabled: provider !== null && provider !== undefined, ...queryOptions } as CreateQueryOptions<
-		Awaited<ReturnType<typeof paymentResultGet>>,
-		TError,
-		TData
-	> & { queryKey: DataTag<QueryKey, TData, TError> };
+export type paymentResultPostResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
 };
 
-export type PaymentResultGetQueryResult = NonNullable<Awaited<ReturnType<typeof paymentResultGet>>>;
-export type PaymentResultGetQueryError = ErrorType<InternalErrorResponse>;
+export type paymentResultPostResponseSuccess = paymentResultPostResponse204 & {
+	headers: Headers;
+};
+export type paymentResultPostResponseError = paymentResultPostResponse500 & {
+	headers: Headers;
+};
 
-export function createPaymentResultGet<TData = Awaited<ReturnType<typeof paymentResultGet>>, TError = ErrorType<InternalErrorResponse>>(
-	provider: () => string,
-	options?: () => {
-		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof paymentResultGet>>, TError, TData>>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-	const query = createQuery(() => getPaymentResultGetQueryOptions(provider(), options?.()), queryClient) as CreateQueryResult<TData, TError> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
-
-	return query;
-}
+export type paymentResultPostResponse = paymentResultPostResponseSuccess | paymentResultPostResponseError;
 
 export const getPaymentResultPostUrl = (provider: string) => {
 	return `/payment/result/${provider}`;
 };
 
-export const paymentResultPost = async (provider: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
-	return customInstance<void>(getPaymentResultPostUrl(provider), {
+export const paymentResultPost = async (provider: string, options?: RequestInit): Promise<paymentResultPostResponse> => {
+	const res = await fetch(getPaymentResultPostUrl(provider), {
 		...options,
 		method: "POST",
 	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: paymentResultPostResponse["data"] = body ? JSON.parse(body) : undefined;
+	return { data, status: res.status, headers: res.headers } as paymentResultPostResponse;
 };
 
-export const getPaymentResultPostMutationOptions = <TError = ErrorType<InternalErrorResponse>, TContext = unknown>(options?: {
-	mutation?: CreateMutationOptions<Awaited<ReturnType<typeof paymentResultPost>>, TError, { provider: string }, TContext>;
-	request?: SecondParameter<typeof customInstance>;
-}): CreateMutationOptions<Awaited<ReturnType<typeof paymentResultPost>>, TError, { provider: string }, TContext> => {
-	const mutationKey = ["paymentResultPost"];
-	const { mutation: mutationOptions, request: requestOptions } = options
-		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
-			? options
-			: { ...options, mutation: { ...options.mutation, mutationKey } }
-		: { mutation: { mutationKey }, request: undefined };
-
-	const mutationFn: MutationFunction<Awaited<ReturnType<typeof paymentResultPost>>, { provider: string }> = (props) => {
-		const { provider } = props ?? {};
-
-		return paymentResultPost(provider, requestOptions);
-	};
-
-	return { mutationFn, ...mutationOptions };
+export type paymentInitiateResponse200 = {
+	data: PaymentInitiateResponse;
+	status: 200;
 };
 
-export type PaymentResultPostMutationResult = NonNullable<Awaited<ReturnType<typeof paymentResultPost>>>;
-
-export type PaymentResultPostMutationError = ErrorType<InternalErrorResponse>;
-
-export const createPaymentResultPost = <TError = ErrorType<InternalErrorResponse>, TContext = unknown>(
-	options?: () => {
-		mutation?: CreateMutationOptions<Awaited<ReturnType<typeof paymentResultPost>>, TError, { provider: string }, TContext>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateMutationResult<Awaited<ReturnType<typeof paymentResultPost>>, TError, { provider: string }, TContext> => {
-	return createMutation(() => ({ ...getPaymentResultPostMutationOptions(options?.()) }), queryClient);
+export type paymentInitiateResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
 };
+
+export type paymentInitiateResponseSuccess = paymentInitiateResponse200 & {
+	headers: Headers;
+};
+export type paymentInitiateResponseError = paymentInitiateResponse500 & {
+	headers: Headers;
+};
+
+export type paymentInitiateResponse = paymentInitiateResponseSuccess | paymentInitiateResponseError;
+
 export const getPaymentInitiateUrl = () => {
 	return `/payment/initiate`;
 };
 
-export const paymentInitiate = async (
-	paymentInitiateRequest: PaymentInitiateRequest,
-	options?: Parameters<typeof customInstance>[1]
-): Promise<PaymentInitiateResponse> => {
-	return customInstance<PaymentInitiateResponse>(getPaymentInitiateUrl(), {
+export const paymentInitiate = async (paymentInitiateRequest: PaymentInitiateRequest, options?: RequestInit): Promise<paymentInitiateResponse> => {
+	const res = await fetch(getPaymentInitiateUrl(), {
 		...options,
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...options?.headers },
 		body: JSON.stringify(paymentInitiateRequest),
 	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: paymentInitiateResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as paymentInitiateResponse;
 };
 
-export const getPaymentInitiateMutationOptions = <TError = ErrorType<InternalErrorResponse>, TContext = unknown>(options?: {
-	mutation?: CreateMutationOptions<Awaited<ReturnType<typeof paymentInitiate>>, TError, { data: BodyType<PaymentInitiateRequest> }, TContext>;
-	request?: SecondParameter<typeof customInstance>;
-}): CreateMutationOptions<Awaited<ReturnType<typeof paymentInitiate>>, TError, { data: BodyType<PaymentInitiateRequest> }, TContext> => {
-	const mutationKey = ["paymentInitiate"];
-	const { mutation: mutationOptions, request: requestOptions } = options
-		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
-			? options
-			: { ...options, mutation: { ...options.mutation, mutationKey } }
-		: { mutation: { mutationKey }, request: undefined };
-
-	const mutationFn: MutationFunction<Awaited<ReturnType<typeof paymentInitiate>>, { data: BodyType<PaymentInitiateRequest> }> = (props) => {
-		const { data } = props ?? {};
-
-		return paymentInitiate(data, requestOptions);
-	};
-
-	return { mutationFn, ...mutationOptions };
+export type paymentFormResponse204 = {
+	data: void;
+	status: 204;
 };
 
-export type PaymentInitiateMutationResult = NonNullable<Awaited<ReturnType<typeof paymentInitiate>>>;
-export type PaymentInitiateMutationBody = BodyType<PaymentInitiateRequest>;
-export type PaymentInitiateMutationError = ErrorType<InternalErrorResponse>;
-
-export const createPaymentInitiate = <TError = ErrorType<InternalErrorResponse>, TContext = unknown>(
-	options?: () => {
-		mutation?: CreateMutationOptions<Awaited<ReturnType<typeof paymentInitiate>>, TError, { data: BodyType<PaymentInitiateRequest> }, TContext>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateMutationResult<Awaited<ReturnType<typeof paymentInitiate>>, TError, { data: BodyType<PaymentInitiateRequest> }, TContext> => {
-	return createMutation(() => ({ ...getPaymentInitiateMutationOptions(options?.()) }), queryClient);
+export type paymentFormResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
 };
+
+export type paymentFormResponseSuccess = paymentFormResponse204 & {
+	headers: Headers;
+};
+export type paymentFormResponseError = paymentFormResponse500 & {
+	headers: Headers;
+};
+
+export type paymentFormResponse = paymentFormResponseSuccess | paymentFormResponseError;
+
 export const getPaymentFormUrl = (provider: string, transactionId: string) => {
 	return `/payment/form/${provider}/${transactionId}`;
 };
 
-export const paymentForm = async (provider: string, transactionId: string, options?: Parameters<typeof customInstance>[1]): Promise<void> => {
-	return customInstance<void>(getPaymentFormUrl(provider, transactionId), {
+export const paymentForm = async (provider: string, transactionId: string, options?: RequestInit): Promise<paymentFormResponse> => {
+	const res = await fetch(getPaymentFormUrl(provider, transactionId), {
 		...options,
 		method: "GET",
 	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: paymentFormResponse["data"] = body ? JSON.parse(body) : undefined;
+	return { data, status: res.status, headers: res.headers } as paymentFormResponse;
 };
 
-export const getPaymentFormQueryKey = (provider: string, transactionId: string) => {
-	return [`/payment/form/${provider}/${transactionId}`] as const;
+export type paymentCheckoutResponse200 = {
+	data: PaymentCheckoutResponse;
+	status: 200;
 };
 
-export const getPaymentFormQueryOptions = <TData = Awaited<ReturnType<typeof paymentForm>>, TError = ErrorType<InternalErrorResponse>>(
-	provider: string,
-	transactionId: string,
-	options?: { query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof paymentForm>>, TError, TData>>; request?: SecondParameter<typeof customInstance> }
-) => {
-	const { query: queryOptions, request: requestOptions } = options ?? {};
-
-	const queryKey = queryOptions?.queryKey ?? getPaymentFormQueryKey(provider, transactionId);
-
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof paymentForm>>> = ({ signal }) => paymentForm(provider, transactionId, { signal, ...requestOptions });
-
-	return {
-		queryKey,
-		queryFn,
-		enabled: provider !== null && provider !== undefined && transactionId !== null && transactionId !== undefined,
-		...queryOptions,
-	} as CreateQueryOptions<Awaited<ReturnType<typeof paymentForm>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> };
+export type paymentCheckoutResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
 };
 
-export type PaymentFormQueryResult = NonNullable<Awaited<ReturnType<typeof paymentForm>>>;
-export type PaymentFormQueryError = ErrorType<InternalErrorResponse>;
+export type paymentCheckoutResponseSuccess = paymentCheckoutResponse200 & {
+	headers: Headers;
+};
+export type paymentCheckoutResponseError = paymentCheckoutResponse500 & {
+	headers: Headers;
+};
 
-export function createPaymentForm<TData = Awaited<ReturnType<typeof paymentForm>>, TError = ErrorType<InternalErrorResponse>>(
-	provider: () => string,
-	transactionId: () => string,
-	options?: () => {
-		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof paymentForm>>, TError, TData>>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-	const query = createQuery(() => getPaymentFormQueryOptions(provider(), transactionId(), options?.()), queryClient) as CreateQueryResult<TData, TError> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
-
-	return query;
-}
+export type paymentCheckoutResponse = paymentCheckoutResponseSuccess | paymentCheckoutResponseError;
 
 export const getPaymentCheckoutUrl = (provider: string) => {
 	return `/payment/checkout/${provider}`;
@@ -230,51 +174,17 @@ export const getPaymentCheckoutUrl = (provider: string) => {
 export const paymentCheckout = async (
 	provider: string,
 	paymentCheckoutRequest: PaymentCheckoutRequest,
-	options?: Parameters<typeof customInstance>[1]
-): Promise<PaymentCheckoutResponse> => {
-	return customInstance<PaymentCheckoutResponse>(getPaymentCheckoutUrl(provider), {
+	options?: RequestInit
+): Promise<paymentCheckoutResponse> => {
+	const res = await fetch(getPaymentCheckoutUrl(provider), {
 		...options,
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...options?.headers },
 		body: JSON.stringify(paymentCheckoutRequest),
 	});
-};
 
-export const getPaymentCheckoutMutationOptions = <TError = ErrorType<InternalErrorResponse>, TContext = unknown>(options?: {
-	mutation?: CreateMutationOptions<Awaited<ReturnType<typeof paymentCheckout>>, TError, { provider: string; data: BodyType<PaymentCheckoutRequest> }, TContext>;
-	request?: SecondParameter<typeof customInstance>;
-}): CreateMutationOptions<Awaited<ReturnType<typeof paymentCheckout>>, TError, { provider: string; data: BodyType<PaymentCheckoutRequest> }, TContext> => {
-	const mutationKey = ["paymentCheckout"];
-	const { mutation: mutationOptions, request: requestOptions } = options
-		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
-			? options
-			: { ...options, mutation: { ...options.mutation, mutationKey } }
-		: { mutation: { mutationKey }, request: undefined };
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
 
-	const mutationFn: MutationFunction<Awaited<ReturnType<typeof paymentCheckout>>, { provider: string; data: BodyType<PaymentCheckoutRequest> }> = (props) => {
-		const { provider, data } = props ?? {};
-
-		return paymentCheckout(provider, data, requestOptions);
-	};
-
-	return { mutationFn, ...mutationOptions };
-};
-
-export type PaymentCheckoutMutationResult = NonNullable<Awaited<ReturnType<typeof paymentCheckout>>>;
-export type PaymentCheckoutMutationBody = BodyType<PaymentCheckoutRequest>;
-export type PaymentCheckoutMutationError = ErrorType<InternalErrorResponse>;
-
-export const createPaymentCheckout = <TError = ErrorType<InternalErrorResponse>, TContext = unknown>(
-	options?: () => {
-		mutation?: CreateMutationOptions<
-			Awaited<ReturnType<typeof paymentCheckout>>,
-			TError,
-			{ provider: string; data: BodyType<PaymentCheckoutRequest> },
-			TContext
-		>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateMutationResult<Awaited<ReturnType<typeof paymentCheckout>>, TError, { provider: string; data: BodyType<PaymentCheckoutRequest> }, TContext> => {
-	return createMutation(() => ({ ...getPaymentCheckoutMutationOptions(options?.()) }), queryClient);
+	const data: paymentCheckoutResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as paymentCheckoutResponse;
 };

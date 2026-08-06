@@ -3,7 +3,7 @@
 	import { resolve } from "$app/paths";
 </script>
 
-<button class="flex items-center gap-1" onclick={() => goto(resolve("/"))}>
+<button class="flex items-center gap-1" onclick={() => goto(resolve("/"), { invalidateAll: true })}>
 	<img src="/favicon.svg" alt="logo" class="h-10" />
 	<span class="hidden text-lg font-bold md:block">Club</span>
 </button>

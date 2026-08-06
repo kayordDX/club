@@ -3,12 +3,13 @@
 	import { page } from "$app/state";
 	import { cn } from "@kayord/ui/utils";
 	import { resolve } from "$app/paths";
-	import { type SlotGetAllResponse, createSlotGetContracts, createSlotAvailable } from "$lib/api";
+	import { type SlotGetAllResponse } from "$lib/api";
+	import { slotAvailable, slotGetContracts } from "$lib/api/remote/slot.remote";
 	import { Card } from "@kayord/ui";
 	import { ChevronRightIcon, CircleDotIcon, CircleQuestionMark, ClockIcon, MinusIcon, PlusIcon } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
 	import { goto } from "$app/navigation";
-	import { auth } from "$lib/stores/auth.svelte";
+	import { useUser } from "$lib/auth";
 
 	type Props = {
 		slot: SlotGetAllResponse;
@@ -18,27 +19,22 @@
 
 	let { slot, selectedDate, refetch }: Props = $props();
 
+	const user = useUser();
+
 	let slotCount = $state(1);
 	let slotContractEnabled = $state(false);
 	const available = $derived(slot.total - slot.booked);
 	const isUnavailable = $derived(available <= 0 || slot.isEnabled === false);
 
-	const availableMutation = createSlotAvailable();
-
 	const checkAvailable = async (slot: SlotGetAllResponse) => {
 		try {
-			const isAvailable = await availableMutation.mutateAsync({
-				data: {
-					id: slot.id,
-					slotCount: slotCount,
-				},
-			});
+			const isAvailable = await slotAvailable({ id: slot.id, slotCount });
 			if (isAvailable) {
 				const bookingUrl = resolve(`/outlet/${page.params.slug}/${page.params.id}/slot/${slot.id}?slotCount=${slotCount ?? 1}&date=${selectedDate}`);
-				if (auth.isAuthenticated) {
+				if (user) {
 					goto(bookingUrl);
 				} else {
-					auth.login(bookingUrl);
+					window.location.href = `/auth/login?next=${encodeURIComponent(bookingUrl)}`;
 				}
 			} else {
 				toast.error("Not enough slots available");
@@ -48,11 +44,6 @@
 			console.error("Check failed");
 		}
 	};
-
-	const contractsQuery = createSlotGetContracts(
-		() => slot.id,
-		() => ({ query: { enabled: slotContractEnabled } })
-	);
 
 	const formatTime = (datetime?: string | undefined | null) => {
 		if (!datetime) return "";
@@ -84,10 +75,6 @@
 		</div>
 	</Card.Header>
 	<Card.Content class="flex flex-wrap content-start gap-2 p-2">
-		<!-- <div class="text-muted-foreground text-xs">Slots</div>
-		<div class="text-muted-foreground text-xs">Players</div>
-		<div class="text-muted-foreground text-center text-xs">Price</div>
-		<div class="text-muted-foreground text-xs"></div> -->
 		{#if slot.total > 1}
 			{@const booked = slot.booked}
 			<div class="flex flex-col gap-1">
@@ -129,22 +116,30 @@
 						{/snippet}
 					</Popover.Trigger>
 					<Popover.Content class="p-0">
-						<Table.Root class="rounded-md">
-							<Table.Header>
-								<Table.Row>
-									<Table.Head>Type</Table.Head>
-									<Table.Head>Price</Table.Head>
-								</Table.Row>
-							</Table.Header>
-							<Table.Body>
-								{#each contractsQuery.data ?? [] as contract (contract.id)}
-									<Table.Row>
-										<Table.Cell>{contract.contractName} ({contract.description})</Table.Cell>
-										<Table.Cell>R{contract.price.toFixed(2)}</Table.Cell>
-									</Table.Row>
-								{/each}
-							</Table.Body>
-						</Table.Root>
+						{#if slotContractEnabled}
+							<!-- Scoped boundary so this lazy load doesn't blank the page -->
+							<svelte:boundary>
+								{#snippet failed()}<p class="p-4 text-sm">Unable to load prices</p>{/snippet}
+								{#snippet pending()}<p class="p-4 text-sm">Loading…</p>{/snippet}
+								{@const contracts = await slotGetContracts(slot.id)}
+								<Table.Root class="rounded-md">
+									<Table.Header>
+										<Table.Row>
+											<Table.Head>Type</Table.Head>
+											<Table.Head>Price</Table.Head>
+										</Table.Row>
+									</Table.Header>
+									<Table.Body>
+										{#each contracts as contract (contract.id)}
+											<Table.Row>
+												<Table.Cell>{contract.contractName} ({contract.description})</Table.Cell>
+												<Table.Cell>R{contract.price.toFixed(2)}</Table.Cell>
+											</Table.Row>
+										{/each}
+									</Table.Body>
+								</Table.Root>
+							</svelte:boundary>
+						{/if}
 					</Popover.Content>
 				</Popover.Root>
 			</div>

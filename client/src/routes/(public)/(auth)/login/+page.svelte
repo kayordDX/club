@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { Card } from "@kayord/ui";
-	import { auth } from "$lib/stores/auth.svelte";
 	import { page } from "$app/state";
 	import LogoButton from "$lib/components/LogoButton.svelte";
 	import LogoutButton from "$lib/components/LogoutButton/LogoutButton.svelte";
 	import LoginButton from "$lib/components/LoginButton/LoginButton.svelte";
+	import { useUser } from "$lib/auth";
 
+	const user = useUser();
 	const redirect = page.url.searchParams.get("redirect") ?? undefined;
 </script>
 
@@ -16,7 +17,7 @@
 			<Card.Header>
 				<Card.Title class="text-center">Welcome back</Card.Title>
 				<Card.Description class="text-center">
-					{auth.isAuthenticated ? "You are already logged in" : "Sign in to book your next game"}
+					{user ? "You are already logged in" : "Sign in to book your next game"}
 				</Card.Description>
 			</Card.Header>
 			<Card.Content class="flex flex-col items-center">

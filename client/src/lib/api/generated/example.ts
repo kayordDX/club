@@ -4,59 +4,61 @@
  * Club.Api
  * OpenAPI spec version: v1
  */
-import { createQuery } from "@tanstack/svelte-query";
-import type { CreateQueryOptions, CreateQueryResult, DataTag, QueryClient, QueryFunction, QueryKey } from "@tanstack/svelte-query";
-
 import type { ExampleVerifyParams, InternalErrorResponse } from "./api.schemas";
 
-import { customInstance } from "../mutator/customInstance.svelte";
-import type { ErrorType } from "../mutator/customInstance.svelte";
+export type exampleResponse200 = {
+	data: string;
+	status: 200;
+};
 
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+export type exampleResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
+
+export type exampleResponseSuccess = exampleResponse200 & {
+	headers: Headers;
+};
+export type exampleResponseError = exampleResponse500 & {
+	headers: Headers;
+};
+
+export type exampleResponse = exampleResponseSuccess | exampleResponseError;
 
 export const getExampleUrl = () => {
 	return `/example`;
 };
 
-export const example = async (options?: Parameters<typeof customInstance>[1]): Promise<string> => {
-	return customInstance<string>(getExampleUrl(), {
+export const example = async (options?: RequestInit): Promise<exampleResponse> => {
+	const res = await fetch(getExampleUrl(), {
 		...options,
 		method: "GET",
 	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: exampleResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as exampleResponse;
 };
 
-export const getExampleQueryKey = () => {
-	return [`/example`] as const;
+export type exampleVerifyResponse200 = {
+	data: boolean;
+	status: 200;
 };
 
-export const getExampleQueryOptions = <TData = Awaited<ReturnType<typeof example>>, TError = ErrorType<InternalErrorResponse>>(options?: {
-	query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof example>>, TError, TData>>;
-	request?: SecondParameter<typeof customInstance>;
-}) => {
-	const { query: queryOptions, request: requestOptions } = options ?? {};
-
-	const queryKey = queryOptions?.queryKey ?? getExampleQueryKey();
-
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof example>>> = ({ signal }) => example({ signal, ...requestOptions });
-
-	return { queryKey, queryFn, ...queryOptions } as CreateQueryOptions<Awaited<ReturnType<typeof example>>, TError, TData> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
+export type exampleVerifyResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
 };
 
-export type ExampleQueryResult = NonNullable<Awaited<ReturnType<typeof example>>>;
-export type ExampleQueryError = ErrorType<InternalErrorResponse>;
+export type exampleVerifyResponseSuccess = exampleVerifyResponse200 & {
+	headers: Headers;
+};
+export type exampleVerifyResponseError = exampleVerifyResponse500 & {
+	headers: Headers;
+};
 
-export function createExample<TData = Awaited<ReturnType<typeof example>>, TError = ErrorType<InternalErrorResponse>>(
-	options?: () => { query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof example>>, TError, TData>>; request?: SecondParameter<typeof customInstance> },
-	queryClient?: () => QueryClient
-): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-	const query = createQuery(() => getExampleQueryOptions(options?.()), queryClient) as CreateQueryResult<TData, TError> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
-
-	return query;
-}
+export type exampleVerifyResponse = exampleVerifyResponseSuccess | exampleVerifyResponseError;
 
 export const getExampleVerifyUrl = (params: ExampleVerifyParams) => {
 	const normalizedParams = new URLSearchParams();
@@ -72,46 +74,14 @@ export const getExampleVerifyUrl = (params: ExampleVerifyParams) => {
 	return stringifiedParams.length > 0 ? `/example/verify?${stringifiedParams}` : `/example/verify`;
 };
 
-export const exampleVerify = async (params: ExampleVerifyParams, options?: Parameters<typeof customInstance>[1]): Promise<boolean> => {
-	return customInstance<boolean>(getExampleVerifyUrl(params), {
+export const exampleVerify = async (params: ExampleVerifyParams, options?: RequestInit): Promise<exampleVerifyResponse> => {
+	const res = await fetch(getExampleVerifyUrl(params), {
 		...options,
 		method: "GET",
 	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: exampleVerifyResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as exampleVerifyResponse;
 };
-
-export const getExampleVerifyQueryKey = (params?: ExampleVerifyParams) => {
-	return [`/example/verify`, ...(params ? [params] : [])] as const;
-};
-
-export const getExampleVerifyQueryOptions = <TData = Awaited<ReturnType<typeof exampleVerify>>, TError = ErrorType<InternalErrorResponse>>(
-	params: ExampleVerifyParams,
-	options?: { query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof exampleVerify>>, TError, TData>>; request?: SecondParameter<typeof customInstance> }
-) => {
-	const { query: queryOptions, request: requestOptions } = options ?? {};
-
-	const queryKey = queryOptions?.queryKey ?? getExampleVerifyQueryKey(params);
-
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof exampleVerify>>> = ({ signal }) => exampleVerify(params, { signal, ...requestOptions });
-
-	return { queryKey, queryFn, ...queryOptions } as CreateQueryOptions<Awaited<ReturnType<typeof exampleVerify>>, TError, TData> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
-};
-
-export type ExampleVerifyQueryResult = NonNullable<Awaited<ReturnType<typeof exampleVerify>>>;
-export type ExampleVerifyQueryError = ErrorType<InternalErrorResponse>;
-
-export function createExampleVerify<TData = Awaited<ReturnType<typeof exampleVerify>>, TError = ErrorType<InternalErrorResponse>>(
-	params: () => ExampleVerifyParams,
-	options?: () => {
-		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof exampleVerify>>, TError, TData>>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-	const query = createQuery(() => getExampleVerifyQueryOptions(params(), options?.()), queryClient) as CreateQueryResult<TData, TError> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
-
-	return query;
-}

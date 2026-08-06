@@ -4,6 +4,7 @@
 	import { Sidebar } from "@kayord/ui";
 	import SettingsMenu from "./SettingsMenu.svelte";
 	import AuthCheck from "$lib/components/check/AuthCheck.svelte";
+	import PageBoundary from "$lib/components/PageBoundary.svelte";
 
 	let { children } = $props();
 </script>
@@ -25,9 +26,11 @@
 		<Sidebar.Rail />
 	</Sidebar.Root>
 	<Sidebar.Inset>
-		<AuthCheck isProtected={true}>
+		<AuthCheck>
 			<Header leftHeader={sidebarTrigger} />
-			{@render children?.()}
+			<PageBoundary>
+				{@render children?.()}
+			</PageBoundary>
 		</AuthCheck>
 	</Sidebar.Inset>
 </Sidebar.Provider>

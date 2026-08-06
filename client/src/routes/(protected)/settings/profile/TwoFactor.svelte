@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { createAccountCredentialDisable, createAccountCredentialDisableToken } from "$lib/api";
+	import { accountCredentialDisable, accountCredentialDisableToken } from "$lib/api/remote/account.remote";
 	import { createAppForm, FieldError, Form, isInvalid } from "$lib/components/Form";
-	import { auth } from "$lib/stores/auth.svelte";
 	import { getError } from "$lib/types";
 	import { Button, Dialog, Field, InputOTP, Item } from "@kayord/ui";
 	import { CircleCheckIcon } from "@lucide/svelte";
@@ -10,17 +9,13 @@
 
 	type Props = {
 		isTwoFactorEnabled: boolean;
-		refetch: () => void;
 	};
 
-	let { isTwoFactorEnabled, refetch }: Props = $props();
-
-	const disableMutation = createAccountCredentialDisable();
-	const disableTokenMutation = createAccountCredentialDisableToken();
+	let { isTwoFactorEnabled }: Props = $props();
 
 	const getDisable2FAToken = async () => {
 		try {
-			await disableTokenMutation.mutateAsync();
+			await accountCredentialDisableToken();
 		} catch (error) {
 			toast.error(getError(error).message);
 		}
@@ -30,7 +25,6 @@
 		token: z.string().length(6, "Token must be 6 characters long"),
 	});
 
-	let first = $state(true);
 	let open = $state(false);
 
 	const form = createAppForm(() => ({
@@ -42,9 +36,7 @@
 		},
 		onSubmit: async ({ value }) => {
 			try {
-				console.log(value);
-				await disableMutation.mutateAsync({ data: { token: value.token } });
-				refetch();
+				await accountCredentialDisable({ token: value.token });
 				toast.success("TOTP disabled successfully");
 				open = false;
 			} catch (error) {
@@ -52,12 +44,6 @@
 			}
 		},
 	}));
-
-	const onOpenTrigger = () => {
-		if (!first) return;
-		getDisable2FAToken();
-		first = true;
-	};
 </script>
 
 <Item.Root variant="muted">
@@ -68,7 +54,7 @@
 	<Item.Actions>
 		{#if isTwoFactorEnabled}
 			<CircleCheckIcon class="text-green-500 dark:text-green-300" />
-			<Dialog.Root bind:open onOpenChange={onOpenTrigger}>
+			<Dialog.Root bind:open>
 				<Dialog.Trigger>
 					<Button variant="destructive">Disable TOTP</Button>
 				</Dialog.Trigger>
@@ -114,7 +100,7 @@
 				</Dialog.Content>
 			</Dialog.Root>
 		{:else}
-			<Button onclick={() => auth.keycloakAction("CONFIGURE_TOTP")} variant="outline">Configure TOTP</Button>
+			<Button href="/auth/login?action=CONFIGURE_TOTP" variant="outline">Configure TOTP</Button>
 		{/if}
 	</Item.Actions>
 </Item.Root>

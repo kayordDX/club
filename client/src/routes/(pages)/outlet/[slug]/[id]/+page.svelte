@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Popover, ButtonGroup } from "@kayord/ui";
+	import { Button, Popover, ButtonGroup, Loader, Skeleton } from "@kayord/ui";
 	import { Calendar } from "@kayord/ui/calendar";
 	import { CalendarIcon, ChevronRightIcon, ChevronLeftIcon, BuildingIcon, UserCogIcon } from "@lucide/svelte";
 	import { parseDate, today, getLocalTimeZone, DateFormatter, type DateValue } from "@internationalized/date";
@@ -7,9 +7,12 @@
 	import { resolve } from "$app/paths";
 	import { cn } from "@kayord/ui/utils";
 	import { createSearchParamsSchema, useSearchParams } from "runed/kit";
-	import { createSlotGetAll } from "$lib/api";
+	import { slotGetAll } from "$lib/api/remote/slot.remote";
+	import { useUser } from "$lib/auth";
 	import Slots from "./Slots.svelte";
-	import { auth } from "$lib/stores/auth.svelte";
+	import PageBoundary from "$lib/components/PageBoundary.svelte";
+
+	const user = useUser();
 
 	const df = new DateFormatter("en-ZA", {
 		dateStyle: "long",
@@ -33,14 +36,16 @@
 		params.date = value.add({ days: incrementValue }).toString();
 	};
 
-	const slotsQuery = createSlotGetAll(() => ({
-		facilityId: Number(page.params.id),
-		date: value.toString(),
-	}));
-	const slotsData = $derived(slotsQuery.data ?? []);
+	// Reactive remote query — re-fetches when the facility or selected date changes.
+	const slots = $derived(
+		slotGetAll({
+			facilityId: Number(page.params.id),
+			date: value.toDate(getLocalTimeZone()).toISOString(),
+		})
+	);
 </script>
 
-<div class="flex flex-row items-center gap-2">
+<div class="flex flex-row items-center gap-2 px-1">
 	<div class="flex w-full flex-col gap-2">
 		<div class="flex-row gap-4 py-4 sm:flex">
 			<div class="hidden flex-col sm:flex">
@@ -77,7 +82,7 @@
 		</div>
 	</div>
 	<div class="flex items-center gap-2">
-		{#if auth.isManager}
+		{#if user}
 			<Button variant="destructive" href={resolve(`/outlet/${page.params.slug}/${page.params.id}/admin`)}>
 				<UserCogIcon />
 				Admin
@@ -89,6 +94,19 @@
 		</Button>
 	</div>
 </div>
-<div>
-	<Slots slots={slotsData} selectedDate={value.toString()} refetch={slotsQuery.refetch} />
+<div class="px-1">
+	<PageBoundary>
+		{#if slots.loading}
+			<div class="flex flex-col gap-2">
+				<Skeleton class="h-25 w-full" />
+				<Skeleton class="h-25 w-full" />
+				<Skeleton class="h-25 w-full" />
+				<Skeleton class="h-25 w-full" />
+				<Skeleton class="h-25 w-full" />
+				<Skeleton class="h-25 w-full" />
+			</div>
+		{:else}
+			<Slots slots={await slots} selectedDate={value.toString()} refetch={() => slots.refresh()} />
+		{/if}
+	</PageBoundary>
 </div>

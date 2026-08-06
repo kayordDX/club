@@ -1,12 +1,18 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
+import type { SessionUser } from "$lib/types";
+
 declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
-			user: UserJWT | undefined;
+			user: SessionUser | undefined;
+			// Server-only. Used by remote functions to call the .NET API.
+			accessToken: string | undefined;
 		}
-		// interface PageData {}
+		interface PageData {
+			user?: SessionUser;
+		}
 		// interface PageState {}
 		// interface Platform {}
 	}

@@ -1,7 +1,8 @@
 <script lang="ts">
 	import PageHeading from "$lib/components/PageHeading.svelte";
 	import { BookIcon, PencilIcon, SearchIcon } from "@lucide/svelte";
-	import { BookingStatusEnum, createBookingGetUser, type BookingSummaryDTO } from "$lib/api";
+	import { BookingStatusEnum, type BookingSummaryDTO, type PaginatedListOfBookingSummaryDTO } from "$lib/api";
+	import { bookingGetUser } from "$lib/api/remote/booking.remote";
 	import { type ColumnDef, type Updater, type PaginationState, type SortingState, getPaginationRowModel, getSortedRowModel } from "@tanstack/table-core";
 	import { DataTable, createShadTable, renderSnippet } from "@kayord/ui/data-table";
 	import { Actions, Badge, Input, Select } from "@kayord/ui";
@@ -41,9 +42,24 @@
 		return p;
 	});
 
-	const bookingQuery = createBookingGetUser(() => params);
-	let data = $derived(bookingQuery.data?.items ?? []);
-	let rowCount = $derived(bookingQuery.data?.totalCount ?? 0);
+	// Reactive remote fetch — re-runs whenever params change (pagination/sort/filter).
+	let result = $state<PaginatedListOfBookingSummaryDTO | undefined>();
+	let isLoading = $state(true);
+	$effect(() => {
+		const p = params;
+		isLoading = true;
+		bookingGetUser(p)
+			.then((r) => {
+				result = r;
+				isLoading = false;
+			})
+			.catch(() => {
+				isLoading = false;
+			});
+	});
+
+	let data = $derived(result?.items ?? []);
+	let rowCount = $derived(result?.totalCount ?? 0);
 
 	const columns: ColumnDef<BookingSummaryDTO>[] = [
 		{ header: "#", accessorKey: "id", size: 60 },
@@ -158,7 +174,7 @@
 
 <div class="m-4">
 	<PageHeading title="Bookings" description="My Bookings" icon={BookIcon} />
-	<DataTable {table} isLoading={bookingQuery.isPending} noDataMessage="No bookings">
+	<DataTable {table} {isLoading} noDataMessage="No bookings">
 		{#snippet leftToolbar()}
 			<div class="flex items-center gap-2">
 				<div class="relative">

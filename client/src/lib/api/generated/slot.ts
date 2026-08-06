@@ -4,81 +4,71 @@
  * Club.Api
  * OpenAPI spec version: v1
  */
-import { createMutation, createQuery } from "@tanstack/svelte-query";
-import type {
-	CreateMutationOptions,
-	CreateMutationResult,
-	CreateQueryOptions,
-	CreateQueryResult,
-	DataTag,
-	MutationFunction,
-	QueryClient,
-	QueryFunction,
-	QueryKey,
-} from "@tanstack/svelte-query";
-
 import type { AvailableSlotRequest, ErrorResponse, InternalErrorResponse, SlotGetAllParams, SlotGetAllResponse, SlotGetContractsResponse } from "./api.schemas";
 
-import { customInstance } from "../mutator/customInstance.svelte";
-import type { ErrorType, BodyType } from "../mutator/customInstance.svelte";
+export type slotGetContractsResponse200 = {
+	data: SlotGetContractsResponse[];
+	status: 200;
+};
 
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+export type slotGetContractsResponse400 = {
+	data: ErrorResponse;
+	status: 400;
+};
+
+export type slotGetContractsResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
+
+export type slotGetContractsResponseSuccess = slotGetContractsResponse200 & {
+	headers: Headers;
+};
+export type slotGetContractsResponseError = (slotGetContractsResponse400 | slotGetContractsResponse500) & {
+	headers: Headers;
+};
+
+export type slotGetContractsResponse = slotGetContractsResponseSuccess | slotGetContractsResponseError;
 
 export const getSlotGetContractsUrl = (id: string) => {
 	return `/slot/contracts/${id}`;
 };
 
-export const slotGetContracts = async (id: string, options?: Parameters<typeof customInstance>[1]): Promise<SlotGetContractsResponse[]> => {
-	return customInstance<SlotGetContractsResponse[]>(getSlotGetContractsUrl(id), {
+export const slotGetContracts = async (id: string, options?: RequestInit): Promise<slotGetContractsResponse> => {
+	const res = await fetch(getSlotGetContractsUrl(id), {
 		...options,
 		method: "GET",
 	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: slotGetContractsResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as slotGetContractsResponse;
 };
 
-export const getSlotGetContractsQueryKey = (id: string) => {
-	return [`/slot/contracts/${id}`] as const;
+export type slotGetAllResponse200 = {
+	data: SlotGetAllResponse[];
+	status: 200;
 };
 
-export const getSlotGetContractsQueryOptions = <
-	TData = Awaited<ReturnType<typeof slotGetContracts>>,
-	TError = ErrorType<ErrorResponse | InternalErrorResponse>,
->(
-	id: string,
-	options?: {
-		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof slotGetContracts>>, TError, TData>>;
-		request?: SecondParameter<typeof customInstance>;
-	}
-) => {
-	const { query: queryOptions, request: requestOptions } = options ?? {};
-
-	const queryKey = queryOptions?.queryKey ?? getSlotGetContractsQueryKey(id);
-
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof slotGetContracts>>> = ({ signal }) => slotGetContracts(id, { signal, ...requestOptions });
-
-	return { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions } as CreateQueryOptions<
-		Awaited<ReturnType<typeof slotGetContracts>>,
-		TError,
-		TData
-	> & { queryKey: DataTag<QueryKey, TData, TError> };
+export type slotGetAllResponse400 = {
+	data: ErrorResponse;
+	status: 400;
 };
 
-export type SlotGetContractsQueryResult = NonNullable<Awaited<ReturnType<typeof slotGetContracts>>>;
-export type SlotGetContractsQueryError = ErrorType<ErrorResponse | InternalErrorResponse>;
+export type slotGetAllResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
 
-export function createSlotGetContracts<TData = Awaited<ReturnType<typeof slotGetContracts>>, TError = ErrorType<ErrorResponse | InternalErrorResponse>>(
-	id: () => string,
-	options?: () => {
-		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof slotGetContracts>>, TError, TData>>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-	const query = createQuery(() => getSlotGetContractsQueryOptions(id(), options?.()), queryClient) as CreateQueryResult<TData, TError> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
+export type slotGetAllResponseSuccess = slotGetAllResponse200 & {
+	headers: Headers;
+};
+export type slotGetAllResponseError = (slotGetAllResponse400 | slotGetAllResponse500) & {
+	headers: Headers;
+};
 
-	return query;
-}
+export type slotGetAllResponse = slotGetAllResponseSuccess | slotGetAllResponseError;
 
 export const getSlotGetAllUrl = (params: SlotGetAllParams) => {
 	const normalizedParams = new URLSearchParams();
@@ -94,93 +84,51 @@ export const getSlotGetAllUrl = (params: SlotGetAllParams) => {
 	return stringifiedParams.length > 0 ? `/slot?${stringifiedParams}` : `/slot`;
 };
 
-export const slotGetAll = async (params: SlotGetAllParams, options?: Parameters<typeof customInstance>[1]): Promise<SlotGetAllResponse[]> => {
-	return customInstance<SlotGetAllResponse[]>(getSlotGetAllUrl(params), {
+export const slotGetAll = async (params: SlotGetAllParams, options?: RequestInit): Promise<slotGetAllResponse> => {
+	const res = await fetch(getSlotGetAllUrl(params), {
 		...options,
 		method: "GET",
 	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: slotGetAllResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as slotGetAllResponse;
 };
 
-export const getSlotGetAllQueryKey = (params?: SlotGetAllParams) => {
-	return [`/slot`, ...(params ? [params] : [])] as const;
+export type slotAvailableResponse200 = {
+	data: boolean;
+	status: 200;
 };
 
-export const getSlotGetAllQueryOptions = <TData = Awaited<ReturnType<typeof slotGetAll>>, TError = ErrorType<ErrorResponse | InternalErrorResponse>>(
-	params: SlotGetAllParams,
-	options?: { query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof slotGetAll>>, TError, TData>>; request?: SecondParameter<typeof customInstance> }
-) => {
-	const { query: queryOptions, request: requestOptions } = options ?? {};
-
-	const queryKey = queryOptions?.queryKey ?? getSlotGetAllQueryKey(params);
-
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof slotGetAll>>> = ({ signal }) => slotGetAll(params, { signal, ...requestOptions });
-
-	return { queryKey, queryFn, ...queryOptions } as CreateQueryOptions<Awaited<ReturnType<typeof slotGetAll>>, TError, TData> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
+export type slotAvailableResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
 };
 
-export type SlotGetAllQueryResult = NonNullable<Awaited<ReturnType<typeof slotGetAll>>>;
-export type SlotGetAllQueryError = ErrorType<ErrorResponse | InternalErrorResponse>;
+export type slotAvailableResponseSuccess = slotAvailableResponse200 & {
+	headers: Headers;
+};
+export type slotAvailableResponseError = slotAvailableResponse500 & {
+	headers: Headers;
+};
 
-export function createSlotGetAll<TData = Awaited<ReturnType<typeof slotGetAll>>, TError = ErrorType<ErrorResponse | InternalErrorResponse>>(
-	params: () => SlotGetAllParams,
-	options?: () => {
-		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof slotGetAll>>, TError, TData>>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-	const query = createQuery(() => getSlotGetAllQueryOptions(params(), options?.()), queryClient) as CreateQueryResult<TData, TError> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
-
-	return query;
-}
+export type slotAvailableResponse = slotAvailableResponseSuccess | slotAvailableResponseError;
 
 export const getSlotAvailableUrl = () => {
 	return `/slot/available`;
 };
 
-export const slotAvailable = async (availableSlotRequest: AvailableSlotRequest, options?: Parameters<typeof customInstance>[1]): Promise<boolean> => {
-	return customInstance<boolean>(getSlotAvailableUrl(), {
+export const slotAvailable = async (availableSlotRequest: AvailableSlotRequest, options?: RequestInit): Promise<slotAvailableResponse> => {
+	const res = await fetch(getSlotAvailableUrl(), {
 		...options,
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...options?.headers },
 		body: JSON.stringify(availableSlotRequest),
 	});
-};
 
-export const getSlotAvailableMutationOptions = <TError = ErrorType<InternalErrorResponse>, TContext = unknown>(options?: {
-	mutation?: CreateMutationOptions<Awaited<ReturnType<typeof slotAvailable>>, TError, { data: BodyType<AvailableSlotRequest> }, TContext>;
-	request?: SecondParameter<typeof customInstance>;
-}): CreateMutationOptions<Awaited<ReturnType<typeof slotAvailable>>, TError, { data: BodyType<AvailableSlotRequest> }, TContext> => {
-	const mutationKey = ["slotAvailable"];
-	const { mutation: mutationOptions, request: requestOptions } = options
-		? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
-			? options
-			: { ...options, mutation: { ...options.mutation, mutationKey } }
-		: { mutation: { mutationKey }, request: undefined };
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
 
-	const mutationFn: MutationFunction<Awaited<ReturnType<typeof slotAvailable>>, { data: BodyType<AvailableSlotRequest> }> = (props) => {
-		const { data } = props ?? {};
-
-		return slotAvailable(data, requestOptions);
-	};
-
-	return { mutationFn, ...mutationOptions };
-};
-
-export type SlotAvailableMutationResult = NonNullable<Awaited<ReturnType<typeof slotAvailable>>>;
-export type SlotAvailableMutationBody = BodyType<AvailableSlotRequest>;
-export type SlotAvailableMutationError = ErrorType<InternalErrorResponse>;
-
-export const createSlotAvailable = <TError = ErrorType<InternalErrorResponse>, TContext = unknown>(
-	options?: () => {
-		mutation?: CreateMutationOptions<Awaited<ReturnType<typeof slotAvailable>>, TError, { data: BodyType<AvailableSlotRequest> }, TContext>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateMutationResult<Awaited<ReturnType<typeof slotAvailable>>, TError, { data: BodyType<AvailableSlotRequest> }, TContext> => {
-	return createMutation(() => ({ ...getSlotAvailableMutationOptions(options?.()) }), queryClient);
+	const data: slotAvailableResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as slotAvailableResponse;
 };

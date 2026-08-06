@@ -1,28 +1,14 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
-	import { createOutletGetBasic } from "$lib/api";
-	import Query from "$lib/components/Query.svelte";
-	import { Breadcrumb } from "@kayord/ui";
+	import { outletGetBasic } from "$lib/api/remote/outlet.remote";
+	import { Breadcrumb, Loader, Skeleton } from "@kayord/ui";
 	import { HouseIcon } from "@lucide/svelte";
-	import { auth } from "$lib/stores/auth.svelte";
-	import { onMount } from "svelte";
 
 	let { children } = $props();
 
-	const query = createOutletGetBasic(
-		() => page.params.slug ?? "",
-		() => ({ query: { staleTime: 1000 * 60 * 5 } })
-	);
-	const outlet = $derived(query.data);
-
-	onMount(async () => {
-		if (auth.isAuthenticated) {
-			await auth.getRoles(Number(page.params.id));
-		}
-	});
-
-	const facility = $derived(outlet?.facilities.find((x) => x.id == Number(page.params.id)));
+	const outlet = $derived(await outletGetBasic(page.params.slug ?? ""));
+	const facilityName = (o: { facilities: { id: number; name?: string | null }[] }) => o.facilities.find((x) => x.id == Number(page.params.id))?.name ?? "—";
 
 	const facilityHref = $derived.by(() => {
 		const date = page.url.searchParams.get("date");
@@ -30,8 +16,13 @@
 	});
 </script>
 
-<div class="m-2">
-	<Query {query} emptyText="Unable to load outlet">
+<svelte:boundary>
+	{#snippet pending()}
+		<div class="m-2">
+			<Skeleton class="h-4 w-95" />
+		</div>
+	{/snippet}
+	<div class="m-2">
 		<Breadcrumb.Root>
 			<Breadcrumb.List>
 				<Breadcrumb.Item>
@@ -42,18 +33,18 @@
 				<Breadcrumb.Separator />
 				<Breadcrumb.Item>
 					<Breadcrumb.Link href={resolve(`/outlet/${page.params.slug}`)} class="text-xs">
-						{outlet!.name}
+						{outlet.name}
 					</Breadcrumb.Link>
 				</Breadcrumb.Item>
 				<Breadcrumb.Separator />
 				<Breadcrumb.Item>
 					{#if page.route.id?.includes("/slot/") || page.route.id?.includes("/booking/")}
 						<Breadcrumb.Link href={facilityHref} class="text-xs">
-							{facility?.name}
+							{facilityName(outlet)}
 						</Breadcrumb.Link>
 					{:else}
 						<Breadcrumb.Page class="text-xs">
-							{facility?.name}
+							{facilityName(outlet)}
 						</Breadcrumb.Page>
 					{/if}
 				</Breadcrumb.Item>
@@ -86,6 +77,6 @@
 				{/if}
 			</Breadcrumb.List>
 		</Breadcrumb.Root>
-	</Query>
-	{@render children?.()}
-</div>
+	</div>
+</svelte:boundary>
+{@render children?.()}

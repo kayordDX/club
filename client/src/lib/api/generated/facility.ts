@@ -4,116 +4,74 @@
  * Club.Api
  * OpenAPI spec version: v1
  */
-import { createQuery } from "@tanstack/svelte-query";
-import type { CreateQueryOptions, CreateQueryResult, DataTag, QueryClient, QueryFunction, QueryKey } from "@tanstack/svelte-query";
-
 import type { FacilityDTO, FacilityPaymentMethodsResponse, InternalErrorResponse } from "./api.schemas";
 
-import { customInstance } from "../mutator/customInstance.svelte";
-import type { ErrorType } from "../mutator/customInstance.svelte";
+export type facilityPaymentMethodsResponse200 = {
+	data: FacilityPaymentMethodsResponse[];
+	status: 200;
+};
 
-type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
+export type facilityPaymentMethodsResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
+
+export type facilityPaymentMethodsResponseSuccess = facilityPaymentMethodsResponse200 & {
+	headers: Headers;
+};
+export type facilityPaymentMethodsResponseError = facilityPaymentMethodsResponse500 & {
+	headers: Headers;
+};
+
+export type facilityPaymentMethodsResponse = facilityPaymentMethodsResponseSuccess | facilityPaymentMethodsResponseError;
 
 export const getFacilityPaymentMethodsUrl = (facilityId: number) => {
 	return `/facility/${facilityId}/payment-methods`;
 };
 
-export const facilityPaymentMethods = async (facilityId: number, options?: Parameters<typeof customInstance>[1]): Promise<FacilityPaymentMethodsResponse[]> => {
-	return customInstance<FacilityPaymentMethodsResponse[]>(getFacilityPaymentMethodsUrl(facilityId), {
+export const facilityPaymentMethods = async (facilityId: number, options?: RequestInit): Promise<facilityPaymentMethodsResponse> => {
+	const res = await fetch(getFacilityPaymentMethodsUrl(facilityId), {
 		...options,
 		method: "GET",
 	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: facilityPaymentMethodsResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as facilityPaymentMethodsResponse;
 };
 
-export const getFacilityPaymentMethodsQueryKey = (facilityId: number) => {
-	return [`/facility/${facilityId}/payment-methods`] as const;
+export type facilityGetResponse200 = {
+	data: FacilityDTO;
+	status: 200;
 };
 
-export const getFacilityPaymentMethodsQueryOptions = <TData = Awaited<ReturnType<typeof facilityPaymentMethods>>, TError = ErrorType<InternalErrorResponse>>(
-	facilityId: number,
-	options?: {
-		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof facilityPaymentMethods>>, TError, TData>>;
-		request?: SecondParameter<typeof customInstance>;
-	}
-) => {
-	const { query: queryOptions, request: requestOptions } = options ?? {};
-
-	const queryKey = queryOptions?.queryKey ?? getFacilityPaymentMethodsQueryKey(facilityId);
-
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof facilityPaymentMethods>>> = ({ signal }) =>
-		facilityPaymentMethods(facilityId, { signal, ...requestOptions });
-
-	return { queryKey, queryFn, enabled: facilityId !== null && facilityId !== undefined, ...queryOptions } as CreateQueryOptions<
-		Awaited<ReturnType<typeof facilityPaymentMethods>>,
-		TError,
-		TData
-	> & { queryKey: DataTag<QueryKey, TData, TError> };
+export type facilityGetResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
 };
 
-export type FacilityPaymentMethodsQueryResult = NonNullable<Awaited<ReturnType<typeof facilityPaymentMethods>>>;
-export type FacilityPaymentMethodsQueryError = ErrorType<InternalErrorResponse>;
+export type facilityGetResponseSuccess = facilityGetResponse200 & {
+	headers: Headers;
+};
+export type facilityGetResponseError = facilityGetResponse500 & {
+	headers: Headers;
+};
 
-export function createFacilityPaymentMethods<TData = Awaited<ReturnType<typeof facilityPaymentMethods>>, TError = ErrorType<InternalErrorResponse>>(
-	facilityId: () => number,
-	options?: () => {
-		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof facilityPaymentMethods>>, TError, TData>>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-	const query = createQuery(() => getFacilityPaymentMethodsQueryOptions(facilityId(), options?.()), queryClient) as CreateQueryResult<TData, TError> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
-
-	return query;
-}
+export type facilityGetResponse = facilityGetResponseSuccess | facilityGetResponseError;
 
 export const getFacilityGetUrl = (id: number) => {
 	return `/facility/${id}`;
 };
 
-export const facilityGet = async (id: number, options?: Parameters<typeof customInstance>[1]): Promise<FacilityDTO> => {
-	return customInstance<FacilityDTO>(getFacilityGetUrl(id), {
+export const facilityGet = async (id: number, options?: RequestInit): Promise<facilityGetResponse> => {
+	const res = await fetch(getFacilityGetUrl(id), {
 		...options,
 		method: "GET",
 	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: facilityGetResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as facilityGetResponse;
 };
-
-export const getFacilityGetQueryKey = (id: number) => {
-	return [`/facility/${id}`] as const;
-};
-
-export const getFacilityGetQueryOptions = <TData = Awaited<ReturnType<typeof facilityGet>>, TError = ErrorType<InternalErrorResponse>>(
-	id: number,
-	options?: { query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof facilityGet>>, TError, TData>>; request?: SecondParameter<typeof customInstance> }
-) => {
-	const { query: queryOptions, request: requestOptions } = options ?? {};
-
-	const queryKey = queryOptions?.queryKey ?? getFacilityGetQueryKey(id);
-
-	const queryFn: QueryFunction<Awaited<ReturnType<typeof facilityGet>>> = ({ signal }) => facilityGet(id, { signal, ...requestOptions });
-
-	return { queryKey, queryFn, enabled: id !== null && id !== undefined, ...queryOptions } as CreateQueryOptions<
-		Awaited<ReturnType<typeof facilityGet>>,
-		TError,
-		TData
-	> & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export type FacilityGetQueryResult = NonNullable<Awaited<ReturnType<typeof facilityGet>>>;
-export type FacilityGetQueryError = ErrorType<InternalErrorResponse>;
-
-export function createFacilityGet<TData = Awaited<ReturnType<typeof facilityGet>>, TError = ErrorType<InternalErrorResponse>>(
-	id: () => number,
-	options?: () => {
-		query?: Partial<CreateQueryOptions<Awaited<ReturnType<typeof facilityGet>>, TError, TData>>;
-		request?: SecondParameter<typeof customInstance>;
-	},
-	queryClient?: () => QueryClient
-): CreateQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
-	const query = createQuery(() => getFacilityGetQueryOptions(id(), options?.()), queryClient) as CreateQueryResult<TData, TError> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
-
-	return query;
-}

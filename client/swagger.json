@@ -4242,7 +4242,7 @@
 				"type": "oauth2",
 				"flows": {
 					"implicit": {
-						"authorizationUrl": "https://auth.localhost/realms/kayord/protocol/openid-connect/auth",
+						"authorizationUrl": "http://localhost:8088/realms/kayord/protocol/openid-connect/auth",
 						"scopes": {
 							"openid": "OpenID Connect scope",
 							"profile": "Profile scope",

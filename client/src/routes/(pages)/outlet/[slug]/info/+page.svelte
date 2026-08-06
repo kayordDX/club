@@ -4,31 +4,25 @@
 	import { page } from "$app/state";
 	import { resolve } from "$app/paths";
 	import { Building2Icon, BuildingIcon, MailIcon, MapPinIcon, PhoneIcon } from "@lucide/svelte";
-	import { createOutletGet } from "$lib/api";
-	import Query from "$lib/components/Query.svelte";
+	import { outletGet } from "$lib/api/remote/outlet.remote";
 	import { Markdown } from "$lib/components/Markdown";
 	import { Tags } from "$lib/components/Tags";
-
-	const query = createOutletGet(
-		() => page.params.slug ?? "",
-		() => ({
-			query: { staleTime: 1000 * 60 * 5 },
-		})
-	);
 </script>
 
-<div class="m-2">
-	<Breadcrumbs />
+<svelte:boundary>
+	{@const o = await outletGet(page.params.slug ?? "")}
 
-	<Query {query} emptyText="Unable to load outlet">
+	<div class="m-2">
+		<Breadcrumbs />
+
 		<div class="mb-6 flex items-center justify-between gap-4">
 			<div class="min-w-0 flex-1">
-				<h1 class="text-3xl">{query.data?.name}</h1>
+				<h1 class="text-3xl">{o.name}</h1>
 				<h3 class="text-muted-foreground mb-1 flex items-center gap-2 text-sm">
 					<BuildingIcon class="size-4" />
-					{query.data?.business.name}
+					{o.business.name}
 				</h3>
-				<Tags tags={query.data?.tags ?? ""} />
+				<Tags tags={o.tags ?? ""} />
 			</div>
 			<div class="shrink-0">
 				<Button href={resolve(`/outlet/${page.params.slug}`)} variant="outline">
@@ -43,7 +37,7 @@
 					<Card.Title>About</Card.Title>
 				</Card.Header>
 				<Card.Content>
-					<Markdown source={query.data?.description ?? ""} class="prose-p:text-muted-foreground text-sm" />
+					<Markdown source={o.description ?? ""} class="prose-p:text-muted-foreground text-sm" />
 				</Card.Content>
 			</Card.Root>
 
@@ -61,7 +55,7 @@
 							</Item.Media>
 							<Item.Content class="gap-1">
 								<Item.Title>Phone</Item.Title>
-								<Item.Description>{query.data?.contact}</Item.Description>
+								<Item.Description>{o.contact}</Item.Description>
 							</Item.Content>
 						</Item.Root>
 						<Item.Root variant="muted">
@@ -72,7 +66,7 @@
 							</Item.Media>
 							<Item.Content class="gap-1">
 								<Item.Title>Email</Item.Title>
-								<Item.Description>{query.data?.email}</Item.Description>
+								<Item.Description>{o.email}</Item.Description>
 							</Item.Content>
 						</Item.Root>
 						<Item.Root variant="muted">
@@ -83,7 +77,7 @@
 							</Item.Media>
 							<Item.Content class="gap-1">
 								<Item.Title>Address</Item.Title>
-								<Item.Description>{query.data?.address}</Item.Description>
+								<Item.Description>{o.address}</Item.Description>
 							</Item.Content>
 						</Item.Root>
 					</Item.Group>
@@ -95,9 +89,9 @@
 					<Card.Title>Operating Hours</Card.Title>
 				</Card.Header>
 				<Card.Content>
-					<Markdown source={query.data?.operatingHours ?? ""} />
+					<Markdown source={o.operatingHours ?? ""} />
 				</Card.Content>
 			</Card.Root>
 		</div>
-	</Query>
-</div>
+	</div>
+</svelte:boundary>

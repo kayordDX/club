@@ -142,3 +142,20 @@ export interface UserJWT {
 	aud: string;
 	picture?: string;
 }
+
+/**
+ * Non-secret user profile exposed to the client (via App.Locals / load data).
+ * Tokens are NEVER placed here — they stay server-side only.
+ */
+export interface SessionUser {
+	sub: string;
+	username: string;
+	name: string;
+	email: string;
+	firstName: string;
+	lastName: string;
+	phone_number?: string;
+	phone_number_verified?: boolean;
+	email_verified?: boolean;
+	picture?: string;
+}
