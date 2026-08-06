@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { afterNavigate } from "$app/navigation";
 	import Header from "$lib/components/Header/Header.svelte";
-	import { Alert, Badge, Button } from "@kayord/ui";
+	import { Alert, Badge, Button, Skeleton } from "@kayord/ui";
 	import { CircleAlertIcon, FrownIcon } from "@lucide/svelte";
 	import { type HttpError } from "@sveltejs/kit";
 
@@ -41,9 +41,9 @@
 
 	{#snippet pending()}
 		<div class="m-4 space-y-3">
-			<div class="bg-muted h-8 w-1/3 animate-pulse rounded"></div>
-			<div class="bg-muted h-4 w-2/3 animate-pulse rounded"></div>
-			<div class="bg-muted h-24 animate-pulse rounded"></div>
+			<Skeleton class="h-8 w-1/3" />
+			<Skeleton class="h-4 w-2/3" />
+			<Skeleton class="h-24" />
 		</div>
 	{/snippet}
 

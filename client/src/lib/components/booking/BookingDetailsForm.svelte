@@ -83,7 +83,7 @@
 	}));
 
 	// svelte-ignore state_referenced_locally
-	const slots = await slotGetAll({ facilityId, date });
+	const slots = await slotGetAll({ facilityId, date: new Date(date).toISOString() });
 	const slot = slots.find((item) => item.id === slotId);
 	// The slot query's booked count includes this booking's own players when
 	// editing, so add them back to get the number of players that can still be added.
