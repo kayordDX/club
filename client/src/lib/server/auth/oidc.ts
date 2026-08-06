@@ -11,7 +11,7 @@ import { createHash, randomBytes } from "node:crypto";
 
 const CLIENT_ID = "public-client";
 const SCOPE = "openid profile email phone offline_access";
-/** e.g. https://auth.localhost/realms/kayord */
+/** e.g. http://localhost:8088/realms/kayord */
 const ISSUER = PUBLIC_IDENTITY_URL;
 const REDIRECT_URI = `${PUBLIC_APP_URL}/auth/callback`;
 
