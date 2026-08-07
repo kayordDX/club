@@ -1,13 +1,14 @@
 import { redirect } from "@sveltejs/kit";
-import { getEndSessionUrl, SESSION_COOKIE } from "$lib/server/auth/oidc";
-import { deleteSession } from "$lib/server/auth/session";
+import { getEndSessionUrl } from "$lib/server/auth/oidc";
+import { clearSession, readSession } from "$lib/server/auth/session";
 
-// GET /auth/logout  — clears local session then ends the SSO session at Keycloak.
+// GET /auth/logout — clears the local session, then ends the SSO session at Keycloak.
+// Passing the id_token hint gives a smoother single-logout experience.
 export async function GET({ cookies }) {
-	const sid = cookies.get(SESSION_COOKIE);
-	if (sid) {
-		deleteSession(sid);
-		cookies.delete(SESSION_COOKIE, { path: "/" });
-	}
-	throw redirect(303, await getEndSessionUrl());
+	let idTokenHint: string | undefined;
+	const session = readSession(cookies);
+	if (session) idTokenHint = session.tokens.idToken;
+
+	clearSession(cookies);
+	throw redirect(303, await getEndSessionUrl(idTokenHint));
 }
