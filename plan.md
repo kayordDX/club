@@ -131,3 +131,34 @@ Cross-referencing swagger (37 endpoints) against remote-function usage:
 14. Refresh stale comments (`hooks.server.ts`). *(C7)*
 
 **Verification (gates after each batch):** `pnpm check`, `pnpm lint`, `pnpm build`, then `dotnet run` the AppHost + `pnpm dev` and click through public + protected + payment flows.
+
+---
+
+## F. adapter-node production runtime & deployment
+
+The `static` → `adapter-node` switch landed, but the **production runtime story** still needs work. The Docker image is now a self-contained Node SSR server (multi-stage build, ~360 MB), but it is **env-agnostic** — all configuration is injected when the container runs.
+
+### Container runtime env (must be set at deploy time)
+The server reads these from `process.env` at startup (they are **not** baked into the image):
+- `API_URL`, `APP_URL`, `IDENTITY_URL`, `SESSION_SECRET` — defined/validated in `src/env.ts` (explicit env vars). `SESSION_SECRET` must be a strong, unique value (rotation invalidates all sessions).
+- `ORIGIN` — adapter-node's own canonical-URL check (CSRF/host validation). Set to the public URL, e.g. `https://club.example.com`. When behind a TLS-terminating proxy also set `PROTOCOL_HEADER` / `HOST_HEADER` / `XFF_DEPTH` so the server sees the real scheme/host.
+- `PORT` (default `3000`), `HOST` (default `0.0.0.0`), plus the timeout/socket knobs (`BODY_SIZE_LIMIT`, `SHUTDOWN_TIMEOUT`, …) as needed.
+
+### Port & ingress changed
+- Old nginx image listened on **:80**; the node server listens on **:3000**. Any reverse proxy, load balancer, ingress, or health check pointing at `:80` must move to `:3000`.
+- **TLS termination moved out of the container.** nginx is gone, so HTTPS must be terminated by an external proxy (nginx/traefik/Caddy/cloud LB). The `secure` cookie flag is derived from `APP_URL`'s scheme — keep `APP_URL` on `https://` in prod.
+
+### No health endpoint
+- adapter-node ships no `/health` (unlike the API, which has `WithHttpHealthCheck("/health")`). Add a lightweight SvelteKit `+server.ts` health route (or use TCP readiness) so orchestrators/k8s can liveness/readiness-check the frontend container.
+
+### Aspire publish model
+- The AppHost uses `AddViteApp` (dev server) and does not yet describe the frontend for **production** deployment. The prod `web` resource is now the Node image (`ghcr.io/kayorddx/club`), not static assets — wire it into the publish/deploy manifest (or `AddContainer`/`AddDockerfile`) when standing up prod.
+
+### CI build redundancy
+- `.github/workflows/build-client.yml` still runs a standalone `pnpm build` before the Docker build. The Dockerfile is now self-contained (multi-stage), so that step is a redundant (if fast-failing) gate that builds twice. Consider dropping it to roughly halve client CI time; the multi-arch `docker buildx` build compiles internally.
+
+### Optional image-size follow-ups
+- Current image ~360 MB (`node:22-slim` ~250 + 13 MB prod `node_modules` + 15 MB `build/`). Options to shrink further: switch the runtime base to a distroless Node image, or set Vite `ssr.noExternal: true` so **all** deps bundle into `build/` and ship **zero** `node_modules` (the only prod deps are pure-JS `openid-client` + `@humanspeak/svelte-markdown`, which bundle cleanly). Verify runtime after either change.
+
+### Secret hygiene
+- `client/.env.local` is committed and contains a dev `SESSION_SECRET`. Fine for local dev, but: (a) document non-secret defaults in a `.env.example`, and (b) ensure prod injects a strong unique `SESSION_SECRET` rather than the committed dev value.
