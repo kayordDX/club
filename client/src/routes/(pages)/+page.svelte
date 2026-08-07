@@ -3,7 +3,7 @@
 	import { outletGetAll } from "$lib/api/remote/outlet.remote";
 	import Outlet from "./Outlet.svelte";
 	import LoginButton from "$lib/components/LoginButton/LoginButton.svelte";
-	import { Loader } from "@kayord/ui";
+	import { Loader, Skeleton } from "@kayord/ui";
 
 	let searchTerm = $state("");
 	let draft = $state("");
@@ -38,17 +38,20 @@
 			<button class="text-primary hover:underline" onclick={clearSearch} data-testid="clear-search"> Clear </button>
 		</div>
 	{/if}
-	{#await outlets}
-		<Loader class="my-4" />
-	{:then res}
-		{#if searchTerm && res.items.length === 0}
+	{#if outlets.loading}
+		<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-2">
+			<Skeleton class="h-152 w-full" />
+			<Skeleton class="h-152 w-full" />
+		</div>
+	{:else}
+		{#if searchTerm && (await outlets).items.length === 0}
 			<p class="text-muted-foreground py-12 text-center" data-testid="no-results">No clubs found matching your search.</p>
 		{:else}
 			<div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-2">
-				{#each res.items as outlet (outlet.id)}
+				{#each (await outlets).items as outlet (outlet.id)}
 					<Outlet {outlet} />
 				{/each}
 			</div>
 		{/if}
-	{/await}
+	{/if}
 </main>
