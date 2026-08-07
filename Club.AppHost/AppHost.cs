@@ -60,7 +60,8 @@ var api = builder
 // Wire the frontend's reference to the API and Keycloak (after both are declared)
 web = web.WithReference(api)
     .WaitFor(api)
-    .WithEnvironment("PUBLIC_API_URL", api.GetEndpoint("http"))
-    .WithEnvironment("PUBLIC_IDENTITY_URL", $"{keycloak.GetEndpoint("http")}/realms/kayord");
+    .WithEnvironment("API_URL", api.GetEndpoint("http"))
+    .WithEnvironment("APP_URL", web.GetEndpoint("http"))
+    .WithEnvironment("IDENTITY_URL", $"{keycloak.GetEndpoint("http")}/realms/kayord");
 
 builder.Build().Run();

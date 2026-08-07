@@ -3,6 +3,7 @@ import z from "zod";
 
 export const variables = defineEnvVars({
 	API_URL: {
+		default: "http://localhost:5000",
 		description: "The backend url",
 		schema: z.string(),
 	},

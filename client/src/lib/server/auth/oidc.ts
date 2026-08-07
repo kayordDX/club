@@ -68,10 +68,13 @@ export function getConfig(): Promise<oidc.Configuration> {
 
 async function initConfig(): Promise<oidc.Configuration> {
 	const server = new URL(ISSUER);
-	const config = await oidc.discovery(server, CLIENT_ID, CLIENT_METADATA, oidc.None());
-	// openid-client refuses non-loopback http issuers unless explicitly allowed.
-	// Dev points at http://localhost:8088; production is https.
-	if (server.protocol !== "https:") oidc.allowInsecureRequests(config);
+	// openid-client refuses http issuers unless explicitly allowed. Dev points at
+	// http://localhost:8088; production is https. The option must be passed into
+	// discovery() itself — calling allowInsecureRequests(config) afterwards is too
+	// late, because the discovery request is subject to the same HTTPS check.
+	const config = await oidc.discovery(server, CLIENT_ID, CLIENT_METADATA, oidc.None(), {
+		execute: server.protocol === "http:" ? [oidc.allowInsecureRequests] : undefined,
+	});
 	return config;
 }
 

@@ -1,13 +1,7 @@
-import { describe, expect, it, beforeAll } from "vitest";
+import { describe, expect, it } from "vitest";
 import type { Cookies } from "@sveltejs/kit";
 import { consumePendingLogin, readSession, setPendingLogin, writeSession, clearSession } from "./session";
 import type { SessionPayload } from "./session";
-
-// `$env/dynamic/private` reads process.env at call time, so set a stable key
-// before exercising the seal/unseal code.
-beforeAll(() => {
-	process.env.SESSION_SECRET = "test-secret-32-chars-minimum-length-!!";
-});
 
 /** Minimal in-memory Cookies double. */
 function fakeCookies(): Cookies {
