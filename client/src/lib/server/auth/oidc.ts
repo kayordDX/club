@@ -12,14 +12,14 @@
 // It still talks to the exact same Keycloak endpoints as before; we just stop
 // trusting the responses and start validating them.
 import * as oidc from "openid-client";
-import { PUBLIC_APP_URL, PUBLIC_IDENTITY_URL } from "$env/static/public";
+import { APP_URL, IDENTITY_URL } from "$app/env/private";
 import { createHash, randomBytes } from "node:crypto";
 
 const CLIENT_ID = "public-client";
 const SCOPE = "openid profile email phone offline_access";
 /** e.g. http://localhost:8088/realms/kayord */
-const ISSUER = PUBLIC_IDENTITY_URL;
-const REDIRECT_URI = `${PUBLIC_APP_URL}/auth/callback`;
+const ISSUER = IDENTITY_URL;
+const REDIRECT_URI = `${APP_URL}/auth/callback`;
 
 export const SESSION_COOKIE = "sid";
 /** Short-lived cookie holding the PKCE verifier + nonce between redirect & callback. */
@@ -110,7 +110,7 @@ export async function exchangeCode(
 	checks: { expectedState: string; pkceCodeVerifier: string; expectedNonce?: string }
 ): Promise<{ tokens: OidcTokens; subject: string; claims: Record<string, unknown> }> {
 	const config = await getConfig();
-	const currentUrl = callbackUrl instanceof URL ? callbackUrl : new URL(callbackUrl, PUBLIC_APP_URL);
+	const currentUrl = callbackUrl instanceof URL ? callbackUrl : new URL(callbackUrl, APP_URL);
 	const res = await oidc.authorizationCodeGrant(config, currentUrl, {
 		expectedState: checks.expectedState,
 		pkceCodeVerifier: checks.pkceCodeVerifier,
@@ -173,7 +173,7 @@ export async function getEndSessionUrl(idTokenHint?: string): Promise<string> {
 	const config = await getConfig();
 	const params: Record<string, string> = {
 		client_id: CLIENT_ID,
-		post_logout_redirect_uri: `${PUBLIC_APP_URL}/`,
+		post_logout_redirect_uri: `${APP_URL}/`,
 	};
 	if (idTokenHint) params.id_token_hint = idTokenHint;
 	return oidc.buildEndSessionUrl(config, params).href;

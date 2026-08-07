@@ -5,12 +5,12 @@
 // endpoints (outlet/facility browsing) are reachable unauthenticated.
 import { getRequestEvent } from "$app/server";
 import { error } from "@sveltejs/kit";
-import { PUBLIC_API_URL } from "$env/static/public";
+import { API_URL } from "$app/env/private";
 
 export async function customServerInstance<T>(url: string, init: RequestInit = {}): Promise<T> {
 	const accessToken = getRequestEvent().locals.accessToken;
 
-	const res = await fetch(`${PUBLIC_API_URL}${url}`, {
+	const res = await fetch(`${API_URL}${url}`, {
 		...init,
 		headers: {
 			...(init.headers ?? {}),

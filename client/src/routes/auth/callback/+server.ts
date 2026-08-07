@@ -1,9 +1,9 @@
 import { redirect } from "@sveltejs/kit";
-import { PUBLIC_API_URL, PUBLIC_APP_URL } from "$env/static/public";
+import { API_URL, APP_URL } from "$app/env/private";
 import { exchangeCode, getUserinfo, profileFromClaims } from "$lib/server/auth/oidc";
 import { consumePendingLogin, toSessionUser, writeSession } from "$lib/server/auth/session";
 
-const SECURE = PUBLIC_APP_URL.startsWith("https");
+const SECURE = APP_URL.startsWith("https");
 
 // GET /auth/callback?code=...&state=...
 export async function GET({ url, cookies }) {
@@ -45,7 +45,7 @@ export async function GET({ url, cookies }) {
 
 	// Provision the user in the API's user table (booking.user_id has an FK to it).
 	// Runs server-side at login so the row exists before any booking write.
-	await fetch(`${PUBLIC_API_URL}/account/sync`, {
+	await fetch(`${API_URL}/account/sync`, {
 		method: "POST",
 		headers: {
 			authorization: `Bearer ${tokens.accessToken}`,

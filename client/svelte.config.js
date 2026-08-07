@@ -8,16 +8,12 @@ const config = {
 		alias: {
 			$lib: "./src/lib",
 		},
-		// Switched from adapter-static (SPA) to adapter-node (SSR server / BFF).
-		// Remote functions ($app/server) require a running server.
 		adapter: adapter(),
 		experimental: {
-			// Enables .remote.ts modules (query/command/form/prerender).
 			remoteFunctions: true,
+			explicitEnvironmentVariables: true,
 		},
 	},
-	// Svelte compiler experimental: await expressions in components, used with
-	// <svelte:boundary> for remote-function data loading.
 	compilerOptions: {
 		experimental: {
 			async: true,

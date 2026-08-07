@@ -10,7 +10,7 @@
 // The opaque `sid` cookie + in-memory/Redis map approach needs an I/O hop on
 // every request; this avoids it. The refresh token never reaches the browser
 // (only the encrypted, HttpOnly cookie does), so it stays server-side only.
-import { env } from "$env/dynamic/private";
+import { SESSION_SECRET } from "$app/env/private";
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
 import type { Cookies } from "@sveltejs/kit";
 import type { SessionUser } from "$lib/types";
@@ -69,17 +69,9 @@ let ephemeralDevKey: string | undefined;
 function getKey(): Buffer {
 	if (cachedKey) return cachedKey;
 
-	const secret = env.SESSION_SECRET;
-	if (secret) {
-		if (secret.length < 32) {
-			throw new Error("SESSION_SECRET must be at least 32 characters");
-		}
-		cachedKey = createHash("sha256").update(secret).digest();
+	if (SESSION_SECRET) {
+		cachedKey = createHash("sha256").update(SESSION_SECRET).digest();
 		return cachedKey;
-	}
-
-	if (env.NODE_ENV === "production") {
-		throw new Error("SESSION_SECRET must be set in production");
 	}
 
 	// Dev convenience: a random per-process key so things work with zero config.
