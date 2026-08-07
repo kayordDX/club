@@ -1,17 +1,6 @@
-// Stateless, encrypted-cookie session for the BFF.
-//
-// Why no server-side store? With Keycloak as the source of truth, the access +
-// refresh tokens it issues ARE the session. Carrying them in an HttpOnly,
-// encrypted, chunked cookie means:
-//   • the hooks hot path is pure CPU (decrypt + compare) — no Redis/DB round-trip,
-//     works across multiple instances with zero shared state, survives restarts;
-//   • logout is instant (delete the cookie), no store to invalidate.
-//
-// The opaque `sid` cookie + in-memory/Redis map approach needs an I/O hop on
-// every request; this avoids it. The refresh token never reaches the browser
-// (only the encrypted, HttpOnly cookie does), so it stays server-side only.
 import { SESSION_SECRET } from "$app/env/private";
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
+import { deflateRawSync, inflateRawSync } from "node:zlib";
 import type { Cookies } from "@sveltejs/kit";
 import type { SessionUser } from "$lib/types";
 import type { OidcProfile, OidcTokens } from "./oidc";
@@ -30,8 +19,6 @@ export interface PendingLogin {
 	next: string;
 }
 
-// Browsers cap one cookie at ~4KB; the token payload (Keycloak JWTs are large)
-// is split into chunks and reassembled on read.
 const CHUNK_SIZE = 3500;
 const MAX_CHUNKS = 6;
 
@@ -154,14 +141,20 @@ export function readSession(cookies: Cookies): SessionPayload | undefined {
 	const json = unseal(sealed);
 	if (!json) return undefined;
 	try {
-		return JSON.parse(json) as SessionPayload;
+		const stored = json.startsWith("z.") ? inflateRawSync(Buffer.from(json.slice(2), "base64url")).toString("utf8") : json;
+		return JSON.parse(stored) as SessionPayload;
 	} catch {
 		return undefined;
 	}
 }
 
 export function writeSession(cookies: Cookies, payload: SessionPayload, secure: boolean): void {
-	writeChunked(cookies, SESSION_COOKIE, seal(JSON.stringify(payload)), {
+	const json = JSON.stringify(payload);
+	const compressed = deflateRawSync(json).toString("base64url");
+	// `z.` marks a compressed payload; `readSession` falls back to the raw JSON
+	// for cookies written before compression existed.
+	const stored = compressed.length < json.length ? `z.${compressed}` : json;
+	writeChunked(cookies, SESSION_COOKIE, seal(stored), {
 		path: "/",
 		httpOnly: true,
 		sameSite: "lax",

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { randomBytes } from "node:crypto";
 import type { Cookies } from "@sveltejs/kit";
 import { consumePendingLogin, readSession, setPendingLogin, writeSession, clearSession } from "./session";
 import type { SessionPayload } from "./session";
@@ -50,8 +51,9 @@ describe("session cookie", () => {
 
 	it("survives chunking for large token payloads", () => {
 		const cookies = fakeCookies();
-		// Simulate a fat Keycloak access token (~5KB) to force multiple chunks.
-		const big = "x".repeat(5_000);
+		// Simulate a fat Keycloak access token (~5KB). Random hex is used so the
+		// session payload can't be compressed away into a single cookie.
+		const big = randomBytes(2500).toString("hex");
 		writeSession(cookies, payload(big), false);
 
 		// More than the bare `sid` cookie should exist (chunked).
