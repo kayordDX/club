@@ -36,11 +36,12 @@
 		params.date = value.add({ days: incrementValue }).toString();
 	};
 
-	// Reactive remote query — re-fetches when the facility or selected date changes.
+	// Slots are stored against UTC calendar dates, so query the start of the
+	// selected date in UTC (not the local time zone, which would shift the day).
 	const slots = $derived(
 		slotGetAll({
 			facilityId: Number(page.params.id),
-			date: value.toDate(getLocalTimeZone()).toISOString(),
+			date: value.toDate("UTC").toISOString(),
 		})
 	);
 </script>
