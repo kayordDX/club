@@ -16,5 +16,5 @@ public class Facility : AuditableEntity
     public ICollection<Resource> Resources { get; set; } = [];
     public ICollection<Slot> Slots { get; set; } = [];
     public ICollection<PaymentProviderConfig> PaymentProviderConfigs { get; set; } = [];
-    public ICollection<Contract> Contracts { get; set; } = [];
+    public ICollection<ContractFacility> ContractFacilities { get; set; } = [];
 }

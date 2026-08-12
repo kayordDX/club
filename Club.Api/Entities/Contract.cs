@@ -9,6 +9,6 @@ public class Contract : AuditableEntity
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public bool IsActive { get; set; }
-    public int FacilityId { get; set; }
-    public required Facility Facility { get; set; }
+
+    public ICollection<ContractFacility> ContractFacilities { get; set; } = [];
 }

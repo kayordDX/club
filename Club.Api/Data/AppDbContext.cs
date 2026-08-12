@@ -23,7 +23,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IHttpContextAc
     public DbSet<Business> Business => Set<Business>();
     public DbSet<Contract> Contract => Set<Contract>();
     public DbSet<ContractFacility> ContractFacility => Set<ContractFacility>();
-    public DbSet<ContractToken> ContractToken => Set<ContractToken>();
+    public DbSet<ContractVoucher> ContractVoucher => Set<ContractVoucher>();
     public DbSet<EmailLog> EmailLog => Set<EmailLog>();
     public DbSet<Extra> Extra => Set<Extra>();
     public DbSet<ExtraBooking> ExtraBooking => Set<ExtraBooking>();
@@ -40,18 +40,18 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IHttpContextAc
     public DbSet<Slot> Slot => Set<Slot>();
     public DbSet<SlotContract> SlotContract => Set<SlotContract>();
     public DbSet<SlotContractBooking> SlotContractBooking => Set<SlotContractBooking>();
-    public DbSet<Token> Token => Set<Token>();
-    public DbSet<TokenType> TokenType => Set<TokenType>();
-    public DbSet<TokenTypeFacility> TokenTypeFacility => Set<TokenTypeFacility>();
     public DbSet<SlotConfig> SlotConfig => Set<SlotConfig>();
     public DbSet<SlotConfigType> SlotConfigType => Set<SlotConfigType>();
     public DbSet<UserContract> UserContract => Set<UserContract>();
     public DbSet<Validation> Validation => Set<Validation>();
+    public DbSet<Voucher> Voucher => Set<Voucher>();
+    public DbSet<VoucherFacility> VoucherFacility => Set<VoucherFacility>();
     public DbSet<Wallet> Wallet => Set<Wallet>();
     public DbSet<WalletBalance> WalletBalance => Set<WalletBalance>();
-    public DbSet<WalletToken> WalletToken => Set<WalletToken>();
     public DbSet<WalletTransaction> WalletTransaction => Set<WalletTransaction>();
     public DbSet<WalletTransactionStatus> WalletTransactionStatus => Set<WalletTransactionStatus>();
+    public DbSet<WalletTransactionType> WalletTransactionType => Set<WalletTransactionType>();
+    public DbSet<WalletVoucherGrant> WalletVoucherGrant => Set<WalletVoucherGrant>();
 
     public override async Task<int> SaveChangesAsync(CancellationToken ct = new CancellationToken())
     {
