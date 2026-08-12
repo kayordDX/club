@@ -52,4 +52,9 @@ jobs:
           context: ./client
           push: true
           platforms: linux/amd64,linux/arm64
+          # Layer cache: repeat builds reuse the pnpm install + corepack layers
+          # (huge on arm64/QEMU where installs are slow). mode=max caches the
+          # intermediate stages, not just the final image.
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: ghcr.io/kayorddx/club:latest, ghcr.io/kayorddx/club:${{ github.sha }}

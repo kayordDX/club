@@ -1,8 +1,10 @@
+# syntax=docker/dockerfile:1
 FROM node:24-slim AS deps
 WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@11.19.0 --activate
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
-RUN pnpm install --prod --frozen-lockfile
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+    pnpm install --prod --frozen-lockfile
 
 FROM node:24-slim AS build
 WORKDIR /app
@@ -18,10 +20,14 @@ RUN printf '%s\n' \
         > .env
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
-RUN pnpm install --frozen-lockfile
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile
 
 COPY . .
-RUN pnpm build
+# The vite build is CPU-bound (rolldown + svelte compile + the kit guard);
+# give it memory headroom so it doesn't thrash GC — especially under arm64
+# QEMU emulation where it runs an order of magnitude slower.
+RUN NODE_OPTIONS=--max_old_space_size=4096 pnpm build
 
 FROM node:24-slim AS runtime
 WORKDIR /app
