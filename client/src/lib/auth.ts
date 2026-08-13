@@ -1,9 +1,3 @@
-// Shared client-side auth context.
-//
-// With server-side OIDC (BFF), the browser never holds a token. The signed-in
-// user (non-secret profile only) is provided by the root layout load and pushed
-// into Svelte context here, so components like Header/UserMenu/RoleCheck can
-// read it without prop-drilling or a global store.
 import { getContext, setContext } from "svelte";
 import type { SessionUser } from "$lib/types";
 
