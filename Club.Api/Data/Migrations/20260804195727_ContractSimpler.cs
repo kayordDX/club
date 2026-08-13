@@ -12,54 +12,35 @@ namespace Club.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "fk_contract_business_business_id",
-                table: "contract");
+            migrationBuilder.DropForeignKey(name: "fk_contract_business_business_id", table: "contract");
 
-            migrationBuilder.DropTable(
-                name: "contract_field_config");
+            migrationBuilder.DropTable(name: "contract_field_config");
 
-            migrationBuilder.DropTable(
-                name: "contract_field");
+            migrationBuilder.DropTable(name: "contract_field");
 
-            migrationBuilder.DropIndex(
-                name: "ix_contract_business_id",
-                table: "contract");
+            migrationBuilder.DropIndex(name: "ix_contract_business_id", table: "contract");
 
             migrationBuilder.AddColumn<DateTime>(
                 name: "end_date",
                 table: "contract",
                 type: "timestamp with time zone",
                 nullable: false,
-                defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
+                defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+            );
 
-            migrationBuilder.AddColumn<int>(
-                name: "facility_id",
-                table: "contract",
-                type: "integer",
-                nullable: false,
-                defaultValue: 0);
+            migrationBuilder.AddColumn<int>(name: "facility_id", table: "contract", type: "integer", nullable: false, defaultValue: 0);
 
-            migrationBuilder.AddColumn<bool>(
-                name: "is_active",
-                table: "contract",
-                type: "boolean",
-                nullable: false,
-                defaultValue: false);
+            migrationBuilder.AddColumn<bool>(name: "is_active", table: "contract", type: "boolean", nullable: false, defaultValue: false);
 
-            migrationBuilder.AddColumn<decimal>(
-                name: "price",
-                table: "contract",
-                type: "numeric",
-                nullable: false,
-                defaultValue: 0m);
+            migrationBuilder.AddColumn<decimal>(name: "price", table: "contract", type: "numeric", nullable: false, defaultValue: 0m);
 
             migrationBuilder.AddColumn<DateTime>(
                 name: "start_date",
                 table: "contract",
                 type: "timestamp with time zone",
                 nullable: false,
-                defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
+                defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+            );
 
             // Existing contracts were previously tied to a business. Backfill their
             // new required facility_id from a facility of that business before the FK
@@ -81,18 +62,17 @@ namespace Club.Data.Migrations
                 SET facility_id = (SELECT id FROM facility ORDER BY id LIMIT 1)
                 WHERE facility_id = 0
                   AND EXISTS (SELECT 1 FROM facility);
-                """);
+                """
+            );
 
-            migrationBuilder.RenameColumn(
-                name: "business_id",
-                table: "contract",
-                newName: "frequency");
+            migrationBuilder.RenameColumn(name: "business_id", table: "contract", newName: "frequency");
 
             migrationBuilder.CreateTable(
                 name: "booking_item",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "integer", nullable: false)
+                    id = table
+                        .Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     name = table.Column<string>(type: "text", nullable: false),
                     price = table.Column<decimal>(type: "numeric", nullable: false),
@@ -103,7 +83,7 @@ namespace Club.Data.Migrations
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     created_by = table.Column<Guid>(type: "uuid", nullable: true),
                     last_modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    last_modified_by = table.Column<Guid>(type: "uuid", nullable: true)
+                    last_modified_by = table.Column<Guid>(type: "uuid", nullable: true),
                 },
                 constraints: table =>
                 {
@@ -113,14 +93,17 @@ namespace Club.Data.Migrations
                         column: x => x.booking_id,
                         principalTable: "booking",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                });
+                        onDelete: ReferentialAction.Cascade
+                    );
+                }
+            );
 
             migrationBuilder.CreateTable(
                 name: "contract_history",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "integer", nullable: false)
+                    id = table
+                        .Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     contract_id = table.Column<int>(type: "integer", nullable: false),
                     name = table.Column<string>(type: "text", nullable: false),
@@ -133,7 +116,7 @@ namespace Club.Data.Migrations
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     created_by = table.Column<Guid>(type: "uuid", nullable: true),
                     last_modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    last_modified_by = table.Column<Guid>(type: "uuid", nullable: true)
+                    last_modified_by = table.Column<Guid>(type: "uuid", nullable: true),
                 },
                 constraints: table =>
                 {
@@ -143,32 +126,37 @@ namespace Club.Data.Migrations
                         column: x => x.facility_id,
                         principalTable: "facility",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                });
+                        onDelete: ReferentialAction.Cascade
+                    );
+                }
+            );
 
             migrationBuilder.CreateTable(
                 name: "slot_config_type",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "integer", nullable: false)
+                    id = table
+                        .Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     name = table.Column<string>(type: "text", nullable: false),
                     business_id = table.Column<int>(type: "integer", nullable: false),
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     created_by = table.Column<Guid>(type: "uuid", nullable: true),
                     last_modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    last_modified_by = table.Column<Guid>(type: "uuid", nullable: true)
+                    last_modified_by = table.Column<Guid>(type: "uuid", nullable: true),
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_slot_config_type", x => x.id);
-                });
+                }
+            );
 
             migrationBuilder.CreateTable(
                 name: "slot_config",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "integer", nullable: false)
+                    id = table
+                        .Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     slot_config_type_id = table.Column<int>(type: "integer", nullable: false),
                     start_time = table.Column<TimeOnly>(type: "time without time zone", nullable: false),
@@ -179,7 +167,7 @@ namespace Club.Data.Migrations
                     created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     created_by = table.Column<Guid>(type: "uuid", nullable: true),
                     last_modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    last_modified_by = table.Column<Guid>(type: "uuid", nullable: true)
+                    last_modified_by = table.Column<Guid>(type: "uuid", nullable: true),
                 },
                 constraints: table =>
                 {
@@ -189,28 +177,18 @@ namespace Club.Data.Migrations
                         column: x => x.slot_config_type_id,
                         principalTable: "slot_config_type",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                });
+                        onDelete: ReferentialAction.Cascade
+                    );
+                }
+            );
 
-            migrationBuilder.CreateIndex(
-                name: "ix_contract_facility_id",
-                table: "contract",
-                column: "facility_id");
+            migrationBuilder.CreateIndex(name: "ix_contract_facility_id", table: "contract", column: "facility_id");
 
-            migrationBuilder.CreateIndex(
-                name: "ix_booking_item_booking_id",
-                table: "booking_item",
-                column: "booking_id");
+            migrationBuilder.CreateIndex(name: "ix_booking_item_booking_id", table: "booking_item", column: "booking_id");
 
-            migrationBuilder.CreateIndex(
-                name: "ix_contract_history_facility_id",
-                table: "contract_history",
-                column: "facility_id");
+            migrationBuilder.CreateIndex(name: "ix_contract_history_facility_id", table: "contract_history", column: "facility_id");
 
-            migrationBuilder.CreateIndex(
-                name: "ix_slot_config_slot_config_type_id",
-                table: "slot_config",
-                column: "slot_config_type_id");
+            migrationBuilder.CreateIndex(name: "ix_slot_config_slot_config_type_id", table: "slot_config", column: "slot_config_type_id");
 
             migrationBuilder.AddForeignKey(
                 name: "fk_contract_facility_facility_id",
@@ -218,70 +196,55 @@ namespace Club.Data.Migrations
                 column: "facility_id",
                 principalTable: "facility",
                 principalColumn: "id",
-                onDelete: ReferentialAction.Restrict);
+                onDelete: ReferentialAction.Restrict
+            );
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "fk_contract_facility_facility_id",
-                table: "contract");
+            migrationBuilder.DropForeignKey(name: "fk_contract_facility_facility_id", table: "contract");
 
-            migrationBuilder.DropTable(
-                name: "booking_item");
+            migrationBuilder.DropTable(name: "booking_item");
 
-            migrationBuilder.DropTable(
-                name: "contract_history");
+            migrationBuilder.DropTable(name: "contract_history");
 
-            migrationBuilder.DropTable(
-                name: "slot_config");
+            migrationBuilder.DropTable(name: "slot_config");
 
-            migrationBuilder.DropTable(
-                name: "slot_config_type");
+            migrationBuilder.DropTable(name: "slot_config_type");
 
-            migrationBuilder.DropIndex(
-                name: "ix_contract_facility_id",
-                table: "contract");
+            migrationBuilder.DropIndex(name: "ix_contract_facility_id", table: "contract");
 
-            migrationBuilder.DropColumn(
-                name: "end_date",
-                table: "contract");
+            migrationBuilder.DropColumn(name: "end_date", table: "contract");
 
-            migrationBuilder.DropColumn(
-                name: "facility_id",
-                table: "contract");
+            migrationBuilder.DropColumn(name: "facility_id", table: "contract");
 
-            migrationBuilder.DropColumn(
-                name: "is_active",
-                table: "contract");
+            migrationBuilder.DropColumn(name: "is_active", table: "contract");
 
-            migrationBuilder.DropColumn(
-                name: "price",
-                table: "contract");
+            migrationBuilder.DropColumn(name: "price", table: "contract");
 
-            migrationBuilder.DropColumn(
-                name: "start_date",
-                table: "contract");
+            migrationBuilder.DropColumn(name: "start_date", table: "contract");
 
-            migrationBuilder.RenameColumn(
-                name: "frequency",
-                table: "contract",
-                newName: "business_id");
+            migrationBuilder.RenameColumn(name: "frequency", table: "contract", newName: "business_id");
 
             migrationBuilder.CreateTable(
                 name: "contract_field",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "integer", nullable: false)
+                    id = table
+                        .Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     business_id = table.Column<int>(type: "integer", nullable: false),
-                    created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)),
+                    created = table.Column<DateTime>(
+                        type: "timestamp with time zone",
+                        nullable: false,
+                        defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                    ),
                     created_by = table.Column<Guid>(type: "uuid", nullable: true),
                     field_validation = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: true),
                     last_modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     last_modified_by = table.Column<Guid>(type: "uuid", nullable: true),
-                    name = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: false)
+                    name = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: false),
                 },
                 constraints: table =>
                 {
@@ -291,23 +254,30 @@ namespace Club.Data.Migrations
                         column: x => x.business_id,
                         principalTable: "business",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                });
+                        onDelete: ReferentialAction.Cascade
+                    );
+                }
+            );
 
             migrationBuilder.CreateTable(
                 name: "contract_field_config",
                 columns: table => new
                 {
-                    id = table.Column<int>(type: "integer", nullable: false)
+                    id = table
+                        .Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     contract_field_id = table.Column<int>(type: "integer", nullable: false),
                     contract_id = table.Column<int>(type: "integer", nullable: false),
                     contract_config_id = table.Column<int>(type: "integer", nullable: false),
-                    created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)),
+                    created = table.Column<DateTime>(
+                        type: "timestamp with time zone",
+                        nullable: false,
+                        defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
+                    ),
                     created_by = table.Column<Guid>(type: "uuid", nullable: true),
                     is_active = table.Column<bool>(type: "boolean", nullable: false),
                     last_modified = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    last_modified_by = table.Column<Guid>(type: "uuid", nullable: true)
+                    last_modified_by = table.Column<Guid>(type: "uuid", nullable: true),
                 },
                 constraints: table =>
                 {
@@ -317,34 +287,25 @@ namespace Club.Data.Migrations
                         column: x => x.contract_id,
                         principalTable: "contract",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Cascade
+                    );
                     table.ForeignKey(
                         name: "fk_contract_field_config_contract_field_contract_field_id",
                         column: x => x.contract_field_id,
                         principalTable: "contract_field",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                });
+                        onDelete: ReferentialAction.Cascade
+                    );
+                }
+            );
 
-            migrationBuilder.CreateIndex(
-                name: "ix_contract_business_id",
-                table: "contract",
-                column: "business_id");
+            migrationBuilder.CreateIndex(name: "ix_contract_business_id", table: "contract", column: "business_id");
 
-            migrationBuilder.CreateIndex(
-                name: "ix_contract_field_business_id",
-                table: "contract_field",
-                column: "business_id");
+            migrationBuilder.CreateIndex(name: "ix_contract_field_business_id", table: "contract_field", column: "business_id");
 
-            migrationBuilder.CreateIndex(
-                name: "ix_contract_field_config_contract_field_id",
-                table: "contract_field_config",
-                column: "contract_field_id");
+            migrationBuilder.CreateIndex(name: "ix_contract_field_config_contract_field_id", table: "contract_field_config", column: "contract_field_id");
 
-            migrationBuilder.CreateIndex(
-                name: "ix_contract_field_config_contract_id",
-                table: "contract_field_config",
-                column: "contract_id");
+            migrationBuilder.CreateIndex(name: "ix_contract_field_config_contract_id", table: "contract_field_config", column: "contract_id");
 
             migrationBuilder.AddForeignKey(
                 name: "fk_contract_business_business_id",
@@ -352,7 +313,8 @@ namespace Club.Data.Migrations
                 column: "business_id",
                 principalTable: "business",
                 principalColumn: "id",
-                onDelete: ReferentialAction.Restrict);
+                onDelete: ReferentialAction.Restrict
+            );
         }
     }
 }

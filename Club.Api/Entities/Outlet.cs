@@ -23,6 +23,7 @@ public class Outlet : AuditableEntity
     public int OutletTypeId { get; set; }
     public OutletType OutletType { get; set; } = default!;
     public bool IsActive { get; set; }
+
     [JsonIgnore]
     public NpgsqlTsVector SearchVector { get; set; } = null!;
     public ICollection<Facility> Facilities { get; set; } = [];
