@@ -14,6 +14,8 @@ public static class SeedDbContext
         await SeedBookingStatuses(dbContext, ct);
         await SeedPaymentTypes(dbContext, ct);
         await SeedPaymentStatuses(dbContext, ct);
+        await SeedWalletTransactionStatuses(dbContext, ct);
+        await SeedWalletTransactionTypes(dbContext, ct);
         await dbContext.SaveChangesAsync(ct);
 
         await SeedReferenceData(dbContext, ct);
@@ -80,6 +82,55 @@ public static class SeedDbContext
         if (!paymentStatuses.Contains("Refunded"))
         {
             await dbContext.PaymentStatus.AddAsync(new PaymentStatus { Id = (int)Common.Enums.PaymentStatusEnum.Refunded, Name = "Refunded" }, ct);
+        }
+    }
+
+    private static async Task SeedWalletTransactionStatuses(AppDbContext dbContext, CancellationToken ct)
+    {
+        var existing = await dbContext.WalletTransactionStatus.Select(x => x.Name).ToListAsync(ct);
+
+        if (!existing.Contains("Pending"))
+        {
+            await dbContext.WalletTransactionStatus.AddAsync(
+                new WalletTransactionStatus { Id = (int)WalletTransactionStatusEnum.Pending, Name = "Pending" },
+                ct
+            );
+        }
+
+        if (!existing.Contains("Completed"))
+        {
+            await dbContext.WalletTransactionStatus.AddAsync(
+                new WalletTransactionStatus { Id = (int)WalletTransactionStatusEnum.Completed, Name = "Completed" },
+                ct
+            );
+        }
+
+        if (!existing.Contains("Failed"))
+        {
+            await dbContext.WalletTransactionStatus.AddAsync(new WalletTransactionStatus { Id = (int)WalletTransactionStatusEnum.Failed, Name = "Failed" }, ct);
+        }
+
+        if (!existing.Contains("Refunded"))
+        {
+            await dbContext.WalletTransactionStatus.AddAsync(
+                new WalletTransactionStatus { Id = (int)WalletTransactionStatusEnum.Refunded, Name = "Refunded" },
+                ct
+            );
+        }
+    }
+
+    private static async Task SeedWalletTransactionTypes(AppDbContext dbContext, CancellationToken ct)
+    {
+        var existing = await dbContext.WalletTransactionType.Select(x => x.Name).ToListAsync(ct);
+
+        if (!existing.Contains("Credit"))
+        {
+            await dbContext.WalletTransactionType.AddAsync(new WalletTransactionType { Id = (int)WalletTransactionTypeEnum.Credit, Name = "Credit" }, ct);
+        }
+
+        if (!existing.Contains("Debit"))
+        {
+            await dbContext.WalletTransactionType.AddAsync(new WalletTransactionType { Id = (int)WalletTransactionTypeEnum.Debit, Name = "Debit" }, ct);
         }
     }
 
@@ -358,11 +409,17 @@ public static class SeedDbContext
             await dbContext.Resource.AddAsync(resource3, ct);
             await dbContext.Resource.AddAsync(resource4, ct);
 
-            var contract1 = new Contract { Name = "Guest", Facility = facility1, Price = 0 };
-            var contract2 = new Contract { Name = "Member", Facility = facility1, Price = 7000 };
+            var contract1 = new Contract { Name = "Guest", Price = 0 };
+            var contract2 = new Contract { Name = "Member", Price = 7000 };
 
             await dbContext.Contract.AddAsync(contract1, ct);
             await dbContext.Contract.AddAsync(contract2, ct);
+
+            // A contract grants access to one or more facilities (many-to-many).
+            // The Member contract spans both facilities.
+            dbContext.ContractFacility.Add(new ContractFacility { Contract = contract1, Facility = facility1 });
+            dbContext.ContractFacility.Add(new ContractFacility { Contract = contract2, Facility = facility1 });
+            dbContext.ContractFacility.Add(new ContractFacility { Contract = contract2, Facility = facility2 });
 
             var validation1 = new Validation { Name = "Login", Id = 1 };
             var validation2 = new Validation { Name = "HNA Verify", Id = 2 };

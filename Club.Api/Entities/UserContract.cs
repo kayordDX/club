@@ -11,4 +11,6 @@ public class UserContract : AuditableEntity
     public bool IsActive { get; set; }
     public Guid UserId { get; set; }
     public required User User { get; set; }
+
+    public ICollection<WalletVoucherGrant> VoucherGrants { get; set; } = [];
 }

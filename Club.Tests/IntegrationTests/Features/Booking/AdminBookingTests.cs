@@ -345,13 +345,9 @@ public class AdminBookingTests(AppFixture app)
         };
         db.Slot.Add(slot);
 
-        var contract = new Contract
-        {
-            Name = $"Contract_{Guid.NewGuid()}",
-            FacilityId = facility.Id,
-            Facility = facility,
-        };
+        var contract = new Contract { Name = $"Contract_{Guid.NewGuid()}" };
         db.Contract.Add(contract);
+        db.ContractFacility.Add(new ContractFacility { Contract = contract, Facility = facility });
         await db.SaveChangesAsync();
 
         var slotContract = new SlotContract

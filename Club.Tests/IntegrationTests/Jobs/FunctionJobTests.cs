@@ -63,13 +63,9 @@ public class FunctionJobTests(AppFixture app)
         db.Slot.Add(slot);
         await db.SaveChangesAsync(app.Context.CancellationToken);
 
-        var contract = new Contract
-        {
-            Name = $"Contract_{Guid.NewGuid()}",
-            Facility = facility,
-            FacilityId = facility.Id,
-        };
+        var contract = new Contract { Name = $"Contract_{Guid.NewGuid()}" };
         db.Contract.Add(contract);
+        db.ContractFacility.Add(new ContractFacility { Contract = contract, Facility = facility });
         await db.SaveChangesAsync(app.Context.CancellationToken);
 
         var slotContract = new SlotContract
