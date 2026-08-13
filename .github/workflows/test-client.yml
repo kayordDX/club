@@ -1,0 +1,55 @@
+name: Test Client
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: test-client-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: client/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: client
+        run: pnpm install --frozen-lockfile
+
+      # vitest's browser-mode project (src/**/*.svelte.test.ts) runs in real
+      # Chromium via @vitest/browser-playwright, so the browser binary is needed.
+      - name: Install Playwright Chromium
+        working-directory: client
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Type-check
+        working-directory: client
+        run: pnpm check
+
+      - name: Lint
+        working-directory: client
+        run: pnpm lint
+
+      # Unit + component tests only. `pnpm test` additionally runs Playwright e2e,
+      # which needs the full stack (Postgres, Redis, running API) — see
+      # playwright.config.ts. We run e2e manually for now.
+      - name: Unit tests
+        working-directory: client
+        run: pnpm run test:unit -- --run

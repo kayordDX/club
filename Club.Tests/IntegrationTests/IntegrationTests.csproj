@@ -19,6 +19,7 @@
     <!-- Test Containers for PostgreSQL -->
     <PackageReference Include="Testcontainers" />
     <PackageReference Include="Testcontainers.PostgreSql" />
+    <PackageReference Include="Testcontainers.Redis" />
 
     <!-- Project Reference -->
     <ProjectReference Include="../../Club.Api/Club.Api.csproj" />

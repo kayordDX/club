@@ -51,6 +51,18 @@ csharpier check .   # check formatting
 csharpier format .  # fix formatting if needed
 ```
 
+## Tests
+
+When any bigger code changes were made make sure to run the tests and verify they pass.
+If you are adding new functionality, make sure to add tests for it.
+
+```sh
+# Backend tests: run from root folder
+dotnet test
+# Client tests: run from client folder
+pnpm test   # make sure tests pass
+```
+
 ## Code Style
 
 ### Formatting
@@ -118,7 +130,8 @@ csharpier format .  # fix formatting if needed
 
 | Item             | Value                                                                                                              |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Run stack        | `dotnet run --project Club.AppHost/Club.AppHost.csproj`                                                            |
+| Run stack        | `aspire start`                                                                                                     |
+| View logs        | `aspire logs`                                                                                                      |
 | API docs         | `http://localhost:5000/scalar/v1`                                                                                  |
 | Aspire           | `use aspire skills to get details and logs`                                                                        |
 | Set secret       | `dotnet user-secrets set "Key" "Value"`                                                                            |

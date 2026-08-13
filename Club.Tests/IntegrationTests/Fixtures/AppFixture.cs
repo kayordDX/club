@@ -10,6 +10,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Testcontainers.PostgreSql;
+using Testcontainers.Redis;
 
 namespace IntegrationTests.Fixtures;
 
@@ -19,7 +20,9 @@ public class AppFixtureCollection : ICollectionFixture<AppFixture> { }
 public class AppFixture : AppFixture<Program>, IAsyncLifetime
 {
     private PostgreSqlContainer? _dbContainer;
+    private RedisContainer? _redisContainer;
     private string _connectionString = string.Empty;
+    private string _redisConnectionString = string.Empty;
 
     protected override async ValueTask PreSetupAsync()
     {
@@ -35,6 +38,11 @@ public class AppFixture : AppFixture<Program>, IAsyncLifetime
 
         // Get connection string from the running container
         _connectionString = _dbContainer.GetConnectionString();
+
+        // Start Redis TestContainer — the API connects to Redis eagerly at startup
+        _redisContainer = new RedisBuilder().WithImage("redis:7-alpine").Build();
+        await _redisContainer.StartAsync();
+        _redisConnectionString = _redisContainer.GetConnectionString();
     }
 
     protected override void ConfigureApp(IWebHostBuilder builder)
@@ -45,8 +53,14 @@ public class AppFixture : AppFixture<Program>, IAsyncLifetime
                 // Load test configuration
                 config.SetBasePath(Directory.GetCurrentDirectory());
                 config.AddJsonFile("appsettings.Testing.json", optional: false);
-                // Override the database connection string with TestContainer connection string
-                config.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:DefaultConnection"] = _connectionString });
+                // Override the database and Redis connection strings with TestContainer connection strings
+                config.AddInMemoryCollection(
+                    new Dictionary<string, string?>
+                    {
+                        ["ConnectionStrings:DefaultConnection"] = _connectionString,
+                        ["ConnectionStrings:Redis"] = _redisConnectionString,
+                    }
+                );
             }
         );
 
@@ -123,6 +137,12 @@ public class AppFixture : AppFixture<Program>, IAsyncLifetime
         {
             await _dbContainer.StopAsync();
             await _dbContainer.DisposeAsync();
+        }
+
+        if (_redisContainer != null)
+        {
+            await _redisContainer.StopAsync();
+            await _redisContainer.DisposeAsync();
         }
     }
 }

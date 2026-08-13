@@ -3,7 +3,7 @@
 	import { outletGetAll } from "$lib/api/remote/outlet.remote";
 	import Outlet from "./Outlet.svelte";
 	import LoginButton from "$lib/components/LoginButton/LoginButton.svelte";
-	import { Loader, Skeleton } from "@kayord/ui";
+	import { Skeleton } from "@kayord/ui";
 
 	let searchTerm = $state("");
 	let draft = $state("");
