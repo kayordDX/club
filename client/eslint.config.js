@@ -1,5 +1,5 @@
 import prettier from "eslint-config-prettier";
-import { includeIgnoreFile } from "@eslint/compat";
+import { includeIgnoreFile } from "@eslint/config-helpers";
 import js from "@eslint/js";
 import ts from "typescript-eslint";
 import svelte from "eslint-plugin-svelte";
@@ -28,6 +28,23 @@ export default defineConfig(
 			"no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
 		},
 	},
+	// Plain TypeScript files: use the typescript-eslint parser and TS-aware rules.
+	// The base `no-unused-vars` rule produces false positives on TS constructs
+	// (ambient declarations, enum members, function-type params), so it is replaced.
+	{
+		files: ["**/*.ts", "**/*.tsx"],
+		languageOptions: {
+			parser: ts.parser,
+		},
+		plugins: {
+			"@typescript-eslint": ts.plugin,
+		},
+		rules: {
+			"no-unused-vars": "off",
+			"@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
+			"@typescript-eslint/no-explicit-any": "error",
+		},
+	},
 	{
 		files: ["**/*.svelte", "**/*.svelte.ts", "**/*.svelte.js"],
 		languageOptions: {
@@ -38,5 +55,9 @@ export default defineConfig(
 				svelteConfig,
 			},
 		},
+	},
+	// Machine-generated API client output (orval + tools/gen-remote.mjs) — not linted.
+	{
+		ignores: ["src/lib/api/generated/**", "src/lib/api/remote/**", "src/lib/server/api/generated/**"],
 	}
 );
