@@ -18,7 +18,7 @@ describe("booking formatting", () => {
 	});
 
 	it("formats dates and times", () => {
-		// Noon UTC keeps the date stable in UTC-based test environments.
+		// Node tests run with TZ=UTC (see vite.config.ts), so noon UTC renders as noon.
 		expect(formatDate("2026-08-01T12:00:00Z")).toContain("Aug 2026");
 		expect(formatTime("2026-08-01T12:00:00Z")).toBe("12:00");
 		expect(formatDateTime("2026-08-01T12:00:00Z")).toContain("2026");

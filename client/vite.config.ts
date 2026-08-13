@@ -29,6 +29,8 @@ export default defineConfig({
 				test: {
 					name: "server",
 					environment: "node",
+					// Deterministic timezone for date/time formatters (CI runs UTC too).
+					env: { TZ: "UTC" },
 					include: ["src/**/*.{test,spec}.{js,ts}"],
 					exclude: ["src/**/*.svelte.{test,spec}.{js,ts}"],
 				},
