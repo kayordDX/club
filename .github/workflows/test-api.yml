@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
+  test-api:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -28,9 +28,6 @@ jobs:
           path: ~/.nuget/packages
           key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props') }}
 
-      # Testcontainers spins up both Postgres and Redis itself
-      # (Docker is preinstalled on ubuntu-latest). csharpier comes from
-      # mise.toml (dotnet:csharpier), installed below via the dotnet SDK.
       - name: Set up mise
         uses: jdx/mise-action@v2
 

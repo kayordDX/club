@@ -96,10 +96,18 @@ pnpm test   # make sure tests pass
 ### Testing
 
 - Frontend unit: `ComponentName.svelte.test.ts` colocated with component
-- Frontend E2E: `feature-name.spec.ts` in `client/e2e/`
+- Frontend E2E: `feature-name.spec.ts` in `client/e2e/` — runs against the Aspire-started stack (see E2E workflow below)
 - Backend: `ClassNameTests.cs` — xUnit, arrange-act-assert
 - Target a single backend test class: `dotnet test Club.Tests/IntegrationTests/IntegrationTests.csproj -- --filter-class <FullyQualifiedClassName>`
 - FastEndpoints.Testing client: `POSTAsync`/`GETAsync<TEndpoint,TReq,TRes>` returns `(HttpResponseMessage, TRes?)` tuple; `PUTAsync<TEndpoint,TReq>` returns `HttpResponseMessage` directly
+
+### E2E Tests (Playwright + Aspire)
+
+1. From repo root: `aspire start` — brings up Postgres, Redis, Keycloak, Mailpit, API, and the SvelteKit dev server (port 5173)
+2. From `client/`: `pnpm test:e2e` — Playwright runs against `http://localhost:5173`
+3. Stop the stack: `aspire stop`
+
+The stack must be running first — `client/playwright.config.ts` has a `globalSetup` that fails fast with instructions if the frontend is unreachable. The browser never talks to the API directly; the SvelteKit server proxies API calls via `API_URL` (`$lib/server/api/client.ts`). CI: `.github/workflows/test-e2e.yml` (manual `workflow_dispatch` only — starts the AppHost with cached container images, waits on the `web` resource, runs Playwright, uploads report + Aspire logs on failure).
 
 ## Key Workflows
 

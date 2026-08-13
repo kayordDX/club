@@ -1,0 +1,110 @@
+name: Test E2E
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: client/pnpm-lock.yaml
+
+      - name: Install client dependencies
+        working-directory: client
+        run: pnpm install --frozen-lockfile
+
+      - name: Resolve Playwright version
+        id: playwright-version
+        working-directory: client
+        run: |
+          version=$(pnpm exec playwright --version | sed 's/Version //')
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        id: cache-playwright
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-browsers-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+
+      - name: Install Playwright Chromium
+        working-directory: client
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Install Aspire CLI
+        run: dotnet tool install -g Aspire.Cli
+
+      - name: Cache Aspire container images
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: docker-images
+          key: docker-images-${{ runner.os }}-v1
+
+      - name: Load cached container images
+        run: |
+          if [ -d docker-images ]; then
+            for archive in docker-images/*.tar; do
+              [ -f "$archive" ] && docker load -i "$archive"
+            done
+          fi
+
+      - name: Start Aspire stack
+        run: |
+          aspire start --non-interactive > aspire.log 2>&1
+
+      - name: Wait for web resource
+        run: |
+          aspire wait web || { cat aspire.log; exit 1; }
+
+      - name: Run E2E tests
+        working-directory: client
+        run: pnpm test:e2e
+
+      - name: Stop Aspire stack
+        if: always()
+        run: aspire stop
+
+      - name: Save pulled container images
+        if: ${{ always() && steps.cache.outputs.cache-hit != 'true' }}
+        run: |
+          mkdir -p docker-images
+          images=$(docker image ls -q --filter reference=postgres:* --filter reference=redis:* --filter reference=quay.io/keycloak/keycloak:* --filter reference=axllent/mailpit:*)
+          if [ -n "$images" ]; then
+            docker save -o docker-images/aspire.tar $images
+          fi
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: client/playwright-report/
+          retention-days: 2
+
+      - name: Upload Aspire logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aspire-logs
+          path: aspire.log
+          retention-days: 2
