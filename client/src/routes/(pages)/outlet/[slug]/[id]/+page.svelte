@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Popover, ButtonGroup, Loader, Skeleton } from "@kayord/ui";
+	import { Button, Popover, ButtonGroup, Skeleton } from "@kayord/ui";
 	import { Calendar } from "@kayord/ui/calendar";
 	import { CalendarIcon, ChevronRightIcon, ChevronLeftIcon, BuildingIcon, UserCogIcon } from "@lucide/svelte";
 	import { parseDate, today, getLocalTimeZone, DateFormatter, type DateValue } from "@internationalized/date";
@@ -8,11 +8,9 @@
 	import { cn } from "@kayord/ui/utils";
 	import { createSearchParamsSchema, useSearchParams } from "runed/kit";
 	import { slotGetAll } from "$lib/api/remote/slot.remote";
-	import { useUser } from "$lib/auth";
+	import { hasRoles } from "$lib/auth";
 	import Slots from "./Slots.svelte";
 	import PageBoundary from "$lib/components/PageBoundary.svelte";
-
-	const user = useUser();
 
 	const df = new DateFormatter("en-ZA", {
 		dateStyle: "long",
@@ -83,7 +81,7 @@
 		</div>
 	</div>
 	<div class="flex items-center gap-2">
-		{#if user}
+		{#if hasRoles("MANAGER")}
 			<Button variant="destructive" href={resolve(`/outlet/${page.params.slug}/${page.params.id}/admin`)}>
 				<UserCogIcon />
 				Admin

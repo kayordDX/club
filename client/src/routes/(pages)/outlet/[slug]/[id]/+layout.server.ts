@@ -1,9 +1,8 @@
 import type { LayoutServerLoad } from "./$types";
 import { getFacilityRoles } from "$lib/server/auth/roles";
 
-// Provides the signed-in user's roles for the current facility to all layouts
-// under [id] (including the admin layout, which resets the component chain).
-// Roles are consumed by RoleCheck via context.
+// The public facility page renders role-gated actions (e.g. the Admin button),
+// so publish the signed-in user's roles for this facility into context.
 export const load: LayoutServerLoad = async ({ cookies, locals, params }) => {
 	let roles: string[] = [];
 	if (locals.user && params.id) {

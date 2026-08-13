@@ -9,6 +9,8 @@ import { PKCE_COOKIE, SESSION_COOKIE } from "./oidc";
 export interface SessionPayload {
 	user: SessionUser;
 	tokens: OidcTokens;
+	/** Per-facility role cache (normalized role names), refreshed lazily with a TTL. */
+	rolesCache?: Record<string, { roles: string[]; expiresAt: number }>;
 }
 
 /** Carried in a short-lived cookie between the authorize redirect and callback. */
