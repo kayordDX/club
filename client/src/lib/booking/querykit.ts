@@ -1,4 +1,4 @@
-import type { SortingState } from "@tanstack/table-core";
+import type { SortingState } from "@tanstack/svelte-table";
 
 /**
  * Convert TanStack table sorting state into a QueryKit sort string.

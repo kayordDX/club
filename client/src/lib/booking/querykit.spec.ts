@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { sortingToQueryKitSorts, buildBookingFilters } from "./querykit";
-import type { SortingState } from "@tanstack/table-core";
+import type { SortingState } from "@tanstack/svelte-table";
 
 describe("sortingToQueryKitSorts", () => {
 	it("returns undefined for an empty sorting state", () => {

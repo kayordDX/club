@@ -3,8 +3,8 @@
 	import { BookIcon, PencilIcon, SearchIcon } from "@lucide/svelte";
 	import { BookingStatusEnum, type BookingSummaryDTO, type PaginatedListOfBookingSummaryDTO } from "$lib/api";
 	import { bookingGetUser } from "$lib/api/remote/booking.remote";
-	import { type ColumnDef, type Updater, type PaginationState, type SortingState, getPaginationRowModel, getSortedRowModel } from "@tanstack/table-core";
-	import { DataTable, createShadTable, renderSnippet } from "@kayord/ui/data-table";
+	import { type ColumnDef, type PaginationState, type SortingState } from "@tanstack/svelte-table";
+	import { DataTable, createShadTable, renderSnippet, type DataTableFeatures } from "@kayord/ui/data-table";
 	import { Actions, Badge, Input, Select } from "@kayord/ui";
 	import { goto } from "$app/navigation";
 	import { resolve } from "$app/paths";
@@ -12,8 +12,8 @@
 	import { formatCurrency, formatDate, formatTime } from "$lib/booking/format";
 	import { buildBookingFilters, sortingToQueryKitSorts } from "$lib/booking/querykit";
 
-	let pagination: PaginationState = $state({ pageIndex: 0, pageSize: 10 });
-	let sorting: SortingState = $state([{ id: "slotStartDatetime", desc: true }]);
+	// let pagination: PaginationState = $state({ pageIndex: 0, pageSize: 10 });
+	// let sorting: SortingState = $state([{ id: "slotStartDatetime", desc: true }]);
 
 	// "all" keeps the single-select value non-empty while meaning "no status filter".
 	let statusValue = $state("all");
@@ -25,19 +25,19 @@
 		const value = searchInput;
 		const timer = setTimeout(() => {
 			search = value;
-			pagination.pageIndex = 0;
+			controlledState.pagination.pageIndex = 0;
 		}, 350);
 		return () => clearTimeout(timer);
 	});
 
 	const params = $derived.by(() => {
 		const p: Record<string, string | number> = {
-			page: pagination.pageIndex + 1,
-			pageSize: pagination.pageSize,
+			page: controlledState.pagination.pageIndex + 1,
+			pageSize: controlledState.pagination.pageSize,
 		};
 		const filters = buildBookingFilters({ status, search });
 		if (filters) p.filters = filters;
-		const sorts = sortingToQueryKitSorts(sorting);
+		const sorts = sortingToQueryKitSorts(controlledState.sorting);
 		if (sorts) p.sorts = sorts;
 		return p;
 	});
@@ -61,7 +61,7 @@
 	let data = $derived(result?.items ?? []);
 	let rowCount = $derived(result?.totalCount ?? 0);
 
-	const columns: ColumnDef<BookingSummaryDTO>[] = [
+	const columns: ColumnDef<DataTableFeatures, BookingSummaryDTO>[] = [
 		{ header: "#", accessorKey: "id", size: 60 },
 		{
 			header: "Facility",
@@ -99,38 +99,23 @@
 		},
 	];
 
-	const setPagination = (updater: Updater<PaginationState>) => {
-		pagination = updater instanceof Function ? updater(pagination) : updater;
-	};
-
-	const setSorting = (updater: Updater<SortingState>) => {
-		sorting = updater instanceof Function ? updater(sorting) : updater;
-		pagination.pageIndex = 0;
-	};
+	const controlledState = $state({
+		pagination: { pageIndex: 0, pageSize: 10 } as PaginationState,
+		sorting: [{ id: "slotStartDatetime", desc: true }] as SortingState,
+	});
 
 	const table = createShadTable({
 		columns,
 		get data() {
 			return data;
 		},
+		controlledState,
 		manualPagination: true,
 		manualFiltering: true,
 		manualSorting: true,
-		getSortedRowModel: getSortedRowModel(),
-		getPaginationRowModel: getPaginationRowModel(),
-		state: {
-			get pagination() {
-				return pagination;
-			},
-			get sorting() {
-				return sorting;
-			},
-		},
 		get rowCount() {
 			return rowCount;
 		},
-		onPaginationChange: setPagination,
-		onSortingChange: setSorting,
 		enableRowSelection: false,
 	});
 
@@ -186,7 +171,7 @@
 					value={statusValue}
 					onValueChange={(v) => {
 						statusValue = v ?? "all";
-						pagination.pageIndex = 0;
+						controlledState.pagination.pageIndex = 0;
 					}}
 				>
 					<Select.Trigger class="w-40">{status ? statusLabel(status) : "All statuses"}</Select.Trigger>

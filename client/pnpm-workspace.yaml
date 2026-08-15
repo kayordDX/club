@@ -4,6 +4,9 @@ packages:
 allowBuilds:
   esbuild: true
 
+minimumReleaseAgeExclude:
+  - "@kayord/ui"
+
 onlyBuiltDependencies:
   - "@tailwindcss/oxide"
   - esbuild
