@@ -22,8 +22,10 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingGetPathRequest, 
             return;
         }
 
+        // Guard against bookings without slot contract bookings so the First() projection
+        // below returns 404 instead of crashing with a 500.
         var path = await _dbContext
-            .Booking.Where(b => b.Id == req.Id)
+            .Booking.Where(b => b.Id == req.Id && b.SlotContractBookings.Any())
             .Select(b => new BookingPathDTO
             {
                 BookingId = b.Id,

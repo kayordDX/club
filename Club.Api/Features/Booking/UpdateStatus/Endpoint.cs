@@ -41,13 +41,11 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingUpdateStatusRequ
             return;
         }
 
-        if (req.Status == BookingStatusEnum.Cancelled)
-        {
-            await _dbContext.SlotContractBooking.Where(x => x.BookingId == booking.Id).ExecuteDeleteAsync(ct);
-        }
-
-        // Update status
+        // Cancelling releases the slot via the availability queries (they exclude cancelled
+        // bookings), but the slot contract bookings are kept so the booking keeps its history
+        // (facility, times, players) and the status change stays reversible — same as the admin endpoint.
         booking.BookingStatusId = (int)req.Status;
+        booking.BookingStatusDate = DateTime.UtcNow;
         await _dbContext.SaveChangesAsync(ct);
 
         await Send.NoContentAsync(ct);
