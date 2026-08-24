@@ -150,3 +150,31 @@ export const AdminBookingGetAllResponse = zod.object({
 	hasPreviousPage: zod.boolean(),
 	hasNextPage: zod.boolean(),
 });
+
+export const AdminSlotGetAllParams = zod.object({
+	facilityId: zod.int(),
+});
+
+export const AdminSlotGetAllQueryParams = zod.object({
+	date: zod.iso.datetime({ offset: true }),
+});
+
+export const AdminSlotGetAllResponseItem = zod.object({
+	id: zod.string(),
+	resourceName: zod.string().nullish(),
+	startDatetime: zod.iso.datetime({ offset: true }),
+	endDatetime: zod.iso.datetime({ offset: true }).nullish(),
+	booked: zod.int(),
+	total: zod.int(),
+	isEnabled: zod.boolean(),
+	isAvailable: zod.boolean(),
+	bookings: zod.array(
+		zod.object({
+			bookingId: zod.int(),
+			playerName: zod.string().nullish(),
+			bookingStatusId: zod.int(),
+			bookingStatusName: zod.string(),
+		})
+	),
+});
+export const AdminSlotGetAllResponse = zod.array(AdminSlotGetAllResponseItem);
