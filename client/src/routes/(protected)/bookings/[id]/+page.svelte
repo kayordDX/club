@@ -5,14 +5,16 @@
 	import BookingPlayers from "$lib/components/BookingPlayers.svelte";
 	import BookingExtras from "$lib/components/BookingExtras.svelte";
 	import { formatCurrency, formatDate, formatDateTime, formatTime } from "$lib/booking/format";
-	import { BookingStatusEnum } from "$lib/api";
+	import { BookingStatusEnum, type BookingPathDTO } from "$lib/api";
 	import { bookingGet, bookingGetPath } from "$lib/api/remote/booking.remote";
 	import { page } from "$app/state";
 	import { Button, Card } from "@kayord/ui";
 
 	const bookingId = Number(page.params.id) || 0;
 	const booking = await bookingGet(bookingId);
-	const path = await bookingGetPath(bookingId);
+	// Cancelled bookings created before players were retained on cancel have no slot data,
+	// so the path lookup 404s — degrade to "—" instead of failing the whole page.
+	const path: BookingPathDTO | undefined = await bookingGetPath(bookingId).catch(() => undefined);
 	const editHref = resolve(`/bookings/${bookingId}/edit`);
 	const canEdit = booking.bookingStatus?.id === BookingStatusEnum.Pending;
 </script>
@@ -60,7 +62,7 @@
 					<div>{formatDateTime(booking.bookingStatusDate)}</div>
 				</div>
 
-				{#if booking.bookingStatus?.id === 1}
+				{#if booking.bookingStatus?.id === BookingStatusEnum.Pending}
 					<div>
 						<div class="text-muted-foreground text-sm">Expires at</div>
 						<div>{formatDateTime(booking.expiresAt)}</div>

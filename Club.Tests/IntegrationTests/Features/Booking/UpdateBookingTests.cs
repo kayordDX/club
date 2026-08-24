@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Club.Common.Enums;
 using Club.Data;
 using Club.Entities;
@@ -354,6 +355,122 @@ public class UpdateBookingTests(AppFixture app)
         path.OutletSlug.ShouldNotBeNullOrEmpty();
         path.OutletName.ShouldNotBeNullOrEmpty();
         path.FacilityName.ShouldNotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public async Task CancelBooking_KeepsPlayers_AndDetailEndpointsStayAvailable()
+    {
+        // Arrange
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var (slot, slotContract, _, _) = await CreateBookingSetup(db);
+        var (createResponse, createdBooking) = await app.Client.POSTAsync<BookingCreateEndpoint, BookingCreateRequest, BookingCreateResponse>(
+            new BookingCreateRequest
+            {
+                Bookings =
+                [
+                    new BookingRequest
+                    {
+                        SlotId = slot.Id,
+                        SlotContractId = slotContract.Id,
+                        Name = "Jaco Taute",
+                        Email = "jaco@example.com",
+                        Cellphone = "0842502311",
+                    },
+                ],
+            }
+        );
+        createResponse.IsSuccessStatusCode.ShouldBeTrue();
+
+        // Act
+        var cancelResponse = await app.Client.PUTAsync<BookingUpdateStatusEndpoint, BookingUpdateStatusRequest>(
+            new BookingUpdateStatusRequest { BookingId = createdBooking.Id, Status = BookingStatusEnum.Cancelled }
+        );
+
+        // Assert
+        cancelResponse.StatusCode.ShouldBe(HttpStatusCode.NoContent);
+
+        // Cancelled bookings keep their players so the history stays intact...
+        var persisted = await db.Booking.Include(b => b.SlotContractBookings).FirstAsync(b => b.Id == createdBooking.Id, app.Context.CancellationToken);
+        persisted.BookingStatusId.ShouldBe((int)BookingStatusEnum.Cancelled);
+        persisted.SlotContractBookings.ShouldHaveSingleItem();
+
+        // ...and the detail endpoints still work: the path query no longer crashes on a missing
+        // first slot contract booking (it used to 500 after the cancel deleted them).
+        var (getPathResponse, path) = await app.Client.GETAsync<BookingGetPathEndpoint, BookingGetPathRequest, BookingPathDTO>(
+            new BookingGetPathRequest { Id = createdBooking.Id }
+        );
+        getPathResponse.IsSuccessStatusCode.ShouldBeTrue();
+        path.ShouldNotBeNull();
+        path.FacilityName.ShouldBe("Booking Facility");
+        path.SlotId.ShouldBe(slot.Id);
+
+        // The user summary keeps facility and slot times for cancelled bookings.
+        var summaryResponse = await app.Client.GetAsync(
+            $"/booking/user?filters={Uri.EscapeDataString($"id == {createdBooking.Id}")}",
+            app.Context.CancellationToken
+        );
+        summaryResponse.IsSuccessStatusCode.ShouldBeTrue();
+        using var document = JsonDocument.Parse(await summaryResponse.Content.ReadAsStringAsync(app.Context.CancellationToken));
+        var summary = document.RootElement.GetProperty("items").EnumerateArray().Single();
+        summary.GetProperty("bookingStatusId").GetInt32().ShouldBe((int)BookingStatusEnum.Cancelled);
+        summary.GetProperty("facilityName").GetString().ShouldBe("Booking Facility");
+        summary.GetProperty("slotStartDatetime").GetString().ShouldNotBeNullOrEmpty();
+        summary.GetProperty("slotEndDatetime").GetString().ShouldNotBeNullOrEmpty();
+        summary.GetProperty("playerCount").GetInt32().ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task CancelBooking_ReleasesSlotCapacity()
+    {
+        // Arrange
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var (slot, slotContract, _, _) = await CreateBookingSetup(db);
+        var createRequest = new BookingCreateRequest
+        {
+            Bookings = Enumerable
+                .Range(1, 4)
+                .Select(i => new BookingRequest
+                {
+                    SlotId = slot.Id,
+                    SlotContractId = slotContract.Id,
+                    Name = $"Player {i}",
+                    Email = $"player{i}@example.com",
+                    Cellphone = $"082555100{i}",
+                })
+                .ToList(),
+        };
+        var (createResponse, createdBooking) = await app.Client.POSTAsync<BookingCreateEndpoint, BookingCreateRequest, BookingCreateResponse>(createRequest);
+        createResponse.IsSuccessStatusCode.ShouldBeTrue();
+
+        var cancelResponse = await app.Client.PUTAsync<BookingUpdateStatusEndpoint, BookingUpdateStatusRequest>(
+            new BookingUpdateStatusRequest { BookingId = createdBooking.Id, Status = BookingStatusEnum.Cancelled }
+        );
+        cancelResponse.StatusCode.ShouldBe(HttpStatusCode.NoContent);
+
+        // Act - the slot is bookable again after the cancel (MaxBookings = 4).
+        var (rebookResponse, _) = await app.Client.POSTAsync<BookingCreateEndpoint, BookingCreateRequest, BookingCreateResponse>(
+            new BookingCreateRequest
+            {
+                Bookings =
+                [
+                    new BookingRequest
+                    {
+                        SlotId = slot.Id,
+                        SlotContractId = slotContract.Id,
+                        Name = "New Player",
+                        Email = "new@example.com",
+                        Cellphone = "0825551234",
+                    },
+                ],
+            }
+        );
+
+        // Assert
+        rebookResponse.IsSuccessStatusCode.ShouldBeTrue();
     }
 
     private static async Task<(Club.Entities.Slot Slot, SlotContract SlotContract, Extra Extra, int FacilityId)> CreateBookingSetup(AppDbContext db)
