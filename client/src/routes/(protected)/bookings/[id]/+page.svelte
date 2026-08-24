@@ -62,7 +62,7 @@
 					<div>{formatDateTime(booking.bookingStatusDate)}</div>
 				</div>
 
-				{#if booking.bookingStatus?.id === 1}
+				{#if booking.bookingStatus?.id === BookingStatusEnum.Pending}
 					<div>
 						<div class="text-muted-foreground text-sm">Expires at</div>
 						<div>{formatDateTime(booking.expiresAt)}</div>
