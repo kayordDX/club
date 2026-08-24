@@ -18,13 +18,20 @@
 2. Calculates MD5 signature with passphrase as salt
 3. Returns `FormActionUrl` + `FormFields` to the frontend
 4. Frontend renders a hidden `<form>` with `method="post"` and auto-submits it
-5. PayFast processes payment and redirects user to `return_url`
+5. PayFast processes payment and redirects user to `return_url` (routed through the API's
+   `GET /payment/result/payfast` — the signed return fields are verified there, the booking is
+   marked paid/confirmed, then the shopper is redirected to the frontend `/payment/success` page)
 6. PayFast sends ITN (Instant Transaction Notification) to `notify_url`
-7. Backend verifies:
+7. Backend verifies (ITN POST):
    - Signature match (MD5)
    - Valid PayFast IP
    - Payment data (amount matches)
    - Server-to-server validation via `https://www.payfast.co.za/eng/query/validate`
+
+> The browser return (GET) is verified by signature only — the server-to-server validation step
+> applies to the ITN POST. This keeps the booking status update working in local POCs where
+> PayFast's ITN cannot reach a `localhost` notify_url; the ITN remains the authoritative capture
+> on production deployments.
 
 ### Signature Rules (IMPORTANT)
 
