@@ -27,7 +27,13 @@ public class PayfastProvider(IPaymentOptionsAccessor<PayfastOptions> optionsAcce
         // keeps the status update working even when PayFast cannot deliver the server-to-server
         // ITN (e.g. a localhost notify_url in a local POC). The ITN remains the authoritative
         // capture notification on production deployments.
-        var returnUrl = UriHelper.BuildAbsolute(httpContext.Request.Scheme, httpContext.Request.Host, httpContext.Request.PathBase, "/payment/result/payfast");
+        //
+        // Carry the transaction ID on the return URL itself: production PayFast appends its signed
+        // fields to the return URL, but the sandbox simulator redirects back without any query
+        // string, which previously made the payment unidentifiable on return.
+        var returnUrl =
+            UriHelper.BuildAbsolute(httpContext.Request.Scheme, httpContext.Request.Host, httpContext.Request.PathBase, "/payment/result/payfast")
+            + $"?merchantTransactionId={Uri.EscapeDataString(request.TransactionId)}";
 
         var fields = new List<KeyValuePair<string, string>>
         {
@@ -108,14 +114,40 @@ public class PayfastProvider(IPaymentOptionsAccessor<PayfastOptions> optionsAcce
                 dataDict[kvp.Key] = kvp.Value;
             }
 
+            var options = await RequireOptionsAsync(context.RequestAborted);
+
             if (!dataDict.TryGetValue("signature", out var receivedSignature) || string.IsNullOrEmpty(receivedSignature))
             {
+                // The PayFast sandbox simulator redirects the shopper back to the return URL without
+                // appending the signed fields. Accept a bare return only against the sandbox: it moves
+                // no real money, and the verified ITN remains the authoritative capture. Production
+                // returns are always signed, so a bare return there is still rejected.
+                if (isGetRequest && IsSandboxBaseUrl(options.BaseUrl))
+                {
+                    if (!dataDict.TryGetValue("merchantTransactionId", out var sandboxTransactionId) || string.IsNullOrEmpty(sandboxTransactionId))
+                    {
+                        return FailedResult("Missing m_payment_id in ITN payload.");
+                    }
+
+                    return new PaymentResult
+                    {
+                        Success = true,
+                        TransactionId = sandboxTransactionId,
+                        EventType = "payment.captured",
+                        Status = "COMPLETE",
+                        Metadata = new Dictionary<string, string>(StringComparer.Ordinal) { ["provider"] = ProviderName },
+                    };
+                }
+
                 return FailedResult("Missing signature in ITN payload.");
             }
 
-            var signatureParameters = orderedParams.Where(kvp => !string.Equals(kvp.Key, "signature", StringComparison.OrdinalIgnoreCase));
+            // merchantTransactionId is appended to the return URL by this provider (see
+            // ProcessPaymentAsync) and is not part of the fields PayFast signs.
+            var signatureParameters = orderedParams
+                .Where(kvp => !string.Equals(kvp.Key, "signature", StringComparison.OrdinalIgnoreCase))
+                .Where(kvp => !string.Equals(kvp.Key, "merchantTransactionId", StringComparison.OrdinalIgnoreCase));
 
-            var options = await RequireOptionsAsync(context.RequestAborted);
             var expectedSignature = CalculateSignature(signatureParameters, options.Passphrase);
 
             if (!string.Equals(receivedSignature, expectedSignature, StringComparison.OrdinalIgnoreCase))
@@ -139,6 +171,12 @@ public class PayfastProvider(IPaymentOptionsAccessor<PayfastOptions> optionsAcce
             }
 
             if (!dataDict.TryGetValue("m_payment_id", out var transactionId) || string.IsNullOrEmpty(transactionId))
+            {
+                // The return URL carries the merchant transaction ID even when PayFast appends nothing.
+                dataDict.TryGetValue("merchantTransactionId", out transactionId);
+            }
+
+            if (string.IsNullOrEmpty(transactionId))
             {
                 return FailedResult("Missing m_payment_id in ITN payload.");
             }
@@ -184,6 +222,11 @@ public class PayfastProvider(IPaymentOptionsAccessor<PayfastOptions> optionsAcce
             return string.Empty;
         var encoded = HttpUtility.UrlEncode(value);
         return Regex.Replace(encoded, @"%[0-9a-f]{2}", m => m.Value.ToUpperInvariant());
+    }
+
+    private static bool IsSandboxBaseUrl(string baseUrl)
+    {
+        return baseUrl.Contains("sandbox.payfast.co.za", StringComparison.OrdinalIgnoreCase);
     }
 
     private async Task<bool> VerifyWithPayfastAsync(Dictionary<string, string> itnData, CancellationToken ct)

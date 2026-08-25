@@ -9,7 +9,7 @@ namespace UnitTests.Payments;
 
 public class PayfastProviderReturnTests
 {
-    private static readonly PayfastOptions Options = new()
+    private static readonly PayfastOptions SandboxOptions = new()
     {
         MerchantId = "10000100",
         MerchantKey = "46f0cd694581a",
@@ -20,9 +20,20 @@ public class PayfastProviderReturnTests
         NotifyUrl = "http://localhost:5000/payment/result/payfast",
     };
 
-    private static PayfastProvider CreateProvider(HttpContext httpContext)
+    private static readonly PayfastOptions ProductionOptions = new()
     {
-        return new PayfastProvider(new FakeOptionsAccessor(Options), new FakeHttpContextAccessor(httpContext), new HttpClient());
+        MerchantId = "10000100",
+        MerchantKey = "46f0cd694581a",
+        Passphrase = "jt7NOE43FZPn",
+        BaseUrl = "https://www.payfast.co.za/eng/process",
+        ReturnUrl = "http://localhost:5173/payment/success",
+        CancelUrl = "http://localhost:5173/payment/cancelled",
+        NotifyUrl = "http://localhost:5000/payment/result/payfast",
+    };
+
+    private static PayfastProvider CreateProvider(HttpContext httpContext, PayfastOptions? options = null)
+    {
+        return new PayfastProvider(new FakeOptionsAccessor(options ?? SandboxOptions), new FakeHttpContextAccessor(httpContext), new HttpClient());
     }
 
     [Fact]
@@ -47,12 +58,14 @@ public class PayfastProviderReturnTests
         );
 
         // Assert - the browser return must hit the API result endpoint (which verifies the signed
-        // fields and marks the booking paid) instead of a page that never syncs the booking.
+        // fields and marks the booking paid) instead of a page that never syncs the booking. The
+        // transaction ID is carried on the return URL so the payment stays identifiable even when
+        // PayFast redirects back without appending its signed fields (sandbox simulator).
         Assert.True(response.Success);
-        Assert.Equal("http://localhost:5000/payment/result/payfast", response.FormFields!["return_url"]);
+        Assert.Equal("http://localhost:5000/payment/result/payfast?merchantTransactionId=txn-123", response.FormFields!["return_url"]);
         Assert.Equal("txn-123", response.FormFields["m_payment_id"]);
-        Assert.Equal(Options.NotifyUrl, response.FormFields["notify_url"]);
-        Assert.Equal(Options.CancelUrl, response.FormFields["cancel_url"]);
+        Assert.Equal(SandboxOptions.NotifyUrl, response.FormFields["notify_url"]);
+        Assert.Equal(SandboxOptions.CancelUrl, response.FormFields["cancel_url"]);
     }
 
     [Fact]
@@ -67,7 +80,7 @@ public class PayfastProviderReturnTests
             ["payment_status"] = "COMPLETE",
             ["amount_gross"] = "100.00",
         };
-        fields["signature"] = ComputeSignature(fields, Options.Passphrase);
+        fields["signature"] = ComputeSignature(fields, SandboxOptions.Passphrase);
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Method = "GET";
@@ -95,7 +108,7 @@ public class PayfastProviderReturnTests
             ["payment_status"] = "PENDING",
             ["amount_gross"] = "100.00",
         };
-        fields["signature"] = ComputeSignature(fields, Options.Passphrase);
+        fields["signature"] = ComputeSignature(fields, SandboxOptions.Passphrase);
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Method = "GET";
@@ -126,6 +139,74 @@ public class PayfastProviderReturnTests
         // Assert
         Assert.False(result.Success);
         Assert.Equal("webhook.error", result.EventType);
+    }
+
+    [Fact]
+    public async Task ProcessResponseAsync_GetReturnWithoutSignature_Sandbox_IsTreatedAsCaptured()
+    {
+        // Arrange - the PayFast sandbox simulator redirects back to the return URL with no signed
+        // fields; only the merchantTransactionId this provider appended is present.
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Method = "GET";
+        httpContext.Request.QueryString = new QueryString("?merchantTransactionId=txn-123");
+        var provider = CreateProvider(httpContext, SandboxOptions);
+
+        // Act
+        var result = await provider.ProcessResponseAsync(httpContext);
+
+        // Assert - the sandbox cannot move real money, so the return is accepted as captured so the
+        // booking gets marked paid in the local POC.
+        Assert.True(result.Success);
+        Assert.Equal("txn-123", result.TransactionId);
+        Assert.Equal("payment.captured", result.EventType);
+    }
+
+    [Fact]
+    public async Task ProcessResponseAsync_GetReturnWithoutSignature_Production_IsRejected()
+    {
+        // Arrange - against production credentials a bare return must never mark a payment captured:
+        // production PayFast always signs the return fields.
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Method = "GET";
+        httpContext.Request.QueryString = new QueryString("?merchantTransactionId=txn-123");
+        var provider = CreateProvider(httpContext, ProductionOptions);
+
+        // Act
+        var result = await provider.ProcessResponseAsync(httpContext);
+
+        // Assert
+        Assert.False(result.Success);
+        Assert.Equal("Missing signature in ITN payload.", result.Metadata?["error"]);
+    }
+
+    [Fact]
+    public async Task ProcessResponseAsync_GetReturnWithSignature_ExcludesAppendedMerchantTransactionIdFromSignature()
+    {
+        // Arrange - a signed browser return exactly as PayFast appends it to the return URL, with
+        // the merchantTransactionId this provider appended to the return URL also present. The
+        // signature must still verify because PayFast never signs that extra parameter.
+        var fields = new Dictionary<string, string>
+        {
+            ["merchantTransactionId"] = "txn-123",
+            ["m_payment_id"] = "txn-123",
+            ["pf_payment_id"] = "pf-456",
+            ["payment_status"] = "COMPLETE",
+            ["amount_gross"] = "100.00",
+        };
+        var signed = fields.Where(kvp => kvp.Key != "merchantTransactionId").ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        fields["signature"] = ComputeSignature(signed, SandboxOptions.Passphrase);
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Method = "GET";
+        httpContext.Request.QueryString = new QueryString("?" + string.Join("&", fields.Select(kvp => $"{kvp.Key}={kvp.Value}")));
+        var provider = CreateProvider(httpContext, SandboxOptions);
+
+        // Act
+        var result = await provider.ProcessResponseAsync(httpContext);
+
+        // Assert
+        Assert.True(result.Success);
+        Assert.Equal("txn-123", result.TransactionId);
     }
 
     private static string ComputeSignature(Dictionary<string, string> fields, string passphrase)
