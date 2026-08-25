@@ -90,7 +90,7 @@
 				{/each}
 			</div>
 		{/if}
-		<div class={cn("flex w-full items-center justify-center py-1", slot.bookings.length > 0 && "border-t pt-2")}>
+		<div class={cn("flex w-full items-center justify-center py-1")}>
 			{#if available > 0 && slot.isEnabled}
 				<Button variant="outline" onclick={bookSlot}>
 					<ChevronRightIcon /> Book

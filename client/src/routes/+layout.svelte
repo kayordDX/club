@@ -5,6 +5,7 @@
 	import { Toaster, toast } from "svelte-sonner";
 	import { setUserContext } from "$lib/auth";
 	import PageBoundary from "$lib/components/PageBoundary.svelte";
+	import { Tooltip } from "@kayord/ui";
 
 	let { children, data } = $props();
 
@@ -28,5 +29,7 @@
 <Toaster onclick={handleToasterClick} />
 
 <PageBoundary>
-	{@render children?.()}
+	<Tooltip.Provider>
+		{@render children?.()}
+	</Tooltip.Provider>
 </PageBoundary>

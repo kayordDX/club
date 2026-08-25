@@ -35,3 +35,4 @@ run = "dotnet ef migrations remove --project Club.Api/Club.Api.csproj -c ${usage
 
 [tools]
 "dotnet:csharpier" = "latest"
+aspire = "latest"
