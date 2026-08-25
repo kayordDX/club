@@ -8,6 +8,7 @@
 	import { cn } from "@kayord/ui/utils";
 	import { createSearchParamsSchema, useSearchParams } from "runed/kit";
 	import { slotGetAll } from "$lib/api/remote/slot.remote";
+	import { adminSlotGetAll } from "$lib/api/remote/admin.remote";
 	import { hasRoles } from "$lib/auth";
 	import Slots from "./Slots.svelte";
 	import PageBoundary from "$lib/components/PageBoundary.svelte";
@@ -34,13 +35,13 @@
 		params.date = value.add({ days: incrementValue }).toString();
 	};
 
-	// Slots are stored against UTC calendar dates, so query the start of the
-	// selected date in UTC (not the local time zone, which would shift the day).
+	// Facility managers see the same day's slots, but rendered as admin cards that
+	// list who booked each slot (players + status) instead of the public pricing UI.
+	const isAdmin = $derived(hasRoles("MANAGER"));
 	const slots = $derived(
-		slotGetAll({
-			facilityId: Number(page.params.id),
-			date: value.toDate("UTC").toISOString(),
-		})
+		isAdmin
+			? adminSlotGetAll({ facilityId: Number(page.params.id), params: { date: value.toDate("UTC").toISOString() } })
+			: slotGetAll({ facilityId: Number(page.params.id), date: value.toDate("UTC").toISOString() })
 	);
 </script>
 
@@ -105,7 +106,7 @@
 				<Skeleton class="h-25 w-full" />
 			</div>
 		{:else}
-			<Slots slots={await slots} selectedDate={value.toString()} refetch={() => slots.refresh()} />
+			<Slots slots={await slots} selectedDate={value.toString()} refetch={() => slots.refresh()} {isAdmin} />
 		{/if}
 	</PageBoundary>
 </div>

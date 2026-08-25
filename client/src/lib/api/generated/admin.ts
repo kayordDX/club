@@ -8,6 +8,8 @@ import type {
 	AdminBookingGetAllParams,
 	AdminBookingUpdateRequest,
 	AdminBookingUpdateStatusRequest,
+	AdminSlotGetAllParams,
+	AdminSlotGetAllResponse,
 	BookingDTO,
 	InternalErrorResponse,
 	PaginatedListOfAdminBookingDTO,
@@ -217,4 +219,59 @@ export const adminBookingGetAll = async (facilityId: number, params?: AdminBooki
 
 	const data: adminBookingGetAllResponse["data"] = body ? JSON.parse(body) : {};
 	return { data, status: res.status, headers: res.headers } as adminBookingGetAllResponse;
+};
+
+export type adminSlotGetAllResponse200 = {
+	data: AdminSlotGetAllResponse[];
+	status: 200;
+};
+
+export type adminSlotGetAllResponse401 = {
+	data: void;
+	status: 401;
+};
+
+export type adminSlotGetAllResponse403 = {
+	data: void;
+	status: 403;
+};
+
+export type adminSlotGetAllResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
+
+export type adminSlotGetAllResponseSuccess = adminSlotGetAllResponse200 & {
+	headers: Headers;
+};
+export type adminSlotGetAllResponseError = (adminSlotGetAllResponse401 | adminSlotGetAllResponse403 | adminSlotGetAllResponse500) & {
+	headers: Headers;
+};
+
+export type adminSlotGetAllResponse = adminSlotGetAllResponseSuccess | adminSlotGetAllResponseError;
+
+export const getAdminSlotGetAllUrl = (facilityId: number, params?: AdminSlotGetAllParams) => {
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : String(value));
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0 ? `/admin/facility/${facilityId}/slot?${stringifiedParams}` : `/admin/facility/${facilityId}/slot`;
+};
+
+export const adminSlotGetAll = async (facilityId: number, params?: AdminSlotGetAllParams, options?: RequestInit): Promise<adminSlotGetAllResponse> => {
+	const res = await fetch(getAdminSlotGetAllUrl(facilityId, params), {
+		...options,
+		method: "GET",
+	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: adminSlotGetAllResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as adminSlotGetAllResponse;
 };

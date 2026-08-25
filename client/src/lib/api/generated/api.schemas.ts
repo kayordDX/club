@@ -811,6 +811,32 @@ export interface PaginatedListOfAdminBookingDTO {
 	hasNextPage: boolean;
 }
 
+export interface AdminSlotBookingDTO {
+	bookingId: number;
+	/** @nullable */
+	playerName?: string | null;
+	bookingStatusId: number;
+	bookingStatusName: string;
+}
+
+export interface AdminSlotGetAllResponse {
+	id: string;
+	/** @nullable */
+	resourceName?: string | null;
+	startDatetime: string;
+	/** @nullable */
+	endDatetime?: string | null;
+	booked: number;
+	total: number;
+	isEnabled: boolean;
+	isAvailable: boolean;
+	bookings: AdminSlotBookingDTO[];
+}
+
+export type AdminSlotGetAllParams = {
+	date: string;
+};
+
 export interface AccountSyncRequest {
 	force: boolean;
 }

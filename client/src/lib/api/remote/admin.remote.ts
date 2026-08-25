@@ -5,7 +5,7 @@
 import { query, command } from "$app/server";
 import { z } from "zod";
 import * as api from "$lib/server/api/generated/admin";
-import { AdminBookingGetAllQueryParams, AdminBookingUpdateBody, AdminBookingUpdateStatusBody } from "$lib/server/api/schemas/admin";
+import { AdminBookingGetAllQueryParams, AdminBookingUpdateBody, AdminBookingUpdateStatusBody, AdminSlotGetAllQueryParams } from "$lib/server/api/schemas/admin";
 
 export const adminBookingUpdateStatus = command(
 	z.object({ facilityId: z.number().int(), id: z.number().int(), body: AdminBookingUpdateStatusBody }),
@@ -21,4 +21,7 @@ export const adminBookingGet = query(z.object({ facilityId: z.number().int(), id
 export const adminBookingGetAll = query(
 	z.object({ facilityId: z.number().int(), params: AdminBookingGetAllQueryParams.optional() }),
 	async ({ facilityId, params }) => api.adminBookingGetAll(facilityId, params)
+);
+export const adminSlotGetAll = query(z.object({ facilityId: z.number().int(), params: AdminSlotGetAllQueryParams }), async ({ facilityId, params }) =>
+	api.adminSlotGetAll(facilityId, params)
 );
