@@ -12,12 +12,16 @@ internal static class PaymentResultHandler
 {
     public static async Task HandleAsync(HttpContext httpContext, IPaymentFactory paymentFactory, ILogger logger, CancellationToken ct)
     {
+        // The GET verb is always the shopper's browser return — it must never receive raw JSON.
+        // The POST verb is the gateway's ITN/webhook, which keeps the JSON contract below.
+        var isGetRequest = string.Equals(httpContext.Request.Method, HttpMethods.Get, StringComparison.OrdinalIgnoreCase);
+
         var providerName = httpContext.Request.RouteValues["provider"]?.ToString();
 
         if (string.IsNullOrWhiteSpace(providerName))
         {
             logger.LogWarning("Webhook received with empty provider name.");
-            await SendBadRequestAsync(httpContext, ct);
+            await SendInvalidRequestAsync(httpContext, "Payment provider is missing.", isGetRequest, ct);
             return;
         }
 
@@ -29,7 +33,7 @@ internal static class PaymentResultHandler
         catch (InvalidOperationException ex)
         {
             logger.LogWarning("Webhook received for unknown provider '{Provider}': {Message}", providerName, ex.Message);
-            await SendBadRequestAsync(httpContext, ct);
+            await SendInvalidRequestAsync(httpContext, $"Unknown payment provider '{providerName}'.", isGetRequest, ct);
             return;
         }
 
@@ -43,14 +47,14 @@ internal static class PaymentResultHandler
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to extract transaction ID from {Provider} webhook payload.", providerName);
-            await SendBadRequestAsync(httpContext, ct);
+            await SendInvalidRequestAsync(httpContext, "Failed to read the payment notification.", isGetRequest, ct);
             return;
         }
 
         if (string.IsNullOrWhiteSpace(transactionId))
         {
             logger.LogWarning("No transaction ID could be extracted from {Provider} webhook payload.", providerName);
-            await SendBadRequestAsync(httpContext, ct);
+            await SendInvalidRequestAsync(httpContext, "No transaction ID was provided.", isGetRequest, ct);
             return;
         }
 
@@ -117,7 +121,6 @@ internal static class PaymentResultHandler
                 );
             }
 
-            var isGetRequest = string.Equals(httpContext.Request.Method, "GET", StringComparison.OrdinalIgnoreCase);
             if (isGetRequest)
             {
                 var configuration = httpContext.RequestServices.GetRequiredService<IConfiguration>();
@@ -176,6 +179,12 @@ internal static class PaymentResultHandler
                     null,
                     ct
                 );
+            }
+
+            if (isGetRequest)
+            {
+                await SendInvalidRequestAsync(httpContext, "Payment processing failed. Please try again.", isGetRequest: true, ct);
+                return;
             }
 
             httpContext.Response.StatusCode = StatusCodes.Status200OK;
@@ -346,8 +355,24 @@ internal static class PaymentResultHandler
         return extractedId ?? string.Empty;
     }
 
-    private static async Task SendBadRequestAsync(HttpContext context, CancellationToken ct)
+    private static async Task SendInvalidRequestAsync(HttpContext context, string error, bool isGetRequest, CancellationToken ct)
     {
+        if (isGetRequest)
+        {
+            // The shopper's browser lands here on the payment return — never surface raw JSON.
+            // Redirect straight to the frontend failure page (with the reason) instead.
+            var configuration = context.RequestServices.GetRequiredService<IConfiguration>();
+            var frontendBaseUrl = configuration["Payment:FrontendBaseUrl"] ?? "http://localhost:5173";
+
+            var redirectUrl = $"{frontendBaseUrl.TrimEnd('/')}/payment/failure?error={Uri.EscapeDataString(error)}";
+
+            context.Response.StatusCode = StatusCodes.Status302Found;
+            context.Response.Headers.Location = redirectUrl;
+            context.Response.ContentLength = 0;
+            await context.Response.StartAsync(ct);
+            return;
+        }
+
         context.Response.StatusCode = StatusCodes.Status400BadRequest;
         await context.Response.WriteAsJsonAsync(new { Success = false, Error = "Invalid webhook request." }, cancellationToken: ct);
     }
