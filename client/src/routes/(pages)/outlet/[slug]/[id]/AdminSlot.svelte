@@ -70,7 +70,7 @@
 		{#if slot.bookings.length > 0}
 			<div class="flex w-full flex-col gap-1.5">
 				<div class="text-muted-foreground text-xs">Booked {slot.booked} of {slot.total}</div>
-				{#each slot.bookings as booking (booking.bookingId)}
+				{#each slot.bookings as booking (booking)}
 					<div class="flex items-center justify-between gap-2 rounded-md border p-2">
 						<div class="flex min-w-0 items-center gap-2">
 							<span class="truncate font-medium">{booking.playerName ?? "—"}</span>
