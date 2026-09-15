@@ -15,6 +15,8 @@ public class PayfastProvider(IPaymentOptionsAccessor<PayfastOptions> optionsAcce
 
     public string ProviderName => "payfast";
 
+    public bool SupportsRecurring => true;
+
     public async Task<PaymentResponse> ProcessPaymentAsync(PaymentRequest request, CancellationToken ct)
     {
         var options = await RequireOptionsAsync(ct);

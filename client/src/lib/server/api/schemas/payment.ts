@@ -23,10 +23,15 @@ export const PaymentInitiateBody = zod.object({
 	providerName: zod.string(),
 	recurring: zod
 		.object({
-			frequency: zod.union([zod.literal(3), zod.literal(4), zod.literal(5), zod.literal(6)]),
+			frequency: zod.enum({
+				Monthly: 3,
+				Quarterly: 4,
+				Biannually: 5,
+				Annually: 6,
+			}),
 			cycles: zod.int(),
 			recurringAmount: zod.number().nullish(),
-			firstBillingDate: zod.string().nullish(),
+			firstBillingDate: zod.iso.date().nullish(),
 		})
 		.nullish(),
 });

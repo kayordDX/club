@@ -22,6 +22,14 @@ public class PaymentInitiateValidator : AbstractValidator<PaymentInitiateRequest
                     .GreaterThan(0)
                     .When(x => x.Recurring!.RecurringAmount.HasValue)
                     .WithMessage("Recurring amount must be greater than zero.");
+
+                // PayFast rejects a billing_date in the past at gateway time; catch it here as a clean
+                // 400 instead. Day-granularity against UTC is intentional (SAST leads UTC by 2h, so the
+                // guard is never tighter than a day).
+                RuleFor(x => x.Recurring!.FirstBillingDate)
+                    .GreaterThanOrEqualTo(_ => DateOnly.FromDateTime(DateTime.UtcNow))
+                    .When(x => x.Recurring!.FirstBillingDate.HasValue)
+                    .WithMessage("First billing date cannot be in the past.");
             }
         );
     }

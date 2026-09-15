@@ -103,16 +103,10 @@ export interface PaymentInitiateRecurring {
 	firstBillingDate?: string | null;
 }
 
-/**
- * @nullable
- */
-export type PaymentInitiateRequestRecurring = PaymentInitiateRecurring | null;
-
 export interface PaymentInitiateRequest {
 	bookingId: number;
 	providerName: string;
-	/** @nullable */
-	recurring?: PaymentInitiateRequestRecurring;
+	recurring?: PaymentInitiateRecurring | null;
 }
 
 /**
