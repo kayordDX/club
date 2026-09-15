@@ -47,6 +47,23 @@ public class PayfastProvider(IPaymentOptionsAccessor<PayfastOptions> optionsAcce
             new("item_name", request.Description ?? "Club payment"),
         };
 
+        // Opt-in recurring billing: when the request carries recurring intent, append Payfast's
+        // subscription fields before the signature is calculated so they are covered by it. When
+        // request.Recurring is null this block is skipped entirely and the signed field set is
+        // byte-for-byte identical to the existing once-off payment.
+        if (request.Recurring is not null)
+        {
+            var recurring = request.Recurring;
+            var billingDate = recurring.FirstBillingDate ?? DateOnly.FromDateTime(DateTime.UtcNow);
+            var recurringAmount = recurring.RecurringAmount ?? request.Amount;
+
+            fields.Add(new("subscription_type", "1"));
+            fields.Add(new("billing_date", billingDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)));
+            fields.Add(new("recurring_amount", recurringAmount.ToString("F2", CultureInfo.InvariantCulture)));
+            fields.Add(new("frequency", ((int)recurring.Frequency).ToString(CultureInfo.InvariantCulture)));
+            fields.Add(new("cycles", recurring.Cycles.ToString(CultureInfo.InvariantCulture)));
+        }
+
         var signature = CalculateSignature(fields, options.Passphrase);
 
         var allFields = new Dictionary<string, string>(fields.Count + 1);

@@ -97,6 +97,15 @@ public class Endpoint(AppDbContext dbContext, IPaymentFactory paymentFactory, Pa
             Currency = "ZAR",
             TransactionId = transactionId,
             Description = $"Booking #{booking.Id}",
+            Recurring = req.Recurring is null
+                ? null
+                : new PaymentRecurring
+                {
+                    Frequency = req.Recurring.Frequency,
+                    Cycles = req.Recurring.Cycles,
+                    RecurringAmount = req.Recurring.RecurringAmount,
+                    FirstBillingDate = req.Recurring.FirstBillingDate,
+                },
         };
 
         var result = await provider.ProcessPaymentAsync(paymentRequest, ct);

@@ -21,6 +21,14 @@ export const PaymentResultPostResponse = zod.void();
 export const PaymentInitiateBody = zod.object({
 	bookingId: zod.int(),
 	providerName: zod.string(),
+	recurring: zod
+		.object({
+			frequency: zod.union([zod.literal(3), zod.literal(4), zod.literal(5), zod.literal(6)]),
+			cycles: zod.int(),
+			recurringAmount: zod.number().nullish(),
+			firstBillingDate: zod.string().nullish(),
+		})
+		.nullish(),
 });
 
 export const PaymentInitiateResponse = zod.object({
