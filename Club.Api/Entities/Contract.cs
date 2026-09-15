@@ -9,8 +9,6 @@ public class Contract : AuditableEntity
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public bool IsActive { get; set; }
-
-    /// <summary>When false, only users with a valid UserContract for this contract may book it.</summary>
     public bool IsPublic { get; set; }
 
     public ICollection<ContractFacility> ContractFacilities { get; set; } = [];
