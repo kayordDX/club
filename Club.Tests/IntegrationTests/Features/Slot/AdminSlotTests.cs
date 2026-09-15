@@ -223,7 +223,7 @@ public class AdminSlotTests(AppFixture app)
         };
         db.Slot.Add(slot);
 
-        var contract = new Contract { Name = $"Contract_{Guid.NewGuid()}" };
+        var contract = new Contract { Name = $"Contract_{Guid.NewGuid()}", IsPublic = true };
         db.Contract.Add(contract);
         db.ContractFacility.Add(new ContractFacility { Contract = contract, Facility = facility });
         await db.SaveChangesAsync();

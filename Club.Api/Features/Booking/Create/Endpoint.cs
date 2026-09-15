@@ -2,6 +2,7 @@ using Club.Common;
 using Club.Common.Config;
 using Club.Common.Enums;
 using Club.Data;
+using Club.Features.Booking.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -36,13 +37,25 @@ public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : E
 
         var slotContractIds = req.Bookings.Select(b => b.SlotContractId).Distinct().ToList();
 
-        var slotContracts = await _dbContext.SlotContract.Include(sc => sc.Slot).Where(sc => slotContractIds.Contains(sc.Id)).ToListAsync(ct);
+        var slotContracts = await _dbContext
+            .SlotContract.Include(sc => sc.Slot)
+            .Include(sc => sc.Contract)
+            .Where(sc => slotContractIds.Contains(sc.Id))
+            .ToListAsync(ct);
+
+        var userContracts = await _dbContext.UserContract.Where(uc => uc.UserId == userId && uc.IsActive).ToListAsync(ct);
 
         foreach (var bookingReq in req.Bookings)
         {
             var sc = slotContracts.FirstOrDefault(sc => sc.Id == bookingReq.SlotContractId && sc.SlotId == bookingReq.SlotId);
             if (sc is null)
+            {
                 AddError(r => r.Bookings, $"SlotContract {bookingReq.SlotContractId} not found for slot {bookingReq.SlotId}.");
+                continue;
+            }
+
+            if (!ContractEligibility.IsAllowed(sc.Contract, sc.Slot.StartDatetime, userContracts))
+                AddError(r => r.Bookings, $"Contract {sc.Contract.Name} is not available to you for slot {bookingReq.SlotId}.");
         }
 
         if (ValidationFailed)

@@ -44,7 +44,7 @@ public class CreateBookingTests(AppFixture app)
         };
         db.Slot.Add(slot);
 
-        var contract = new Contract { Name = $"Contract_{Guid.NewGuid()}" };
+        var contract = new Contract { Name = $"Contract_{Guid.NewGuid()}", IsPublic = true };
         db.Contract.Add(contract);
         db.ContractFacility.Add(new ContractFacility { Contract = contract, Facility = facility });
         await db.SaveChangesAsync(app.Context.CancellationToken);
@@ -116,6 +116,141 @@ public class CreateBookingTests(AppFixture app)
         bookingDto.ExtraBookings.ShouldHaveSingleItem();
         bookingDto.ExtraBookings.Single().ExtraId.ShouldBe(extra.Id);
         bookingDto.ExtraBookings.Single().Amount.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task CreateBooking_WithRestrictedContractAndNoUserContract_IsRejected()
+    {
+        // Arrange
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var (slot, slotContract, _) = await CreateSlotWithContract(db, isPublic: false);
+
+        var request = new BookingCreateRequest { Bookings = [CreateBookingRequest(slot.Id, slotContract.Id)], Extras = [] };
+
+        // Act
+        var (createResponse, _) = await app.Client.POSTAsync<BookingCreateEndpoint, BookingCreateRequest, BookingCreateResponse>(request);
+
+        // Assert
+        createResponse.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task CreateBooking_WithRestrictedContractAndValidUserContract_Succeeds()
+    {
+        // Arrange
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var (slot, slotContract, _) = await CreateSlotWithContract(db, isPublic: false);
+        await CreateUserContract(db, slotContract.ContractId, startOffsetDays: 0, endOffsetDays: 7);
+
+        var request = new BookingCreateRequest { Bookings = [CreateBookingRequest(slot.Id, slotContract.Id)], Extras = [] };
+
+        // Act
+        var (createResponse, createdBooking) = await app.Client.POSTAsync<BookingCreateEndpoint, BookingCreateRequest, BookingCreateResponse>(request);
+
+        // Assert
+        createResponse.IsSuccessStatusCode.ShouldBeTrue();
+        createdBooking.Id.ShouldBeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task CreateBooking_WithRestrictedContractAndUserContractNotCoveringSlotDate_IsRejected()
+    {
+        // Arrange — the UserContract has already ended by the slot's date
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var (slot, slotContract, _) = await CreateSlotWithContract(db, isPublic: false);
+        await CreateUserContract(db, slotContract.ContractId, startOffsetDays: -7, endOffsetDays: -1);
+
+        var request = new BookingCreateRequest { Bookings = [CreateBookingRequest(slot.Id, slotContract.Id)], Extras = [] };
+
+        // Act
+        var (createResponse, _) = await app.Client.POSTAsync<BookingCreateEndpoint, BookingCreateRequest, BookingCreateResponse>(request);
+
+        // Assert
+        createResponse.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    private static BookingRequest CreateBookingRequest(Guid slotId, int slotContractId) =>
+        new()
+        {
+            SlotId = slotId,
+            SlotContractId = slotContractId,
+            Name = "Jaco Taute",
+            Email = "jaco@example.com",
+            Cellphone = "0842502311",
+        };
+
+    private async Task<(Club.Entities.Slot Slot, SlotContract SlotContract, int FacilityId)> CreateSlotWithContract(AppDbContext db, bool isPublic)
+    {
+        var outlet = await CreateOutlet(db);
+        var facilityTypeId = await CreateFacilityType(db);
+
+        var facility = new Facility
+        {
+            Name = $"Contract Facility_{Guid.NewGuid()}",
+            Outlet = outlet,
+            OutletId = outlet.Id,
+            FacilityTypeId = facilityTypeId,
+            IsActive = true,
+        };
+        db.Facility.Add(facility);
+        await db.SaveChangesAsync(app.Context.CancellationToken);
+
+        var slot = new Club.Entities.Slot
+        {
+            Id = Guid.NewGuid(),
+            FacilityId = facility.Id,
+            StartDatetime = DateTime.UtcNow.AddDays(1),
+            EndDatetime = DateTime.UtcNow.AddDays(1).AddHours(1),
+            MaxBookings = 4,
+        };
+        db.Slot.Add(slot);
+
+        var contract = new Contract { Name = $"Contract_{Guid.NewGuid()}", IsPublic = isPublic };
+        db.Contract.Add(contract);
+        db.ContractFacility.Add(new ContractFacility { Contract = contract, Facility = facility });
+        await db.SaveChangesAsync(app.Context.CancellationToken);
+
+        var slotContract = new SlotContract
+        {
+            SlotId = slot.Id,
+            Slot = slot,
+            ContractId = contract.Id,
+            Contract = contract,
+            Price = 100m,
+            CanPayLater = false,
+            Description = "Member 18 Holes",
+        };
+        db.SlotContract.Add(slotContract);
+        await db.SaveChangesAsync(app.Context.CancellationToken);
+
+        return (slot, slotContract, facility.Id);
+    }
+
+    private async Task<UserContract> CreateUserContract(AppDbContext db, int contractId, int startOffsetDays, int endOffsetDays)
+    {
+        var user = await db.Users.FirstAsync(u => u.Id == TestClaims.UserIdGuid, app.Context.CancellationToken);
+
+        var userContract = new UserContract
+        {
+            ContractId = contractId,
+            Contract = db.Contract.First(c => c.Id == contractId),
+            StartDate = DateTime.UtcNow.AddDays(startOffsetDays),
+            EndDate = DateTime.UtcNow.AddDays(endOffsetDays),
+            Price = 80m,
+            IsActive = true,
+            UserId = TestClaims.UserIdGuid,
+            User = user,
+        };
+        db.UserContract.Add(userContract);
+        await db.SaveChangesAsync(app.Context.CancellationToken);
+
+        return userContract;
     }
 
     private async Task<int> CreateFacilityType(AppDbContext db)
