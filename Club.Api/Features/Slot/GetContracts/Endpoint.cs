@@ -1,3 +1,4 @@
+using Club.Common;
 using Club.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,8 +17,25 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetContractsRequest
 
     public override async Task HandleAsync(SlotGetContractsRequest req, CancellationToken ct)
     {
+        var userId = Helpers.GetCurrentUserId(HttpContext);
+
         var slotContracts = await _dbContext
             .SlotContract.Where(sc => sc.SlotId == req.Id)
+            // Anonymous and guest users only see public contracts; logged-in users also
+            // see contracts they hold a UserContract for that is valid on the slot's date.
+            .Where(sc =>
+                sc.Contract.IsPublic
+                || (
+                    userId != null
+                    && _dbContext.UserContract.Any(uc =>
+                        uc.UserId == userId
+                        && uc.ContractId == sc.ContractId
+                        && uc.IsActive
+                        && uc.StartDate.Date <= sc.Slot.StartDatetime.Date
+                        && (uc.EndDate == null || sc.Slot.StartDatetime.Date <= uc.EndDate.Value.Date)
+                    )
+                )
+            )
             .Select(sc => new SlotGetContractsResponse
             {
                 Id = sc.Id,

@@ -9,5 +9,6 @@ public class ContractEntityConfig : IEntityTypeConfiguration<Contract>
     public void Configure(EntityTypeBuilder<Contract> builder)
     {
         builder.Property(c => c.Name).HasMaxLength(250).IsRequired();
+        builder.Property(c => c.IsPublic).HasDefaultValue(false);
     }
 }
