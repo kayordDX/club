@@ -11,6 +11,7 @@ using AdminContractCreateEndpoint = Club.Features.Admin.Contract.Create.Endpoint
 using AdminContractDeleteEndpoint = Club.Features.Admin.Contract.Delete.Endpoint;
 using AdminContractGetAllEndpoint = Club.Features.Admin.Contract.GetAll.Endpoint;
 using AdminContractGetEndpoint = Club.Features.Admin.Contract.Get.Endpoint;
+using AdminContractGetMembersEndpoint = Club.Features.Admin.Contract.GetMembers.Endpoint;
 using AdminContractUpdateEndpoint = Club.Features.Admin.Contract.Update.Endpoint;
 
 namespace IntegrationTests.Features.Contracts;
@@ -178,6 +179,59 @@ public class AdminContractTests(AppFixture app)
         // Assert - in-use contracts are protected from deletion
         response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
         (await db.Contract.AnyAsync(c => c.Id == contract.Id)).ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task AdminContractGetMembers_ReturnsMembersWithTheContract()
+    {
+        // Arrange
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var facilityId = await CreateFacility(db);
+        await AssignManagerRole(db, facilityId);
+        var contract = await CreateContract(db, facilityId, "Members");
+        var otherContract = await CreateContract(db, facilityId, "Other");
+        var member = await db.Users.FirstAsync(u => u.Id == TestClaims.UserIdGuid);
+
+        db.UserContract.AddRange(
+            new UserContract
+            {
+                Contract = contract,
+                ContractId = contract.Id,
+                User = member,
+                UserId = member.Id,
+                StartDate = DateTime.UtcNow.Date,
+                EndDate = DateTime.UtcNow.Date.AddYears(1),
+                Price = 1200m,
+                IsActive = true,
+            },
+            new UserContract
+            {
+                Contract = otherContract,
+                ContractId = otherContract.Id,
+                User = member,
+                UserId = member.Id,
+                StartDate = DateTime.UtcNow.Date,
+                Price = 600m,
+                IsActive = true,
+            }
+        );
+        await db.SaveChangesAsync();
+
+        // Act
+        var (response, members) = await app.Client.GETAsync<
+            AdminContractGetMembersEndpoint,
+            Club.Features.Admin.Contract.GetMembers.AdminContractGetMembersRequest,
+            List<AdminContractMemberDTO>
+        >(new Club.Features.Admin.Contract.GetMembers.AdminContractGetMembersRequest { FacilityId = facilityId, Id = contract.Id });
+
+        // Assert
+        response.IsSuccessStatusCode.ShouldBeTrue();
+        members.ShouldHaveSingleItem();
+        members[0].FirstName.ShouldBe("Test");
+        members[0].LastName.ShouldBe("User");
+        members[0].Email.ShouldBe("test@example.com");
+        members[0].IsActive.ShouldBeTrue();
     }
 
     [Fact]

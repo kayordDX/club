@@ -10,6 +10,7 @@ import type {
 	AdminBookingUpdateStatusRequest,
 	AdminContractCreateRequest,
 	AdminContractDTO,
+	AdminContractMemberDTO,
 	AdminContractUpdateRequest,
 	AdminSlotGetAllParams,
 	AdminSlotGetAllResponse,
@@ -133,6 +134,21 @@ export const getAdminContractGetUrl = (facilityId: number, id: number) => {
 
 export const adminContractGet = async (facilityId: number, id: number, options?: Parameters<typeof customServerInstance>[1]): Promise<AdminContractDTO> => {
 	return customServerInstance<AdminContractDTO>(getAdminContractGetUrl(facilityId, id), {
+		...options,
+		method: "GET",
+	});
+};
+
+export const getAdminContractGetMembersUrl = (facilityId: number, id: number) => {
+	return `/admin/facility/${facilityId}/contract/${id}/members`;
+};
+
+export const adminContractGetMembers = async (
+	facilityId: number,
+	id: number,
+	options?: Parameters<typeof customServerInstance>[1]
+): Promise<AdminContractMemberDTO[]> => {
+	return customServerInstance<AdminContractMemberDTO[]>(getAdminContractGetMembersUrl(facilityId, id), {
 		...options,
 		method: "GET",
 	});

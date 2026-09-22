@@ -179,6 +179,22 @@ export const AdminSlotGetAllResponseItem = zod.object({
 });
 export const AdminSlotGetAllResponse = zod.array(AdminSlotGetAllResponseItem);
 
+export const AdminContractGetMembersParams = zod.object({
+	facilityId: zod.int(),
+	id: zod.int(),
+});
+
+export const AdminContractGetMembersResponseItem = zod.object({
+	id: zod.int(),
+	firstName: zod.string(),
+	lastName: zod.string(),
+	email: zod.string().nullish(),
+	startDate: zod.iso.datetime({ offset: true }),
+	endDate: zod.iso.datetime({ offset: true }).nullish(),
+	isActive: zod.boolean(),
+});
+export const AdminContractGetMembersResponse = zod.array(AdminContractGetMembersResponseItem);
+
 export const AdminContractGetAllParams = zod.object({
 	facilityId: zod.int(),
 });

@@ -848,6 +848,18 @@ export interface AdminContractDTO {
 	isPublic: boolean;
 }
 
+export interface AdminContractMemberDTO {
+	id: number;
+	firstName: string;
+	lastName: string;
+	/** @nullable */
+	email?: string | null;
+	startDate: string;
+	/** @nullable */
+	endDate?: string | null;
+	isActive: boolean;
+}
+
 export interface AdminContractCreateRequest {
 	name: string;
 	price: number;

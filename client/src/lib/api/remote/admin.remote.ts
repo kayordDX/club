@@ -32,7 +32,10 @@ export const adminBookingGetAll = query(
 export const adminSlotGetAll = query(z.object({ facilityId: z.number().int(), params: AdminSlotGetAllQueryParams }), async ({ facilityId, params }) =>
 	api.adminSlotGetAll(facilityId, params)
 );
-export const adminContractGetAll = query(z.object({ facilityId: z.number().int() }), async ({ facilityId }) => api.adminContractGetAll(facilityId));
+export const adminContractGetAll = query(z.number().int(), async (facilityId) => api.adminContractGetAll(facilityId));
+export const adminContractGetMembers = query(z.object({ facilityId: z.number().int(), id: z.number().int() }), async ({ facilityId, id }) =>
+	api.adminContractGetMembers(facilityId, id)
+);
 export const adminContractGet = query(z.object({ facilityId: z.number().int(), id: z.number().int() }), async ({ facilityId, id }) =>
 	api.adminContractGet(facilityId, id)
 );

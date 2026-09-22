@@ -1,38 +1,21 @@
 <script lang="ts">
 	import { page } from "$app/state";
 	import PageHeading from "$lib/components/PageHeading.svelte";
-	import { adminContractCreate, adminContractDelete, adminContractGetAll, adminContractUpdate } from "$lib/api/remote/admin.remote";
+	import { adminContractCreate, adminContractDelete, adminContractGetAll, adminContractGetMembers, adminContractUpdate } from "$lib/api/remote/admin.remote";
 	import type { AdminContractDTO } from "$lib/api";
-	import { formatCurrency } from "$lib/booking/format";
+	import { formatCurrency, formatDate } from "$lib/booking/format";
 	import { type ColumnDef } from "@tanstack/svelte-table";
+	import { type CalendarDate, DateFormatter, getLocalTimeZone, parseDate, today } from "@internationalized/date";
 	import { DataTable, createShadTable, renderSnippet, type DataTableFeatures } from "@kayord/ui/data-table";
-	import { Actions, AlertDialog, Badge, Button, Checkbox, Dialog, Field, Input, Label } from "@kayord/ui";
-	import { PencilIcon, PlusIcon, ScrollTextIcon, Trash2Icon } from "@lucide/svelte";
+	import { Calendar as DatePickerCalendar } from "@kayord/ui/calendar";
+	import { Actions, AlertDialog, Badge, Button, Checkbox, Dialog, Field, Input, Label, Popover } from "@kayord/ui";
+	import { CalendarIcon, PencilIcon, PlusIcon, ScrollTextIcon, Trash2Icon, UsersIcon } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
 
 	const facilityId = $derived(Number(page.params.id) || 0);
 
-	let result = $state<AdminContractDTO[] | undefined>();
-	let isLoading = $state(true);
-
-	const load = () => {
-		isLoading = true;
-		adminContractGetAll({ facilityId })
-			.then((r) => {
-				result = r;
-				isLoading = false;
-			})
-			.catch(() => {
-				isLoading = false;
-				toast.error("Failed to load contracts.");
-			});
-	};
-
-	$effect(() => {
-		if (facilityId > 0) load();
-	});
-
-	let data = $derived(result ?? []);
+	const contracts = $derived(adminContractGetAll(facilityId));
+	const data = $derived(contracts.current ?? []);
 
 	// Dialog state — a null editing target means "create".
 	let dialogOpen = $state(false);
@@ -43,26 +26,32 @@
 	let deleteTarget = $state<AdminContractDTO | null>(null);
 	let isDeleting = $state(false);
 
+	let membersTarget = $state<AdminContractDTO | null>(null);
+	const membersQuery = $derived(membersTarget ? adminContractGetMembers({ facilityId, id: membersTarget.id }) : null);
+	const members = $derived(membersQuery?.current ?? []);
+
 	type FormState = {
 		name: string;
 		price: number;
 		frequency: number;
-		startDate: string;
-		endDate: string;
+		startDate: CalendarDate;
+		endDate: CalendarDate;
 		isActive: boolean;
 		isPublic: boolean;
 	};
 
+	const dateFormatter = new DateFormatter("en-ZA", { dateStyle: "medium" });
+	let startDatePickerOpen = $state(false);
+	let endDatePickerOpen = $state(false);
 	let formState = $state<FormState>(emptyForm());
 
 	function emptyForm(): FormState {
-		const today = new Date().toISOString().slice(0, 10);
-		return { name: "", price: 0, frequency: 12, startDate: today, endDate: today, isActive: true, isPublic: false };
+		const currentDate = today(getLocalTimeZone());
+		return { name: "", price: 0, frequency: 12, startDate: currentDate, endDate: currentDate, isActive: true, isPublic: false };
 	}
 
-	// HTML date inputs use yyyy-MM-dd; the API exposes full ISO datetimes.
-	const toDateInput = (iso: string) => (iso ? iso.slice(0, 10) : "");
-	const toIso = (date: string) => new Date(`${date}T00:00:00.000Z`).toISOString();
+	const toCalendarDate = (iso: string) => parseDate(iso.slice(0, 10));
+	const toIso = (date: CalendarDate) => date.toDate(getLocalTimeZone()).toISOString();
 
 	const openCreate = () => {
 		editing = null;
@@ -76,8 +65,8 @@
 			name: contract.name,
 			price: contract.price,
 			frequency: contract.frequency,
-			startDate: toDateInput(contract.startDate),
-			endDate: toDateInput(contract.endDate),
+			startDate: toCalendarDate(contract.startDate),
+			endDate: toCalendarDate(contract.endDate),
 			isActive: contract.isActive,
 			isPublic: contract.isPublic,
 		};
@@ -90,7 +79,7 @@
 			toast.error("Name is required.");
 			return;
 		}
-		if (formState.endDate < formState.startDate) {
+		if (formState.endDate.compare(formState.startDate) < 0) {
 			toast.error("End date cannot be before the start date.");
 			return;
 		}
@@ -115,7 +104,7 @@
 				toast.success("Contract created");
 			}
 			dialogOpen = false;
-			load();
+			void contracts.refresh();
 		} catch (error) {
 			console.error("Failed to save contract:", error);
 			toast.error("Failed to save contract. Please try again.");
@@ -131,7 +120,7 @@
 			await adminContractDelete({ facilityId, id: deleteTarget.id });
 			toast.success("Contract deleted");
 			deleteTarget = null;
-			load();
+			void contracts.refresh();
 		} catch (error) {
 			console.error("Failed to delete contract:", error);
 			toast.error("This contract is in use and cannot be deleted.");
@@ -190,6 +179,7 @@
 {#snippet actionsCell(contract: AdminContractDTO)}
 	<Actions
 		actions={[
+			{ icon: UsersIcon, text: "View members", action: () => (membersTarget = contract) },
 			{ icon: PencilIcon, text: "Edit", action: () => openEdit(contract) },
 			{ icon: Trash2Icon, text: "Delete", action: () => (deleteTarget = contract) },
 		]}
@@ -199,8 +189,8 @@
 <div class="m-4">
 	<PageHeading title="Contracts" description="Create and manage the membership contracts offered by this facility." icon={ScrollTextIcon} />
 
-	<DataTable {table} headerClass="pb-2" {isLoading} noDataMessage="No contracts yet">
-		{#snippet leftToolbar()}
+	<DataTable {table} headerClass="pb-2" isLoading={contracts.loading} noDataMessage="No contracts yet">
+		{#snippet rightToolbar()}
 			<Button size="sm" onclick={openCreate}>
 				<PlusIcon class="size-4" />
 				New contract
@@ -235,11 +225,41 @@
 			<div class="grid grid-cols-2 gap-4">
 				<Field.Field>
 					<Field.Label for="contract-start">Start date</Field.Label>
-					<Input id="contract-start" type="date" bind:value={formState.startDate} />
+					<Popover.Root bind:open={startDatePickerOpen}>
+						<div class="relative">
+							<Input id="contract-start" value={dateFormatter.format(formState.startDate.toDate(getLocalTimeZone()))} readonly class="pr-9" />
+							<Popover.Trigger>
+								{#snippet child({ props })}
+									<Button {...props} type="button" variant="ghost" size="icon" class="absolute end-1 top-1/2 size-7 -translate-y-1/2">
+										<CalendarIcon class="size-3.5" />
+										<span class="sr-only">Select start date</span>
+									</Button>
+								{/snippet}
+							</Popover.Trigger>
+						</div>
+						<Popover.Content class="w-auto overflow-hidden p-0" align="start">
+							<DatePickerCalendar bind:value={formState.startDate} type="single" onValueChange={() => (startDatePickerOpen = false)} captionLayout="dropdown" />
+						</Popover.Content>
+					</Popover.Root>
 				</Field.Field>
 				<Field.Field>
 					<Field.Label for="contract-end">End date</Field.Label>
-					<Input id="contract-end" type="date" bind:value={formState.endDate} />
+					<Popover.Root bind:open={endDatePickerOpen}>
+						<div class="relative">
+							<Input id="contract-end" value={dateFormatter.format(formState.endDate.toDate(getLocalTimeZone()))} readonly class="pr-9" />
+							<Popover.Trigger>
+								{#snippet child({ props })}
+									<Button {...props} type="button" variant="ghost" size="icon" class="absolute end-1 top-1/2 size-7 -translate-y-1/2">
+										<CalendarIcon class="size-3.5" />
+										<span class="sr-only">Select end date</span>
+									</Button>
+								{/snippet}
+							</Popover.Trigger>
+						</div>
+						<Popover.Content class="w-auto overflow-hidden p-0" align="start">
+							<DatePickerCalendar bind:value={formState.endDate} type="single" onValueChange={() => (endDatePickerOpen = false)} captionLayout="dropdown" />
+						</Popover.Content>
+					</Popover.Root>
 				</Field.Field>
 			</div>
 
@@ -257,6 +277,48 @@
 				<Button type="submit" disabled={isSaving}>{isSaving ? "Saving..." : editing ? "Save changes" : "Create"}</Button>
 			</Dialog.Footer>
 		</form>
+	</Dialog.Content>
+</Dialog.Root>
+
+<Dialog.Root open={membersTarget !== null} onOpenChange={(open) => !open && (membersTarget = null)}>
+	<Dialog.Content class="sm:max-w-2xl">
+		<Dialog.Header>
+			<Dialog.Title>Members with {membersTarget?.name}</Dialog.Title>
+			<Dialog.Description>All members who hold this contract.</Dialog.Description>
+		</Dialog.Header>
+
+		{#if membersQuery?.loading}
+			<p class="text-muted-foreground text-sm">Loading members...</p>
+		{:else if membersQuery?.error}
+			<p class="text-destructive text-sm">Failed to load members.</p>
+		{:else if members.length === 0}
+			<p class="text-muted-foreground text-sm">No members have this contract.</p>
+		{:else}
+			<div class="max-h-96 overflow-auto rounded-md border">
+				<table class="w-full text-sm">
+					<thead class="bg-muted/50 text-left">
+						<tr>
+							<th class="p-3 font-medium">Member</th>
+							<th class="p-3 font-medium">Email</th>
+							<th class="p-3 font-medium">Period</th>
+							<th class="p-3 font-medium">Status</th>
+						</tr>
+					</thead>
+					<tbody>
+						{#each members as member (member.id)}
+							<tr class="border-t">
+								<td class="p-3">{member.firstName} {member.lastName}</td>
+								<td class="p-3">{member.email ?? "—"}</td>
+								<td class="p-3">{formatDate(member.startDate)} – {formatDate(member.endDate)}</td>
+								<td class="p-3">
+									<Badge variant={member.isActive ? "default" : "secondary"}>{member.isActive ? "Active" : "Inactive"}</Badge>
+								</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			</div>
+		{/if}
 	</Dialog.Content>
 </Dialog.Root>
 
