@@ -24,7 +24,10 @@ export async function customServerInstance<T>(url: string, init: RequestInit = {
 		throw error(res.status, `API request failed: ${res.status}`);
 	}
 	if (res.status === 204) return undefined as T;
-	return (await res.json()) as T;
+	const text = await res.text();
+	// Some endpoints respond 200 with an empty body (e.g. contract member search when no user is found).
+	if (!text) return undefined as T;
+	return JSON.parse(text) as T;
 }
 
 export default customServerInstance;
