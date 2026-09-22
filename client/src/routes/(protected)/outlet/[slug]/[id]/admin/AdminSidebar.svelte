@@ -16,6 +16,7 @@
 	const outletRulesHref = $derived(resolve(`/outlet/${slug}/${id}/admin/outlet/rules`));
 	const facilityAdminHref = $derived(resolve(`/outlet/${slug}/${id}/admin/facility`));
 	const facilityRulesHref = $derived(resolve(`/outlet/${slug}/${id}/admin/facility/rules`));
+	const facilityContractsHref = $derived(resolve(`/outlet/${slug}/${id}/admin/contracts`));
 
 	const within = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
@@ -26,7 +27,7 @@
 		if (within(outletHref)) outletOpen = true;
 	});
 	$effect(() => {
-		if (within(facilityAdminHref)) facilityOpen = true;
+		if (within(facilityAdminHref) || within(facilityContractsHref)) facilityOpen = true;
 	});
 </script>
 
@@ -114,6 +115,15 @@
 						</Collapsible.Trigger>
 						<Collapsible.Content>
 							<Sidebar.MenuSub>
+								<Sidebar.MenuSubItem>
+									<Sidebar.MenuSubButton isActive={within(facilityContractsHref)}>
+										{#snippet child({ props })}
+											<a href={facilityContractsHref} {...props}>
+												<span>Contracts</span>
+											</a>
+										{/snippet}
+									</Sidebar.MenuSubButton>
+								</Sidebar.MenuSubItem>
 								<Sidebar.MenuSubItem>
 									<Sidebar.MenuSubButton isActive={within(facilityRulesHref)}>
 										{#snippet child({ props })}

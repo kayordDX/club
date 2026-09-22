@@ -856,6 +856,49 @@ export type AdminSlotGetAllParams = {
 	date: string;
 };
 
+export interface AdminContractDTO {
+	id: number;
+	name: string;
+	price: number;
+	frequency: number;
+	startDate: string;
+	endDate: string;
+	isActive: boolean;
+	isPublic: boolean;
+}
+
+export interface AdminContractMemberDTO {
+	id: number;
+	firstName: string;
+	lastName: string;
+	/** @nullable */
+	email?: string | null;
+	startDate: string;
+	/** @nullable */
+	endDate?: string | null;
+	isActive: boolean;
+}
+
+export interface AdminContractCreateRequest {
+	name: string;
+	price: number;
+	frequency: number;
+	startDate: string;
+	endDate: string;
+	isActive: boolean;
+	isPublic: boolean;
+}
+
+export interface AdminContractUpdateRequest {
+	name: string;
+	price: number;
+	frequency: number;
+	startDate: string;
+	endDate: string;
+	isActive: boolean;
+	isPublic: boolean;
+}
+
 export interface AccountSyncRequest {
 	force: boolean;
 }

@@ -5,7 +5,14 @@
 import { query, command } from "$app/server";
 import { z } from "zod";
 import * as api from "$lib/server/api/generated/admin";
-import { AdminBookingGetAllQueryParams, AdminBookingUpdateBody, AdminBookingUpdateStatusBody, AdminSlotGetAllQueryParams } from "$lib/server/api/schemas/admin";
+import {
+	AdminBookingGetAllQueryParams,
+	AdminBookingUpdateBody,
+	AdminBookingUpdateStatusBody,
+	AdminContractCreateBody,
+	AdminContractUpdateBody,
+	AdminSlotGetAllQueryParams,
+} from "$lib/server/api/schemas/admin";
 
 export const adminBookingUpdateStatus = command(
 	z.object({ facilityId: z.number().int(), id: z.number().int(), body: AdminBookingUpdateStatusBody }),
@@ -24,4 +31,21 @@ export const adminBookingGetAll = query(
 );
 export const adminSlotGetAll = query(z.object({ facilityId: z.number().int(), params: AdminSlotGetAllQueryParams }), async ({ facilityId, params }) =>
 	api.adminSlotGetAll(facilityId, params)
+);
+export const adminContractGetAll = query(z.number().int(), async (facilityId) => api.adminContractGetAll(facilityId));
+export const adminContractGetMembers = query(z.object({ facilityId: z.number().int(), id: z.number().int() }), async ({ facilityId, id }) =>
+	api.adminContractGetMembers(facilityId, id)
+);
+export const adminContractGet = query(z.object({ facilityId: z.number().int(), id: z.number().int() }), async ({ facilityId, id }) =>
+	api.adminContractGet(facilityId, id)
+);
+export const adminContractCreate = command(z.object({ facilityId: z.number().int(), body: AdminContractCreateBody }), async ({ facilityId, body }) =>
+	api.adminContractCreate(facilityId, body)
+);
+export const adminContractUpdate = command(
+	z.object({ facilityId: z.number().int(), id: z.number().int(), body: AdminContractUpdateBody }),
+	async ({ facilityId, id, body }) => api.adminContractUpdate(facilityId, id, body)
+);
+export const adminContractDelete = command(z.object({ facilityId: z.number().int(), id: z.number().int() }), async ({ facilityId, id }) =>
+	api.adminContractDelete(facilityId, id)
 );

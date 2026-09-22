@@ -8,6 +8,10 @@ import type {
 	AdminBookingGetAllParams,
 	AdminBookingUpdateRequest,
 	AdminBookingUpdateStatusRequest,
+	AdminContractCreateRequest,
+	AdminContractDTO,
+	AdminContractMemberDTO,
+	AdminContractUpdateRequest,
 	AdminSlotGetAllParams,
 	AdminSlotGetAllResponse,
 	BookingDTO,
@@ -110,5 +114,88 @@ export const adminSlotGetAll = async (
 	return customServerInstance<AdminSlotGetAllResponse[]>(getAdminSlotGetAllUrl(facilityId, params), {
 		...options,
 		method: "GET",
+	});
+};
+
+export const getAdminContractGetAllUrl = (facilityId: number) => {
+	return `/admin/facility/${facilityId}/contract`;
+};
+
+export const adminContractGetAll = async (facilityId: number, options?: Parameters<typeof customServerInstance>[1]): Promise<AdminContractDTO[]> => {
+	return customServerInstance<AdminContractDTO[]>(getAdminContractGetAllUrl(facilityId), {
+		...options,
+		method: "GET",
+	});
+};
+
+export const getAdminContractGetUrl = (facilityId: number, id: number) => {
+	return `/admin/facility/${facilityId}/contract/${id}`;
+};
+
+export const adminContractGet = async (facilityId: number, id: number, options?: Parameters<typeof customServerInstance>[1]): Promise<AdminContractDTO> => {
+	return customServerInstance<AdminContractDTO>(getAdminContractGetUrl(facilityId, id), {
+		...options,
+		method: "GET",
+	});
+};
+
+export const getAdminContractGetMembersUrl = (facilityId: number, id: number) => {
+	return `/admin/facility/${facilityId}/contract/${id}/members`;
+};
+
+export const adminContractGetMembers = async (
+	facilityId: number,
+	id: number,
+	options?: Parameters<typeof customServerInstance>[1]
+): Promise<AdminContractMemberDTO[]> => {
+	return customServerInstance<AdminContractMemberDTO[]>(getAdminContractGetMembersUrl(facilityId, id), {
+		...options,
+		method: "GET",
+	});
+};
+
+export const getAdminContractCreateUrl = (facilityId: number) => {
+	return `/admin/facility/${facilityId}/contract`;
+};
+
+export const adminContractCreate = async (
+	facilityId: number,
+	adminContractCreateRequest: AdminContractCreateRequest,
+	options?: Parameters<typeof customServerInstance>[1]
+): Promise<AdminContractDTO> => {
+	return customServerInstance<AdminContractDTO>(getAdminContractCreateUrl(facilityId), {
+		...options,
+		method: "POST",
+		headers: { "Content-Type": "application/json", ...options?.headers },
+		body: JSON.stringify(adminContractCreateRequest),
+	});
+};
+
+export const getAdminContractUpdateUrl = (facilityId: number, id: number) => {
+	return `/admin/facility/${facilityId}/contract/${id}`;
+};
+
+export const adminContractUpdate = async (
+	facilityId: number,
+	id: number,
+	adminContractUpdateRequest: AdminContractUpdateRequest,
+	options?: Parameters<typeof customServerInstance>[1]
+): Promise<void> => {
+	return customServerInstance<void>(getAdminContractUpdateUrl(facilityId, id), {
+		...options,
+		method: "PUT",
+		headers: { "Content-Type": "application/json", ...options?.headers },
+		body: JSON.stringify(adminContractUpdateRequest),
+	});
+};
+
+export const getAdminContractDeleteUrl = (facilityId: number, id: number) => {
+	return `/admin/facility/${facilityId}/contract/${id}`;
+};
+
+export const adminContractDelete = async (facilityId: number, id: number, options?: Parameters<typeof customServerInstance>[1]): Promise<void> => {
+	return customServerInstance<void>(getAdminContractDeleteUrl(facilityId, id), {
+		...options,
+		method: "DELETE",
 	});
 };

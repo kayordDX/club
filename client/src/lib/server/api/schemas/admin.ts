@@ -178,3 +178,82 @@ export const AdminSlotGetAllResponseItem = zod.object({
 	),
 });
 export const AdminSlotGetAllResponse = zod.array(AdminSlotGetAllResponseItem);
+
+export const AdminContractGetMembersParams = zod.object({
+	facilityId: zod.int(),
+	id: zod.int(),
+});
+
+export const AdminContractGetMembersResponseItem = zod.object({
+	id: zod.int(),
+	firstName: zod.string(),
+	lastName: zod.string(),
+	email: zod.string().nullish(),
+	startDate: zod.iso.datetime({ offset: true }),
+	endDate: zod.iso.datetime({ offset: true }).nullish(),
+	isActive: zod.boolean(),
+});
+export const AdminContractGetMembersResponse = zod.array(AdminContractGetMembersResponseItem);
+
+export const AdminContractGetAllParams = zod.object({
+	facilityId: zod.int(),
+});
+
+export const AdminContractResponseItem = zod.object({
+	id: zod.int(),
+	name: zod.string(),
+	price: zod.number(),
+	frequency: zod.int(),
+	startDate: zod.iso.datetime({ offset: true }),
+	endDate: zod.iso.datetime({ offset: true }),
+	isActive: zod.boolean(),
+	isPublic: zod.boolean(),
+});
+export const AdminContractGetAllResponse = zod.array(AdminContractResponseItem);
+
+export const AdminContractGetParams = zod.object({
+	facilityId: zod.int(),
+	id: zod.int(),
+});
+
+export const AdminContractGetResponse = AdminContractResponseItem;
+
+export const AdminContractCreateParams = zod.object({
+	facilityId: zod.int(),
+});
+
+export const AdminContractCreateBody = zod.object({
+	name: zod.string().max(250),
+	price: zod.number().gte(0),
+	frequency: zod.int().gt(0),
+	startDate: zod.iso.datetime({ offset: true }),
+	endDate: zod.iso.datetime({ offset: true }),
+	isActive: zod.boolean(),
+	isPublic: zod.boolean(),
+});
+
+export const AdminContractCreateResponse = AdminContractResponseItem;
+
+export const AdminContractUpdateParams = zod.object({
+	facilityId: zod.int(),
+	id: zod.int(),
+});
+
+export const AdminContractUpdateBody = zod.object({
+	name: zod.string().max(250),
+	price: zod.number().gte(0),
+	frequency: zod.int().gt(0),
+	startDate: zod.iso.datetime({ offset: true }),
+	endDate: zod.iso.datetime({ offset: true }),
+	isActive: zod.boolean(),
+	isPublic: zod.boolean(),
+});
+
+export const AdminContractUpdateResponse = zod.void();
+
+export const AdminContractDeleteParams = zod.object({
+	facilityId: zod.int(),
+	id: zod.int(),
+});
+
+export const AdminContractDeleteResponse = zod.void();
