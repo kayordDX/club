@@ -195,6 +195,57 @@ export const AdminContractGetMembersResponseItem = zod.object({
 });
 export const AdminContractGetMembersResponse = zod.array(AdminContractGetMembersResponseItem);
 
+export const AdminContractSearchMemberParams = zod.object({
+	facilityId: zod.int(),
+	id: zod.int(),
+});
+
+export const AdminContractSearchMemberQueryParams = zod.object({
+	query: zod.string(),
+});
+
+export const AdminContractSearchMemberResponse = zod.object({
+	userId: zod.string(),
+	firstName: zod.string().nullish(),
+	lastName: zod.string().nullish(),
+	email: zod.string().nullish(),
+	phoneNumber: zod.string().nullish(),
+	isExistingMember: zod.boolean(),
+});
+
+export const AdminContractAddMemberParams = zod.object({
+	facilityId: zod.int(),
+	id: zod.int(),
+});
+
+export const AdminContractAddMemberBody = zod.object({
+	userId: zod.string(),
+});
+
+export const AdminContractAddMemberResponse = zod.void();
+
+export const AdminContractCreateMemberParams = zod.object({
+	facilityId: zod.int(),
+	id: zod.int(),
+});
+
+export const AdminContractCreateMemberBody = zod.object({
+	email: zod.email(),
+	firstName: zod.string(),
+	lastName: zod.string(),
+	phoneNumber: zod.string().nullish(),
+});
+
+export const AdminContractCreateMemberResponse = zod.void();
+
+export const AdminContractRemoveMemberParams = zod.object({
+	facilityId: zod.int(),
+	id: zod.int(),
+	memberId: zod.int(),
+});
+
+export const AdminContractRemoveMemberResponse = zod.void();
+
 export const AdminContractGetAllParams = zod.object({
 	facilityId: zod.int(),
 });

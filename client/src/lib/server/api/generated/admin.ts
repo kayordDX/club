@@ -8,10 +8,14 @@ import type {
 	AdminBookingGetAllParams,
 	AdminBookingUpdateRequest,
 	AdminBookingUpdateStatusRequest,
+	AdminContractAddMemberRequest,
+	AdminContractCreateMemberRequest,
 	AdminContractCreateRequest,
 	AdminContractDTO,
 	AdminContractMemberDTO,
+	AdminContractSearchMemberParams,
 	AdminContractUpdateRequest,
+	AdminMemberSearchResultDTO,
 	AdminSlotGetAllParams,
 	AdminSlotGetAllResponse,
 	BookingDTO,
@@ -151,6 +155,86 @@ export const adminContractGetMembers = async (
 	return customServerInstance<AdminContractMemberDTO[]>(getAdminContractGetMembersUrl(facilityId, id), {
 		...options,
 		method: "GET",
+	});
+};
+
+export const getAdminContractSearchMemberUrl = (facilityId: number, id: number, params?: AdminContractSearchMemberParams) => {
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : String(value));
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0
+		? `/admin/facility/${facilityId}/contract/${id}/member/search?${stringifiedParams}`
+		: `/admin/facility/${facilityId}/contract/${id}/member/search`;
+};
+
+export const adminContractSearchMember = async (
+	facilityId: number,
+	id: number,
+	params?: AdminContractSearchMemberParams,
+	options?: Parameters<typeof customServerInstance>[1]
+): Promise<AdminMemberSearchResultDTO> => {
+	return customServerInstance<AdminMemberSearchResultDTO>(getAdminContractSearchMemberUrl(facilityId, id, params), {
+		...options,
+		method: "GET",
+	});
+};
+
+export const getAdminContractAddMemberUrl = (facilityId: number, id: number) => {
+	return `/admin/facility/${facilityId}/contract/${id}/member`;
+};
+
+export const adminContractAddMember = async (
+	facilityId: number,
+	id: number,
+	adminContractAddMemberRequest: AdminContractAddMemberRequest,
+	options?: Parameters<typeof customServerInstance>[1]
+): Promise<void> => {
+	return customServerInstance<void>(getAdminContractAddMemberUrl(facilityId, id), {
+		...options,
+		method: "POST",
+		headers: { "Content-Type": "application/json", ...options?.headers },
+		body: JSON.stringify(adminContractAddMemberRequest),
+	});
+};
+
+export const getAdminContractCreateMemberUrl = (facilityId: number, id: number) => {
+	return `/admin/facility/${facilityId}/contract/${id}/member/create`;
+};
+
+export const adminContractCreateMember = async (
+	facilityId: number,
+	id: number,
+	adminContractCreateMemberRequest: AdminContractCreateMemberRequest,
+	options?: Parameters<typeof customServerInstance>[1]
+): Promise<void> => {
+	return customServerInstance<void>(getAdminContractCreateMemberUrl(facilityId, id), {
+		...options,
+		method: "POST",
+		headers: { "Content-Type": "application/json", ...options?.headers },
+		body: JSON.stringify(adminContractCreateMemberRequest),
+	});
+};
+
+export const getAdminContractRemoveMemberUrl = (facilityId: number, id: number, memberId: number) => {
+	return `/admin/facility/${facilityId}/contract/${id}/member/${memberId}`;
+};
+
+export const adminContractRemoveMember = async (
+	facilityId: number,
+	id: number,
+	memberId: number,
+	options?: Parameters<typeof customServerInstance>[1]
+): Promise<void> => {
+	return customServerInstance<void>(getAdminContractRemoveMemberUrl(facilityId, id, memberId), {
+		...options,
+		method: "DELETE",
 	});
 };
 

@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { page } from "$app/state";
+	import { goto } from "$app/navigation";
+	import { resolve } from "$app/paths";
 	import PageHeading from "$lib/components/PageHeading.svelte";
-	import { adminContractCreate, adminContractDelete, adminContractGetAll, adminContractGetMembers, adminContractUpdate } from "$lib/api/remote/admin.remote";
+	import { adminContractCreate, adminContractDelete, adminContractGetAll, adminContractUpdate } from "$lib/api/remote/admin.remote";
 	import type { AdminContractDTO } from "$lib/api";
-	import { formatCurrency, formatDate } from "$lib/booking/format";
+	import { formatCurrency } from "$lib/booking/format";
 	import { type ColumnDef } from "@tanstack/svelte-table";
 	import { type CalendarDate, DateFormatter, getLocalTimeZone, parseDate, today } from "@internationalized/date";
 	import { DataTable, createShadTable, renderSnippet, type DataTableFeatures } from "@kayord/ui/data-table";
@@ -26,9 +28,9 @@
 	let deleteTarget = $state<AdminContractDTO | null>(null);
 	let isDeleting = $state(false);
 
-	let membersTarget = $state<AdminContractDTO | null>(null);
-	const membersQuery = $derived(membersTarget ? adminContractGetMembers({ facilityId, id: membersTarget.id }) : null);
-	const members = $derived(membersQuery?.current ?? []);
+	const manageMembers = (contract: AdminContractDTO) => {
+		goto(resolve(`/outlet/${page.params.slug}/${facilityId}/admin/contracts/${contract.id}/members`));
+	};
 
 	type FormState = {
 		name: string;
@@ -179,7 +181,7 @@
 {#snippet actionsCell(contract: AdminContractDTO)}
 	<Actions
 		actions={[
-			{ icon: UsersIcon, text: "View members", action: () => (membersTarget = contract) },
+			{ icon: UsersIcon, text: "Manage members", action: () => manageMembers(contract) },
 			{ icon: PencilIcon, text: "Edit", action: () => openEdit(contract) },
 			{ icon: Trash2Icon, text: "Delete", action: () => (deleteTarget = contract) },
 		]}
@@ -277,48 +279,6 @@
 				<Button type="submit" disabled={isSaving}>{isSaving ? "Saving..." : editing ? "Save changes" : "Create"}</Button>
 			</Dialog.Footer>
 		</form>
-	</Dialog.Content>
-</Dialog.Root>
-
-<Dialog.Root open={membersTarget !== null} onOpenChange={(open) => !open && (membersTarget = null)}>
-	<Dialog.Content class="sm:max-w-2xl">
-		<Dialog.Header>
-			<Dialog.Title>Members with {membersTarget?.name}</Dialog.Title>
-			<Dialog.Description>All members who hold this contract.</Dialog.Description>
-		</Dialog.Header>
-
-		{#if membersQuery?.loading}
-			<p class="text-muted-foreground text-sm">Loading members...</p>
-		{:else if membersQuery?.error}
-			<p class="text-destructive text-sm">Failed to load members.</p>
-		{:else if members.length === 0}
-			<p class="text-muted-foreground text-sm">No members have this contract.</p>
-		{:else}
-			<div class="max-h-96 overflow-auto rounded-md border">
-				<table class="w-full text-sm">
-					<thead class="bg-muted/50 text-left">
-						<tr>
-							<th class="p-3 font-medium">Member</th>
-							<th class="p-3 font-medium">Email</th>
-							<th class="p-3 font-medium">Period</th>
-							<th class="p-3 font-medium">Status</th>
-						</tr>
-					</thead>
-					<tbody>
-						{#each members as member (member.id)}
-							<tr class="border-t">
-								<td class="p-3">{member.firstName} {member.lastName}</td>
-								<td class="p-3">{member.email ?? "—"}</td>
-								<td class="p-3">{formatDate(member.startDate)} – {formatDate(member.endDate)}</td>
-								<td class="p-3">
-									<Badge variant={member.isActive ? "default" : "secondary"}>{member.isActive ? "Active" : "Inactive"}</Badge>
-								</td>
-							</tr>
-						{/each}
-					</tbody>
-				</table>
-			</div>
-		{/if}
 	</Dialog.Content>
 </Dialog.Root>
 
