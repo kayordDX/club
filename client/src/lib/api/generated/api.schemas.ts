@@ -879,6 +879,41 @@ export interface AdminContractMemberDTO {
 	isActive: boolean;
 }
 
+export interface AdminMemberSearchResultDTO {
+	userId: string;
+	/** @nullable */
+	firstName?: string | null;
+	/** @nullable */
+	lastName?: string | null;
+	/** @nullable */
+	email?: string | null;
+	/** @nullable */
+	phoneNumber?: string | null;
+	isExistingMember: boolean;
+}
+
+export type AdminContractSearchMemberParams = {
+	query: string;
+};
+
+export interface AdminContractAddMemberRequest {
+	userId: string;
+	endDate: string;
+}
+
+export interface AdminContractCreateMemberRequest {
+	email: string;
+	firstName: string;
+	lastName: string;
+	/** @nullable */
+	phoneNumber?: string | null;
+	endDate: string;
+}
+
+export interface AdminContractUpdateMemberRequest {
+	endDate: string;
+}
+
 export interface AdminContractCreateRequest {
 	name: string;
 	price: number;
