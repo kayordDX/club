@@ -5,4 +5,5 @@ public class AdminContractAddMemberRequest
     public int FacilityId { get; set; }
     public int Id { get; set; }
     public required Guid UserId { get; set; }
+    public DateTime EndDate { get; set; }
 }

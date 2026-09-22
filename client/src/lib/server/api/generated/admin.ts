@@ -15,6 +15,7 @@ import type {
 	AdminContractMemberDTO,
 	AdminContractSearchMemberParams,
 	AdminContractUpdateRequest,
+	AdminContractUpdateMemberRequest,
 	AdminMemberSearchResultDTO,
 	AdminSlotGetAllParams,
 	AdminSlotGetAllResponse,
@@ -219,6 +220,25 @@ export const adminContractCreateMember = async (
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...options?.headers },
 		body: JSON.stringify(adminContractCreateMemberRequest),
+	});
+};
+
+export const getAdminContractUpdateMemberUrl = (facilityId: number, id: number, memberId: number) => {
+	return `/admin/facility/${facilityId}/contract/${id}/member/${memberId}`;
+};
+
+export const adminContractUpdateMember = async (
+	facilityId: number,
+	id: number,
+	memberId: number,
+	adminContractUpdateMemberRequest: AdminContractUpdateMemberRequest,
+	options?: Parameters<typeof customServerInstance>[1]
+): Promise<void> => {
+	return customServerInstance<void>(getAdminContractUpdateMemberUrl(facilityId, id, memberId), {
+		...options,
+		method: "PUT",
+		headers: { "Content-Type": "application/json", ...options?.headers },
+		body: JSON.stringify(adminContractUpdateMemberRequest),
 	});
 };
 

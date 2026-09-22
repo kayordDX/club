@@ -74,6 +74,13 @@ public class Endpoint(AppDbContext dbContext, UserManager<User> userManager, ICu
             return;
         }
 
+        if (req.EndDate.Date < DateTime.UtcNow.Date)
+        {
+            AddError(r => r.EndDate, "End date cannot be before the start date.");
+            await Send.ErrorsAsync(400, ct);
+            return;
+        }
+
         _dbContext.UserContract.Add(
             new UserContract
             {
@@ -82,6 +89,7 @@ public class Endpoint(AppDbContext dbContext, UserManager<User> userManager, ICu
                 UserId = user.Id,
                 User = user,
                 StartDate = DateTime.UtcNow,
+                EndDate = req.EndDate.Date,
                 Price = contract.Price,
                 IsActive = true,
             }

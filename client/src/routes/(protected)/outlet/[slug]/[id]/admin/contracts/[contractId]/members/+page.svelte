@@ -8,14 +8,17 @@
 		adminContractGetAll,
 		adminContractGetMembers,
 		adminContractSearchMember,
+		adminContractUpdateMember,
 	} from "$lib/api/remote/admin.remote";
 	import { adminContractRemoveMember } from "$lib/api/remote/admin.remote";
 	import type { AdminContractMemberDTO, AdminMemberSearchResultDTO } from "$lib/api";
 	import { formatDate } from "$lib/booking/format";
 	import { type ColumnDef } from "@tanstack/svelte-table";
+	import { type CalendarDate, DateFormatter, getLocalTimeZone, parseDate, today } from "@internationalized/date";
 	import { DataTable, createShadTable, renderSnippet, type DataTableFeatures } from "@kayord/ui/data-table";
-	import { Actions, AlertDialog, Badge, Button, Dialog, Field, Input } from "@kayord/ui";
-	import { ChevronLeftIcon, PlusIcon, SearchIcon, Trash2Icon, UsersIcon } from "@lucide/svelte";
+	import { Calendar as DatePickerCalendar } from "@kayord/ui/calendar";
+	import { Actions, AlertDialog, Badge, Button, Dialog, Field, Input, Popover } from "@kayord/ui";
+	import { CalendarIcon, ChevronLeftIcon, PencilIcon, PlusIcon, SearchIcon, Trash2Icon, UsersIcon } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
 
 	const facilityId = $derived(Number(page.params.id) || 0);
@@ -38,6 +41,8 @@
 	let hasSearched = $state(false);
 	let searchResult = $state<AdminMemberSearchResultDTO | null>(null);
 	let isAdding = $state(false);
+	let addEndDate = $state<CalendarDate>(today(getLocalTimeZone()));
+	let addEndDatePickerOpen = $state(false);
 
 	// New-profile form (shown when the search finds nothing).
 	let showCreate = $state(false);
@@ -47,9 +52,20 @@
 	let createPhone = $state("");
 	let isCreating = $state(false);
 
+	// Edit membership state.
+	let editTarget = $state<AdminContractMemberDTO | null>(null);
+	let editEndDate = $state<CalendarDate>(today(getLocalTimeZone()));
+	let editEndDatePickerOpen = $state(false);
+	let isUpdating = $state(false);
+
 	// Remove confirmation state.
 	let removeTarget = $state<AdminContractMemberDTO | null>(null);
 	let isRemoving = $state(false);
+
+	const dateFormatter = new DateFormatter("en-ZA", { dateStyle: "medium" });
+	const getDefaultEndDate = () => today(getLocalTimeZone()).add({ months: contract?.frequency ?? 12 });
+	const toCalendarDate = (iso: string) => parseDate(iso.slice(0, 10));
+	const toApiDate = (date: CalendarDate) => `${date.toString()}T00:00:00.000Z`;
 
 	const resetDialog = () => {
 		searchInput = "";
@@ -60,6 +76,7 @@
 		createLastName = "";
 		createEmail = "";
 		createPhone = "";
+		addEndDate = getDefaultEndDate();
 	};
 
 	const openAdd = () => {
@@ -98,9 +115,13 @@
 
 	const addExisting = async () => {
 		if (!searchResult) return;
+		if (!addEndDate) {
+			toast.error("An end date is required.");
+			return;
+		}
 		isAdding = true;
 		try {
-			await adminContractAddMember({ facilityId, id: contractId, body: { userId: searchResult.userId } });
+			await adminContractAddMember({ facilityId, id: contractId, body: { userId: searchResult.userId, endDate: toApiDate(addEndDate) } });
 			toast.success("Member added");
 			addOpen = false;
 			void membersQuery.refresh();
@@ -114,8 +135,8 @@
 
 	const createProfile = async (e: SubmitEvent) => {
 		e.preventDefault();
-		if (!createEmail.trim() || !createFirstName.trim() || !createLastName.trim()) {
-			toast.error("First name, last name and email are required.");
+		if (!createEmail.trim() || !createFirstName.trim() || !createLastName.trim() || !addEndDate) {
+			toast.error("First name, last name, email and an end date are required.");
 			return;
 		}
 
@@ -129,6 +150,7 @@
 					firstName: createFirstName.trim(),
 					lastName: createLastName.trim(),
 					phoneNumber: createPhone.trim() || null,
+					endDate: toApiDate(addEndDate),
 				},
 			});
 			toast.success("Profile created and member added. They'll get an email to set their password.");
@@ -139,6 +161,34 @@
 			toast.error("Failed to create the profile. A user with this email may already exist.");
 		} finally {
 			isCreating = false;
+		}
+	};
+
+	const openEdit = (member: AdminContractMemberDTO) => {
+		editTarget = member;
+		editEndDate = member.endDate ? toCalendarDate(member.endDate) : getDefaultEndDate();
+	};
+
+	const updateMembership = async (e: SubmitEvent) => {
+		e.preventDefault();
+		if (!editTarget || !editEndDate) return;
+
+		isUpdating = true;
+		try {
+			await adminContractUpdateMember({
+				facilityId,
+				id: contractId,
+				memberId: editTarget.id,
+				body: { endDate: toApiDate(editEndDate) },
+			});
+			toast.success("Membership end date updated");
+			editTarget = null;
+			void membersQuery.refresh();
+		} catch (error) {
+			console.error("Failed to update membership:", error);
+			toast.error("Failed to update the membership end date. Please try again.");
+		} finally {
+			isUpdating = false;
 		}
 	};
 
@@ -197,7 +247,12 @@
 {/snippet}
 
 {#snippet actionsCell(member: AdminContractMemberDTO)}
-	<Actions actions={[{ icon: Trash2Icon, text: "Remove", action: () => (removeTarget = member) }]} />
+	<Actions
+		actions={[
+			{ icon: PencilIcon, text: "Edit end date", action: () => openEdit(member) },
+			{ icon: Trash2Icon, text: "Remove", action: () => (removeTarget = member) },
+		]}
+	/>
 {/snippet}
 
 <div class="m-4">
@@ -235,6 +290,26 @@
 				{isSearching ? "Searching..." : "Search"}
 			</Button>
 		</form>
+
+		<Field.Field>
+			<Field.Label for="member-end-date">Membership end date</Field.Label>
+			<Popover.Root bind:open={addEndDatePickerOpen}>
+				<div class="relative">
+					<Input id="member-end-date" value={dateFormatter.format(addEndDate.toDate(getLocalTimeZone()))} readonly class="pr-9" />
+					<Popover.Trigger>
+						{#snippet child({ props })}
+							<Button {...props} type="button" variant="ghost" size="icon" class="absolute end-1 top-1/2 size-7 -translate-y-1/2">
+								<CalendarIcon class="size-3.5" />
+								<span class="sr-only">Select membership end date</span>
+							</Button>
+						{/snippet}
+					</Popover.Trigger>
+				</div>
+				<Popover.Content class="w-auto overflow-hidden p-0" align="start">
+					<DatePickerCalendar bind:value={addEndDate} type="single" onValueChange={() => (addEndDatePickerOpen = false)} captionLayout="dropdown" />
+				</Popover.Content>
+			</Popover.Root>
+		</Field.Field>
 
 		{#if hasSearched && searchResult}
 			<div class="mt-2 flex items-center justify-between rounded-md border p-4">
@@ -290,6 +365,40 @@
 		<Dialog.Footer>
 			<Button type="button" variant="outline" onclick={() => (addOpen = false)}>Close</Button>
 		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>
+
+<Dialog.Root open={editTarget !== null} onOpenChange={(open) => !open && (editTarget = null)}>
+	<Dialog.Content>
+		<Dialog.Header>
+			<Dialog.Title>Edit membership</Dialog.Title>
+			<Dialog.Description>Set the end date for {editTarget?.firstName} {editTarget?.lastName}'s membership.</Dialog.Description>
+		</Dialog.Header>
+		<form onsubmit={updateMembership} class="flex flex-col gap-4">
+			<Field.Field>
+				<Field.Label for="edit-member-end-date">Membership end date</Field.Label>
+				<Popover.Root bind:open={editEndDatePickerOpen}>
+					<div class="relative">
+						<Input id="edit-member-end-date" value={dateFormatter.format(editEndDate.toDate(getLocalTimeZone()))} readonly class="pr-9" />
+						<Popover.Trigger>
+							{#snippet child({ props })}
+								<Button {...props} type="button" variant="ghost" size="icon" class="absolute end-1 top-1/2 size-7 -translate-y-1/2">
+									<CalendarIcon class="size-3.5" />
+									<span class="sr-only">Select membership end date</span>
+								</Button>
+							{/snippet}
+						</Popover.Trigger>
+					</div>
+					<Popover.Content class="w-auto overflow-hidden p-0" align="start">
+						<DatePickerCalendar bind:value={editEndDate} type="single" onValueChange={() => (editEndDatePickerOpen = false)} captionLayout="dropdown" />
+					</Popover.Content>
+				</Popover.Root>
+			</Field.Field>
+			<Dialog.Footer>
+				<Button type="button" variant="outline" onclick={() => (editTarget = null)} disabled={isUpdating}>Cancel</Button>
+				<Button type="submit" disabled={isUpdating}>{isUpdating ? "Saving..." : "Save"}</Button>
+			</Dialog.Footer>
+		</form>
 	</Dialog.Content>
 </Dialog.Root>
 

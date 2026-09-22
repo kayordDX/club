@@ -11,6 +11,7 @@ using AdminContractAddMemberEndpoint = Club.Features.Admin.Contract.AddMember.En
 using AdminContractGetMembersEndpoint = Club.Features.Admin.Contract.GetMembers.Endpoint;
 using AdminContractRemoveMemberEndpoint = Club.Features.Admin.Contract.RemoveMember.Endpoint;
 using AdminContractSearchMemberEndpoint = Club.Features.Admin.Contract.SearchMember.Endpoint;
+using AdminContractUpdateMemberEndpoint = Club.Features.Admin.Contract.UpdateMember.Endpoint;
 
 namespace IntegrationTests.Features.Contracts;
 
@@ -27,6 +28,7 @@ public class AdminContractMemberTests(AppFixture app)
         await AssignManagerRole(db, facilityId);
         var contract = await CreateContract(db, facilityId, "AddMember");
         var user = await CreateUser(db, "jane@example.com");
+        var endDate = DateTime.UtcNow.Date.AddMonths(12);
 
         // Act
         var response = await app.Client.POSTAsync<AdminContractAddMemberEndpoint, AdminContractAddMemberRequest>(
@@ -35,12 +37,14 @@ public class AdminContractMemberTests(AppFixture app)
                 FacilityId = facilityId,
                 Id = contract.Id,
                 UserId = user.Id,
+                EndDate = endDate,
             }
         );
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
-        (await db.UserContract.AnyAsync(uc => uc.ContractId == contract.Id && uc.UserId == user.Id)).ShouldBeTrue();
+        var userContract = await db.UserContract.SingleAsync(uc => uc.ContractId == contract.Id && uc.UserId == user.Id);
+        userContract.EndDate.ShouldBe(endDate);
     }
 
     [Fact]
@@ -54,6 +58,7 @@ public class AdminContractMemberTests(AppFixture app)
         var contract = await CreateContract(db, facilityId, "Dup");
         var user = await CreateUser(db, "dup@example.com");
         await LinkMember(db, contract, user);
+        var endDate = DateTime.UtcNow.Date.AddMonths(12);
 
         // Act
         var response = await app.Client.POSTAsync<AdminContractAddMemberEndpoint, AdminContractAddMemberRequest>(
@@ -62,11 +67,41 @@ public class AdminContractMemberTests(AppFixture app)
                 FacilityId = facilityId,
                 Id = contract.Id,
                 UserId = user.Id,
+                EndDate = endDate,
             }
         );
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+    }
+
+    [Fact]
+    public async Task UpdateMember_WhenManager_UpdatesMembershipEndDate()
+    {
+        // Arrange
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var facilityId = await CreateFacility(db);
+        await AssignManagerRole(db, facilityId);
+        var contract = await CreateContract(db, facilityId, "Update");
+        var user = await CreateUser(db, "update@example.com");
+        var link = await LinkMember(db, contract, user);
+        var endDate = DateTime.UtcNow.Date.AddMonths(6);
+
+        // Act
+        var response = await app.Client.PUTAsync<AdminContractUpdateMemberEndpoint, Club.Features.Admin.Contract.UpdateMember.AdminContractUpdateMemberRequest>(
+            new Club.Features.Admin.Contract.UpdateMember.AdminContractUpdateMemberRequest
+            {
+                FacilityId = facilityId,
+                Id = contract.Id,
+                MemberId = link.Id,
+                EndDate = endDate,
+            }
+        );
+
+        // Assert
+        response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
+        (await db.UserContract.AsNoTracking().SingleAsync(uc => uc.Id == link.Id)).EndDate.ShouldBe(endDate);
     }
 
     [Fact]
@@ -164,6 +199,7 @@ public class AdminContractMemberTests(AppFixture app)
         var facilityId = await CreateFacility(db);
         var contract = await CreateContract(db, facilityId, "NoAuth");
         var user = await CreateUser(db, "noauth@example.com");
+        var endDate = DateTime.UtcNow.Date.AddMonths(12);
 
         // Act
         var response = await app.Client.POSTAsync<AdminContractAddMemberEndpoint, AdminContractAddMemberRequest>(
@@ -172,6 +208,7 @@ public class AdminContractMemberTests(AppFixture app)
                 FacilityId = facilityId,
                 Id = contract.Id,
                 UserId = user.Id,
+                EndDate = endDate,
             }
         );
 

@@ -898,6 +898,7 @@ export type AdminContractSearchMemberParams = {
 
 export interface AdminContractAddMemberRequest {
 	userId: string;
+	endDate: string;
 }
 
 export interface AdminContractCreateMemberRequest {
@@ -906,6 +907,11 @@ export interface AdminContractCreateMemberRequest {
 	lastName: string;
 	/** @nullable */
 	phoneNumber?: string | null;
+	endDate: string;
+}
+
+export interface AdminContractUpdateMemberRequest {
+	endDate: string;
 }
 
 export interface AdminContractCreateRequest {

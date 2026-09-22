@@ -301,6 +301,48 @@ Prefer `href` navigation over `onclick`/`goto`:
 - **Maintain accessibility** - Ensure keyboard navigation and ARIA attributes work correctly
 - **Responsive first** - Design for mobile, then enhance for larger screens
 
+## Date Picker
+
+Use `Calendar` from `@kayord/ui/calendar` inside a `Popover` for single-date inputs. Store the selected value as `CalendarDate` from `@internationalized/date`, not a native date string or `Date`.
+
+```svelte
+<script lang="ts">
+    import { type CalendarDate, DateFormatter, getLocalTimeZone, today } from "@internationalized/date";
+    import { Calendar as DatePickerCalendar } from "@kayord/ui/calendar";
+    import { Button, Input, Popover } from "@kayord/ui";
+    import { CalendarIcon } from "@lucide/svelte";
+
+    const dateFormatter = new DateFormatter("en-ZA", { dateStyle: "medium" });
+    let selectedDate = $state<CalendarDate>(today(getLocalTimeZone()));
+    let datePickerOpen = $state(false);
+</script>
+
+<Popover.Root bind:open={datePickerOpen}>
+    <div class="relative">
+        <Input value={dateFormatter.format(selectedDate.toDate(getLocalTimeZone()))} readonly class="pr-9" />
+        <Popover.Trigger>
+            {#snippet child({ props })}
+                <Button {...props} type="button" variant="ghost" size="icon" class="absolute end-1 top-1/2 size-7 -translate-y-1/2">
+                    <CalendarIcon class="size-3.5" />
+                    <span class="sr-only">Select date</span>
+                </Button>
+            {/snippet}
+        </Popover.Trigger>
+    </div>
+    <Popover.Content class="w-auto overflow-hidden p-0" align="start">
+        <DatePickerCalendar bind:value={selectedDate} type="single" onValueChange={() => (datePickerOpen = false)} captionLayout="dropdown" />
+    </Popover.Content>
+</Popover.Root>
+```
+
+For an API `DateTime` field that represents a date rather than a timestamp, serialize without a local-time-zone shift:
+
+```ts
+const toApiDate = (date: CalendarDate) => `${date.toString()}T00:00:00.000Z`;
+```
+
+To initialize from an API ISO string, use `parseDate(iso.slice(0, 10))`. Use `CalendarDate.add({ months })` for calendar-safe month offsets.
+
 ## Form Patterns
 
 ### Search Input with Button

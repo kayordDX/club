@@ -11,5 +11,7 @@ public class AdminContractCreateMemberValidator : Validator<AdminContractCreateM
         RuleFor(x => x.FirstName).NotEmpty().WithMessage("First name is required.");
 
         RuleFor(x => x.LastName).NotEmpty().WithMessage("Last name is required.");
+
+        RuleFor(x => x.EndDate).NotEmpty().WithMessage("End date is required.");
     }
 }

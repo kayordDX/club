@@ -220,6 +220,7 @@ export const AdminContractAddMemberParams = zod.object({
 
 export const AdminContractAddMemberBody = zod.object({
 	userId: zod.string(),
+	endDate: zod.iso.datetime({ offset: true }),
 });
 
 export const AdminContractAddMemberResponse = zod.void();
@@ -234,9 +235,22 @@ export const AdminContractCreateMemberBody = zod.object({
 	firstName: zod.string(),
 	lastName: zod.string(),
 	phoneNumber: zod.string().nullish(),
+	endDate: zod.iso.datetime({ offset: true }),
 });
 
 export const AdminContractCreateMemberResponse = zod.void();
+
+export const AdminContractUpdateMemberParams = zod.object({
+	facilityId: zod.int(),
+	id: zod.int(),
+	memberId: zod.int(),
+});
+
+export const AdminContractUpdateMemberBody = zod.object({
+	endDate: zod.iso.datetime({ offset: true }),
+});
+
+export const AdminContractUpdateMemberResponse = zod.void();
 
 export const AdminContractRemoveMemberParams = zod.object({
 	facilityId: zod.int(),

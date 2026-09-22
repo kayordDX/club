@@ -14,6 +14,7 @@ import {
 	AdminContractCreateMemberBody,
 	AdminContractSearchMemberQueryParams,
 	AdminContractUpdateBody,
+	AdminContractUpdateMemberBody,
 	AdminSlotGetAllQueryParams,
 } from "$lib/server/api/schemas/admin";
 
@@ -50,6 +51,10 @@ export const adminContractAddMember = command(
 export const adminContractCreateMember = command(
 	z.object({ facilityId: z.number().int(), id: z.number().int(), body: AdminContractCreateMemberBody }),
 	async ({ facilityId, id, body }) => api.adminContractCreateMember(facilityId, id, body)
+);
+export const adminContractUpdateMember = command(
+	z.object({ facilityId: z.number().int(), id: z.number().int(), memberId: z.number().int(), body: AdminContractUpdateMemberBody }),
+	async ({ facilityId, id, memberId, body }) => api.adminContractUpdateMember(facilityId, id, memberId, body)
 );
 export const adminContractRemoveMember = command(
 	z.object({ facilityId: z.number().int(), id: z.number().int(), memberId: z.number().int() }),
