@@ -85,9 +85,28 @@ export interface PaymentInitiateResponse {
 	providerReference?: string | null;
 }
 
+export type PaymentFrequencyEnum = (typeof PaymentFrequencyEnum)[keyof typeof PaymentFrequencyEnum];
+
+export const PaymentFrequencyEnum = {
+	Monthly: 3,
+	Quarterly: 4,
+	Biannually: 5,
+	Annually: 6,
+} as const;
+
+export interface PaymentInitiateRecurring {
+	frequency: PaymentFrequencyEnum;
+	cycles: number;
+	/** @nullable */
+	recurringAmount?: number | null;
+	/** @nullable */
+	firstBillingDate?: string | null;
+}
+
 export interface PaymentInitiateRequest {
 	bookingId: number;
 	providerName: string;
+	recurring?: PaymentInitiateRecurring | null;
 }
 
 /**

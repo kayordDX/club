@@ -50,6 +50,16 @@ public class Endpoint(AppDbContext dbContext, IPaymentFactory paymentFactory, Pa
             return;
         }
 
+        // Fail fast when recurring is requested from a provider that cannot set up a subscription.
+        // Silently falling back to a once-off charge would debit the payer while they believe they
+        // created a subscription.
+        if (req.Recurring is not null && !provider.SupportsRecurring)
+        {
+            AddError(x => x.Recurring, $"Provider '{req.ProviderName}' does not support recurring payments.");
+            await Send.ErrorsAsync(400, ct);
+            return;
+        }
+
         var pendingStatus = await _dbContext.PaymentStatus.FirstAsync(s => s.Id == (int)Common.Enums.PaymentStatusEnum.Pending, ct);
         var creditCardType = await _dbContext.PaymentType.FirstAsync(t => t.Id == (int)Common.Enums.PaymentTypeEnum.CreditCard, ct);
 
@@ -77,7 +87,20 @@ public class Endpoint(AppDbContext dbContext, IPaymentFactory paymentFactory, Pa
             "payment.initiated",
             "pending",
             $"Payment initiated for Booking #{booking.Id}, amount R{booking.AmountOutstanding:F2}",
-            new { bookingId = booking.Id, amount = booking.AmountOutstanding },
+            new
+            {
+                bookingId = booking.Id,
+                amount = booking.AmountOutstanding,
+                recurring = req.Recurring is null
+                    ? null
+                    : new
+                    {
+                        frequency = req.Recurring.Frequency.ToString(),
+                        cycles = req.Recurring.Cycles,
+                        recurringAmount = req.Recurring.RecurringAmount,
+                        firstBillingDate = req.Recurring.FirstBillingDate,
+                    },
+            },
             ct
         );
 
@@ -97,6 +120,15 @@ public class Endpoint(AppDbContext dbContext, IPaymentFactory paymentFactory, Pa
             Currency = "ZAR",
             TransactionId = transactionId,
             Description = $"Booking #{booking.Id}",
+            Recurring = req.Recurring is null
+                ? null
+                : new PaymentRecurring
+                {
+                    Frequency = req.Recurring.Frequency,
+                    Cycles = req.Recurring.Cycles,
+                    RecurringAmount = req.Recurring.RecurringAmount,
+                    FirstBillingDate = req.Recurring.FirstBillingDate,
+                },
         };
 
         var result = await provider.ProcessPaymentAsync(paymentRequest, ct);

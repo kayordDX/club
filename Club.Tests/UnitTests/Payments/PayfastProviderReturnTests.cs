@@ -1,40 +1,12 @@
-using System.Security.Cryptography;
-using System.Text;
 using Club.Common.Payments;
 using Club.Common.Payments.Provider.Payfast;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
 
 namespace UnitTests.Payments;
 
 public class PayfastProviderReturnTests
 {
-    private static readonly PayfastOptions SandboxOptions = new()
-    {
-        MerchantId = "10000100",
-        MerchantKey = "46f0cd694581a",
-        Passphrase = "jt7NOE43FZPn",
-        BaseUrl = "https://sandbox.payfast.co.za/eng/process",
-        ReturnUrl = "http://localhost:5173/payment/success",
-        CancelUrl = "http://localhost:5173/payment/cancelled",
-        NotifyUrl = "http://localhost:5000/payment/result/payfast",
-    };
-
-    private static readonly PayfastOptions ProductionOptions = new()
-    {
-        MerchantId = "10000100",
-        MerchantKey = "46f0cd694581a",
-        Passphrase = "jt7NOE43FZPn",
-        BaseUrl = "https://www.payfast.co.za/eng/process",
-        ReturnUrl = "http://localhost:5173/payment/success",
-        CancelUrl = "http://localhost:5173/payment/cancelled",
-        NotifyUrl = "http://localhost:5000/payment/result/payfast",
-    };
-
-    private static PayfastProvider CreateProvider(HttpContext httpContext, PayfastOptions? options = null)
-    {
-        return new PayfastProvider(new FakeOptionsAccessor(options ?? SandboxOptions), new FakeHttpContextAccessor(httpContext), new HttpClient());
-    }
+    private static readonly PayfastOptions SandboxOptions = PayfastTestHelpers.SandboxOptions();
 
     [Fact]
     public async Task ProcessPaymentAsync_RoutesReturnThroughBackendResultEndpoint()
@@ -43,7 +15,7 @@ public class PayfastProviderReturnTests
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Scheme = "http";
         httpContext.Request.Host = new HostString("localhost", 5000);
-        var provider = CreateProvider(httpContext);
+        var provider = PayfastTestHelpers.CreateProvider(httpContext);
 
         // Act
         var response = await provider.ProcessPaymentAsync(
@@ -80,12 +52,12 @@ public class PayfastProviderReturnTests
             ["payment_status"] = "COMPLETE",
             ["amount_gross"] = "100.00",
         };
-        fields["signature"] = ComputeSignature(fields, SandboxOptions.Passphrase);
+        fields["signature"] = PayfastTestHelpers.ComputeSignature(fields, SandboxOptions.Passphrase);
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Method = "GET";
         httpContext.Request.QueryString = new QueryString("?" + string.Join("&", fields.Select(kvp => $"{kvp.Key}={kvp.Value}")));
-        var provider = CreateProvider(httpContext);
+        var provider = PayfastTestHelpers.CreateProvider(httpContext);
 
         // Act
         var result = await provider.ProcessResponseAsync(httpContext);
@@ -108,12 +80,12 @@ public class PayfastProviderReturnTests
             ["payment_status"] = "PENDING",
             ["amount_gross"] = "100.00",
         };
-        fields["signature"] = ComputeSignature(fields, SandboxOptions.Passphrase);
+        fields["signature"] = PayfastTestHelpers.ComputeSignature(fields, SandboxOptions.Passphrase);
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Method = "GET";
         httpContext.Request.QueryString = new QueryString("?" + string.Join("&", fields.Select(kvp => $"{kvp.Key}={kvp.Value}")));
-        var provider = CreateProvider(httpContext);
+        var provider = PayfastTestHelpers.CreateProvider(httpContext);
 
         // Act
         var result = await provider.ProcessResponseAsync(httpContext);
@@ -131,7 +103,7 @@ public class PayfastProviderReturnTests
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Method = "GET";
         httpContext.Request.QueryString = new QueryString("?m_payment_id=txn-123&payment_status=COMPLETE&signature=not-a-valid-signature");
-        var provider = CreateProvider(httpContext);
+        var provider = PayfastTestHelpers.CreateProvider(httpContext);
 
         // Act
         var result = await provider.ProcessResponseAsync(httpContext);
@@ -149,7 +121,7 @@ public class PayfastProviderReturnTests
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Method = "GET";
         httpContext.Request.QueryString = new QueryString("?merchantTransactionId=txn-123");
-        var provider = CreateProvider(httpContext, SandboxOptions);
+        var provider = PayfastTestHelpers.CreateProvider(httpContext, PayfastTestHelpers.SandboxOptions());
 
         // Act
         var result = await provider.ProcessResponseAsync(httpContext);
@@ -169,7 +141,7 @@ public class PayfastProviderReturnTests
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Method = "GET";
         httpContext.Request.QueryString = new QueryString("?merchantTransactionId=txn-123");
-        var provider = CreateProvider(httpContext, ProductionOptions);
+        var provider = PayfastTestHelpers.CreateProvider(httpContext, PayfastTestHelpers.ProductionOptions());
 
         // Act
         var result = await provider.ProcessResponseAsync(httpContext);
@@ -194,12 +166,12 @@ public class PayfastProviderReturnTests
             ["amount_gross"] = "100.00",
         };
         var signed = fields.Where(kvp => kvp.Key != "merchantTransactionId").ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-        fields["signature"] = ComputeSignature(signed, SandboxOptions.Passphrase);
+        fields["signature"] = PayfastTestHelpers.ComputeSignature(signed, SandboxOptions.Passphrase);
 
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Method = "GET";
         httpContext.Request.QueryString = new QueryString("?" + string.Join("&", fields.Select(kvp => $"{kvp.Key}={kvp.Value}")));
-        var provider = CreateProvider(httpContext, SandboxOptions);
+        var provider = PayfastTestHelpers.CreateProvider(httpContext, PayfastTestHelpers.SandboxOptions());
 
         // Act
         var result = await provider.ProcessResponseAsync(httpContext);
@@ -207,23 +179,5 @@ public class PayfastProviderReturnTests
         // Assert
         Assert.True(result.Success);
         Assert.Equal("txn-123", result.TransactionId);
-    }
-
-    private static string ComputeSignature(Dictionary<string, string> fields, string passphrase)
-    {
-        var paramString = string.Join("&", fields.Where(kvp => kvp.Key != "signature").Select(kvp => $"{kvp.Key}={kvp.Value}"));
-        var signatureString = string.IsNullOrEmpty(passphrase) ? paramString : $"{paramString}&passphrase={passphrase}";
-        var hashBytes = MD5.HashData(Encoding.UTF8.GetBytes(signatureString));
-        return Convert.ToHexStringLower(hashBytes);
-    }
-
-    private sealed class FakeOptionsAccessor(PayfastOptions options) : IPaymentOptionsAccessor<PayfastOptions>
-    {
-        public Task<PayfastOptions?> GetAsync(CancellationToken ct) => Task.FromResult<PayfastOptions?>(options);
-    }
-
-    private sealed class FakeHttpContextAccessor(HttpContext httpContext) : IHttpContextAccessor
-    {
-        public HttpContext? HttpContext { get; set; } = httpContext;
     }
 }

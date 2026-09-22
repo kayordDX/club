@@ -14,6 +14,8 @@ public class PeachProvider(IPaymentOptionsAccessor<PeachOptions> optionsAccessor
 
     public string ProviderName => "peach";
 
+    public bool SupportsRecurring => false;
+
     public async Task<PaymentResponse> ProcessPaymentAsync(PaymentRequest request, CancellationToken ct)
     {
         try
