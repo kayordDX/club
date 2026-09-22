@@ -9,6 +9,25 @@ namespace IntegrationTests.Features.Slot;
 [Collection("AppFixture collection")]
 public class SlotGetContractsTests(AppFixture app)
 {
+    [Fact]
+    public async Task GetContracts_WhenManager_ReturnsAllContractsForTheFacility()
+    {
+        // Arrange
+        var (slotId, publicSlotContractId, memberSlotContractId, _) = await SeedSlotWithContracts();
+        await MakeUserManager(slotId);
+
+        // Act
+        var (rsp, result) = await app.Client.GETAsync<Endpoint, SlotGetContractsRequest, List<SlotGetContractsResponse>>(
+            new SlotGetContractsRequest { Id = slotId }
+        );
+
+        // Assert
+        rsp.IsSuccessStatusCode.ShouldBeTrue();
+        result.ShouldNotBeNull();
+        result.Select(sc => sc.Id).ShouldContain(publicSlotContractId);
+        result.Select(sc => sc.Id).ShouldContain(memberSlotContractId);
+    }
+
     [Fact, Priority(1)]
     public async Task GetContracts_WithNoUserContract_ReturnsOnlyPublicContracts()
     {
@@ -106,6 +125,24 @@ public class SlotGetContractsTests(AppFixture app)
         result.ShouldNotBeNull();
         result.Select(sc => sc.Id).ShouldNotContain(memberSlotContractId);
         result.Select(sc => sc.Id).ShouldContain(publicSlotContractId);
+    }
+
+    private async Task MakeUserManager(Guid slotId)
+    {
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var facilityId = await db.Slot.Where(s => s.Id == slotId).Select(s => s.FacilityId).SingleAsync(app.Context.CancellationToken);
+        var role = await db.Roles.SingleAsync(r => r.NormalizedName == Club.Constants.Policy.Manager.ToUpperInvariant(), app.Context.CancellationToken);
+        db.UserRoles.Add(
+            new UserRole
+            {
+                UserId = TestClaims.UserIdGuid,
+                RoleId = role.Id,
+                FacilityId = facilityId,
+            }
+        );
+        await db.SaveChangesAsync(app.Context.CancellationToken);
     }
 
     private async Task<(Guid SlotId, int PublicSlotContractId, int MemberSlotContractId, int MemberContractId)> SeedSlotWithContracts()

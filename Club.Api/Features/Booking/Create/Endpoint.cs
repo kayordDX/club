@@ -44,6 +44,21 @@ public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : E
             .ToListAsync(ct);
 
         var userContracts = await _dbContext.UserContract.Where(uc => uc.UserId == userId && uc.IsActive).ToListAsync(ct);
+        var facilityIds = slotContracts
+            .Select(sc => sc.Slot.FacilityId)
+            .Where(facilityId => facilityId.HasValue)
+            .Select(facilityId => facilityId!.Value)
+            .Distinct()
+            .ToList();
+        var managerFacilityIds = await _dbContext
+            .UserRoles.Where(ur =>
+                ur.UserId == userId
+                && ur.FacilityId.HasValue
+                && facilityIds.Contains(ur.FacilityId.Value)
+                && ur.Role.NormalizedName == Constants.Policy.Manager.ToUpperInvariant()
+            )
+            .Select(ur => ur.FacilityId!.Value)
+            .ToHashSetAsync(ct);
 
         foreach (var bookingReq in req.Bookings)
         {
@@ -54,7 +69,8 @@ public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : E
                 continue;
             }
 
-            if (!ContractEligibility.IsAllowed(sc.Contract, sc.Slot.StartDatetime, userContracts))
+            var isManager = sc.Slot.FacilityId.HasValue && managerFacilityIds.Contains(sc.Slot.FacilityId.Value);
+            if (!isManager && !ContractEligibility.IsAllowed(sc.Contract, sc.Slot.StartDatetime, userContracts))
                 AddError(r => r.Bookings, $"Contract {sc.Contract.Name} is not available to you for slot {bookingReq.SlotId}.");
         }
 
@@ -72,13 +88,6 @@ public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : E
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
 
         await _dbContext.Slot.FromSqlInterpolated($"SELECT * FROM slot WHERE id = ANY({slotIds}) ORDER BY id FOR UPDATE").ToListAsync(ct);
-
-        var facilityIds = slotContracts
-            .Select(sc => sc.Slot.FacilityId)
-            .Where(facilityId => facilityId.HasValue)
-            .Select(facilityId => facilityId!.Value)
-            .Distinct()
-            .ToList();
 
         var now = DateTime.UtcNow;
         var existingCounts = await _dbContext
