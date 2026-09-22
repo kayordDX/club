@@ -137,6 +137,26 @@ public class CreateBookingTests(AppFixture app)
     }
 
     [Fact]
+    public async Task CreateBooking_WhenManager_WithRestrictedContract_Succeeds()
+    {
+        // Arrange
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var (slot, slotContract, facilityId) = await CreateSlotWithContract(db, isPublic: false);
+        await MakeUserManager(db, facilityId);
+
+        var request = new BookingCreateRequest { Bookings = [CreateBookingRequest(slot.Id, slotContract.Id)], Extras = [] };
+
+        // Act
+        var (createResponse, createdBooking) = await app.Client.POSTAsync<BookingCreateEndpoint, BookingCreateRequest, BookingCreateResponse>(request);
+
+        // Assert
+        createResponse.IsSuccessStatusCode.ShouldBeTrue();
+        createdBooking.Id.ShouldBeGreaterThan(0);
+    }
+
+    [Fact]
     public async Task CreateBooking_WithRestrictedContractAndValidUserContract_Succeeds()
     {
         // Arrange
@@ -173,6 +193,20 @@ public class CreateBookingTests(AppFixture app)
 
         // Assert
         createResponse.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    private async Task MakeUserManager(AppDbContext db, int facilityId)
+    {
+        var role = await db.Roles.SingleAsync(r => r.NormalizedName == Club.Constants.Policy.Manager.ToUpperInvariant(), app.Context.CancellationToken);
+        db.UserRoles.Add(
+            new UserRole
+            {
+                UserId = TestClaims.UserIdGuid,
+                RoleId = role.Id,
+                FacilityId = facilityId,
+            }
+        );
+        await db.SaveChangesAsync(app.Context.CancellationToken);
     }
 
     private static BookingRequest CreateBookingRequest(Guid slotId, int slotContractId) =>

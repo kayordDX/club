@@ -18,13 +18,22 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetContractsRequest
     public override async Task HandleAsync(SlotGetContractsRequest req, CancellationToken ct)
     {
         var userId = Helpers.GetCurrentUserId(HttpContext);
+        var facilityId = await _dbContext.Slot.Where(s => s.Id == req.Id).Select(s => (int?)s.FacilityId).FirstOrDefaultAsync(ct);
+        var isManager =
+            userId.HasValue
+            && facilityId.HasValue
+            && await _dbContext.UserRoles.AnyAsync(
+                ur => ur.UserId == userId.Value && ur.FacilityId == facilityId && ur.Role.NormalizedName == Constants.Policy.Manager.ToUpperInvariant(),
+                ct
+            );
 
         var slotContracts = await _dbContext
             .SlotContract.Where(sc => sc.SlotId == req.Id)
-            // Anonymous and guest users only see public contracts; logged-in users also
-            // see contracts they hold a UserContract for that is valid on the slot's date.
+            // Managers may book any contract for their facility. Anonymous and guest users
+            // only see public contracts; logged-in users also see valid contracts they hold.
             .Where(sc =>
-                sc.Contract.IsPublic
+                isManager
+                || sc.Contract.IsPublic
                 || (
                     userId != null
                     && _dbContext.UserContract.Any(uc =>
