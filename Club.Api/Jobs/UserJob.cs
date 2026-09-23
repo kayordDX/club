@@ -5,7 +5,7 @@ namespace Club.Jobs;
 
 public class UserJob(UserSyncService userSyncService)
 {
-    [TickerFunction("SyncKeycloakUsers", "0 0 * * * *")]
+    [TickerFunction("SyncKeycloakUsers")]
     public async Task SyncKeycloakUsers(CancellationToken ct)
     {
         await userSyncService.SyncAllAsync(ct);
