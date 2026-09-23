@@ -95,6 +95,7 @@ public static class AuthExtensions
         });
 
         services.AddScoped<ICustomKeycloakService, CustomKeycloakService>();
+        services.AddScoped<UserSyncService>();
 
         return services;
     }
