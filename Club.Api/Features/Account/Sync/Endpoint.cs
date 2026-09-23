@@ -1,18 +1,10 @@
 using Club.Common;
-using Club.Common.Config;
-using Club.Entities;
-using Keycloak.AuthServices.Sdk.Admin;
-using Keycloak.AuthServices.Sdk.Admin.Models;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
+using Club.Services;
 
 namespace Club.Features.Account.Sync;
 
-public class Endpoint(IKeycloakUserClient keycloakUserClient, IOptions<KeycloakConfig> keycloakConfig, UserManager<User> userManager)
-    : Endpoint<AccountSyncRequest>
+public class Endpoint(UserSyncService userSyncService) : Endpoint<AccountSyncRequest>
 {
-    private readonly KeycloakConfig keycloakConfig = keycloakConfig.Value;
-
     public override void Configure()
     {
         Post("/account/sync");
@@ -28,70 +20,19 @@ public class Endpoint(IKeycloakUserClient keycloakUserClient, IOptions<KeycloakC
             return;
         }
 
-        var user = await userManager.FindByIdAsync(userId.Value.ToString());
-
-        bool shouldSync = user == null || req.Force || user.LastSync.AddHours(1) < DateTime.UtcNow;
-
-        if (!shouldSync)
+        var result = await userSyncService.SyncUserByIdAsync(userId.Value, req.Force, ct);
+        if (result is null)
         {
-            await Send.NoContentAsync(ct);
+            await Send.NotFoundAsync(ct);
             return;
         }
 
-        var keycloakUser = await keycloakUserClient.GetUserAsync(keycloakConfig.Realm, userId.Value.ToString(), cancellationToken: ct);
-        if (user != null)
+        if (!result.Succeeded)
         {
-            var updatedUser = MapKeycloakToUser(userId.Value, user, keycloakUser);
-            var result = await userManager.UpdateAsync(updatedUser);
-            if (result.Succeeded)
-            {
-                await Send.NoContentAsync(ct);
-            }
-            else
-            {
-                await Send.NotFoundAsync(ct);
-            }
+            await Send.ErrorsAsync(500, ct);
+            return;
         }
-        else
-        {
-            // create new user
-            var newUser = MapKeycloakToUser(userId.Value, null, keycloakUser);
-            var result = await userManager.CreateAsync(newUser);
-            if (result.Succeeded)
-            {
-                await Send.NoContentAsync(ct);
-            }
-            else
-            {
-                await Send.ErrorsAsync(500, ct);
-            }
-        }
-    }
 
-    private static User MapKeycloakToUser(Guid userId, User? user, UserRepresentation keycloakUser)
-    {
-        var picture = keycloakUser.Attributes?.FirstOrDefault(x => x.Key == "picture").Value?.FirstOrDefault();
-        var phoneNumber = keycloakUser.Attributes?.FirstOrDefault(x => x.Key == "phoneNumber").Value?.FirstOrDefault();
-        var phoneNumberVerified = string.Equals(
-            keycloakUser.Attributes?.FirstOrDefault(x => x.Key == "phoneNumberVerified").Value?.FirstOrDefault(),
-            "true",
-            StringComparison.OrdinalIgnoreCase
-        );
-
-        user ??= new User { FirstName = keycloakUser.FirstName ?? "", LastName = keycloakUser.LastName ?? "" };
-
-        user.Id = userId;
-        user.TwoFactorEnabled = keycloakUser.Totp ?? false;
-        user.Email = keycloakUser.Email;
-        user.EmailConfirmed = keycloakUser.EmailVerified ?? false;
-        user.UserName = keycloakUser.Username;
-        user.FirstName = keycloakUser.FirstName ?? keycloakUser.Username ?? "";
-        user.LastName = keycloakUser.LastName ?? "";
-        user.Picture = picture;
-        user.PhoneNumber = phoneNumber;
-        user.PhoneNumberConfirmed = phoneNumberVerified;
-        user.LastSync = DateTime.UtcNow;
-
-        return user;
+        await Send.NoContentAsync(ct);
     }
 }
