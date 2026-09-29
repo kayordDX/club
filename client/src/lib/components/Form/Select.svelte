@@ -7,7 +7,7 @@
 	type SingleSelectRootProps = Extract<SelectRootProps, { type: "single" }>;
 	type SelectItem<TValue extends string | number> = { value: TValue; label: string };
 
-	type Props = { label?: string; items: SelectItem<T>[] } & Omit<SingleSelectRootProps, "type">;
+	type Props = { label?: string; items: SelectItem<T>[] } & Omit<SingleSelectRootProps, "type" | "items">;
 
 	const field = useFieldContext<T>();
 

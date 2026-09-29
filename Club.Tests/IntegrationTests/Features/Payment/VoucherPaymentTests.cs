@@ -208,6 +208,7 @@ public class VoucherPaymentTests(AppFixture app)
             IsAvailable = true,
             IsOnline = true,
         };
+        db.VoucherExtra.Add(new VoucherExtra { Voucher = grant.Voucher, Extra = extra });
         db.ExtraBooking.Add(
             new ExtraBooking
             {
@@ -270,7 +271,6 @@ public class VoucherPaymentTests(AppFixture app)
         if (contractSource)
         {
             var contract = booking.SlotContractBookings.First().SlotContract.Contract;
-            db.ContractFacility.Add(new ContractFacility { Contract = contract, Facility = booking.SlotContractBookings.First().SlotContract.Slot.Facility! });
             db.ContractVoucher.Add(
                 new ContractVoucher
                 {
@@ -417,6 +417,214 @@ public class VoucherPaymentTests(AppFixture app)
         );
     }
 
+    [Fact]
+    public async Task RoundEligibility_MatchesMultipleSlotContracts_AndRejectsDisallowedContract()
+    {
+        var ct = app.Context.CancellationToken;
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var (booking, grant) = await SetupAsync(db);
+        var slot = booking.SlotContractBookings.First().SlotContract.Slot;
+        var allowed = new Contract { Name = "Second allowed" };
+        var disallowed = new Contract { Name = "Disallowed" };
+        var second = booking.SlotContractBookings.Last();
+        second.SlotContract = new SlotContract
+        {
+            Contract = allowed,
+            Slot = slot,
+            Price = 100,
+        };
+        var third = new SlotContractBooking
+        {
+            Booking = booking,
+            SlotContract = new SlotContract
+            {
+                Contract = disallowed,
+                Slot = slot,
+                Price = 100,
+            },
+        };
+        db.SlotContractBooking.Add(third);
+        db.VoucherContract.Add(new VoucherContract { Voucher = grant.Voucher, Contract = allowed });
+        booking.AmountOutstanding = 300;
+        await db.SaveChangesAsync(ct);
+        var cards = (await app.Client.GetFromJsonAsync<List<BookingVoucherDTO>>($"/payment/booking/{booking.Id}/vouchers", ct))!;
+        var targets = cards.Single(x => x.GrantId == grant.Id).Targets;
+        targets.Count.ShouldBe(2);
+        targets.ShouldAllBe(x => x.SlotContractBookingId != third.Id);
+        var request = Request(booking, grant);
+        request.SlotContractBookingId = third.Id;
+        (await app.Client.PostAsJsonAsync("/payment/voucher", request, ct)).StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        (await app.Client.PostAsJsonAsync("/payment/voucher", Request(booking, grant), ct)).StatusCode.ShouldBe(HttpStatusCode.OK);
+        request.SlotContractBookingId = second.Id;
+        (await app.Client.PostAsJsonAsync("/payment/voucher", request, ct)).StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task ExtraEligibility_MatchesMultipleExtras_AndIntersectsFacilities()
+    {
+        var ct = app.Context.CancellationToken;
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var (booking, grant) = await SetupAsync(db);
+        var (otherBooking, _) = await SetupAsync(db);
+        var facility = booking.SlotContractBookings.First().SlotContract.Slot.Facility!;
+        var otherFacility = otherBooking.SlotContractBookings.First().SlotContract.Slot.Facility!;
+        grant.Voucher.IsExtra = true;
+        Extra MakeExtra(Facility f, string name) =>
+            new()
+            {
+                Name = name,
+                Code = name,
+                Facility = f,
+                OutletId = f.OutletId,
+                Price = 30,
+                IsAvailable = true,
+                IsOnline = true,
+            };
+        var allowed = MakeExtra(facility, "Allowed");
+        var allowed2 = MakeExtra(facility, "Allowed2");
+        var disallowed = MakeExtra(facility, "Disallowed");
+        var outside = MakeExtra(otherFacility, "Outside");
+        foreach (var extra in new[] { allowed, allowed2, disallowed, outside })
+            db.ExtraBooking.Add(
+                new ExtraBooking
+                {
+                    Booking = booking,
+                    Extra = extra,
+                    Amount = 1,
+                }
+            );
+        foreach (var extra in new[] { allowed, allowed2, outside })
+            db.VoucherExtra.Add(new VoucherExtra { Voucher = grant.Voucher, Extra = extra });
+        // Even with a booked time at its facility, the outside item fails the voucher facility intersection.
+        db.SlotContractBooking.Add(new SlotContractBooking { Booking = booking, SlotContract = otherBooking.SlotContractBookings.First().SlotContract });
+        booking.AmountOutstanding = 420;
+        await db.SaveChangesAsync(ct);
+        var cards = (await app.Client.GetFromJsonAsync<List<BookingVoucherDTO>>($"/payment/booking/{booking.Id}/vouchers", ct))!;
+        var card = cards.Single(x => x.GrantId == grant.Id);
+        card.Targets.Select(x => x.ExtraId).Order().ShouldBe(new int?[] { allowed.Id, allowed2.Id }.Order());
+        card.EligibleAmount.ShouldBe(60m);
+        foreach (var extra in new[] { disallowed, outside })
+            (
+                await app.Client.PostAsJsonAsync(
+                    "/payment/voucher",
+                    new PaymentVoucherRequest
+                    {
+                        BookingId = booking.Id,
+                        GrantId = grant.Id,
+                        ExtraId = extra.Id,
+                    },
+                    ct
+                )
+            ).StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        foreach (var extra in new[] { allowed, allowed2 })
+            (
+                await app.Client.PostAsJsonAsync(
+                    "/payment/voucher",
+                    new PaymentVoucherRequest
+                    {
+                        BookingId = booking.Id,
+                        GrantId = grant.Id,
+                        ExtraId = extra.Id,
+                    },
+                    ct
+                )
+            ).StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
+
+    [Theory]
+    [InlineData(VoucherRedemptionKind.Entitlement, false)]
+    [InlineData(VoucherRedemptionKind.Entitlement, true)]
+    [InlineData(VoucherRedemptionKind.Discount, false)]
+    [InlineData(VoucherRedemptionKind.Credit, false)]
+    public async Task EmptyLists_BlockOnlyEntitlements_AndPostRechecksAfterPreview(VoucherRedemptionKind kind, bool isExtra)
+    {
+        var ct = app.Context.CancellationToken;
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var (booking, grant) = await SetupAsync(db, kind, kind == VoucherRedemptionKind.Discount ? VoucherDiscountMode.FixedAmount : null, 25);
+        var preview = (await app.Client.GetFromJsonAsync<List<BookingVoucherDTO>>($"/payment/booking/{booking.Id}/vouchers", ct))!;
+        preview.Single(x => x.GrantId == grant.Id).IsEligible.ShouldBeTrue();
+        grant.Voucher.IsExtra = isExtra;
+        db.VoucherContract.RemoveRange(await db.VoucherContract.Where(x => x.VoucherId == grant.VoucherId).ToListAsync(ct));
+        await db.SaveChangesAsync(ct);
+        var response = await app.Client.PostAsJsonAsync("/payment/voucher", Request(booking, grant), ct);
+        response.StatusCode.ShouldBe(kind == VoucherRedemptionKind.Entitlement ? HttpStatusCode.BadRequest : HttpStatusCode.OK);
+        var available = (await app.Client.GetFromJsonAsync<List<AvailableVoucherDTO>>("/wallet/vouchers", ct))!;
+        if (kind == VoucherRedemptionKind.Entitlement || kind == VoucherRedemptionKind.Credit)
+            available.ShouldNotContain(x => x.GrantId == grant.Id);
+    }
+
+    [Fact]
+    public async Task FacilityList_HidesOtherFacilityVouchers_ButWalletListsAllAvailableOwnedGrants()
+    {
+        var ct = app.Context.CancellationToken;
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var (booking, grant) = await SetupAsync(db);
+        var (_, outside) = await SetupAsync(db);
+        var cards = (await app.Client.GetFromJsonAsync<List<BookingVoucherDTO>>($"/payment/booking/{booking.Id}/vouchers", ct))!;
+        cards.ShouldContain(x => x.GrantId == grant.Id);
+        cards.ShouldNotContain(x => x.GrantId == outside.Id);
+        (
+            await app.Client.PostAsJsonAsync(
+                "/payment/voucher",
+                new PaymentVoucherRequest
+                {
+                    BookingId = booking.Id,
+                    GrantId = outside.Id,
+                    SlotContractBookingId = booking.SlotContractBookings.First().Id,
+                },
+                ct
+            )
+        ).StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        var all = (await app.Client.GetFromJsonAsync<List<AvailableVoucherDTO>>("/wallet/vouchers", ct))!;
+        all.ShouldContain(x => x.GrantId == grant.Id);
+        all.ShouldContain(x => x.GrantId == outside.Id);
+        var own = all.Single(x => x.GrantId == grant.Id);
+        own.ContractIds.ShouldContain(booking.SlotContractBookings.First().SlotContract.ContractId);
+        own.FacilityIds.ShouldContain(booking.SlotContractBookings.First().SlotContract.Slot.FacilityId!.Value);
+        outside.ExpiryDate = DateTime.UtcNow.AddDays(-1);
+        await db.SaveChangesAsync(ct);
+        (await app.Client.GetFromJsonAsync<List<AvailableVoucherDTO>>("/wallet/vouchers", ct))!.ShouldNotContain(x => x.GrantId == outside.Id);
+    }
+
+    [Fact]
+    public async Task VoucherAdmin_SavesMultiSelections_AndRejectsCrossFacilityItems()
+    {
+        var ct = app.Context.CancellationToken;
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var (booking, _) = await SetupAsync(db);
+        var (outside, _) = await SetupAsync(db);
+        var facility = booking.SlotContractBookings.First().SlotContract.Slot.Facility!;
+        var contract = booking.SlotContractBookings.First().SlotContract.Contract;
+        var second = new Contract { Name = "Second" };
+        db.ContractFacility.Add(new ContractFacility { Contract = second, Facility = facility });
+        await db.SaveChangesAsync(ct);
+        var body = new Club.Features.Admin.Voucher.Create.AdminVoucherCreateRequest
+        {
+            Name = "Admin entitlement",
+            RedemptionKind = VoucherRedemptionKind.Entitlement,
+            ContractIds = [contract.Id, second.Id, second.Id],
+        };
+        var url = $"/admin/facility/{facility.Id}/voucher";
+        (await app.Client.PostAsJsonAsync(url, body, ct)).StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+        await AssignManagerAsync(db, facility.Id);
+        var response = await app.Client.PostAsJsonAsync(url, body, ct);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var id = await response.Content.ReadFromJsonAsync<int>(ct);
+        var list = (await app.Client.GetFromJsonAsync<List<AdminVoucherDTO>>(url, ct))!;
+        list.Single(x => x.Id == id).ContractIds.Count.ShouldBe(2);
+        list.ShouldAllBe(x => x.CanEdit);
+        body.ContractIds = [outside.SlotContractBookings.First().SlotContract.ContractId];
+        (await app.Client.PutAsJsonAsync($"{url}/{id}", body, ct)).StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        body.ContractIds = [];
+        (await app.Client.PutAsJsonAsync($"{url}/{id}", body, ct)).StatusCode.ShouldBe(HttpStatusCode.NoContent);
+        (await db.VoucherContract.CountAsync(x => x.VoucherId == id, ct)).ShouldBe(0);
+    }
+
     private async Task AssignManagerAsync(AppDbContext db, int facilityId)
     {
         var role = await db.Roles.SingleAsync(x => x.NormalizedName == "MANAGER", app.Context.CancellationToken);
@@ -520,6 +728,8 @@ public class VoucherPaymentTests(AppFixture app)
             ExpiryDate = DateTime.UtcNow.AddMonths(1),
         };
         db.Booking.Add(booking);
+        db.ContractFacility.Add(new ContractFacility { Contract = contract, Facility = facility });
+        db.VoucherContract.Add(new VoucherContract { Voucher = voucher, Contract = contract });
         db.WalletVoucherGrant.Add(grant);
         db.WalletVoucherGrantAudit.Add(
             new WalletVoucherGrantAudit

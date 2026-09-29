@@ -58,9 +58,14 @@ public class BookingVoucherService(AppDbContext db)
         history = history.Where(x => BookingPayments.IsSettled(x.Payment.PaymentStatusId)).ToList();
         bool ValidDate(DateTime date) => date >= grant.GrantedAt && date < grant.ExpiryDate;
 
+        var entitlement = voucher.RedemptionKind == VoucherRedemptionKind.Entitlement;
+        var contractIds =
+            entitlement && !voucher.IsExtra ? await db.VoucherContract.Where(x => x.VoucherId == voucher.Id).Select(x => x.ContractId).ToListAsync(ct) : [];
+        var extraIds = entitlement && voucher.IsExtra ? await db.VoucherExtra.Where(x => x.VoucherId == voucher.Id).Select(x => x.ExtraId).ToListAsync(ct) : [];
+
         if (voucher.IsExtra)
         {
-            foreach (var extra in booking.ExtraBookings.Where(x => facilities.Contains(x.Extra.FacilityId)))
+            foreach (var extra in booking.ExtraBookings.Where(x => facilities.Contains(x.Extra.FacilityId) && (!entitlement || extraIds.Contains(x.ExtraId))))
             {
                 var dates = booking
                     .SlotContractBookings.Where(x => x.SlotContract.Slot.FacilityId == extra.Extra.FacilityId)
@@ -89,6 +94,7 @@ public class BookingVoucherService(AppDbContext db)
                     x.SlotContract.Slot.FacilityId.HasValue
                     && facilities.Contains(x.SlotContract.Slot.FacilityId.Value)
                     && ValidDate(x.SlotContract.Slot.StartDatetime)
+                    && (!entitlement || contractIds.Contains(x.SlotContract.ContractId))
                 )
             )
             {
@@ -127,7 +133,6 @@ public class BookingVoucherService(AppDbContext db)
     public async Task<Entities.Payment> RedeemAsync(
         Booking booking,
         WalletVoucherGrant grant,
-        BookingVoucherDTO description,
         decimal available,
         int? slotContractBookingId,
         int? extraId,
@@ -135,6 +140,8 @@ public class BookingVoucherService(AppDbContext db)
         CancellationToken ct
     )
     {
+        // Recompute against current restrictions, not a caller's previously fetched preview.
+        var description = await DescribeAsync(booking, grant, available, ct);
         if (!description.IsEligible)
             throw new InvalidOperationException(description.IneligibleReason);
         decimal units;
