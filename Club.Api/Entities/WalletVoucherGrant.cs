@@ -6,9 +6,6 @@ public class WalletVoucherGrant
     public Guid WalletId { get; set; }
     public required Wallet Wallet { get; set; }
 
-    public int UserContractId { get; set; }
-    public required UserContract UserContract { get; set; }
-
     public int VoucherId { get; set; }
     public required Voucher Voucher { get; set; }
 

@@ -10,13 +10,7 @@ namespace Club.Services;
 public class BookingVoucherService(AppDbContext db)
 {
     public Task<List<WalletVoucherGrant>> GetGrantsAsync(Guid userId, CancellationToken ct) =>
-        db
-            .WalletVoucherGrant.Include(x => x.Wallet)
-            .Include(x => x.Voucher)
-            .Include(x => x.UserContract)
-            .Where(x => x.Wallet.UserId == userId)
-            .OrderBy(x => x.ExpiryDate)
-            .ToListAsync(ct);
+        db.WalletVoucherGrant.Include(x => x.Wallet).Include(x => x.Voucher).Where(x => x.Wallet.UserId == userId).OrderBy(x => x.ExpiryDate).ToListAsync(ct);
 
     public Task<Booking?> GetBookingAsync(int bookingId, Guid userId, CancellationToken ct) =>
         db
@@ -47,15 +41,8 @@ public class BookingVoucherService(AppDbContext db)
         var now = DateTime.UtcNow;
         if (booking.BookingStatusId != (int)BookingStatusEnum.Pending || booking.ExpiresAt <= now || available <= 0)
             dto.IneligibleReason = "Booking is not payable or has no unreserved balance.";
-        else if (!grant.Wallet.IsActive || grant.Wallet.Currency != "ZAR")
+        else if (grant.Wallet.UserId != booking.UserId || !grant.Wallet.IsActive || grant.Wallet.Currency != "ZAR")
             dto.IneligibleReason = "Wallet is inactive or uses an unsupported currency.";
-        else if (
-            !grant.UserContract.IsActive
-            || grant.UserContract.UserId != grant.Wallet.UserId
-            || grant.UserContract.StartDate > now
-            || grant.UserContract.EndDate <= now
-        )
-            dto.IneligibleReason = "Contract is not active.";
         else if (grant.GrantedAt > now || grant.ExpiryDate <= now || grant.AmountRemaining <= 0)
             dto.IneligibleReason = "Voucher is expired, not yet valid or exhausted.";
         if (dto.IneligibleReason is not null)
@@ -69,10 +56,7 @@ public class BookingVoucherService(AppDbContext db)
             .Where(x => db.PaymentBooking.Any(pb => pb.PaymentId == x.PaymentId && pb.BookingId == booking.Id))
             .ToListAsync(ct);
         history = history.Where(x => BookingPayments.IsSettled(x.Payment.PaymentStatusId)).ToList();
-        bool ValidDate(DateTime date) =>
-            date >= grant.UserContract.StartDate
-            && date < grant.ExpiryDate
-            && (!grant.UserContract.EndDate.HasValue || date <= grant.UserContract.EndDate.Value);
+        bool ValidDate(DateTime date) => date >= grant.GrantedAt && date < grant.ExpiryDate;
 
         if (voucher.IsExtra)
         {
