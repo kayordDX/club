@@ -2,12 +2,13 @@
 	import { page } from "$app/state";
 	import { resolve } from "$app/paths";
 
-	import { Alert, Badge, Button, Card, Table, ToggleGroup } from "@kayord/ui";
-	import { CalendarDaysIcon, ChevronLeftIcon, Clock3Icon, CreditCardIcon, MapPinIcon, StoreIcon, UserRoundIcon } from "@lucide/svelte";
+	import { Badge, Button, Card, Table } from "@kayord/ui";
+	import { CalendarDaysIcon, ChevronLeftIcon, Clock3Icon, MapPinIcon, StoreIcon, UserRoundIcon } from "@lucide/svelte";
 	import { BookingStatusEnum } from "$lib/api";
 	import { bookingGet, bookingGetPath, bookingUpdateStatus } from "$lib/api/remote/booking.remote";
 	import { facilityPaymentMethods } from "$lib/api/remote/facility.remote";
-	import { paymentInitiate } from "$lib/api/remote/payment.remote";
+	import BookingPayments from "$lib/components/booking-payments.svelte";
+	import BookingExtras from "$lib/components/BookingExtras.svelte";
 	import { formatCurrency, formatDate, formatTime } from "$lib/booking/format";
 	import CountdownTimer from "$lib/components/CountdownTimer.svelte";
 	import { toast } from "svelte-sonner";
@@ -18,26 +19,32 @@
 	const facilityId = Number(page.params.id) || 0;
 	const bookingId = Number(page.params.bookingId) || 0;
 
-	const booking = await bookingGet(bookingId);
+	let booking = $state(await bookingGet(bookingId));
+	async function refreshBooking() {
+		await bookingGet(bookingId).refresh();
+		booking = await bookingGet(bookingId);
+	}
 	const path = await bookingGetPath(bookingId);
 	const paymentMethods = await facilityPaymentMethods(facilityId);
 
-	const players = booking.slotContractBookings ?? [];
-	const extras = booking.extraBookings ?? [];
-	const playersTotal = players.reduce((sum, player) => sum + (player.slotContract?.price ?? 0), 0);
-	const extrasTotal = extras.reduce((sum, extra) => sum + (extra.extra?.price ?? 0) * (extra.amount ?? 0), 0);
-	const subtotal = playersTotal + extrasTotal;
+	const players = $derived(booking.slotContractBookings ?? []);
+	const extras = $derived(booking.extraBookings ?? []);
+	const playersTotal = $derived(players.reduce((sum, player) => sum + (player.slotContract?.price ?? 0), 0));
+	const extrasTotal = $derived(extras.reduce((sum, extra) => sum + (extra.extra?.price ?? 0) * (extra.amount ?? 0), 0));
+	const subtotal = $derived(playersTotal + extrasTotal);
 
-	let selectedProvider = $state("");
 	let isPaying = $state(false);
 
-	const basketUrl = getBasketUrl({
-		slug,
-		facilityId,
-		searchParams: page.url.searchParams,
-		booking,
-	});
-	const canGoBack = canReturnToBasket(booking) && booking.bookingStatus?.id === BookingStatusEnum.Pending;
+	let editable = $state(false);
+	const basketUrl = $derived(
+		getBasketUrl({
+			slug,
+			facilityId,
+			searchParams: page.url.searchParams,
+			booking,
+		})
+	);
+	const canGoBack = $derived(editable && canReturnToBasket(booking) && booking.bookingStatus?.id === BookingStatusEnum.Pending);
 
 	const cancelBooking = async () => {
 		try {
@@ -51,32 +58,6 @@
 		} catch (error) {
 			console.error("Failed to cancel booking:", error);
 			toast.error("Failed to cancel booking. Please try again.");
-		}
-	};
-
-	const initiatePayment = async () => {
-		if (!selectedProvider) {
-			toast.error("Please select a payment method.");
-			return;
-		}
-
-		isPaying = true;
-		try {
-			const response = await paymentInitiate({
-				bookingId,
-				providerName: selectedProvider,
-			});
-
-			if (response.redirectUrl) {
-				window.location.href = response.redirectUrl;
-			} else {
-				toast.error("Payment initiation failed. No redirect URL received.");
-			}
-		} catch (error) {
-			console.error("Payment initiation failed:", error);
-			toast.error("Failed to initiate payment. Please try again.");
-		} finally {
-			isPaying = false;
 		}
 	};
 
@@ -191,13 +172,6 @@
 									<Table.Cell class="text-right">{formatCurrency(player.slotContract?.price)}</Table.Cell>
 								</Table.Row>
 							{/each}
-							{#each extras as extraBooking (extraBooking.extraId)}
-								<Table.Row>
-									<Table.Cell class="font-medium">{extraBooking.extra.name}</Table.Cell>
-									<Table.Cell class="text-muted-foreground">×{extraBooking.amount}</Table.Cell>
-									<Table.Cell class="text-right">{formatCurrency(extraBooking.extra.price * extraBooking.amount)}</Table.Cell>
-								</Table.Row>
-							{/each}
 						</Table.Body>
 					</Table.Root>
 
@@ -217,30 +191,14 @@
 					</div>
 				</Card.Root>
 
-				<div class="mt-4 mb-4 flex items-center justify-between gap-4">
-					<div>
-						<h2 class="text-lg font-semibold">Choose payment method</h2>
-						<p class="text-muted-foreground text-sm">Pick the payment method and proceed to payment</p>
-					</div>
-				</div>
-
-				{#if paymentMethods.length > 0}
-					<div class="text-muted-foreground mb-4 text-sm">Available payment methods</div>
-
-					<ToggleGroup.Root variant="outline" type="single" class="w-full border" orientation="vertical" bind:value={selectedProvider}>
-						{#each paymentMethods as paymentMethod (paymentMethod.providerName)}
-							<ToggleGroup.Item value={paymentMethod.providerName} class="flex h-fit flex-1 p-4">
-								<CreditCardIcon />
-								<div>{paymentMethod.type}</div>
-							</ToggleGroup.Item>
-						{/each}
-					</ToggleGroup.Root>
-				{:else}
-					<Alert.Root variant="destructive">
-						<Alert.Title>No payment methods</Alert.Title>
-						<Alert.Description>This facility do not have any available payment methods.</Alert.Description>
-					</Alert.Root>
-				{/if}
+				{#if extras.length}<BookingExtras {extras} />{/if}
+				<BookingPayments
+					{bookingId}
+					methods={paymentMethods}
+					onrefresh={refreshBooking}
+					onbusy={(busy) => (isPaying = busy)}
+					oneditable={(value) => (editable = value)}
+				/>
 			</Card.Content>
 			<Card.Footer class="flex justify-between border-t">
 				<div class="flex gap-2">
@@ -250,11 +208,8 @@
 							Back to edit
 						</Button>
 					{/if}
-					<Button onclick={cancelBooking} variant="destructive" disabled={isPaying}>Cancel</Button>
+					{#if canGoBack}<Button onclick={cancelBooking} variant="destructive" disabled={isPaying}>Cancel</Button>{/if}
 				</div>
-				<Button onclick={initiatePayment} disabled={!selectedProvider || isPaying}>
-					{isPaying ? "Processing..." : "Pay Now"}
-				</Button>
 			</Card.Footer>
 		</Card.Root>
 	</div>

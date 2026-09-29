@@ -7,7 +7,7 @@
 	},
 	"servers": [
 		{
-			"url": "http://localhost:5000"
+			"url": "http://localhost:34951"
 		}
 	],
 	"paths": {
@@ -245,6 +245,105 @@
 				}
 			}
 		},
+		"/payment/booking/{bookingId}/vouchers": {
+			"get": {
+				"tags": ["Payment"],
+				"operationId": "PaymentVouchers",
+				"parameters": [
+					{
+						"name": "bookingId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					}
+				],
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/BookingVoucherDTO"
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					}
+				},
+				"security": [
+					{
+						"Keycloak": []
+					}
+				]
+			}
+		},
+		"/payment/voucher": {
+			"post": {
+				"tags": ["Payment"],
+				"operationId": "PaymentVoucher",
+				"requestBody": {
+					"x-name": "PaymentVoucherRequest",
+					"description": "",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/PaymentVoucherRequest"
+							}
+						}
+					},
+					"required": true,
+					"x-position": 1
+				},
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PaymentVoucherResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					}
+				},
+				"security": [
+					{
+						"Keycloak": []
+					}
+				]
+			}
+		},
 		"/payment/result/{provider}": {
 			"get": {
 				"tags": ["Payment"],
@@ -344,6 +443,53 @@
 						}
 					}
 				}
+			}
+		},
+		"/payment/booking/{bookingId}": {
+			"get": {
+				"tags": ["Payment"],
+				"operationId": "PaymentGetBooking",
+				"parameters": [
+					{
+						"name": "bookingId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					}
+				],
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BookingPaymentDTO"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					}
+				},
+				"security": [
+					{
+						"Keycloak": []
+					}
+				]
 			}
 		},
 		"/payment/form/{provider}/{transactionId}": {
@@ -1110,6 +1256,806 @@
 					},
 					"401": {
 						"description": "Unauthorized"
+					}
+				},
+				"security": [
+					{
+						"Keycloak": []
+					}
+				]
+			}
+		},
+		"/admin/facility/{facilityId}/slot": {
+			"get": {
+				"tags": ["Admin"],
+				"operationId": "AdminSlotGetAll",
+				"parameters": [
+					{
+						"name": "facilityId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					},
+					{
+						"name": "date",
+						"in": "query",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "date-time"
+						}
+					}
+				],
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/AdminSlotGetAllResponse"
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					}
+				},
+				"security": [
+					{
+						"Keycloak": []
+					}
+				]
+			}
+		},
+		"/admin/facility/{facilityId}/contract/{id}/member/{memberId}": {
+			"put": {
+				"tags": ["Admin"],
+				"operationId": "AdminContractUpdateMember",
+				"parameters": [
+					{
+						"name": "facilityId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					},
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					},
+					{
+						"name": "memberId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					}
+				],
+				"requestBody": {
+					"x-name": "AdminContractUpdateMemberRequest",
+					"description": "",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/AdminContractUpdateMemberRequest"
+							}
+						}
+					},
+					"required": true,
+					"x-position": 1
+				},
+				"responses": {
+					"204": {
+						"description": "No Content"
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/problem+json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"Keycloak": []
+					}
+				]
+			},
+			"delete": {
+				"tags": ["Admin"],
+				"operationId": "AdminContractRemoveMember",
+				"parameters": [
+					{
+						"name": "facilityId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					},
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					},
+					{
+						"name": "memberId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					}
+				],
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"204": {
+						"description": "No Content"
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					}
+				},
+				"security": [
+					{
+						"Keycloak": []
+					}
+				]
+			}
+		},
+		"/admin/facility/{facilityId}/contract/{id}": {
+			"put": {
+				"tags": ["Admin"],
+				"operationId": "AdminContractUpdate",
+				"parameters": [
+					{
+						"name": "facilityId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					},
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					}
+				],
+				"requestBody": {
+					"x-name": "AdminContractUpdateRequest",
+					"description": "",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/AdminContractUpdateRequest"
+							}
+						}
+					},
+					"required": true,
+					"x-position": 1
+				},
+				"responses": {
+					"204": {
+						"description": "No Content"
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/problem+json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"Keycloak": []
+					}
+				]
+			},
+			"get": {
+				"tags": ["Admin"],
+				"operationId": "AdminContractGet",
+				"parameters": [
+					{
+						"name": "facilityId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					},
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					}
+				],
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AdminContractDTO"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					}
+				},
+				"security": [
+					{
+						"Keycloak": []
+					}
+				]
+			},
+			"delete": {
+				"tags": ["Admin"],
+				"operationId": "AdminContractDelete",
+				"parameters": [
+					{
+						"name": "facilityId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					},
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					}
+				],
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"204": {
+						"description": "No Content"
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					}
+				},
+				"security": [
+					{
+						"Keycloak": []
+					}
+				]
+			}
+		},
+		"/admin/facility/{facilityId}/contract/{id}/member/search": {
+			"get": {
+				"tags": ["Admin"],
+				"operationId": "AdminContractSearchMember",
+				"parameters": [
+					{
+						"name": "facilityId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					},
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					},
+					{
+						"name": "query",
+						"in": "query",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AdminMemberSearchResultDTO"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/problem+json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"Keycloak": []
+					}
+				]
+			}
+		},
+		"/admin/facility/{facilityId}/contract/{id}/members": {
+			"get": {
+				"tags": ["Admin"],
+				"operationId": "AdminContractGetMembers",
+				"parameters": [
+					{
+						"name": "facilityId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					},
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					}
+				],
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/AdminContractMemberDTO"
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					}
+				},
+				"security": [
+					{
+						"Keycloak": []
+					}
+				]
+			}
+		},
+		"/admin/facility/{facilityId}/contract": {
+			"get": {
+				"tags": ["Admin"],
+				"operationId": "AdminContractGetAll",
+				"parameters": [
+					{
+						"name": "facilityId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					}
+				],
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/AdminContractDTO"
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					}
+				},
+				"security": [
+					{
+						"Keycloak": []
+					}
+				]
+			},
+			"post": {
+				"tags": ["Admin"],
+				"operationId": "AdminContractCreate",
+				"parameters": [
+					{
+						"name": "facilityId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					}
+				],
+				"requestBody": {
+					"x-name": "AdminContractCreateRequest",
+					"description": "",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/AdminContractCreateRequest"
+							}
+						}
+					},
+					"required": true,
+					"x-position": 1
+				},
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AdminContractDTO"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/problem+json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"Keycloak": []
+					}
+				]
+			}
+		},
+		"/admin/facility/{facilityId}/contract/{id}/member/create": {
+			"post": {
+				"tags": ["Admin"],
+				"operationId": "AdminContractCreateMember",
+				"parameters": [
+					{
+						"name": "facilityId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					},
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					}
+				],
+				"requestBody": {
+					"x-name": "AdminContractCreateMemberRequest",
+					"description": "",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/AdminContractCreateMemberRequest"
+							}
+						}
+					},
+					"required": true,
+					"x-position": 1
+				},
+				"responses": {
+					"204": {
+						"description": "No Content"
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/problem+json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"Keycloak": []
+					}
+				]
+			}
+		},
+		"/admin/facility/{facilityId}/contract/{id}/member": {
+			"post": {
+				"tags": ["Admin"],
+				"operationId": "AdminContractAddMember",
+				"parameters": [
+					{
+						"name": "facilityId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					},
+					{
+						"name": "id",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "integer",
+							"format": "int32"
+						}
+					}
+				],
+				"requestBody": {
+					"x-name": "AdminContractAddMemberRequest",
+					"description": "",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/AdminContractAddMemberRequest"
+							}
+						}
+					},
+					"required": true,
+					"x-position": 1
+				},
+				"responses": {
+					"204": {
+						"description": "No Content"
+					},
+					"400": {
+						"description": "Bad Request",
+						"content": {
+							"application/problem+json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					},
+					"403": {
+						"description": "Forbidden"
+					},
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
 					}
 				},
 				"security": [
@@ -1889,6 +2835,191 @@
 					}
 				}
 			},
+			"BookingVoucherDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"name",
+					"description",
+					"grantId",
+					"voucherId",
+					"isExtra",
+					"redemptionKind",
+					"amountRemaining",
+					"expiryDate",
+					"isEligible",
+					"eligibleAmount",
+					"paymentValue",
+					"targets"
+				],
+				"properties": {
+					"grantId": {
+						"type": "string",
+						"format": "guid"
+					},
+					"voucherId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"name": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"isExtra": {
+						"type": "boolean"
+					},
+					"redemptionKind": {
+						"$ref": "#/components/schemas/VoucherRedemptionKind"
+					},
+					"discountMode": {
+						"nullable": true,
+						"oneOf": [
+							{
+								"$ref": "#/components/schemas/VoucherDiscountMode"
+							}
+						]
+					},
+					"discountValue": {
+						"type": "number",
+						"format": "decimal",
+						"nullable": true
+					},
+					"maxDiscountAmount": {
+						"type": "number",
+						"format": "decimal",
+						"nullable": true
+					},
+					"amountRemaining": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"expiryDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"isEligible": {
+						"type": "boolean"
+					},
+					"ineligibleReason": {
+						"type": "string",
+						"nullable": true
+					},
+					"eligibleAmount": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"paymentValue": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"targets": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/VoucherTargetDTO"
+						}
+					}
+				}
+			},
+			"VoucherRedemptionKind": {
+				"type": "integer",
+				"description": "",
+				"x-enumNames": ["Entitlement", "Credit", "Discount"],
+				"enum": [1, 2, 3]
+			},
+			"VoucherDiscountMode": {
+				"type": "integer",
+				"description": "",
+				"x-enumNames": ["Percentage", "FixedAmount"],
+				"enum": [1, 2]
+			},
+			"VoucherTargetDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["name", "unitsAvailable", "unitPrice"],
+				"properties": {
+					"slotContractBookingId": {
+						"type": "integer",
+						"format": "int32",
+						"nullable": true
+					},
+					"extraId": {
+						"type": "integer",
+						"format": "int32",
+						"nullable": true
+					},
+					"name": {
+						"type": "string"
+					},
+					"unitsAvailable": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"unitPrice": {
+						"type": "number",
+						"format": "decimal"
+					}
+				}
+			},
+			"PaymentVoucherResponse": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["transactionId", "amount", "paymentStatusId", "amountPaid", "amountOutstanding", "isPaid"],
+				"properties": {
+					"transactionId": {
+						"type": "string"
+					},
+					"amount": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"paymentStatusId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"amountPaid": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"amountOutstanding": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"isPaid": {
+						"type": "boolean"
+					}
+				}
+			},
+			"PaymentVoucherRequest": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["bookingId", "grantId", "quantity"],
+				"properties": {
+					"bookingId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"grantId": {
+						"type": "string",
+						"format": "guid"
+					},
+					"slotContractBookingId": {
+						"type": "integer",
+						"format": "int32",
+						"nullable": true
+					},
+					"extraId": {
+						"type": "integer",
+						"format": "int32",
+						"nullable": true
+					},
+					"quantity": {
+						"type": "integer",
+						"format": "int32"
+					}
+				}
+			},
 			"PaymentInitiateResponse": {
 				"type": "object",
 				"additionalProperties": false,
@@ -1917,6 +3048,120 @@
 					},
 					"providerName": {
 						"type": "string"
+					},
+					"amount": {
+						"type": "number",
+						"format": "decimal",
+						"nullable": true
+					},
+					"recurring": {
+						"nullable": true,
+						"oneOf": [
+							{
+								"$ref": "#/components/schemas/PaymentInitiateRecurring"
+							}
+						]
+					}
+				}
+			},
+			"PaymentInitiateRecurring": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["frequency", "cycles"],
+				"properties": {
+					"frequency": {
+						"$ref": "#/components/schemas/PaymentFrequencyEnum"
+					},
+					"cycles": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"recurringAmount": {
+						"type": "number",
+						"format": "decimal",
+						"nullable": true
+					},
+					"firstBillingDate": {
+						"type": "string",
+						"format": "date",
+						"nullable": true
+					}
+				}
+			},
+			"PaymentFrequencyEnum": {
+				"type": "integer",
+				"description": "",
+				"x-enumNames": ["Monthly", "Quarterly", "Biannually", "Annually"],
+				"enum": [3, 4, 5, 6]
+			},
+			"BookingPaymentDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["bookingId", "amountPaid", "amountOutstanding", "amountAvailable", "isPaid", "payments"],
+				"properties": {
+					"bookingId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"amountPaid": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"amountOutstanding": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"amountAvailable": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"isPaid": {
+						"type": "boolean"
+					},
+					"payments": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/PaymentDTO"
+						}
+					}
+				}
+			},
+			"PaymentDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["transactionId", "paymentType", "paymentStatus", "providerName", "id", "amount", "paymentTypeId", "paymentStatusId", "paymentStatusDate"],
+				"properties": {
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"transactionId": {
+						"type": "string"
+					},
+					"amount": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"paymentTypeId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"paymentType": {
+						"type": "string"
+					},
+					"paymentStatusId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"paymentStatus": {
+						"type": "string"
+					},
+					"providerName": {
+						"type": "string"
+					},
+					"paymentStatusDate": {
+						"type": "string",
+						"format": "date-time"
 					}
 				}
 			},
@@ -2110,8 +3355,7 @@
 					"outletType",
 					"isActive",
 					"facilities",
-					"extras",
-					"contractOutlets"
+					"extras"
 				],
 				"properties": {
 					"created": {
@@ -2209,19 +3453,13 @@
 						"items": {
 							"$ref": "#/components/schemas/Extra"
 						}
-					},
-					"contractOutlets": {
-						"type": "array",
-						"items": {
-							"$ref": "#/components/schemas/ContractOutlet"
-						}
 					}
 				}
 			},
 			"Business": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": ["name", "created", "id", "outlets", "contracts", "contractFields"],
+				"required": ["name", "created", "id", "outlets"],
 				"properties": {
 					"created": {
 						"type": "string",
@@ -2254,155 +3492,6 @@
 						"items": {
 							"$ref": "#/components/schemas/Outlet"
 						}
-					},
-					"contracts": {
-						"type": "array",
-						"items": {
-							"$ref": "#/components/schemas/Contract"
-						}
-					},
-					"contractFields": {
-						"type": "array",
-						"items": {
-							"$ref": "#/components/schemas/ContractField"
-						}
-					}
-				}
-			},
-			"Contract": {
-				"type": "object",
-				"additionalProperties": false,
-				"required": ["name", "business", "created", "id", "businessId"],
-				"properties": {
-					"created": {
-						"type": "string",
-						"format": "date-time"
-					},
-					"createdBy": {
-						"type": "string",
-						"format": "guid",
-						"nullable": true
-					},
-					"lastModified": {
-						"type": "string",
-						"format": "date-time",
-						"nullable": true
-					},
-					"lastModifiedBy": {
-						"type": "string",
-						"format": "guid",
-						"nullable": true
-					},
-					"id": {
-						"type": "integer",
-						"format": "int32"
-					},
-					"name": {
-						"type": "string"
-					},
-					"businessId": {
-						"type": "integer",
-						"format": "int32"
-					},
-					"business": {
-						"$ref": "#/components/schemas/Business"
-					}
-				}
-			},
-			"ContractField": {
-				"type": "object",
-				"additionalProperties": false,
-				"required": ["name", "business", "created", "id", "businessId", "contractFieldConfigs"],
-				"properties": {
-					"created": {
-						"type": "string",
-						"format": "date-time"
-					},
-					"createdBy": {
-						"type": "string",
-						"format": "guid",
-						"nullable": true
-					},
-					"lastModified": {
-						"type": "string",
-						"format": "date-time",
-						"nullable": true
-					},
-					"lastModifiedBy": {
-						"type": "string",
-						"format": "guid",
-						"nullable": true
-					},
-					"id": {
-						"type": "integer",
-						"format": "int32"
-					},
-					"name": {
-						"type": "string"
-					},
-					"fieldValidation": {
-						"type": "string",
-						"nullable": true
-					},
-					"businessId": {
-						"type": "integer",
-						"format": "int32"
-					},
-					"business": {
-						"$ref": "#/components/schemas/Business"
-					},
-					"contractFieldConfigs": {
-						"type": "array",
-						"items": {
-							"$ref": "#/components/schemas/ContractFieldConfig"
-						}
-					}
-				}
-			},
-			"ContractFieldConfig": {
-				"type": "object",
-				"additionalProperties": false,
-				"required": ["contract", "contractField", "created", "id", "contractId", "contractConfigId", "isActive"],
-				"properties": {
-					"created": {
-						"type": "string",
-						"format": "date-time"
-					},
-					"createdBy": {
-						"type": "string",
-						"format": "guid",
-						"nullable": true
-					},
-					"lastModified": {
-						"type": "string",
-						"format": "date-time",
-						"nullable": true
-					},
-					"lastModifiedBy": {
-						"type": "string",
-						"format": "guid",
-						"nullable": true
-					},
-					"id": {
-						"type": "integer",
-						"format": "int32"
-					},
-					"contractId": {
-						"type": "integer",
-						"format": "int32"
-					},
-					"contract": {
-						"$ref": "#/components/schemas/Contract"
-					},
-					"contractConfigId": {
-						"type": "integer",
-						"format": "int32"
-					},
-					"contractField": {
-						"$ref": "#/components/schemas/ContractField"
-					},
-					"isActive": {
-						"type": "boolean"
 					}
 				}
 			},
@@ -2442,7 +3531,19 @@
 			"Facility": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": ["name", "outlet", "created", "id", "outletId", "facilityTypeId", "facilityType", "resources", "slots", "paymentProviderConfigs"],
+				"required": [
+					"name",
+					"outlet",
+					"created",
+					"id",
+					"outletId",
+					"facilityTypeId",
+					"facilityType",
+					"resources",
+					"slots",
+					"paymentProviderConfigs",
+					"contractFacilities"
+				],
 				"properties": {
 					"created": {
 						"type": "string",
@@ -2520,6 +3621,12 @@
 						"type": "array",
 						"items": {
 							"$ref": "#/components/schemas/PaymentProviderConfig"
+						}
+					},
+					"contractFacilities": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ContractFacility"
 						}
 					}
 				}
@@ -2733,6 +3840,88 @@
 					"description": {
 						"type": "string",
 						"nullable": true
+					}
+				}
+			},
+			"Contract": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["name", "created", "id", "price", "frequency", "startDate", "endDate", "isActive", "isPublic", "contractFacilities"],
+				"properties": {
+					"created": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"createdBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"lastModified": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"lastModifiedBy": {
+						"type": "string",
+						"format": "guid",
+						"nullable": true
+					},
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"name": {
+						"type": "string"
+					},
+					"price": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"frequency": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"startDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"endDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"isActive": {
+						"type": "boolean"
+					},
+					"isPublic": {
+						"type": "boolean"
+					},
+					"contractFacilities": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/ContractFacility"
+						}
+					}
+				}
+			},
+			"ContractFacility": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["contract", "facility", "contractId", "facilityId"],
+				"properties": {
+					"contractId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"contract": {
+						"$ref": "#/components/schemas/Contract"
+					},
+					"facilityId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"facility": {
+						"$ref": "#/components/schemas/Facility"
 					}
 				}
 			},
@@ -3016,6 +4205,14 @@
 							"$ref": "#/components/schemas/UserRole"
 						}
 					},
+					"wallet": {
+						"nullable": true,
+						"oneOf": [
+							{
+								"$ref": "#/components/schemas/Wallet"
+							}
+						]
+					},
 					"lastSync": {
 						"type": "string",
 						"format": "date-time"
@@ -3025,7 +4222,7 @@
 			"UserContract": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": ["contract", "startDate", "user", "created", "id", "contractId", "price", "isActive", "userId"],
+				"required": ["contract", "startDate", "user", "created", "id", "contractId", "price", "isActive", "userId", "voucherGrants"],
 				"properties": {
 					"created": {
 						"type": "string",
@@ -3079,6 +4276,261 @@
 					},
 					"user": {
 						"$ref": "#/components/schemas/User"
+					},
+					"voucherGrants": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/WalletVoucherGrant"
+						}
+					}
+				}
+			},
+			"WalletVoucherGrant": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"wallet",
+					"userContract",
+					"voucher",
+					"id",
+					"walletId",
+					"userContractId",
+					"voucherId",
+					"amountGranted",
+					"amountRemaining",
+					"grantedAt",
+					"expiryDate"
+				],
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "guid"
+					},
+					"walletId": {
+						"type": "string",
+						"format": "guid"
+					},
+					"wallet": {
+						"$ref": "#/components/schemas/Wallet"
+					},
+					"userContractId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"userContract": {
+						"$ref": "#/components/schemas/UserContract"
+					},
+					"voucherId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"voucher": {
+						"$ref": "#/components/schemas/Voucher"
+					},
+					"amountGranted": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"amountRemaining": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"grantedAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"expiryDate": {
+						"type": "string",
+						"format": "date-time"
+					}
+				}
+			},
+			"Wallet": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["user", "id", "userId", "isActive", "currency", "transactions", "voucherGrants"],
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "guid"
+					},
+					"userId": {
+						"type": "string",
+						"format": "guid"
+					},
+					"user": {
+						"$ref": "#/components/schemas/User"
+					},
+					"isActive": {
+						"type": "boolean"
+					},
+					"currency": {
+						"type": "string"
+					},
+					"balance": {
+						"nullable": true,
+						"oneOf": [
+							{
+								"$ref": "#/components/schemas/WalletBalance"
+							}
+						]
+					},
+					"transactions": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/WalletTransaction"
+						}
+					},
+					"voucherGrants": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/WalletVoucherGrant"
+						}
+					}
+				}
+			},
+			"WalletBalance": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["wallet", "walletId", "balance", "updatedAt"],
+				"properties": {
+					"walletId": {
+						"type": "string",
+						"format": "guid"
+					},
+					"wallet": {
+						"$ref": "#/components/schemas/Wallet"
+					},
+					"balance": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				}
+			},
+			"WalletTransaction": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"wallet",
+					"walletTransactionStatus",
+					"walletTransactionType",
+					"referenceId",
+					"id",
+					"walletId",
+					"amount",
+					"walletTransactionStatusId",
+					"walletTransactionTypeId",
+					"createdAt"
+				],
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "guid"
+					},
+					"walletId": {
+						"type": "string",
+						"format": "guid"
+					},
+					"wallet": {
+						"$ref": "#/components/schemas/Wallet"
+					},
+					"amount": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"walletTransactionStatusId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"walletTransactionStatus": {
+						"$ref": "#/components/schemas/WalletTransactionStatus"
+					},
+					"walletTransactionTypeId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"walletTransactionType": {
+						"$ref": "#/components/schemas/WalletTransactionType"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"referenceId": {
+						"type": "string"
+					}
+				}
+			},
+			"WalletTransactionStatus": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["name", "id"],
+				"properties": {
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"name": {
+						"type": "string"
+					}
+				}
+			},
+			"WalletTransactionType": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["name", "id"],
+				"properties": {
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"name": {
+						"type": "string"
+					}
+				}
+			},
+			"Voucher": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["name", "id", "description", "isExtra", "redemptionKind"],
+				"properties": {
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"name": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"isExtra": {
+						"type": "boolean"
+					},
+					"redemptionKind": {
+						"$ref": "#/components/schemas/VoucherRedemptionKind"
+					},
+					"discountMode": {
+						"nullable": true,
+						"oneOf": [
+							{
+								"$ref": "#/components/schemas/VoucherDiscountMode"
+							}
+						]
+					},
+					"discountValue": {
+						"type": "number",
+						"format": "decimal",
+						"nullable": true
+					},
+					"maxDiscountAmount": {
+						"type": "number",
+						"format": "decimal",
+						"nullable": true
 					}
 				}
 			},
@@ -3241,63 +4693,6 @@
 				"x-enumNames": ["Peach", "Payfast"],
 				"x-enum-descriptions": ["PeachPayments", "Payfast"],
 				"enum": [0, 1]
-			},
-			"ContractOutlet": {
-				"type": "object",
-				"additionalProperties": false,
-				"required": ["contract", "outlet", "created", "id", "contractId", "outletId", "isActive"],
-				"properties": {
-					"created": {
-						"type": "string",
-						"format": "date-time"
-					},
-					"createdBy": {
-						"type": "string",
-						"format": "guid",
-						"nullable": true
-					},
-					"lastModified": {
-						"type": "string",
-						"format": "date-time",
-						"nullable": true
-					},
-					"lastModifiedBy": {
-						"type": "string",
-						"format": "guid",
-						"nullable": true
-					},
-					"id": {
-						"type": "integer",
-						"format": "int32"
-					},
-					"contractId": {
-						"type": "integer",
-						"format": "int32"
-					},
-					"contract": {
-						"$ref": "#/components/schemas/Contract"
-					},
-					"outletId": {
-						"type": "integer",
-						"format": "int32"
-					},
-					"outlet": {
-						"$ref": "#/components/schemas/Outlet"
-					},
-					"contractStart": {
-						"type": "string",
-						"format": "date-time",
-						"nullable": true
-					},
-					"contractEnd": {
-						"type": "string",
-						"format": "date-time",
-						"nullable": true
-					},
-					"isActive": {
-						"type": "boolean"
-					}
-				}
 			},
 			"OutletDTO": {
 				"type": "object",
@@ -3548,7 +4943,7 @@
 					}
 				}
 			},
-			"PaginatedListOfBookingDTO": {
+			"PaginatedListOfBookingSummaryDTO": {
 				"type": "object",
 				"additionalProperties": false,
 				"required": ["items", "pageNumber", "totalPages", "totalCount", "hasPreviousPage", "hasNextPage"],
@@ -3556,7 +4951,7 @@
 					"items": {
 						"type": "array",
 						"items": {
-							"$ref": "#/components/schemas/BookingDTO"
+							"$ref": "#/components/schemas/BookingSummaryDTO"
 						}
 					},
 					"pageNumber": {
@@ -3576,6 +4971,107 @@
 					},
 					"hasNextPage": {
 						"type": "boolean"
+					}
+				}
+			},
+			"BookingSummaryDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"bookingStatusName",
+					"bookingStatusDate",
+					"id",
+					"bookingStatusId",
+					"playerCount",
+					"amountOutstanding",
+					"amountPaid",
+					"isPaid",
+					"expiresAt"
+				],
+				"properties": {
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"bookingStatusId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"bookingStatusName": {
+						"type": "string"
+					},
+					"bookingStatusDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"facilityName": {
+						"type": "string",
+						"nullable": true
+					},
+					"slotStartDatetime": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"slotEndDatetime": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"playerCount": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"amountOutstanding": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"amountPaid": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"isPaid": {
+						"type": "boolean"
+					},
+					"expiresAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				}
+			},
+			"BookingPathDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["bookingId", "outletId", "outletSlug", "outletName", "facilityId", "facilityName", "slotId", "slotStartDatetime"],
+				"properties": {
+					"bookingId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"outletId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"outletSlug": {
+						"type": "string"
+					},
+					"outletName": {
+						"type": "string"
+					},
+					"facilityId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"facilityName": {
+						"type": "string"
+					},
+					"slotId": {
+						"type": "string",
+						"format": "guid"
+					},
+					"slotStartDatetime": {
+						"type": "string",
+						"format": "date-time"
 					}
 				}
 			},
@@ -3849,42 +5345,6 @@
 					}
 				}
 			},
-			"BookingPathDTO": {
-				"type": "object",
-				"additionalProperties": false,
-				"required": ["bookingId", "outletId", "outletSlug", "outletName", "facilityId", "facilityName", "slotId", "slotStartDatetime"],
-				"properties": {
-					"bookingId": {
-						"type": "integer",
-						"format": "int32"
-					},
-					"outletId": {
-						"type": "integer",
-						"format": "int32"
-					},
-					"outletSlug": {
-						"type": "string"
-					},
-					"outletName": {
-						"type": "string"
-					},
-					"facilityId": {
-						"type": "integer",
-						"format": "int32"
-					},
-					"facilityName": {
-						"type": "string"
-					},
-					"slotId": {
-						"type": "string",
-						"format": "guid"
-					},
-					"slotStartDatetime": {
-						"type": "string",
-						"format": "date-time"
-					}
-				}
-			},
 			"BookingCreateResponse": {
 				"type": "object",
 				"additionalProperties": false,
@@ -3912,6 +5372,311 @@
 						"items": {
 							"$ref": "#/components/schemas/BookingExtraRequest"
 						}
+					}
+				}
+			},
+			"AdminSlotGetAllResponse": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["id", "startDatetime", "booked", "total", "isEnabled", "isAvailable", "bookings"],
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "guid"
+					},
+					"resourceName": {
+						"type": "string",
+						"nullable": true
+					},
+					"startDatetime": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"endDatetime": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"booked": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"total": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"isEnabled": {
+						"type": "boolean"
+					},
+					"isAvailable": {
+						"type": "boolean"
+					},
+					"bookings": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/AdminSlotBookingDTO"
+						}
+					}
+				}
+			},
+			"AdminSlotBookingDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["bookingId", "bookingStatusId", "bookingStatusName"],
+				"properties": {
+					"bookingId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"playerName": {
+						"type": "string",
+						"nullable": true
+					},
+					"bookingStatusId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"bookingStatusName": {
+						"type": "string"
+					}
+				}
+			},
+			"AdminContractUpdateMemberRequest": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["endDate"],
+				"properties": {
+					"endDate": {
+						"type": "string",
+						"format": "date-time",
+						"minLength": 1,
+						"nullable": false
+					}
+				}
+			},
+			"AdminContractUpdateRequest": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["name", "price", "frequency", "startDate", "endDate", "isActive", "isPublic"],
+				"properties": {
+					"name": {
+						"type": "string",
+						"maxLength": 250,
+						"minLength": 0,
+						"nullable": false
+					},
+					"price": {
+						"type": "number",
+						"format": "decimal",
+						"minimum": 0.0
+					},
+					"frequency": {
+						"type": "integer",
+						"format": "int32",
+						"minimum": 0.0,
+						"exclusiveMinimum": true
+					},
+					"startDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"endDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"isActive": {
+						"type": "boolean"
+					},
+					"isPublic": {
+						"type": "boolean"
+					}
+				}
+			},
+			"AdminMemberSearchResultDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["userId", "isExistingMember"],
+				"properties": {
+					"userId": {
+						"type": "string",
+						"format": "guid"
+					},
+					"firstName": {
+						"type": "string",
+						"nullable": true
+					},
+					"lastName": {
+						"type": "string",
+						"nullable": true
+					},
+					"email": {
+						"type": "string",
+						"nullable": true
+					},
+					"phoneNumber": {
+						"type": "string",
+						"nullable": true
+					},
+					"isExistingMember": {
+						"type": "boolean"
+					}
+				}
+			},
+			"AdminContractMemberDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["firstName", "lastName", "id", "startDate", "isActive"],
+				"properties": {
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"firstName": {
+						"type": "string"
+					},
+					"lastName": {
+						"type": "string"
+					},
+					"email": {
+						"type": "string",
+						"nullable": true
+					},
+					"startDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"endDate": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true
+					},
+					"isActive": {
+						"type": "boolean"
+					}
+				}
+			},
+			"AdminContractDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["name", "id", "price", "frequency", "startDate", "endDate", "isActive", "isPublic"],
+				"properties": {
+					"id": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"name": {
+						"type": "string"
+					},
+					"price": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"frequency": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"startDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"endDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"isActive": {
+						"type": "boolean"
+					},
+					"isPublic": {
+						"type": "boolean"
+					}
+				}
+			},
+			"AdminContractCreateMemberRequest": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["email", "firstName", "lastName", "endDate"],
+				"properties": {
+					"email": {
+						"type": "string",
+						"format": "email",
+						"minLength": 1,
+						"pattern": "^[^@]+@[^@]+$",
+						"nullable": false
+					},
+					"firstName": {
+						"type": "string",
+						"minLength": 1,
+						"nullable": false
+					},
+					"lastName": {
+						"type": "string",
+						"minLength": 1,
+						"nullable": false
+					},
+					"phoneNumber": {
+						"type": "string",
+						"nullable": true
+					},
+					"endDate": {
+						"type": "string",
+						"format": "date-time",
+						"minLength": 1,
+						"nullable": false
+					}
+				}
+			},
+			"AdminContractCreateRequest": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["name", "price", "frequency", "startDate", "endDate", "isActive", "isPublic"],
+				"properties": {
+					"name": {
+						"type": "string",
+						"maxLength": 250,
+						"minLength": 0,
+						"nullable": false
+					},
+					"price": {
+						"type": "number",
+						"format": "decimal",
+						"minimum": 0.0
+					},
+					"frequency": {
+						"type": "integer",
+						"format": "int32",
+						"minimum": 0.0,
+						"exclusiveMinimum": true
+					},
+					"startDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"endDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"isActive": {
+						"type": "boolean"
+					},
+					"isPublic": {
+						"type": "boolean"
+					}
+				}
+			},
+			"AdminContractAddMemberRequest": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["userId", "endDate"],
+				"properties": {
+					"userId": {
+						"type": "string",
+						"format": "guid"
+					},
+					"endDate": {
+						"type": "string",
+						"format": "date-time",
+						"minLength": 1,
+						"nullable": false
 					}
 				}
 			},
@@ -4139,102 +5904,6 @@
 						"type": "string"
 					}
 				}
-			},
-			"BookingSummaryDTO": {
-				"type": "object",
-				"additionalProperties": false,
-				"required": [
-					"bookingStatusName",
-					"bookingStatusDate",
-					"id",
-					"bookingStatusId",
-					"playerCount",
-					"amountOutstanding",
-					"amountPaid",
-					"isPaid",
-					"expiresAt"
-				],
-				"properties": {
-					"id": {
-						"type": "integer",
-						"format": "int32"
-					},
-					"bookingStatusId": {
-						"type": "integer",
-						"format": "int32"
-					},
-					"bookingStatusName": {
-						"type": "string"
-					},
-					"bookingStatusDate": {
-						"type": "string",
-						"format": "date-time"
-					},
-					"facilityName": {
-						"type": "string",
-						"nullable": true
-					},
-					"slotStartDatetime": {
-						"type": "string",
-						"format": "date-time",
-						"nullable": true
-					},
-					"slotEndDatetime": {
-						"type": "string",
-						"format": "date-time",
-						"nullable": true
-					},
-					"playerCount": {
-						"type": "integer",
-						"format": "int32"
-					},
-					"amountOutstanding": {
-						"type": "number",
-						"format": "decimal"
-					},
-					"amountPaid": {
-						"type": "number",
-						"format": "decimal"
-					},
-					"isPaid": {
-						"type": "boolean"
-					},
-					"expiresAt": {
-						"type": "string",
-						"format": "date-time"
-					}
-				}
-			},
-			"PaginatedListOfBookingSummaryDTO": {
-				"type": "object",
-				"additionalProperties": false,
-				"required": ["items", "pageNumber", "totalPages", "totalCount", "hasPreviousPage", "hasNextPage"],
-				"properties": {
-					"items": {
-						"type": "array",
-						"items": {
-							"$ref": "#/components/schemas/BookingSummaryDTO"
-						}
-					},
-					"pageNumber": {
-						"type": "integer",
-						"format": "int32"
-					},
-					"totalPages": {
-						"type": "integer",
-						"format": "int32"
-					},
-					"totalCount": {
-						"type": "integer",
-						"format": "int32"
-					},
-					"hasPreviousPage": {
-						"type": "boolean"
-					},
-					"hasNextPage": {
-						"type": "boolean"
-					}
-				}
 			}
 		},
 		"securitySchemes": {
@@ -4242,7 +5911,7 @@
 				"type": "oauth2",
 				"flows": {
 					"implicit": {
-						"authorizationUrl": "http://localhost:8088/realms/kayord/protocol/openid-connect/auth",
+						"authorizationUrl": "https://localhost:39235/realms/kayord/protocol/openid-connect/auth",
 						"scopes": {
 							"openid": "OpenID Connect scope",
 							"profile": "Profile scope",

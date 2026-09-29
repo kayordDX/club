@@ -70,6 +70,7 @@
 	},
 	"dependencies": {
 		"@humanspeak/svelte-markdown": "^1.8.7",
+		"@tanstack/svelte-query": "^6.3.0",
 		"openid-client": "^6.8.7"
 	}
 }
