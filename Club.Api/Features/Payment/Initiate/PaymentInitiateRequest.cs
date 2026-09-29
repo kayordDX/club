@@ -6,6 +6,7 @@ public class PaymentInitiateRequest
 {
     public int BookingId { get; set; }
     public required string ProviderName { get; set; }
+    public decimal? Amount { get; set; }
 
     // Optional recurring/subscription intent. When null the payment is a once-off charge (existing
     // behaviour). When set, the selected provider sets up a recurring subscription if it supports it.

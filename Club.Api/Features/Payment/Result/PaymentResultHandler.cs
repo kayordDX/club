@@ -219,16 +219,19 @@ internal static class PaymentResultHandler
             return;
         }
 
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
+        var paymentBooking = await dbContext.PaymentBooking.AsNoTracking().FirstOrDefaultAsync(pb => pb.PaymentId == payment.Id, ct);
+        var booking = paymentBooking is null ? null : await BookingPayments.LockAsync(dbContext, paymentBooking.BookingId, ct);
+        await dbContext.Entry(payment).ReloadAsync(ct);
+
         // Both the shopper return (GET) and the gateway's ITN/webhook (POST) can deliver the same
         // successful result, and either may arrive first. Only apply the payment once so amounts
         // are not credited twice (e.g. AmountPaid double-incremented) for a single transaction.
-        if (payment.PaymentStatusId == (int)Common.Enums.PaymentStatusEnum.Completed)
+        if (BookingPayments.IsSettled(payment.PaymentStatusId))
         {
             logger.LogInformation("Payment '{TransactionId}' is already completed; skipping duplicate processing.", internalTransactionId);
             return;
         }
-
-        var paymentBooking = await dbContext.PaymentBooking.Include(pb => pb.Booking).FirstOrDefaultAsync(pb => pb.PaymentId == payment.Id, ct);
 
         var bookingId = paymentBooking?.BookingId ?? 0;
 
@@ -238,21 +241,11 @@ internal static class PaymentResultHandler
             payment.PaymentStatusDate = DateTime.UtcNow;
             payment.ProviderReference ??= result.Metadata?.GetValueOrDefault("providerReference");
 
-            if (paymentBooking?.Booking is not null)
-            {
-                var booking = paymentBooking.Booking;
-                booking.AmountPaid += payment.Amount;
-                booking.AmountOutstanding -= payment.Amount;
-
-                if (booking.AmountOutstanding <= 0)
-                {
-                    booking.IsPaid = true;
-                    booking.BookingStatusId = (int)Common.Enums.BookingStatusEnum.Confirmed;
-                    booking.BookingStatusDate = DateTime.UtcNow;
-                }
-            }
+            if (booking is not null)
+                await BookingPayments.ApplyAsync(dbContext, booking, payment, ct);
 
             await dbContext.SaveChangesAsync(ct);
+            await transaction.CommitAsync(ct);
 
             await new PaymentSucceededEvent
             {
@@ -279,6 +272,7 @@ internal static class PaymentResultHandler
                 payment.ErrorMessage = result.Metadata?.GetValueOrDefault("error");
 
                 await dbContext.SaveChangesAsync(ct);
+                await transaction.CommitAsync(ct);
 
                 await new PaymentFailedEvent
                 {

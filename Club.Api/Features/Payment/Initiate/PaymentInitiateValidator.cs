@@ -9,6 +9,9 @@ public class PaymentInitiateValidator : AbstractValidator<PaymentInitiateRequest
         RuleFor(x => x.BookingId).GreaterThan(0).WithMessage("Booking ID is required.");
 
         RuleFor(x => x.ProviderName).NotEmpty().WithMessage("Provider name is required.");
+        RuleFor(x => x.Amount)
+            .Must(amount => !amount.HasValue || (amount > 0 && decimal.Round(amount.Value, 2) == amount))
+            .WithMessage("Amount must be positive with at most two decimal places.");
 
         When(
             x => x.Recurring is not null,
