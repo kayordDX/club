@@ -1,6 +1,7 @@
 using Club.Common;
 using Club.Common.Config;
 using Club.Common.Enums;
+using Club.Common.Payments;
 using Club.Data;
 using Club.Entities;
 using Club.Features.Booking.Common;
@@ -36,7 +37,8 @@ public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : E
             return;
         }
 
-        var booking = await _dbContext.Booking.Include(b => b.SlotContractBookings).Include(b => b.ExtraBookings).FirstOrDefaultAsync(b => b.Id == req.Id, ct);
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        var booking = await BookingPayments.LockAsync(_dbContext, req.Id, ct);
 
         if (booking is null)
         {
@@ -65,6 +67,18 @@ public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : E
             await Send.ErrorsAsync(400, ct);
             return;
         }
+
+        if (
+            booking.AmountPaid > 0
+            || await _dbContext.PaymentBooking.AnyAsync(x => x.BookingId == booking.Id && x.Payment.PaymentStatusId == (int)PaymentStatusEnum.Pending, ct)
+        )
+        {
+            AddError(r => r.Id, "Bookings with paid or pending payments cannot be edited.");
+            await Send.ErrorsAsync(409, ct);
+            return;
+        }
+        await _dbContext.Entry(booking).Collection(x => x.SlotContractBookings).LoadAsync(ct);
+        await _dbContext.Entry(booking).Collection(x => x.ExtraBookings).LoadAsync(ct);
 
         var slotContractIds = req.Bookings.Select(b => b.SlotContractId).Distinct().ToList();
 
@@ -116,8 +130,6 @@ public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : E
         // Begin a transaction and lock the affected slot rows so concurrent booking requests for
         // the same slots are serialized against the capacity check below. Without this, two
         // simultaneous requests could both pass the availability check and oversell a slot.
-        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
-
         await _dbContext.Slot.FromSqlInterpolated($"SELECT * FROM slot WHERE id = ANY({slotIds}) ORDER BY id FOR UPDATE").ToListAsync(ct);
 
         var now = DateTime.UtcNow;

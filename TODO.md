@@ -1,3 +1,5 @@
+Backend implementation completed for the sections below. Frontend payment amount selection, outstanding-payment display and voucher cards remain to do. See `docs/backend-voucher-payments.md` for the API contract.
+
 ### Add new payment type Voucher
 
 This is a payment type that should allow you to pay with voucers.

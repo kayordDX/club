@@ -23,7 +23,8 @@ public class Endpoint(AppDbContext dbContext, IPaymentFactory paymentFactory, Pa
 
     public override async Task HandleAsync(PaymentInitiateRequest req, CancellationToken ct)
     {
-        var booking = await _dbContext.Booking.Include(b => b.BookingStatus).FirstOrDefaultAsync(b => b.Id == req.BookingId, ct);
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        var booking = await BookingPayments.LockAsync(_dbContext, req.BookingId, ct);
 
         if (booking is null)
         {
@@ -31,7 +32,7 @@ public class Endpoint(AppDbContext dbContext, IPaymentFactory paymentFactory, Pa
             return;
         }
 
-        if (booking.BookingStatusId != (int)Common.Enums.BookingStatusEnum.Pending)
+        if (booking.BookingStatusId != (int)Common.Enums.BookingStatusEnum.Pending || booking.ExpiresAt <= DateTime.UtcNow)
         {
             AddError(b => b.BookingId, "Booking is not in a pending state.");
             await Send.ErrorsAsync(400, ct);
@@ -60,6 +61,15 @@ public class Endpoint(AppDbContext dbContext, IPaymentFactory paymentFactory, Pa
             return;
         }
 
+        var available = await BookingPayments.AvailableAsync(_dbContext, booking, ct);
+        var amount = req.Amount ?? available;
+        if (!BookingPayments.IsValidAmount(amount, available))
+        {
+            AddError(x => x.Amount, "Amount must be positive and cannot exceed the unreserved outstanding balance.");
+            await Send.ErrorsAsync(400, ct);
+            return;
+        }
+
         var pendingStatus = await _dbContext.PaymentStatus.FirstAsync(s => s.Id == (int)Common.Enums.PaymentStatusEnum.Pending, ct);
         var creditCardType = await _dbContext.PaymentType.FirstAsync(t => t.Id == (int)Common.Enums.PaymentTypeEnum.CreditCard, ct);
 
@@ -70,7 +80,7 @@ public class Endpoint(AppDbContext dbContext, IPaymentFactory paymentFactory, Pa
             PaymentStatusId = pendingStatus.Id,
             PaymentStatus = pendingStatus,
             PaymentStatusDate = DateTime.UtcNow,
-            Amount = booking.AmountOutstanding,
+            Amount = amount,
             PaymentTypeId = creditCardType.Id,
             PaymentType = creditCardType,
             TransactionId = transactionId,
@@ -78,7 +88,9 @@ public class Endpoint(AppDbContext dbContext, IPaymentFactory paymentFactory, Pa
         };
 
         _dbContext.Payment.Add(payment);
+        _dbContext.PaymentBooking.Add(new PaymentBooking { Payment = payment, Booking = booking });
         await _dbContext.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
 
         await _paymentLogger.LogAsync(
             payment.Id,
@@ -86,11 +98,11 @@ public class Endpoint(AppDbContext dbContext, IPaymentFactory paymentFactory, Pa
             req.ProviderName,
             "payment.initiated",
             "pending",
-            $"Payment initiated for Booking #{booking.Id}, amount R{booking.AmountOutstanding:F2}",
+            $"Payment initiated for Booking #{booking.Id}, amount R{amount:F2}",
             new
             {
                 bookingId = booking.Id,
-                amount = booking.AmountOutstanding,
+                amount,
                 recurring = req.Recurring is null
                     ? null
                     : new
@@ -104,19 +116,9 @@ public class Endpoint(AppDbContext dbContext, IPaymentFactory paymentFactory, Pa
             ct
         );
 
-        _dbContext.PaymentBooking.Add(
-            new PaymentBooking
-            {
-                PaymentId = payment.Id,
-                Payment = payment,
-                BookingId = booking.Id,
-                Booking = booking,
-            }
-        );
-
         var paymentRequest = new PaymentRequest
         {
-            Amount = booking.AmountOutstanding,
+            Amount = amount,
             Currency = "ZAR",
             TransactionId = transactionId,
             Description = $"Booking #{booking.Id}",
@@ -133,11 +135,21 @@ public class Endpoint(AppDbContext dbContext, IPaymentFactory paymentFactory, Pa
 
         var result = await provider.ProcessPaymentAsync(paymentRequest, ct);
 
+        await using var resultTransaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        await BookingPayments.LockAsync(_dbContext, booking.Id, ct);
+        await _dbContext.Entry(payment).ReloadAsync(ct);
         payment.RedirectUrl = result.RedirectUrl;
         payment.FormActionUrl = result.FormActionUrl;
         payment.FormFieldsJson = result.FormFields is not null ? JsonSerializer.Serialize(result.FormFields) : null;
         payment.ProviderReference = result.ProviderReference;
+        if (!result.Success && !BookingPayments.IsSettled(payment.PaymentStatusId))
+        {
+            payment.PaymentStatusId = (int)Common.Enums.PaymentStatusEnum.Failed;
+            payment.PaymentStatusDate = DateTime.UtcNow;
+            payment.ErrorMessage = result.ErrorMessage;
+        }
         await _dbContext.SaveChangesAsync(ct);
+        await resultTransaction.CommitAsync(ct);
 
         await _paymentLogger.LogAsync(
             payment.Id,
@@ -157,11 +169,6 @@ public class Endpoint(AppDbContext dbContext, IPaymentFactory paymentFactory, Pa
 
         if (!result.Success)
         {
-            payment.PaymentStatusId = (int)Common.Enums.PaymentStatusEnum.Failed;
-            payment.PaymentStatusDate = DateTime.UtcNow;
-            payment.ErrorMessage = result.ErrorMessage;
-            await _dbContext.SaveChangesAsync(ct);
-
             await Send.OkAsync(
                 new PaymentInitiateResponse
                 {

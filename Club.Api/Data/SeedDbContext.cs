@@ -54,6 +54,11 @@ public static class SeedDbContext
             await dbContext.PaymentType.AddAsync(new PaymentType { Id = (int)Common.Enums.PaymentTypeEnum.CreditCard, Name = "Credit card" }, ct);
         }
 
+        if (!paymentTypes.Contains("Voucher"))
+        {
+            await dbContext.PaymentType.AddAsync(new PaymentType { Id = (int)PaymentTypeEnum.Voucher, Name = "Voucher" }, ct);
+        }
+
         if (!paymentTypes.Contains("EFT"))
         {
             await dbContext.PaymentType.AddAsync(new PaymentType { Id = (int)Common.Enums.PaymentTypeEnum.EFT, Name = "EFT" }, ct);
@@ -77,6 +82,11 @@ public static class SeedDbContext
         if (!paymentStatuses.Contains("Failed"))
         {
             await dbContext.PaymentStatus.AddAsync(new PaymentStatus { Id = (int)Common.Enums.PaymentStatusEnum.Failed, Name = "Failed" }, ct);
+        }
+
+        if (!paymentStatuses.Contains("Partial"))
+        {
+            await dbContext.PaymentStatus.AddAsync(new PaymentStatus { Id = (int)PaymentStatusEnum.Partial, Name = "Partial" }, ct);
         }
 
         if (!paymentStatuses.Contains("Refunded"))

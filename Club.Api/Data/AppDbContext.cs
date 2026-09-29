@@ -36,6 +36,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IHttpContextAc
     public DbSet<PaymentProviderConfig> PaymentProviderConfig => Set<PaymentProviderConfig>();
     public DbSet<PaymentStatus> PaymentStatus => Set<PaymentStatus>();
     public DbSet<PaymentType> PaymentType => Set<PaymentType>();
+    public DbSet<PaymentVoucher> PaymentVoucher => Set<PaymentVoucher>();
     public DbSet<Resource> Resource => Set<Resource>();
     public DbSet<Slot> Slot => Set<Slot>();
     public DbSet<SlotContract> SlotContract => Set<SlotContract>();

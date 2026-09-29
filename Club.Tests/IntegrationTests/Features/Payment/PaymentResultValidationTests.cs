@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Json;
 using System.Text.Json;
 using Club.Common.Enums;
 using Club.Common.Payments.Provider.Payfast;
@@ -41,8 +42,10 @@ public class PaymentResultValidationTests(AppFixture app)
         body.ShouldContain("Invalid webhook request.");
     }
 
-    [Fact]
-    public async Task GetResult_WithMerchantTransactionId_SandboxReturn_CompletesPaymentAndRedirectsToSuccess()
+    [Theory]
+    [InlineData(100)]
+    [InlineData(40)]
+    public async Task GetResult_WithMerchantTransactionId_SandboxReturn_AppliesSplitPaymentOnce(int amount)
     {
         // Arrange - a pending payment/booking as the PayFast sandbox leaves them after the form is
         // submitted, with the return URL carrying only the merchantTransactionId the provider appends
@@ -76,7 +79,7 @@ public class PaymentResultValidationTests(AppFixture app)
             PaymentType = await db.PaymentType.FirstAsync(app.Context.CancellationToken),
             TransactionId = transactionId,
             ProviderName = "payfast",
-            Amount = 100m,
+            Amount = amount,
         };
         db.Payment.Add(payment);
         await db.SaveChangesAsync(app.Context.CancellationToken);
@@ -95,13 +98,92 @@ public class PaymentResultValidationTests(AppFixture app)
         response.Headers.Location!.ToString().ShouldStartWith("http://localhost:5173/payment/success");
 
         var paymentAfter = await db.Payment.AsNoTracking().SingleAsync(p => p.TransactionId == transactionId, app.Context.CancellationToken);
-        paymentAfter.PaymentStatusId.ShouldBe((int)PaymentStatusEnum.Completed);
+        paymentAfter.PaymentStatusId.ShouldBe((int)(amount == 100 ? PaymentStatusEnum.Completed : PaymentStatusEnum.Partial));
 
+        await redirectClient.GetAsync($"/payment/result/payfast?merchantTransactionId={transactionId}", app.Context.CancellationToken);
         var bookingAfter = await db.Booking.AsNoTracking().SingleAsync(b => b.Id == booking.Id, app.Context.CancellationToken);
-        bookingAfter.IsPaid.ShouldBeTrue();
-        bookingAfter.AmountPaid.ShouldBe(100m);
-        bookingAfter.AmountOutstanding.ShouldBe(0m);
-        bookingAfter.BookingStatusId.ShouldBe((int)BookingStatusEnum.Confirmed);
+        bookingAfter.IsPaid.ShouldBe(amount == 100);
+        bookingAfter.AmountPaid.ShouldBe((decimal)amount);
+        bookingAfter.AmountOutstanding.ShouldBe(100m - amount);
+        bookingAfter.BookingStatusId.ShouldBe((int)(amount == 100 ? BookingStatusEnum.Confirmed : BookingStatusEnum.Pending));
+
+        if (amount < 100)
+        {
+            var remainder = new PaymentEntity
+            {
+                PaymentStatusId = (int)PaymentStatusEnum.Pending,
+                PaymentStatus = await db.PaymentStatus.SingleAsync(s => s.Id == (int)PaymentStatusEnum.Pending),
+                PaymentStatusDate = DateTime.UtcNow,
+                PaymentTypeId = (int)PaymentTypeEnum.CreditCard,
+                TransactionId = Guid.NewGuid().ToString(),
+                ProviderName = "payfast",
+                Amount = 100m - amount,
+            };
+            db.PaymentBooking.Add(new PaymentBooking { BookingId = booking.Id, Payment = remainder });
+            await db.SaveChangesAsync();
+            await redirectClient.GetAsync($"/payment/result/payfast?merchantTransactionId={remainder.TransactionId}", app.Context.CancellationToken);
+            bookingAfter = await db.Booking.AsNoTracking().SingleAsync(b => b.Id == booking.Id);
+            bookingAfter.IsPaid.ShouldBeTrue();
+            bookingAfter.AmountPaid.ShouldBe(100m);
+            bookingAfter.AmountOutstanding.ShouldBe(0m);
+            (await db.Payment.AsNoTracking().SingleAsync(p => p.Id == payment.Id)).PaymentStatusId.ShouldBe((int)PaymentStatusEnum.Completed);
+        }
+    }
+
+    [Fact]
+    public async Task Initiate_ReservesChosenAmount_AndRejectsOverpayment()
+    {
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await CreateFacilityWithProviderConfig(db, scope.ServiceProvider.GetRequiredService<EncryptionService>());
+        var booking = new BookingEntity
+        {
+            BookingStatusId = (int)BookingStatusEnum.Pending,
+            BookingStatusDate = DateTime.UtcNow,
+            UserId = TestClaims.UserIdGuid,
+            AmountOutstanding = 100,
+            ExpiresAt = DateTime.UtcNow.AddMinutes(30),
+        };
+        db.Booking.Add(booking);
+        await db.SaveChangesAsync();
+        var response = await app.Client.PostAsJsonAsync(
+            "/payment/initiate",
+            new
+            {
+                BookingId = booking.Id,
+                ProviderName = "payfast",
+                Amount = 40m,
+            }
+        );
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var payment = await db.PaymentBooking.Where(x => x.BookingId == booking.Id).Select(x => x.Payment).SingleAsync();
+        payment.Amount.ShouldBe(40m);
+        var tooMuch = await app.Client.PostAsJsonAsync(
+            "/payment/initiate",
+            new
+            {
+                BookingId = booking.Id,
+                ProviderName = "payfast",
+                Amount = 61m,
+            }
+        );
+        tooMuch.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        var remainder = await app.Client.PostAsJsonAsync("/payment/initiate", new { BookingId = booking.Id, ProviderName = "payfast" });
+        remainder.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var payments = await db.PaymentBooking.Where(x => x.BookingId == booking.Id).Select(x => x.Payment.Amount).ToListAsync();
+        payments.Count.ShouldBe(2);
+        payments.Sum().ShouldBe(100m);
+        var fullyReserved = await app.Client.PostAsJsonAsync(
+            "/payment/initiate",
+            new
+            {
+                BookingId = booking.Id,
+                ProviderName = "payfast",
+                Amount = 1m,
+            }
+        );
+        fullyReserved.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        (await db.Booking.AsNoTracking().SingleAsync(x => x.Id == booking.Id)).AmountPaid.ShouldBe(0m);
     }
 
     private async Task<Facility> CreateFacilityWithProviderConfig(AppDbContext db, EncryptionService encryption)
