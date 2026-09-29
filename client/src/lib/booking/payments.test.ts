@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validatePaymentAmount, voucherRequest, paymentMessage } from "./payments";
+import { validatePaymentAmount, voucherRequest, paymentMessage, paymentErrorMessage } from "./payments";
 import { VoucherRedemptionKind, type BookingVoucherDTO } from "$lib/api";
 
 const voucher: BookingVoucherDTO = {
@@ -16,6 +16,14 @@ const voucher: BookingVoucherDTO = {
 	paymentValue: 100,
 	targets: [{ slotContractBookingId: 9, name: "Player", unitsAvailable: 1, unitPrice: 100 }],
 };
+
+it("extracts error reasons from SvelteKit remote HttpErrors and ordinary errors", () => {
+	expect(paymentErrorMessage({ status: 400, body: { message: "Selected units are no longer available." } }, "Failed")).toBe(
+		"Selected units are no longer available."
+	);
+	expect(paymentErrorMessage(new Error("Offline"), "Failed")).toBe("Offline");
+	expect(paymentErrorMessage(undefined, "Failed")).toBe("Failed");
+});
 
 describe("split payment amounts", () => {
 	it.each(["", "0", "-1", "1.001", "NaN", "Infinity", "1e2", "1.", "100.01"])("rejects %s", (value) => expect(validatePaymentAmount(value, 100)).toBeDefined());
