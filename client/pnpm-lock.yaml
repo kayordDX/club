@@ -11,6 +11,9 @@ importers:
       '@humanspeak/svelte-markdown':
         specifier: ^1.8.7
         version: 1.8.7(svelte@5.56.10(@typescript-eslint/types@8.68.0))
+      '@tanstack/svelte-query':
+        specifier: ^6.3.0
+        version: 6.3.0(svelte@5.56.10(@typescript-eslint/types@8.68.0))
       openid-client:
         specifier: ^6.8.7
         version: 6.8.7
@@ -116,7 +119,7 @@ importers:
         version: 5.56.10(@typescript-eslint/types@8.68.0)
       svelte-check:
         specifier: ^4.7.6
-        version: 4.7.6(picomatch@4.0.5)(svelte@5.56.10(@typescript-eslint/types@8.68.0))(typescript@6.0.3)
+        version: 4.7.6(picomatch@4.0.7)(svelte@5.56.10(@typescript-eslint/types@8.68.0))(typescript@6.0.3)
       svelte-sonner:
         specifier: ^1.2.1
         version: 1.2.1(svelte@5.56.10(@typescript-eslint/types@8.68.0))
@@ -1052,6 +1055,9 @@ packages:
     resolution: {integrity: sha512-y/xtNPNt/YeyoVxE/JCx+T7yjEzpezmbb+toK8DDD1P4m7Kzs5YR956+7OKexG3f8aXgC3rLZl7b1V+yNUSy5w==}
     engines: {node: '>=18'}
 
+  '@tanstack/query-core@5.104.0':
+    resolution: {integrity: sha512-JrC2r/JQlXt7khBSdUpsgxNvybzOg+aITa+ARRMlP2AFo93Y8vIqz077rp+e61mJetSZ0T6AJbwW1JHer1vrPQ==}
+
   '@tanstack/store@0.11.1':
     resolution: {integrity: sha512-mzTOBhypOuDJAy/D8n2MfUZ1HFkXnmSETviRyhqEC8LUE7/IZQExOTxMANj3KjTofYTkFNpBY67qaVrT41YccA==}
 
@@ -1059,6 +1065,11 @@ packages:
     resolution: {integrity: sha512-GGlLocQwc4f15EoslfSKSiFwGy1Wz8CPTl6LXcykg4XUEGOmgs8Dg4/RjNyHeN/qrbIMemWuwzbt2wXBq50eXg==}
     peerDependencies:
       svelte: ^5.0.0
+
+  '@tanstack/svelte-query@6.3.0':
+    resolution: {integrity: sha512-Lzib+G+fGL6tFi8jJ3jfNKuSE94iEgjpSCz6Pdf33na+Bljfnv+r5aArSDwLecYEnZCBb8mS6uJrcfJj3dR6qg==}
+    peerDependencies:
+      svelte: ^5.25.0
 
   '@tanstack/svelte-store@0.12.1':
     resolution: {integrity: sha512-ZFj8gyIWHZRYLv8RHp5jhnMhvw15g86KinotrUp9RfY7ygjkU3CcaMUytIdMJ4Xzq/9GqVlAphV9gFIGKRXWSw==}
@@ -3465,12 +3476,19 @@ snapshots:
 
   '@tanstack/pacer-lite@0.1.1': {}
 
+  '@tanstack/query-core@5.104.0': {}
+
   '@tanstack/store@0.11.1': {}
 
   '@tanstack/svelte-form@1.33.5(svelte@5.56.10(@typescript-eslint/types@8.68.0))':
     dependencies:
       '@tanstack/form-core': 1.33.5
       '@tanstack/svelte-store': 0.12.1(svelte@5.56.10(@typescript-eslint/types@8.68.0))
+      svelte: 5.56.10(@typescript-eslint/types@8.68.0)
+
+  '@tanstack/svelte-query@6.3.0(svelte@5.56.10(@typescript-eslint/types@8.68.0))':
+    dependencies:
+      '@tanstack/query-core': 5.104.0
       svelte: 5.56.10(@typescript-eslint/types@8.68.0)
 
   '@tanstack/svelte-store@0.12.1(svelte@5.56.10(@typescript-eslint/types@8.68.0))':
@@ -4800,12 +4818,12 @@ snapshots:
 
   supports-preserve-symlinks-flag@1.0.0: {}
 
-  svelte-check@4.7.6(picomatch@4.0.5)(svelte@5.56.10(@typescript-eslint/types@8.68.0))(typescript@6.0.3):
+  svelte-check@4.7.6(picomatch@4.0.7)(svelte@5.56.10(@typescript-eslint/types@8.68.0))(typescript@6.0.3):
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       '@sveltejs/load-config': 0.2.3
       chokidar: 4.0.3
-      fdir: 6.5.0(picomatch@4.0.5)
+      fdir: 6.5.0(picomatch@4.0.7)
       picocolors: 1.1.1
       sade: 1.8.1
       svelte: 5.56.10(@typescript-eslint/types@8.68.0)

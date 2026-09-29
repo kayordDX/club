@@ -6,6 +6,8 @@
 	import { setUserContext } from "$lib/auth";
 	import PageBoundary from "$lib/components/PageBoundary.svelte";
 	import { Tooltip } from "@kayord/ui";
+	import { QueryClient, QueryClientProvider } from "@tanstack/svelte-query";
+	const queryClient = new QueryClient();
 
 	let { children, data } = $props();
 
@@ -30,6 +32,8 @@
 
 <PageBoundary>
 	<Tooltip.Provider>
-		{@render children?.()}
+		<QueryClientProvider client={queryClient}>
+			{@render children?.()}
+		</QueryClientProvider>
 	</Tooltip.Provider>
 </PageBoundary>
