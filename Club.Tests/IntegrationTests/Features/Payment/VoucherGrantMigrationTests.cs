@@ -14,6 +14,52 @@ namespace IntegrationTests.Features.Payment;
 public class VoucherGrantMigrationTests(AppFixture app)
 {
     [Fact]
+    public async Task ItemMigration_DoesNotInferRedemptionPermissionsFromIssuanceAssociations()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        await using var postgres = new PostgreSqlBuilder("postgres:18").Build();
+        await postgres.StartAsync(ct);
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseApplicationServiceProvider(app.Server.Services)
+            .UseNpgsql(postgres.GetConnectionString())
+            .UseSnakeCaseNamingConvention()
+            .Options;
+        await using var db = new AppDbContext(options, new HttpContextAccessor());
+        var migrator = db.GetService<IMigrator>();
+        await migrator.MigrateAsync("20260929204410_WalletVoucherGrantProvenance", ct);
+        var rounds = new Voucher { Name = "Legacy round", RedemptionKind = VoucherRedemptionKind.Entitlement };
+        var extras = new Voucher
+        {
+            Name = "Legacy extra",
+            RedemptionKind = VoucherRedemptionKind.Entitlement,
+            IsExtra = true,
+        };
+        var discount = new Voucher
+        {
+            Name = "Legacy discount",
+            RedemptionKind = VoucherRedemptionKind.Discount,
+            DiscountMode = VoucherDiscountMode.Percentage,
+            DiscountValue = 10,
+        };
+        db.Voucher.AddRange(rounds, extras, discount);
+        db.ContractVoucher.Add(
+            new ContractVoucher
+            {
+                Voucher = rounds,
+                Contract = new Contract { Name = "Issuing contract" },
+                Amount = 7,
+            }
+        );
+        await db.SaveChangesAsync(ct);
+        await migrator.MigrateAsync(cancellationToken: ct);
+        (await db.VoucherContract.CountAsync(ct)).ShouldBe(0);
+        (await db.VoucherExtra.CountAsync(ct)).ShouldBe(0);
+        (await db.Voucher.CountAsync(ct)).ShouldBe(3);
+        (await db.ContractVoucher.AsNoTracking().SingleAsync(ct)).Amount.ShouldBe(7m);
+        (await db.Voucher.AsNoTracking().SingleAsync(x => x.Id == discount.Id, ct)).DiscountValue.ShouldBe(10m);
+    }
+
+    [Fact]
     public async Task Migration_BackfillsKnownProvenance_WithoutChangingGrantBalancesOrDates()
     {
         var ct = TestContext.Current.CancellationToken;

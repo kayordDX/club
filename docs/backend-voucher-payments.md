@@ -1,6 +1,6 @@
 # Backend split and voucher payments
 
-Frontend work and API client regeneration are deferred to the next step.
+The entitlement-eligibility follow-up includes facility voucher administration UI and regenerated clients. Grant provenance remains a separate preceding change.
 
 ## Split payments
 
@@ -14,7 +14,7 @@ A successful payment is `Partial` (payment status ID 5) while the booking has an
 
 Payment type ID 4 is `Voucher`.
 
-`GET /payment/booking/{bookingId}/vouchers` returns all of the authenticated owner's voucher grants, including eligibility/rejection reasons, remaining units/credit, expiry, redemption kind, discount mode/value/cap, prospective payment value and entitlement targets. Entitlement preview value is for one available unit; targets contain the individual unit prices and available quantities.
+`GET /payment/booking/{bookingId}/vouchers` returns the authenticated owner's grants associated with a booked facility, including eligibility/rejection reasons, remaining units/credit, expiry, redemption kind, discount mode/value/cap, prospective payment value and entitlement targets. Grants for other facilities (or with no facility associations) are omitted. For bookings spanning multiple facilities, the list uses the union of booked facilities; each item's eligibility still requires its own facility intersection. Entitlement preview value is for one available unit; targets contain the individual unit prices and available quantities.
 
 `POST /payment/voucher` accepts:
 
@@ -48,4 +48,16 @@ Each issuance saves the grant and a `WalletVoucherGrantAudit` together in one EF
 
 The migration creates and backfills an issuance audit for every legacy grant **before** removing its contract FK, index and column. It preserves `UserContractId` as a snapshot and uses `GrantedAt` as the only known legacy issuance timestamp. Assigning user, reason and reference remain null rather than inventing historical facts. Grant balances/dates and all payment/redemption tables are untouched. New issuance uses the actual current audit timestamp independently of `validFrom` (stored in `GrantedAt`).
 
-Deploy with the API stopped or writes quiesced: old code requires the removed column. Back up first. Migration rollback is deliberately unsupported because standalone grants and deleted sources cannot be represented by the old mandatory contract FK; restore a pre-migration backup instead. Frontend work/client regeneration remains deferred.
+Deploy with the API stopped or writes quiesced: old code requires the removed column. Back up first. Migration rollback is deliberately unsupported because standalone grants and deleted sources cannot be represented by the old mandatory contract FK; restore a pre-migration backup instead. Client regeneration for this provenance API was performed in the separate entitlement-eligibility follow-up.
+
+## Entitlement item eligibility (separate follow-up)
+
+`VoucherContract` and `VoucherExtra` are many-to-many **redemption** allowlists, independent of `ContractVoucher` (issuance) and audit source memberships. Round entitlements match `SlotContract.ContractId`, never `UserContractId`. Extra entitlements match `ExtraBooking.ExtraId`. Only the list corresponding to `isExtra` is relevant. Empty lists mean no eligible items; multiple IDs allow any matching item.
+
+These lists affect **Entitlement only**. Discounts and credit ignore both lists entirely, including when empty. Their eligible subtotals continue to use facility associations, grant validity and booking items. Entitlement targets/subtotals require both the item allowlist and facility intersection in addition to ownership, wallet status/currency, validity and remaining balance. Preview filters targets; redemption recomputes eligibility against current database restrictions rather than trusting a prior preview. Accounting, row locks, pending reservations and duplicate-consumption protections are unchanged.
+
+`GET /wallet/vouchers` lists all the authenticated user's currently available grants across facilities, without needing a booking. It excludes inactive/unsupported wallets, expired/future/exhausted grants, fractional entitlement/discount units, vouchers without facilities and unconfigured entitlements with no allowed IDs (and extra entitlements with no allowed extra in a permitted facility). Round availability does not require active contracts, memberships or scheduled slots; the actual booked slot contract/facility is checked at redemption. It returns grant/voucher metadata, balance, validity and facility/contract/extra IDs. Availability is not a guarantee that a particular booking is payable or has eligible unpaid items.
+
+Facility managers can use `GET`/`POST /admin/facility/{FacilityId}/voucher` and `PUT /admin/facility/{FacilityId}/voucher/{Id}`. Create/update accept voucher metadata plus `contractIds` and `extraIds` arrays; duplicates are normalized. Selected IDs must belong to the route facility. Round entitlements accept contracts only; extra entitlements accept extras only. Empty arrays are permitted intentionally (no entitlement redemption). Multi-facility vouchers are visible where associated but read-only to single-facility managers to prevent cross-facility changes. New vouchers are associated with exactly the route facility. The admin Vouchers page reuses the existing table, dialog, checkbox and TanStack form components and loads selection options only from that facility.
+
+**Migration `VoucherItemEligibility`:** legacy vouchers start with explicitly empty item lists. There is no safe historical item eligibility to infer; issuance associations must not be interpreted as redemption permissions. The migration emits a notice for existing entitlements. Operators must configure their contract/extra lists before they can be redeemed. Discounts/credits and all grant balances, validity dates, provenance and payment history are untouched. Contract/extra deletion is restrictive while allowlisted; remove the association explicitly first. Apply with the API stopped to avoid old code redeeming without the new checks; rolling back removes configured lists and old code restores facility-only semantics.

@@ -1611,6 +1611,44 @@ namespace Club.Data.Migrations
                     b.ToTable("voucher", (string)null);
                 });
 
+            modelBuilder.Entity("Club.Entities.VoucherContract", b =>
+                {
+                    b.Property<int>("VoucherId")
+                        .HasColumnType("integer")
+                        .HasColumnName("voucher_id");
+
+                    b.Property<int>("ContractId")
+                        .HasColumnType("integer")
+                        .HasColumnName("contract_id");
+
+                    b.HasKey("VoucherId", "ContractId")
+                        .HasName("pk_voucher_contract");
+
+                    b.HasIndex("ContractId")
+                        .HasDatabaseName("ix_voucher_contract_contract_id");
+
+                    b.ToTable("voucher_contract", (string)null);
+                });
+
+            modelBuilder.Entity("Club.Entities.VoucherExtra", b =>
+                {
+                    b.Property<int>("VoucherId")
+                        .HasColumnType("integer")
+                        .HasColumnName("voucher_id");
+
+                    b.Property<int>("ExtraId")
+                        .HasColumnType("integer")
+                        .HasColumnName("extra_id");
+
+                    b.HasKey("VoucherId", "ExtraId")
+                        .HasName("pk_voucher_extra");
+
+                    b.HasIndex("ExtraId")
+                        .HasDatabaseName("ix_voucher_extra_extra_id");
+
+                    b.ToTable("voucher_extra", (string)null);
+                });
+
             modelBuilder.Entity("Club.Entities.VoucherFacility", b =>
                 {
                     b.Property<int>("VoucherId")
@@ -2390,6 +2428,48 @@ namespace Club.Data.Migrations
                     b.Navigation("Facility");
 
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("Club.Entities.VoucherContract", b =>
+                {
+                    b.HasOne("Club.Entities.Contract", "Contract")
+                        .WithMany()
+                        .HasForeignKey("ContractId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_voucher_contract_contract_contract_id");
+
+                    b.HasOne("Club.Entities.Voucher", "Voucher")
+                        .WithMany()
+                        .HasForeignKey("VoucherId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_voucher_contract_voucher_voucher_id");
+
+                    b.Navigation("Contract");
+
+                    b.Navigation("Voucher");
+                });
+
+            modelBuilder.Entity("Club.Entities.VoucherExtra", b =>
+                {
+                    b.HasOne("Club.Entities.Extra", "Extra")
+                        .WithMany()
+                        .HasForeignKey("ExtraId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_voucher_extra_extra_extra_id");
+
+                    b.HasOne("Club.Entities.Voucher", "Voucher")
+                        .WithMany()
+                        .HasForeignKey("VoucherId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_voucher_extra_voucher_voucher_id");
+
+                    b.Navigation("Extra");
+
+                    b.Navigation("Voucher");
                 });
 
             modelBuilder.Entity("Club.Entities.VoucherFacility", b =>

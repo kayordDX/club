@@ -46,6 +46,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IHttpContextAc
     public DbSet<UserContract> UserContract => Set<UserContract>();
     public DbSet<Validation> Validation => Set<Validation>();
     public DbSet<Voucher> Voucher => Set<Voucher>();
+    public DbSet<VoucherContract> VoucherContract => Set<VoucherContract>();
+    public DbSet<VoucherExtra> VoucherExtra => Set<VoucherExtra>();
     public DbSet<VoucherFacility> VoucherFacility => Set<VoucherFacility>();
     public DbSet<Wallet> Wallet => Set<Wallet>();
     public DbSet<WalletBalance> WalletBalance => Set<WalletBalance>();
