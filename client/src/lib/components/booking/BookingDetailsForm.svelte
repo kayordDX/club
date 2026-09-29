@@ -23,6 +23,8 @@
 		isSubmitting: boolean;
 		backHref: ResolvedPathname;
 		backLabel: string;
+		onCancel?: () => void;
+		showProfileShortcut?: boolean;
 		/** Optional header content, e.g. a countdown timer. */
 		headerExtra?: Snippet;
 		/** Optional header content aligned to the right, e.g. a status badge. */
@@ -59,6 +61,8 @@
 		isSubmitting,
 		backHref,
 		backLabel,
+		onCancel,
+		showProfileShortcut = true,
 		headerExtra,
 		statusExtra,
 		slotId,
@@ -152,138 +156,146 @@
 	</Card.Header>
 
 	<Form {form}>
-		<Card.Content class="space-y-6 p-6">
-			<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-				<div class="rounded-2xl border p-4">
-					<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
-						<CalendarDaysIcon class="size-4" />
-						Date
+		<fieldset disabled={isSubmitting} class="contents">
+			<Card.Content class="space-y-6 p-6">
+				<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+					<div class="rounded-2xl border p-4">
+						<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
+							<CalendarDaysIcon class="size-4" />
+							Date
+						</div>
+						<p class="mt-3 text-sm font-semibold">{dateLabel}</p>
 					</div>
-					<p class="mt-3 text-sm font-semibold">{dateLabel}</p>
-				</div>
-				<div class="rounded-2xl border p-4">
-					<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
-						<Clock3Icon class="size-4" />
-						Time
+					<div class="rounded-2xl border p-4">
+						<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
+							<Clock3Icon class="size-4" />
+							Time
+						</div>
+						<p class="mt-3 text-sm font-semibold">{formatTime(summaryStart)} - {formatTime(summaryEnd)}</p>
 					</div>
-					<p class="mt-3 text-sm font-semibold">{formatTime(summaryStart)} - {formatTime(summaryEnd)}</p>
-				</div>
-				<div class="rounded-2xl border p-4">
-					<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
-						<UserRoundIcon class="size-4" />
-						Players
+					<div class="rounded-2xl border p-4">
+						<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
+							<UserRoundIcon class="size-4" />
+							Players
+						</div>
+						<p class="mt-3 text-sm font-semibold">{playerCount} total</p>
 					</div>
-					<p class="mt-3 text-sm font-semibold">{playerCount} total</p>
-				</div>
-				<div class="rounded-2xl border p-4">
-					<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
-						<CreditCardIcon class="size-4" />
-						Total
-					</div>
-					<p class="mt-3 text-sm font-semibold">{formatCurrency(totalPrice)}</p>
-				</div>
-			</div>
-
-			<div class="space-y-4">
-				<div class="flex flex-wrap items-center justify-between gap-4">
-					<div>
-						<h2 class="text-lg font-semibold">User information</h2>
-						<p class="text-muted-foreground text-sm">Manage the contact details for each user included in this booking.</p>
-					</div>
-					<div class="flex flex-wrap items-center gap-2">
-						{#if remainingSlots !== undefined}
-							<span class="text-muted-foreground text-sm">{remainingSlots} of {slot?.total} slot(s) remaining</span>
-						{/if}
-						<Badge variant="outline">{playerCount} users</Badge>
-						<Button variant="outline" size="sm" onclick={addPlayer} disabled={remainingSlots !== undefined && playerCount >= remainingSlots}>
-							<PlusIcon class="size-4" />
-							Add player
-						</Button>
+					<div class="rounded-2xl border p-4">
+						<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
+							<CreditCardIcon class="size-4" />
+							Total
+						</div>
+						<p class="mt-3 text-sm font-semibold">{formatCurrency(totalPrice)}</p>
 					</div>
 				</div>
 
 				<div class="space-y-4">
-					<form.Field name="players">
-						{#snippet children(field)}
-							<div class="flex flex-col gap-4">
-								{#each field.state.value as player, index (index)}
-									<Card.Root>
-										<Card.Header class="pb-4">
-											<div class="flex items-center justify-between gap-4">
-												<Card.Title class="text-base">{player.name || `User ${index + 1}`}</Card.Title>
-												<div class="flex items-center gap-2">
-													<Button
-														variant="outline"
-														size="sm"
-														class="h-6 px-2 text-xs"
-														onclick={() => form.setFieldValue(`players[${index}]`, (current) => applyProfileToPlayer(current, user))}
-													>
-														Me
-													</Button>
-													<Button
-														variant="ghost"
-														size="sm"
-														class="h-6 px-2 text-xs"
-														onclick={() => removePlayer(index)}
-														disabled={(field.state.value?.length ?? 0) <= 1}
-														aria-label={`Remove player ${index + 1}`}
-													>
-														<Trash2Icon class="size-3" />
-													</Button>
-												</div>
-											</div>
-										</Card.Header>
-										<Card.Content>
-											<div class="grid gap-4 md:grid-cols-2">
-												<form.AppField name={`players[${index}].contractId`}>
-													{#snippet children(field)}
-														<field.Select label="Contract" items={contractItems} />
-													{/snippet}
-												</form.AppField>
-												<form.AppField name={`players[${index}].name`}>
-													{#snippet children(field)}
-														<field.Input label="Name" placeholder="Player full name" />
-													{/snippet}
-												</form.AppField>
-												<form.AppField name={`players[${index}].cellNo`}>
-													{#snippet children(field)}
-														<field.Input label="Cell No" placeholder="e.g. 082 123 4567" />
-													{/snippet}
-												</form.AppField>
-												<form.AppField name={`players[${index}].email`}>
-													{#snippet children(field)}
-														<field.Input label="Email" type="text" placeholder="player@email.com" />
-													{/snippet}
-												</form.AppField>
-											</div>
-										</Card.Content>
-									</Card.Root>
-								{/each}
-							</div>
-						{/snippet}
-					</form.Field>
-				</div>
-			</div>
+					<div class="flex flex-wrap items-center justify-between gap-4">
+						<div>
+							<h2 class="text-lg font-semibold">Players</h2>
+							<p class="text-muted-foreground text-sm">Manage the contact details for each player included in this booking.</p>
+						</div>
+						<div class="flex flex-wrap items-center gap-2">
+							{#if remainingSlots !== undefined}
+								<span class="text-muted-foreground text-sm">{remainingSlots} of {slot?.total} slot(s) remaining</span>
+							{/if}
+							<Badge variant="outline">{playerCount} players</Badge>
+							<Button variant="outline" size="sm" onclick={addPlayer} disabled={remainingSlots !== undefined && playerCount >= remainingSlots}>
+								<PlusIcon class="size-4" />
+								Add player
+							</Button>
+						</div>
+					</div>
 
-			<div class="space-y-4">
-				<div class="flex items-center justify-between gap-4">
-					<div>
-						<h2 class="text-lg font-semibold">Extras</h2>
-						<p class="text-muted-foreground text-sm">Add or remove extras for this booking.</p>
+					<div class="space-y-4">
+						<form.Field name="players">
+							{#snippet children(field)}
+								<div class="flex flex-col gap-4">
+									{#each field.state.value as player, index (index)}
+										<Card.Root>
+											<Card.Header class="pb-4">
+												<div class="flex items-center justify-between gap-4">
+													<Card.Title class="text-base">{player.name || `Player ${index + 1}`}</Card.Title>
+													<div class="flex items-center gap-2">
+														{#if showProfileShortcut}
+															<Button
+																variant="outline"
+																size="sm"
+																class="h-6 px-2 text-xs"
+																onclick={() => form.setFieldValue(`players[${index}]`, (current) => applyProfileToPlayer(current, user))}
+															>
+																Me
+															</Button>
+														{/if}
+														<Button
+															variant="ghost"
+															size="sm"
+															class="h-6 px-2 text-xs"
+															onclick={() => removePlayer(index)}
+															disabled={(field.state.value?.length ?? 0) <= 1}
+															aria-label={`Remove player ${index + 1}`}
+														>
+															<Trash2Icon class="size-3" />
+														</Button>
+													</div>
+												</div>
+											</Card.Header>
+											<Card.Content>
+												<div class="grid gap-4 md:grid-cols-2">
+													<form.AppField name={`players[${index}].contractId`}>
+														{#snippet children(field)}
+															<field.Select label="Contract" items={contractItems} />
+														{/snippet}
+													</form.AppField>
+													<form.AppField name={`players[${index}].name`}>
+														{#snippet children(field)}
+															<field.Input label="Name" placeholder="Player full name" />
+														{/snippet}
+													</form.AppField>
+													<form.AppField name={`players[${index}].cellNo`}>
+														{#snippet children(field)}
+															<field.Input label="Cell No" placeholder="e.g. 082 123 4567" />
+														{/snippet}
+													</form.AppField>
+													<form.AppField name={`players[${index}].email`}>
+														{#snippet children(field)}
+															<field.Input label="Email" type="text" placeholder="player@email.com" />
+														{/snippet}
+													</form.AppField>
+												</div>
+											</Card.Content>
+										</Card.Root>
+									{/each}
+								</div>
+							{/snippet}
+						</form.Field>
 					</div>
 				</div>
-				<Extras {facilityId} bind:selectedExtras />
-			</div>
-		</Card.Content>
-		<Card.Footer class="flex justify-between border-t">
-			<Button href={backHref} variant="ghost">
-				<ChevronLeftIcon class="size-4" />
-				{backLabel}
-			</Button>
-			<div class="flex items-center gap-3">
-				<span class="text-muted-foreground text-sm">Total: {formatCurrency(totalPrice)}</span>
-				<Button type="submit" disabled={isSubmitting}>{isSubmitting ? submittingLabel : submitLabel}</Button>
-			</div>
-		</Card.Footer>
+
+				<div class="space-y-4">
+					<div class="flex items-center justify-between gap-4">
+						<div>
+							<h2 class="text-lg font-semibold">Extras</h2>
+							<p class="text-muted-foreground text-sm">Add or remove extras for this booking.</p>
+						</div>
+					</div>
+					<Extras {facilityId} bind:selectedExtras />
+				</div>
+			</Card.Content>
+			<Card.Footer class="flex flex-wrap justify-between gap-3 border-t">
+				{#if onCancel}
+					<Button variant="outline" onclick={onCancel} disabled={isSubmitting}>Cancel</Button>
+				{:else}
+					<Button href={backHref} variant="ghost">
+						<ChevronLeftIcon class="size-4" />
+						{backLabel}
+					</Button>
+				{/if}
+				<div class="flex items-center gap-3">
+					<span class="text-muted-foreground text-sm">Total: {formatCurrency(totalPrice)}</span>
+					<Button type="submit" disabled={isSubmitting}>{isSubmitting ? submittingLabel : submitLabel}</Button>
+				</div>
+			</Card.Footer>
+		</fieldset>
 	</Form>
 </Card.Root>
