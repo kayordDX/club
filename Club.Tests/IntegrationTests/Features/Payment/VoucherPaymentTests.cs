@@ -81,7 +81,12 @@ public class VoucherPaymentTests(AppFixture app)
     [InlineData("inactive")]
     [InlineData("facility")]
     [InlineData("owner")]
-    [InlineData("contract")]
+    [InlineData("future")]
+    [InlineData("exhausted")]
+    [InlineData("booked-before-validity")]
+    [InlineData("booked-after-expiry")]
+    [InlineData("wallet-owner")]
+    [InlineData("currency")]
     [InlineData("reserved")]
     public async Task IneligibleVoucher_IsRejectedWithoutConsumingGrant(string invalid)
     {
@@ -96,8 +101,34 @@ public class VoucherPaymentTests(AppFixture app)
             case "inactive":
                 grant.Wallet.IsActive = false;
                 break;
-            case "contract":
-                grant.UserContract.IsActive = false;
+            case "future":
+                grant.GrantedAt = DateTime.UtcNow.AddDays(2);
+                break;
+            case "exhausted":
+                grant.AmountRemaining = 0;
+                break;
+            case "booked-before-validity":
+                booking.SlotContractBookings.First().SlotContract.Slot.StartDatetime = grant.GrantedAt.AddMinutes(-1);
+                break;
+            case "booked-after-expiry":
+                booking.SlotContractBookings.First().SlotContract.Slot.StartDatetime = grant.ExpiryDate;
+                break;
+            case "wallet-owner":
+                grant.Wallet = new Wallet
+                {
+                    Id = Guid.NewGuid(),
+                    User = new User
+                    {
+                        Id = Guid.NewGuid(),
+                        UserName = $"other-{Guid.NewGuid()}",
+                        FirstName = "Other",
+                        LastName = "Owner",
+                    },
+                };
+                db.Wallet.Add(grant.Wallet);
+                break;
+            case "currency":
+                grant.Wallet.Currency = "USD";
                 break;
             case "owner":
                 booking.UserId = null;
@@ -126,8 +157,8 @@ public class VoucherPaymentTests(AppFixture app)
         }
         await db.SaveChangesAsync();
         var response = await app.Client.PostAsJsonAsync("/payment/voucher", Request(booking, grant));
-        response.StatusCode.ShouldBe(invalid == "owner" ? HttpStatusCode.NotFound : HttpStatusCode.BadRequest);
-        (await db.WalletVoucherGrant.AsNoTracking().SingleAsync(x => x.Id == grant.Id)).AmountRemaining.ShouldBe(2m);
+        response.StatusCode.ShouldBe(invalid is "owner" or "wallet-owner" ? HttpStatusCode.NotFound : HttpStatusCode.BadRequest);
+        (await db.WalletVoucherGrant.AsNoTracking().SingleAsync(x => x.Id == grant.Id)).AmountRemaining.ShouldBe(invalid == "exhausted" ? 0m : 2m);
         (await db.Booking.AsNoTracking().SingleAsync(x => x.Id == booking.Id)).AmountPaid.ShouldBe(0m);
     }
 
@@ -225,6 +256,181 @@ public class VoucherPaymentTests(AppFixture app)
         history.Payments[0].PaymentType.ShouldBe("Voucher");
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Issue_RecordsAuthenticatedActor_AndRedeemsIndependentlyOfSource(bool contractSource)
+    {
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var (booking, template) = await SetupAsync(db);
+        var facilityId = booking.SlotContractBookings.First().SlotContract.Slot.FacilityId!.Value;
+        await AssignManagerAsync(db, facilityId);
+        UserContract? membership = null;
+        if (contractSource)
+        {
+            var contract = booking.SlotContractBookings.First().SlotContract.Contract;
+            db.ContractFacility.Add(new ContractFacility { Contract = contract, Facility = booking.SlotContractBookings.First().SlotContract.Slot.Facility! });
+            db.ContractVoucher.Add(
+                new ContractVoucher
+                {
+                    Contract = contract,
+                    Voucher = template.Voucher,
+                    Amount = 2,
+                }
+            );
+            membership = new UserContract
+            {
+                Contract = contract,
+                User = template.Wallet.User,
+                StartDate = DateTime.UtcNow.AddDays(-1),
+                EndDate = DateTime.UtcNow.AddDays(1),
+                IsActive = true,
+            };
+            db.UserContract.Add(membership);
+            await db.SaveChangesAsync(app.Context.CancellationToken);
+        }
+        var response = await app.Client.PostAsJsonAsync(
+            $"/admin/facility/{facilityId}/voucher/issue",
+            new
+            {
+                template.WalletId,
+                template.VoucherId,
+                SourceUserContractId = membership?.Id,
+                Amount = 2,
+                ValidFrom = DateTime.UtcNow.AddMinutes(-1),
+                ExpiryDate = DateTime.UtcNow.AddDays(10),
+                AssigningUserId = Guid.NewGuid(),
+                SourceType = WalletVoucherGrantSource.Purchase,
+                Reason = "Test issuance",
+                Reference = "test-ref",
+            },
+            app.Context.CancellationToken
+        );
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var grantId = await response.Content.ReadFromJsonAsync<Guid>(app.Context.CancellationToken);
+        var grant = await db.WalletVoucherGrant.Include(x => x.Wallet).Include(x => x.Voucher).SingleAsync(x => x.Id == grantId, app.Context.CancellationToken);
+        var audit = await db.WalletVoucherGrantAudit.AsNoTracking().SingleAsync(x => x.WalletVoucherGrantId == grantId, app.Context.CancellationToken);
+        audit.AssigningUserId.ShouldBe(TestClaims.UserIdGuid);
+        audit.SourceType.ShouldBe(contractSource ? WalletVoucherGrantSource.Contract : WalletVoucherGrantSource.Admin);
+        audit.SourceUserContractId.ShouldBe(membership?.Id);
+        audit.Action.ShouldBe(WalletVoucherGrantAction.Issued);
+        audit.Timestamp.Kind.ShouldBe(DateTimeKind.Utc);
+        audit.Reason.ShouldBe("Test issuance");
+        audit.Reference.ShouldBe("test-ref");
+        if (membership is not null)
+        {
+            membership.IsActive = false;
+            membership.EndDate = DateTime.UtcNow.AddDays(-1);
+            await db.SaveChangesAsync(app.Context.CancellationToken);
+        }
+        (await app.Client.PostAsJsonAsync("/payment/voucher", Request(booking, grant), app.Context.CancellationToken)).StatusCode.ShouldBe(HttpStatusCode.OK);
+        if (membership is not null)
+        {
+            db.UserContract.Remove(membership);
+            await db.SaveChangesAsync(app.Context.CancellationToken);
+            (await db.WalletVoucherGrantAudit.AsNoTracking().SingleAsync(x => x.Id == audit.Id, app.Context.CancellationToken)).SourceUserContractId.ShouldBe(
+                membership.Id
+            );
+            var request = Request(booking, grant);
+            request.SlotContractBookingId = booking.SlotContractBookings.Last().Id;
+            (await app.Client.PostAsJsonAsync("/payment/voucher", request, app.Context.CancellationToken)).StatusCode.ShouldBe(HttpStatusCode.OK);
+        }
+    }
+
+    [Theory]
+    [InlineData("unauthorized")]
+    [InlineData("contract")]
+    [InlineData("facility")]
+    public async Task Issue_RejectsUnauthorizedOrForgedSource_WithoutWrites(string invalid)
+    {
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var (booking, template) = await SetupAsync(db);
+        var facilityId = booking.SlotContractBookings.First().SlotContract.Slot.FacilityId!.Value;
+        if (invalid != "unauthorized")
+            await AssignManagerAsync(db, facilityId);
+        if (invalid == "facility")
+            db.VoucherFacility.RemoveRange(await db.VoucherFacility.Where(x => x.VoucherId == template.VoucherId).ToListAsync(app.Context.CancellationToken));
+        await db.SaveChangesAsync(app.Context.CancellationToken);
+        var before = await db.WalletVoucherGrant.CountAsync(app.Context.CancellationToken);
+        var auditsBefore = await db.WalletVoucherGrantAudit.CountAsync(app.Context.CancellationToken);
+        var response = await app.Client.PostAsJsonAsync(
+            $"/admin/facility/{facilityId}/voucher/issue",
+            new
+            {
+                template.WalletId,
+                template.VoucherId,
+                SourceUserContractId = invalid == "contract" ? int.MaxValue : (int?)null,
+                Amount = 2,
+                ValidFrom = DateTime.UtcNow,
+                ExpiryDate = DateTime.UtcNow.AddDays(10),
+            },
+            app.Context.CancellationToken
+        );
+        response.StatusCode.ShouldBe(
+            invalid == "unauthorized" ? HttpStatusCode.Forbidden
+            : invalid == "facility" ? HttpStatusCode.NotFound
+            : HttpStatusCode.BadRequest
+        );
+        (await db.WalletVoucherGrant.CountAsync(app.Context.CancellationToken)).ShouldBe(before);
+        (await db.WalletVoucherGrantAudit.CountAsync(app.Context.CancellationToken)).ShouldBe(auditsBefore);
+    }
+
+    [Fact]
+    public async Task AuditInsertFailure_RollsBackGrant_AndAuditsCannotBeChanged()
+    {
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var (_, template) = await SetupAsync(db);
+        var grant = new WalletVoucherGrant
+        {
+            Id = Guid.NewGuid(),
+            Wallet = template.Wallet,
+            Voucher = template.Voucher,
+            AmountGranted = 3,
+            AmountRemaining = 3,
+            GrantedAt = DateTime.UtcNow,
+            ExpiryDate = template.ExpiryDate,
+        };
+        db.WalletVoucherGrant.Add(grant);
+        db.WalletVoucherGrantAudit.Add(
+            new WalletVoucherGrantAudit
+            {
+                Id = Guid.NewGuid(),
+                WalletVoucherGrant = grant,
+                Action = WalletVoucherGrantAction.Issued,
+                Timestamp = DateTime.UtcNow,
+                SourceType = WalletVoucherGrantSource.Contract,
+            }
+        );
+        await Should.ThrowAsync<DbUpdateException>(() => db.SaveChangesAsync(app.Context.CancellationToken));
+        db.ChangeTracker.Clear();
+        (await db.WalletVoucherGrant.AnyAsync(x => x.Id == grant.Id, app.Context.CancellationToken)).ShouldBeFalse();
+        (await db.WalletVoucherGrantAudit.AnyAsync(x => x.WalletVoucherGrantId == grant.Id, app.Context.CancellationToken)).ShouldBeFalse();
+        var audit = await db.WalletVoucherGrantAudit.SingleAsync(x => x.WalletVoucherGrantId == template.Id, app.Context.CancellationToken);
+        audit.Reason = "rewrite";
+        await Should.ThrowAsync<InvalidOperationException>(() => db.SaveChangesAsync(app.Context.CancellationToken));
+        db.ChangeTracker.Clear();
+        await Should.ThrowAsync<Npgsql.PostgresException>(() =>
+            db.Database.ExecuteSqlInterpolatedAsync($"DELETE FROM wallet_voucher_grant_audit WHERE id = {audit.Id}", app.Context.CancellationToken)
+        );
+    }
+
+    private async Task AssignManagerAsync(AppDbContext db, int facilityId)
+    {
+        var role = await db.Roles.SingleAsync(x => x.NormalizedName == "MANAGER", app.Context.CancellationToken);
+        db.UserRoles.Add(
+            new UserRole
+            {
+                UserId = TestClaims.UserIdGuid,
+                RoleId = role.Id,
+                FacilityId = facilityId,
+            }
+        );
+        await db.SaveChangesAsync(app.Context.CancellationToken);
+    }
+
     private static PaymentVoucherRequest Request(Club.Entities.Booking booking, WalletVoucherGrant grant) =>
         new()
         {
@@ -294,6 +500,7 @@ public class VoucherPaymentTests(AppFixture app)
                 IsActive = true,
             };
         wallet.IsActive = true;
+        wallet.Currency = "ZAR";
         var voucher = new Voucher
         {
             Name = "Test voucher",
@@ -307,13 +514,6 @@ public class VoucherPaymentTests(AppFixture app)
             Id = Guid.NewGuid(),
             Wallet = wallet,
             Voucher = voucher,
-            UserContract = new UserContract
-            {
-                Contract = contract,
-                User = user,
-                IsActive = true,
-                StartDate = DateTime.UtcNow.AddDays(-1),
-            },
             AmountGranted = 2,
             AmountRemaining = 2,
             GrantedAt = DateTime.UtcNow.AddDays(-1),
@@ -321,6 +521,16 @@ public class VoucherPaymentTests(AppFixture app)
         };
         db.Booking.Add(booking);
         db.WalletVoucherGrant.Add(grant);
+        db.WalletVoucherGrantAudit.Add(
+            new WalletVoucherGrantAudit
+            {
+                Id = Guid.NewGuid(),
+                WalletVoucherGrant = grant,
+                Action = WalletVoucherGrantAction.Issued,
+                Timestamp = grant.GrantedAt,
+                SourceType = WalletVoucherGrantSource.System,
+            }
+        );
         db.VoucherFacility.Add(new VoucherFacility { Voucher = voucher, Facility = facility });
         await db.SaveChangesAsync();
         return (booking, grant);

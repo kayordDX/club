@@ -53,9 +53,23 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IHttpContextAc
     public DbSet<WalletTransactionStatus> WalletTransactionStatus => Set<WalletTransactionStatus>();
     public DbSet<WalletTransactionType> WalletTransactionType => Set<WalletTransactionType>();
     public DbSet<WalletVoucherGrant> WalletVoucherGrant => Set<WalletVoucherGrant>();
+    public DbSet<WalletVoucherGrantAudit> WalletVoucherGrantAudit => Set<WalletVoucherGrantAudit>();
+
+    private void ValidateGrantAudits()
+    {
+        if (ChangeTracker.Entries<WalletVoucherGrantAudit>().Any(x => x.State is EntityState.Modified or EntityState.Deleted))
+            throw new InvalidOperationException("Voucher grant audits are append-only.");
+    }
+
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        ValidateGrantAudits();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
 
     public override async Task<int> SaveChangesAsync(CancellationToken ct = new CancellationToken())
     {
+        ValidateGrantAudits();
         var userId = _httpContextAccessor.HttpContext?.User?.GetUserId();
         foreach (Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<AuditableEntity> entry in ChangeTracker.Entries<AuditableEntity>())
         {

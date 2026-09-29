@@ -45,7 +45,6 @@ public class Endpoint(AppDbContext db, BookingVoucherService vouchers) : Endpoin
             return;
         }
         await db.Entry(grant).Reference(x => x.Voucher).LoadAsync(ct);
-        await db.Entry(grant).Reference(x => x.UserContract).LoadAsync(ct);
         var available = await BookingPayments.AvailableAsync(db, booking, ct);
         var description = await vouchers.DescribeAsync(booking, grant, available, ct);
         try
