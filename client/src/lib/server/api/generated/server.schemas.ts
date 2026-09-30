@@ -1118,6 +1118,26 @@ export interface CredentialDisableRequest {
 	token: string;
 }
 
+export interface WalletVoucherDTO {
+	grantId: string;
+	voucherId: number;
+	name: string;
+	description: string;
+	isExtra: boolean;
+	redemptionKind: VoucherRedemptionKind;
+	discountMode?: VoucherDiscountMode | null;
+	/** @nullable */
+	discountValue?: number | null;
+	/** @nullable */
+	maxDiscountAmount?: number | null;
+	amountGranted: number;
+	amountRemaining: number;
+	grantedAt: string;
+	expiryDate: string;
+	currency: string;
+	isWalletActive: boolean;
+}
+
 export type TestParams = {
 	name: string;
 };

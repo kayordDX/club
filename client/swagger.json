@@ -2654,6 +2654,45 @@
 					}
 				]
 			}
+		},
+		"/wallet/vouchers": {
+			"get": {
+				"tags": ["Wallet"],
+				"operationId": "WalletVouchers",
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/WalletVoucherDTO"
+									}
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized"
+					}
+				},
+				"security": [
+					{
+						"Keycloak": []
+					}
+				]
+			}
 		}
 	},
 	"components": {
@@ -5902,6 +5941,86 @@
 				"properties": {
 					"token": {
 						"type": "string"
+					}
+				}
+			},
+			"WalletVoucherDTO": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"name",
+					"description",
+					"currency",
+					"grantId",
+					"voucherId",
+					"isExtra",
+					"redemptionKind",
+					"amountGranted",
+					"amountRemaining",
+					"grantedAt",
+					"expiryDate",
+					"isWalletActive"
+				],
+				"properties": {
+					"grantId": {
+						"type": "string",
+						"format": "guid"
+					},
+					"voucherId": {
+						"type": "integer",
+						"format": "int32"
+					},
+					"name": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"isExtra": {
+						"type": "boolean"
+					},
+					"redemptionKind": {
+						"$ref": "#/components/schemas/VoucherRedemptionKind"
+					},
+					"discountMode": {
+						"nullable": true,
+						"oneOf": [
+							{
+								"$ref": "#/components/schemas/VoucherDiscountMode"
+							}
+						]
+					},
+					"discountValue": {
+						"type": "number",
+						"format": "decimal",
+						"nullable": true
+					},
+					"maxDiscountAmount": {
+						"type": "number",
+						"format": "decimal",
+						"nullable": true
+					},
+					"amountGranted": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"amountRemaining": {
+						"type": "number",
+						"format": "decimal"
+					},
+					"grantedAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"expiryDate": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"currency": {
+						"type": "string"
+					},
+					"isWalletActive": {
+						"type": "boolean"
 					}
 				}
 			}

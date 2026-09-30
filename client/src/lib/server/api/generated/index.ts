@@ -9,3 +9,4 @@ export * from "./outlet";
 export * from "./payment";
 export * from "./slot";
 export * from "./test";
+export * from "./wallet";
