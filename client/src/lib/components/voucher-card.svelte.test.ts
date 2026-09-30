@@ -57,6 +57,31 @@ it("applies a capped percentage discount without selecting an item", async () =>
 	expect(onredeem).toHaveBeenCalledExactlyOnceWith({ bookingId: 123, grantId: "grant-1", quantity: 1 });
 });
 
+it("redeems multiple extra units using only the returned target ID", async () => {
+	const onredeem = vi.fn().mockResolvedValue(undefined);
+	render(VoucherCard, {
+		voucher: { ...voucher, isExtra: true, targets: [{ extraId: 5, name: "Cart", unitsAvailable: 2, unitPrice: 50 }] },
+		bookingId: 123,
+		onredeem,
+	});
+	await page.getByLabelText("Choose an eligible extra").selectOptions("5");
+	await page.getByLabelText("Quantity (maximum 2)").fill("2");
+	await page.getByRole("button", { name: "Redeem voucher" }).click();
+	expect(onredeem).toHaveBeenCalledExactlyOnceWith({ bookingId: 123, grantId: "grant-1", extraId: 5, quantity: 2 });
+});
+
+it.each([VoucherRedemptionKind.Credit, VoucherRedemptionKind.Discount])("redeems credit or fixed discounts without targets (%s)", async (redemptionKind) => {
+	const onredeem = vi.fn().mockResolvedValue(undefined);
+	render(VoucherCard, {
+		voucher: { ...voucher, redemptionKind, discountMode: VoucherDiscountMode.FixedAmount, discountValue: 50, targets: [] },
+		bookingId: 123,
+		onredeem,
+	});
+	await expect.element(page.getByRole("combobox")).not.toBeInTheDocument();
+	await page.getByRole("button", { name: "Redeem voucher" }).click();
+	expect(onredeem).toHaveBeenCalledExactlyOnceWith({ bookingId: 123, grantId: "grant-1", quantity: 1 });
+});
+
 it("prevents duplicate submissions while a redemption is in progress", async () => {
 	render(VoucherCard, { voucher: { ...voucher, redemptionKind: VoucherRedemptionKind.Credit }, bookingId: 123, busy: true, onredeem: vi.fn() });
 	await expect.element(page.getByRole("button", { name: "Redeem voucher" })).toBeDisabled();

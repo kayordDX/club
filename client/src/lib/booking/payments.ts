@@ -1,6 +1,22 @@
 import { VoucherRedemptionKind, type BookingVoucherDTO, type PaymentVoucherRequest, type VoucherTargetDTO } from "$lib/api";
 import { formatCurrency } from "./format";
 
+export function paymentErrorMessage(cause: unknown, fallback: string): string {
+	if (cause instanceof Error) return cause.message;
+	if (
+		cause &&
+		typeof cause === "object" &&
+		"body" in cause &&
+		cause.body &&
+		typeof cause.body === "object" &&
+		"message" in cause.body &&
+		typeof cause.body.message === "string"
+	) {
+		return cause.body.message;
+	}
+	return fallback;
+}
+
 export function validatePaymentAmount(value: string, available: number): string | undefined {
 	if (!/^\d+(\.\d{1,2})?$/.test(value) || Number(value) <= 0) {
 		return "Enter a positive amount with at most two decimal places.";

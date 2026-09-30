@@ -6,6 +6,7 @@
 import { getRequestEvent } from "$app/server";
 import { error } from "@sveltejs/kit";
 import { API_URL } from "$app/env/private";
+import { apiErrorMessage } from "./error-message";
 
 export async function customServerInstance<T>(url: string, init: RequestInit = {}): Promise<T> {
 	const accessToken = getRequestEvent().locals.accessToken;
@@ -21,7 +22,8 @@ export async function customServerInstance<T>(url: string, init: RequestInit = {
 	if (res.status === 401) throw error(401, "Unauthorized");
 	if (res.status === 404) throw error(404, "Not found");
 	if (!res.ok) {
-		throw error(res.status, `API request failed: ${res.status}`);
+		const body: unknown = await res.json().catch(() => undefined);
+		throw error(res.status, apiErrorMessage(res.status, body));
 	}
 	if (res.status === 204) return undefined as T;
 	const text = await res.text();
