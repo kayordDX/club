@@ -2,185 +2,127 @@
 	import { page } from "$app/state";
 	import { resolve } from "$app/paths";
 	import { toast } from "svelte-sonner";
-
-	import { BookingStatusEnum } from "$lib/api";
-	import { adminBookingGet, adminBookingUpdate, adminBookingUpdateStatus, adminBookingGetAll } from "$lib/api/remote/admin.remote";
-	import { BOOKING_STATUS_OPTIONS, statusBadgeVariant, statusLabel } from "$lib/booking/status";
-	import { formatCurrency, formatDate } from "$lib/booking/format";
+	import { createMutation } from "@tanstack/svelte-query";
+	import { BookingStatusEnum, type AdminBookingUpdateRequest } from "$lib/api";
+	import { adminBookingGet, adminBookingUpdate, adminBookingUpdateStatus } from "$lib/api/remote/admin.remote";
+	import { bookingGetPath } from "$lib/api/remote/booking.remote";
+	import { statusLabel } from "$lib/booking/status";
+	import { formatDate } from "$lib/booking/format";
 	import { buildExtras, buildPlayers } from "$lib/booking/bookingForm";
+	import type { BookingFormSubmitHandler } from "$lib/booking/schema";
 	import PageHeading from "$lib/components/PageHeading.svelte";
+	import BookingDetails from "$lib/components/booking/booking-details.svelte";
+	import BookingStatusControl from "$lib/components/booking/booking-status-control.svelte";
 	import BookingDetailsForm from "$lib/components/booking/BookingDetailsForm.svelte";
-	import { Alert, Badge, Button, Card, DropdownMenu } from "@kayord/ui";
-	import { ChevronLeftIcon, SettingsIcon, ShieldCheckIcon } from "@lucide/svelte";
+	import { Alert, Button } from "@kayord/ui";
+	import { BookIcon, ChevronLeftIcon, PencilIcon } from "@lucide/svelte";
 
 	const facilityId = Number(page.params.id) || 0;
 	const bookingId = Number(page.params.bookingId) || 0;
-
-	const booking = await adminBookingGet({ facilityId, id: bookingId });
-
+	const request = adminBookingGet({ facilityId, id: bookingId });
+	const initialBooking = await request;
+	const booking = $derived(request.current ?? initialBooking);
+	const path = await bookingGetPath(bookingId).catch(() => undefined);
 	const listHref = resolve(`/outlet/${page.params.slug}/${page.params.id}/admin/bookings`);
+	const slot = $derived(booking.slotContractBookings?.[0]?.slotContract?.slot);
+	const slotId = $derived(slot?.id ?? "");
+	const ownPlayerCount = $derived(
+		booking.bookingStatusId === BookingStatusEnum.Cancelled || booking.bookingStatusId === BookingStatusEnum.Expired ? 0 : booking.slotContractBookings.length
+	);
+	let editing = $state(false);
+	let saveError = $state("");
+	const update = createMutation(() => ({ mutationFn: (body: AdminBookingUpdateRequest) => adminBookingUpdate({ facilityId, id: bookingId, body }) }));
+	const updateStatus = createMutation(() => ({
+		mutationFn: (status: BookingStatusEnum) => adminBookingUpdateStatus({ facilityId, id: bookingId, body: { status } }),
+	}));
+	let refreshing = $state(false);
+	const busy = $derived(update.isPending || updateStatus.isPending || refreshing);
 
-	const slotId = booking.slotContractBookings?.[0]?.slotContract?.slotId ?? "";
-	const slotStartDatetime = booking.slotContractBookings?.[0]?.slotContract?.slot?.startDatetime ?? null;
-	const slotEndDatetime = booking.slotContractBookings?.[0]?.slotContract?.slot?.endDatetime ?? null;
-	const slotDate = slotStartDatetime?.slice(0, 10) ?? "";
-	const ownPlayerCount = booking.slotContractBookings?.length ?? 0;
-
-	let isSubmitting = $state(false);
-
-	const refreshAll = () => {
-		void adminBookingGet({ facilityId, id: bookingId }).refresh();
-		void adminBookingGetAll({ facilityId }).refresh();
-	};
-
-	const changeStatus = async (status: BookingStatusEnum) => {
+	async function refreshBooking() {
+		refreshing = true;
 		try {
-			await adminBookingUpdateStatus({ facilityId, id: bookingId, body: { status } });
-			toast.success(`Status changed to ${statusLabel(status)}`);
-			refreshAll();
-		} catch (error) {
-			toast.error(error instanceof Error ? error.message : "Failed to change status");
-		}
-	};
-
-	const handleSubmit = async ({
-		players,
-		extras,
-	}: {
-		players: { name: string; cellNo: string; email: string; contractId: string }[];
-		extras: { id: number; amount: number }[];
-	}) => {
-		try {
-			isSubmitting = true;
-			await adminBookingUpdate({
-				facilityId,
-				id: bookingId,
-				body: {
-					bookings: players.map((player) => ({
-						slotId,
-						slotContractId: Number(player.contractId),
-						name: player.name,
-						cellphone: player.cellNo,
-						email: player.email,
-					})),
-					extras: extras.map((extra) => ({
-						extraId: extra.id,
-						amount: extra.amount,
-					})),
-				},
-			});
-			toast.success("Booking updated");
-			refreshAll();
-		} catch (error) {
-			const message = error instanceof Error && error.cause ? String(error.cause) : error instanceof Error ? error.message : "Failed to update booking.";
-			toast.error(message);
+			await request.refresh();
 		} finally {
-			isSubmitting = false;
+			refreshing = false;
+		}
+	}
+
+	async function changeStatus(status: BookingStatusEnum) {
+		await updateStatus.mutateAsync(status);
+		await refreshBooking();
+		toast.success(`Status changed to ${statusLabel(status)}`);
+	}
+
+	const handleSubmit: BookingFormSubmitHandler = async ({ players, extras }) => {
+		if (busy) return;
+		saveError = "";
+		try {
+			await update.mutateAsync({
+				bookings: players.map((player) => ({
+					slotId,
+					slotContractId: Number(player.contractId),
+					name: player.name,
+					cellphone: player.cellNo,
+					email: player.email,
+				})),
+				extras: extras.map((extra) => ({ extraId: extra.id, amount: extra.amount })),
+			});
+			await refreshBooking();
+			editing = false;
+			toast.success("Booking updated");
+		} catch (cause) {
+			saveError = cause instanceof Error ? cause.message : "Unable to save changes. Please try again.";
 		}
 	};
 </script>
 
-<div class="m-2 flex flex-col gap-6">
-	<div class="flex items-start justify-between gap-4">
-		<PageHeading title="Manage Booking" description={`Booking #${bookingId}`} icon={ShieldCheckIcon} />
-
-		<Button href={listHref} variant="outline">
-			<ChevronLeftIcon class="size-4" />
-			Back to bookings
-		</Button>
+<div class="m-4 space-y-6">
+	<div class="flex flex-wrap items-start justify-between gap-4">
+		<PageHeading title={editing ? "Edit booking" : "Booking"} description={`Booking #${bookingId} · Facility management`} icon={BookIcon} />
+		<div class="flex flex-wrap gap-2">
+			<Button href={listHref} variant="outline"><ChevronLeftIcon class="size-4" />Back to bookings</Button>
+			{#if !editing}
+				<Button
+					disabled={busy || !slotId}
+					onclick={() => {
+						saveError = "";
+						editing = true;
+					}}><PencilIcon class="size-4" />Edit booking</Button
+				>
+			{/if}
+		</div>
 	</div>
-
-	<Alert.Root variant="default">
-		<Alert.Title>Manager access</Alert.Title>
-		<Alert.Description>You can freely change this booking's status and edit player and extra details, regardless of status.</Alert.Description>
-	</Alert.Root>
-
-	<div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-		<Card.Root>
-			<Card.Header>
-				<Card.Title>Booking</Card.Title>
-			</Card.Header>
-			<Card.Content class="space-y-3">
-				<div>
-					<div class="text-muted-foreground text-sm">Date</div>
-					<div>{formatDate(slotStartDatetime)}</div>
-				</div>
-				<div>
-					<div class="text-muted-foreground text-sm">Status</div>
-					<div class="flex items-center gap-2">
-						<Badge variant={statusBadgeVariant(booking.bookingStatus?.id)}>
-							{booking.bookingStatus?.name ?? "—"}
-						</Badge>
-						<DropdownMenu.Root>
-							<DropdownMenu.Trigger>
-								{#snippet child({ props })}
-									<Button {...props} variant="outline" size="sm">
-										<SettingsIcon class="size-4" />
-										Change status
-									</Button>
-								{/snippet}
-							</DropdownMenu.Trigger>
-							<DropdownMenu.Content>
-								{#each BOOKING_STATUS_OPTIONS as option (option.value)}
-									<DropdownMenu.Item onclick={() => changeStatus(option.value)}>
-										{option.label}
-									</DropdownMenu.Item>
-								{/each}
-							</DropdownMenu.Content>
-						</DropdownMenu.Root>
-					</div>
-				</div>
-				<div>
-					<div class="text-muted-foreground text-sm">Booked by</div>
-					<div>{booking.user ? `${booking.user.firstName} ${booking.user.lastName}` : "—"}</div>
-				</div>
-			</Card.Content>
-		</Card.Root>
-
-		<Card.Root>
-			<Card.Header>
-				<Card.Title>Payment</Card.Title>
-			</Card.Header>
-			<Card.Content class="space-y-3">
-				<div>
-					<div class="text-muted-foreground text-sm">Paid</div>
-					<div>{booking.isPaid ? "Yes" : "No"}</div>
-				</div>
-				<div>
-					<div class="text-muted-foreground text-sm">Amount paid</div>
-					<div>{formatCurrency(booking.amountPaid)}</div>
-				</div>
-				<div>
-					<div class="text-muted-foreground text-sm">Amount outstanding</div>
-					<div>{formatCurrency(booking.amountOutstanding)}</div>
-				</div>
-			</Card.Content>
-		</Card.Root>
-	</div>
-
-	<BookingDetailsForm
-		title="Edit booking details"
-		description="Update player details and extras. Changes are applied immediately."
-		submitLabel="Save changes"
-		submittingLabel="Saving..."
-		{isSubmitting}
-		backHref={listHref}
-		backLabel="Back to bookings"
-		{slotId}
-		{facilityId}
-		date={slotDate}
-		dateLabel={formatDate(slotStartDatetime)}
-		{slotStartDatetime}
-		{slotEndDatetime}
-		initialPlayers={buildPlayers(booking)}
-		initialExtras={buildExtras(booking)}
-		{ownPlayerCount}
-		onSubmit={handleSubmit}
-	>
-		{#snippet statusExtra()}
-			<Badge variant={statusBadgeVariant(booking.bookingStatus?.id)}>
-				Status: {booking.bookingStatus?.name}
-			</Badge>
+	<BookingDetails {booking} {path} showPlayers={!editing}>
+		{#snippet statusActions()}
+			<BookingStatusControl status={booking.bookingStatusId as BookingStatusEnum} disabled={busy || editing} onChange={changeStatus} />
 		{/snippet}
-	</BookingDetailsForm>
+	</BookingDetails>
+	{#if !slotId}
+		<p class="text-muted-foreground text-sm">This booking has no slot details and cannot be edited.</p>
+	{/if}
+	{#if editing && slot}
+		{#if saveError}
+			<Alert.Root variant="destructive"><Alert.Title>Changes not saved</Alert.Title><Alert.Description>{saveError}</Alert.Description></Alert.Root>
+		{/if}
+		<BookingDetailsForm
+			title="Edit booking details"
+			description="Update players and extras, then save your changes. You can edit bookings in any status."
+			submitLabel="Save changes"
+			isSubmitting={busy}
+			backHref={listHref}
+			backLabel="Back to bookings"
+			onCancel={() => (editing = false)}
+			showProfileShortcut={false}
+			{slotId}
+			{facilityId}
+			date={slot.startDatetime.slice(0, 10)}
+			dateLabel={formatDate(slot.startDatetime)}
+			slotStartDatetime={slot.startDatetime}
+			slotEndDatetime={slot.endDatetime}
+			initialPlayers={buildPlayers(booking)}
+			initialExtras={buildExtras(booking)}
+			{ownPlayerCount}
+			onSubmit={handleSubmit}
+		/>
+	{/if}
 </div>
