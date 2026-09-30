@@ -75,6 +75,60 @@ public class WalletVouchersTests(AppFixture app)
                 now.AddDays(10)
             ),
         };
+        var outlet = new Outlet
+        {
+            Name = "Wallet voucher test",
+            Slug = $"wallet-voucher-{Guid.NewGuid()}",
+            DisplayName = "Test",
+            VatNumber = "0",
+            Business = new Business { Name = "Test" },
+            OutletType = new OutletType { Name = "Test" },
+        };
+        var golf = new FacilityType { Name = "Golf Course" };
+        Facility Facility(string name) =>
+            new()
+            {
+                Name = name,
+                Outlet = outlet,
+                FacilityType = golf,
+            };
+        var north = Facility("North Golf Course");
+        var south = Facility("South Golf Course");
+        var unrelated = Facility("Unrelated Golf Course");
+        foreach (var definition in new[] { voucher, own[^1].Voucher })
+        {
+            db.VoucherFacility.AddRange(
+                new VoucherFacility { Voucher = definition, Facility = north },
+                new VoucherFacility { Voucher = definition, Facility = south }
+            );
+        }
+        await db.SaveChangesAsync(ct);
+        db.Extra.AddRange(
+            new Extra
+            {
+                Name = "Golf Cart",
+                Facility = north,
+                OutletId = outlet.Id,
+            },
+            new Extra
+            {
+                Name = "Golf Cart",
+                Facility = south,
+                OutletId = outlet.Id,
+            },
+            new Extra
+            {
+                Name = "Club Hire",
+                Facility = south,
+                OutletId = outlet.Id,
+            },
+            new Extra
+            {
+                Name = "Unrelated Extra",
+                Facility = unrelated,
+                OutletId = outlet.Id,
+            }
+        );
         var other = Grant(otherWallet, voucher, 5, now.AddDays(-1), now.AddDays(10));
         db.WalletVoucherGrant.AddRange(own.Append(other));
         await db.SaveChangesAsync(ct);
@@ -99,6 +153,18 @@ public class WalletVouchersTests(AppFixture app)
             item.DiscountValue.ShouldBe(grant.Voucher.DiscountValue);
             item.MaxDiscountAmount.ShouldBe(grant.Voucher.MaxDiscountAmount);
             item.IsExtra.ShouldBe(grant.Voucher.IsExtra);
+            if (grant.Voucher == voucher || grant.Voucher == own[^1].Voucher)
+            {
+                item.FacilityNames.ShouldBe(["North Golf Course", "South Golf Course"]);
+                item.GameTypes.ShouldBe(["Golf Course"]);
+                item.ExtraNames.ShouldBe(["Club Hire", "Golf Cart"]);
+            }
+            else
+            {
+                item.FacilityNames.ShouldBeEmpty();
+                item.GameTypes.ShouldBeEmpty();
+                item.ExtraNames.ShouldBeEmpty();
+            }
             item.GrantedAt.ShouldBe(grant.GrantedAt, TimeSpan.FromMilliseconds(1));
             item.ExpiryDate.ShouldBe(grant.ExpiryDate, TimeSpan.FromMilliseconds(1));
             item.Currency.ShouldBe(wallet.Currency);

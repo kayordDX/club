@@ -33,6 +33,14 @@ public class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<WalletVouch
                 VoucherId = x.VoucherId,
                 Name = x.Voucher.Name,
                 Description = x.Voucher.Description,
+                FacilityNames = db.VoucherFacility.Where(f => f.VoucherId == x.VoucherId).Select(f => f.Facility.Name).Distinct().Order().ToList(),
+                GameTypes = db.VoucherFacility.Where(f => f.VoucherId == x.VoucherId).Select(f => f.Facility.FacilityType.Name).Distinct().Order().ToList(),
+                ExtraNames = db
+                    .Extra.Where(e => db.VoucherFacility.Any(f => f.VoucherId == x.VoucherId && f.FacilityId == e.FacilityId))
+                    .Select(e => e.Name)
+                    .Distinct()
+                    .Order()
+                    .ToList(),
                 IsExtra = x.Voucher.IsExtra,
                 RedemptionKind = x.Voucher.RedemptionKind,
                 DiscountMode = x.Voucher.DiscountMode,

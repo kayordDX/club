@@ -12,6 +12,9 @@ const grant: WalletVoucherDTO = {
 	voucherId: 1,
 	name: "Member rounds",
 	description: "Rounds for members",
+	facilityNames: ["Ruimsig Golf Course", "North Golf Course"],
+	gameTypes: ["Golf Course"],
+	extraNames: ["Golf Cart", "Club Hire"],
 	isExtra: false,
 	redemptionKind: VoucherRedemptionKind.Entitlement,
 	amountGranted: 3,
@@ -34,6 +37,9 @@ it("groups matching entitlements with an available count and preserves each gran
 	render(Harness);
 	await expect.element(page.getByText("5 rounds available")).toBeVisible();
 	await expect.element(page.getByText("Member rounds", { exact: true })).toBeVisible();
+	await expect.element(page.getByText("Ruimsig Golf Course, North Golf Course", { exact: true })).toBeVisible();
+	await expect.element(page.getByText("Games / rounds: Golf Course", { exact: true })).toBeVisible();
+	await expect.element(page.getByText("Extras: Golf Cart, Club Hire", { exact: true })).not.toBeInTheDocument();
 	await expect.element(page.getByText("Rounds only · 2 voucher grants")).toBeVisible();
 	await expect.element(page.getByText("3 rounds remaining")).toBeVisible();
 	await expect.element(page.getByText("2 rounds remaining")).toBeVisible();
@@ -86,6 +92,14 @@ it("keeps credit and discount grants separate and shows their values", async () 
 	await expect.element(page.getByText(/Maximum discount:/)).toBeVisible();
 	await expect.element(page.getByText(/25,00 discount/)).toBeVisible();
 	await expect.element(page.getByText("3 extra units available")).toBeVisible();
+	await expect.element(page.getByText("Extras: Golf Cart, Club Hire", { exact: true })).toBeVisible();
+});
+
+it("does not imply unrestricted use when a voucher has no eligible facilities or extras", async () => {
+	respond([{ ...grant, isExtra: true, facilityNames: [], gameTypes: [], extraNames: [] }]);
+	render(Harness);
+	await expect.element(page.getByText("No eligible facilities", { exact: true })).toBeVisible();
+	await expect.element(page.getByText("Extras: No eligible extras", { exact: true })).toBeVisible();
 });
 
 it("shows an empty state instead of mock balances or transactions", async () => {
