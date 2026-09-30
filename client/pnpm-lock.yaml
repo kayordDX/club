@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  '@tanstack/svelte-store@0.12.1': e09d989ab3a2c68df0d6ef9fb7173660fc798e2e0a24118c78637bcd34b0643d
+
 importers:
 
   .:
@@ -3483,7 +3486,7 @@ snapshots:
   '@tanstack/svelte-form@1.33.5(svelte@5.56.10(@typescript-eslint/types@8.68.0))':
     dependencies:
       '@tanstack/form-core': 1.33.5
-      '@tanstack/svelte-store': 0.12.1(svelte@5.56.10(@typescript-eslint/types@8.68.0))
+      '@tanstack/svelte-store': 0.12.1(patch_hash=e09d989ab3a2c68df0d6ef9fb7173660fc798e2e0a24118c78637bcd34b0643d)(svelte@5.56.10(@typescript-eslint/types@8.68.0))
       svelte: 5.56.10(@typescript-eslint/types@8.68.0)
 
   '@tanstack/svelte-query@6.3.0(svelte@5.56.10(@typescript-eslint/types@8.68.0))':
@@ -3491,14 +3494,14 @@ snapshots:
       '@tanstack/query-core': 5.104.0
       svelte: 5.56.10(@typescript-eslint/types@8.68.0)
 
-  '@tanstack/svelte-store@0.12.1(svelte@5.56.10(@typescript-eslint/types@8.68.0))':
+  '@tanstack/svelte-store@0.12.1(patch_hash=e09d989ab3a2c68df0d6ef9fb7173660fc798e2e0a24118c78637bcd34b0643d)(svelte@5.56.10(@typescript-eslint/types@8.68.0))':
     dependencies:
       '@tanstack/store': 0.11.1
       svelte: 5.56.10(@typescript-eslint/types@8.68.0)
 
   '@tanstack/svelte-table@9.1.2(svelte@5.56.10(@typescript-eslint/types@8.68.0))':
     dependencies:
-      '@tanstack/svelte-store': 0.12.1(svelte@5.56.10(@typescript-eslint/types@8.68.0))
+      '@tanstack/svelte-store': 0.12.1(patch_hash=e09d989ab3a2c68df0d6ef9fb7173660fc798e2e0a24118c78637bcd34b0643d)(svelte@5.56.10(@typescript-eslint/types@8.68.0))
       '@tanstack/table-core': 9.1.2
       svelte: 5.56.10(@typescript-eslint/types@8.68.0)
 

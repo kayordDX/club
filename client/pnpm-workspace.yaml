@@ -10,3 +10,6 @@ minimumReleaseAgeExclude:
 onlyBuiltDependencies:
   - "@tailwindcss/oxide"
   - esbuild
+
+patchedDependencies:
+  "@tanstack/svelte-store@0.12.1": patches/@tanstack__svelte-store@0.12.1.patch
