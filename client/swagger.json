@@ -5948,6 +5948,9 @@
 				"type": "object",
 				"additionalProperties": false,
 				"required": [
+					"facilityNames",
+					"gameTypes",
+					"extraNames",
 					"name",
 					"description",
 					"currency",
@@ -6021,6 +6024,18 @@
 					},
 					"isWalletActive": {
 						"type": "boolean"
+					},
+					"facilityNames": {
+						"type": "array",
+						"items": { "type": "string" }
+					},
+					"gameTypes": {
+						"type": "array",
+						"items": { "type": "string" }
+					},
+					"extraNames": {
+						"type": "array",
+						"items": { "type": "string" }
 					}
 				}
 			}

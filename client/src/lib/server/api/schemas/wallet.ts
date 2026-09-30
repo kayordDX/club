@@ -31,5 +31,8 @@ export const WalletVouchersResponseItem = zod.object({
 	expiryDate: zod.iso.datetime({ offset: true }),
 	currency: zod.string(),
 	isWalletActive: zod.boolean(),
+	facilityNames: zod.array(zod.string()),
+	gameTypes: zod.array(zod.string()),
+	extraNames: zod.array(zod.string()),
 });
 export const WalletVouchersResponse = zod.array(WalletVouchersResponseItem);

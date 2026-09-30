@@ -80,6 +80,22 @@
 									Maximum discount: {formatCurrency(voucher.maxDiscountAmount)}
 								</p>{/if}
 						{/if}
+						<dl class="space-y-2 text-sm">
+							<div>
+								<dt class="font-medium">Valid at</dt>
+								<dd class="text-muted-foreground">{voucher.facilityNames.join(", ") || "No eligible facilities"}</dd>
+							</div>
+							<div>
+								<dt class="font-medium">Can be used for</dt>
+								<dd class="text-muted-foreground">
+									{#if voucher.isExtra}
+										Extras: {voucher.extraNames.join(", ") || "No eligible extras"}
+									{:else}
+										Games / rounds{voucher.gameTypes.length ? `: ${voucher.gameTypes.join(", ")}` : ""}
+									{/if}
+								</dd>
+							</div>
+						</dl>
 						<p class="text-muted-foreground text-sm">
 							{voucher.isExtra ? "Extras only" : "Rounds only"}{entitlement
 								? ` · ${group.grants.length} voucher grant${group.grants.length === 1 ? "" : "s"}`

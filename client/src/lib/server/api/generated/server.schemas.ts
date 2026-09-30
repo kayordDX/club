@@ -1136,6 +1136,9 @@ export interface WalletVoucherDTO {
 	expiryDate: string;
 	currency: string;
 	isWalletActive: boolean;
+	facilityNames: string[];
+	gameTypes: string[];
+	extraNames: string[];
 }
 
 export type TestParams = {

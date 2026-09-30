@@ -8,6 +8,9 @@ public class WalletVoucherDTO
     public int VoucherId { get; set; }
     public required string Name { get; set; }
     public required string Description { get; set; }
+    public required List<string> FacilityNames { get; set; }
+    public required List<string> GameTypes { get; set; }
+    public required List<string> ExtraNames { get; set; }
     public bool IsExtra { get; set; }
     public VoucherRedemptionKind RedemptionKind { get; set; }
     public VoucherDiscountMode? DiscountMode { get; set; }
