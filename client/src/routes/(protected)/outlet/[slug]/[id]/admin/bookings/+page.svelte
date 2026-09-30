@@ -16,6 +16,11 @@
 
 	const facilityId = $derived(Number(page.params.id) || 0);
 
+	const controlledState = $state({
+		pagination: { pageIndex: 0, pageSize: 10 } as PaginationState,
+		sorting: [{ id: "slotStartDatetime", desc: true }] as SortingState,
+	});
+
 	let statusValue = $state("all");
 	let status = $derived(statusValue === "all" ? null : Number(statusValue));
 
@@ -88,11 +93,6 @@
 			enableSorting: false,
 		},
 	];
-
-	const controlledState = $state({
-		pagination: { pageIndex: 0, pageSize: 10 } as PaginationState,
-		sorting: [{ id: "slotStartDatetime", desc: true }] as SortingState,
-	});
 
 	const table = createShadTable({
 		columns,
