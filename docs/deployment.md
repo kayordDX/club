@@ -1,11 +1,13 @@
 # Production deployment
 
 Club uses the same SSH → Docker Compose → `docker rollout` approach as POS.
-`Deploy All` runs on a published release or manually from GitHub Actions. It builds both
+`Deploy and Build All` runs on a published release or manually from GitHub Actions. It builds both
 multi-architecture images, waits for both builds, then rolls out `club-api` followed by
 `club`, using the triggering commit's SHA tag (not a potentially stale `latest`).
+`Deploy All` runs manually and performs only the same deployment steps, without building.
+Both images must already exist with the selected ref's commit SHA tag.
 Standalone `Build API` / `Build Client` workflows still build images but do not deploy.
-Deployments are serialized; a failed build never reaches the server. Configure the
+Both deployment workflows share the same concurrency lock; a failed build never reaches the server. Configure the
 GitHub `production` environment with required reviewers if releases need approval.
 
 ## Install on the server
@@ -165,8 +167,10 @@ Rollouts overlap old/new API processes, so migrations must be backwards compatib
 
 ## Deployments and recovery
 
-Publish a release or run **Deploy All** manually on the intended ref. Both builds must
-succeed before SSH runs. Both SHA-tagged images are pulled before either service changes.
+Publish a release or run **Deploy and Build All** manually on the intended ref. Both builds
+must succeed before SSH runs. To deploy without rebuilding, run **Deploy All** manually on
+a ref whose commit SHA has already been built by both image workflows.
+Both SHA-tagged images are pulled before either service changes.
 After both rollouts succeed, `.release.env` records the deployed SHA for subsequent manual
 Compose commands. Only dangling images are pruned (not volumes or unrelated running services).
 

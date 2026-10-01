@@ -1,0 +1,14 @@
+name: Deploy All
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: club-production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/deploy-production.yml
+    secrets: inherit
