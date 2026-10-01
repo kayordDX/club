@@ -56,7 +56,7 @@ function balance() {
 		bookingId: 123,
 		amountPaid: paid,
 		amountOutstanding: 300 - paid,
-		amountAvailable: 300 - paid - payments.filter((p) => p.paymentStatus === "Pending").reduce((sum, p) => sum + p.amount, 0),
+		amountAvailable: 300 - paid,
 		isPaid: paid === 300,
 		payments,
 	};
@@ -103,6 +103,7 @@ const api = createServer(async (req, res) => {
 			id: 123,
 			bookingStatus: { id: paid === 300 ? 2 : 1, name: paid === 300 ? "Confirmed" : "Pending" },
 			...balance(),
+			expiresAt: new Date(Date.now() + 1800000).toISOString(),
 			user: { firstName: "Payment", lastName: "Tester" },
 			slotContractBookings: [
 				{ id: 9, name: "Player One", slotContract: { price: 100, contractName: "Visitor", slot: { startDatetime: "2026-06-01T10:00:00Z" } } },

@@ -84,7 +84,7 @@
 								Your booking has expired.
 							{/if}
 						</Card.Description>
-						{#if booking.expiresAt && booking.bookingStatus?.id === 1}
+						{#if booking.expiresAt && booking.bookingStatus?.id === 1 && booking.amountPaid === 0}
 							<CountdownTimer expiresAt={booking.expiresAt} />
 						{/if}
 					</div>

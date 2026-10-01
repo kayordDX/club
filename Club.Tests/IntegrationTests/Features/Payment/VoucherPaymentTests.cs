@@ -48,6 +48,7 @@ public class VoucherPaymentTests(AppFixture app)
         var request = Request(booking, grant);
         (await app.Client.PostAsJsonAsync("/payment/voucher", request)).StatusCode.ShouldBe(HttpStatusCode.OK);
         (await app.Client.PostAsJsonAsync("/payment/voucher", request)).StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        await db.Booking.Where(x => x.Id == booking.Id).ExecuteUpdateAsync(x => x.SetProperty(b => b.ExpiresAt, DateTime.UtcNow.AddMinutes(-1)));
         request.SlotContractBookingId = booking.SlotContractBookings.Last().Id;
         (await app.Client.PostAsJsonAsync("/payment/voucher", request)).StatusCode.ShouldBe(HttpStatusCode.OK);
         var after = await db.Booking.AsNoTracking().SingleAsync(x => x.Id == booking.Id);
@@ -87,7 +88,7 @@ public class VoucherPaymentTests(AppFixture app)
     [InlineData("booked-after-expiry")]
     [InlineData("wallet-owner")]
     [InlineData("currency")]
-    [InlineData("reserved")]
+    [InlineData("booking-expired")]
     public async Task IneligibleVoucher_IsRejectedWithoutConsumingGrant(string invalid)
     {
         await using var scope = app.Server.Services.CreateAsyncScope();
@@ -136,23 +137,8 @@ public class VoucherPaymentTests(AppFixture app)
             case "facility":
                 db.VoucherFacility.RemoveRange(await db.VoucherFacility.Where(x => x.VoucherId == grant.VoucherId).ToListAsync());
                 break;
-            case "reserved":
-                db.PaymentBooking.Add(
-                    new PaymentBooking
-                    {
-                        Booking = booking,
-                        Payment = new Club.Entities.Payment
-                        {
-                            PaymentStatus = await db.PaymentStatus.SingleAsync(x => x.Id == (int)PaymentStatusEnum.Pending),
-                            PaymentStatusId = (int)PaymentStatusEnum.Pending,
-                            PaymentStatusDate = DateTime.UtcNow,
-                            PaymentTypeId = (int)PaymentTypeEnum.CreditCard,
-                            TransactionId = Guid.NewGuid().ToString(),
-                            ProviderName = "payfast",
-                            Amount = 200m,
-                        },
-                    }
-                );
+            case "booking-expired":
+                booking.ExpiresAt = DateTime.UtcNow.AddMinutes(-1);
                 break;
         }
         await db.SaveChangesAsync();

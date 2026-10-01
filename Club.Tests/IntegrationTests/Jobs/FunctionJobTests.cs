@@ -95,7 +95,15 @@ public class FunctionJobTests(AppFixture app)
             AmountPaid = 100,
             ExpiresAt = DateTime.UtcNow.AddMinutes(-10),
         };
-        db.Booking.AddRange(expiredPendingBooking, confirmedBooking);
+        var partiallyPaidBooking = new Booking
+        {
+            BookingStatusId = (int)BookingStatusEnum.Pending,
+            BookingStatusDate = DateTime.UtcNow.AddMinutes(-20),
+            AmountOutstanding = 60,
+            AmountPaid = 40,
+            ExpiresAt = DateTime.UtcNow.AddMinutes(-10),
+        };
+        db.Booking.AddRange(expiredPendingBooking, confirmedBooking, partiallyPaidBooking);
         await db.SaveChangesAsync(app.Context.CancellationToken);
 
         db.SlotContractBooking.AddRange(
@@ -110,6 +118,12 @@ public class FunctionJobTests(AppFixture app)
                 SlotContractId = slotContract.Id,
                 BookingId = confirmedBooking.Id,
                 Name = "Confirmed Player",
+            },
+            new SlotContractBooking
+            {
+                SlotContractId = slotContract.Id,
+                BookingId = partiallyPaidBooking.Id,
+                Name = "Partially Paid Player",
             }
         );
         await db.SaveChangesAsync(app.Context.CancellationToken);
@@ -122,14 +136,16 @@ public class FunctionJobTests(AppFixture app)
         var updatedConfirmedBooking = await db.Booking.AsNoTracking().SingleAsync(x => x.Id == confirmedBooking.Id, app.Context.CancellationToken);
         var remainingSlotBookings = await db
             .SlotContractBooking.AsNoTracking()
-            .Where(x => x.BookingId == expiredPendingBooking.Id || x.BookingId == confirmedBooking.Id)
+            .Where(x => x.BookingId == expiredPendingBooking.Id || x.BookingId == confirmedBooking.Id || x.BookingId == partiallyPaidBooking.Id)
             .OrderBy(x => x.BookingId)
             .ToListAsync(app.Context.CancellationToken);
 
         updatedPendingBooking.BookingStatusId.ShouldBe((int)BookingStatusEnum.Expired);
         updatedConfirmedBooking.BookingStatusId.ShouldBe((int)BookingStatusEnum.Confirmed);
-        remainingSlotBookings.Count.ShouldBe(1);
-        remainingSlotBookings[0].BookingId.ShouldBe(confirmedBooking.Id);
+        (await db.Booking.AsNoTracking().SingleAsync(x => x.Id == partiallyPaidBooking.Id)).BookingStatusId.ShouldBe((int)BookingStatusEnum.Pending);
+        remainingSlotBookings.Count.ShouldBe(2);
+        remainingSlotBookings.ShouldContain(x => x.BookingId == confirmedBooking.Id);
+        remainingSlotBookings.ShouldContain(x => x.BookingId == partiallyPaidBooking.Id);
     }
 
     private static async Task<int> CreateFacilityType(AppDbContext db)

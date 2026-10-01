@@ -28,7 +28,9 @@ public class FunctionJob(AppDbContext dbContext)
                   SELECT id
                   FROM booking
                   WHERE booking_status_id = {(int)BookingStatusEnum.Pending}
+                    AND amount_paid = 0
                     AND expires_at <= now()
+                  FOR UPDATE
                 ),
                 updated AS (
                   UPDATE booking

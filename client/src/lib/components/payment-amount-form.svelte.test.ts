@@ -18,5 +18,6 @@ it("blocks invalid amounts even with a provider selected", async () => {
 	for (const value of ["0", "1.001", "100.01"]) {
 		await page.getByLabelText("Payment amount").fill(value);
 		await expect.element(page.getByRole("button", { name: "Pay now" })).toBeDisabled();
+		await expect.element(page.getByText(value === "100.01" ? /You cannot pay more than the outstanding amount/ : /Enter a positive amount/)).toBeVisible();
 	}
 });

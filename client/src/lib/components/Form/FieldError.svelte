@@ -8,7 +8,7 @@
 <Field.Error>
 	{#if field.state.meta.isTouched}
 		{#each field.state.meta.errors as error (error)}
-			<em>{error.message}</em>
+			<em>{typeof error === "string" ? error : error.message}</em>
 		{/each}
 		{field.state.meta.isValidating ? "Validating..." : ""}
 	{/if}

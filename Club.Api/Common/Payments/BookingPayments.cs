@@ -15,13 +15,8 @@ public static class BookingPayments
     public static Task<Booking?> LockAsync(AppDbContext db, int bookingId, CancellationToken ct) =>
         db.Booking.FromSqlInterpolated($"SELECT * FROM booking WHERE id = {bookingId} FOR UPDATE").FirstOrDefaultAsync(ct);
 
-    public static async Task<decimal> AvailableAsync(AppDbContext db, Booking booking, CancellationToken ct)
-    {
-        var reserved = await db
-            .PaymentBooking.Where(x => x.BookingId == booking.Id && x.Payment.PaymentStatusId == (int)PaymentStatusEnum.Pending)
-            .SumAsync(x => x.Payment.Amount, ct);
-        return Math.Max(0, booking.AmountOutstanding - reserved);
-    }
+    public static Task<decimal> AvailableAsync(AppDbContext db, Booking booking, CancellationToken ct) =>
+        Task.FromResult(Math.Max(0, booking.AmountOutstanding));
 
     public static async Task ApplyAsync(AppDbContext db, Booking booking, Payment payment, CancellationToken ct)
     {

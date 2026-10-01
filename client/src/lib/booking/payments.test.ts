@@ -28,11 +28,11 @@ it("extracts error reasons from SvelteKit remote HttpErrors and ordinary errors"
 
 describe("split payment amounts", () => {
 	it("shows the maximum payable amount when overpaying", () => {
-		expect(validatePaymentAmount("100.01", 100)).toBe(`Payment amount cannot exceed the available balance of ${formatCurrency(100)}.`);
+		expect(validatePaymentAmount("100.01", 100)).toBe(`You cannot pay more than the outstanding amount of ${formatCurrency(100)}.`);
 	});
 	it.each(["", "0", "-1", "1.001", "NaN", "Infinity", "1e2", "1.", "100.01"])("rejects %s", (value) => expect(validatePaymentAmount(value, 100)).toBeDefined());
 	it.each(["0.01", "1", "1.2", "100.00"])("accepts %s", (value) => expect(validatePaymentAmount(value, 100)).toBeUndefined());
-	it("rejects all positive amounts when pending payments reserve the balance", () => expect(validatePaymentAmount("0.01", 0)).toBeDefined());
+	it("rejects all positive amounts when no outstanding balance remains", () => expect(validatePaymentAmount("0.01", 0)).toBeDefined());
 });
 describe("voucher requests", () => {
 	it("requires an entitlement target", () => expect(voucherRequest(1, voucher, undefined, 1)).toBeUndefined());

@@ -110,12 +110,31 @@ it("releases the submission lock but blocks payments if refresh fails", async ()
 	await expect.element(page.getByLabelText("Choose an eligible round")).toBeEnabled();
 });
 
-it("shows pending reservations without offering payment on reserved funds", async () => {
-	balance = { ...balance, amountAvailable: 0 };
+it("keeps payment methods visible after a partial payment with an abandoned pending attempt", async () => {
+	balance = {
+		...balance,
+		amountPaid: 40,
+		amountOutstanding: 60,
+		amountAvailable: 60,
+		payments: [
+			{
+				id: 1,
+				transactionId: "abandoned",
+				amount: 60,
+				paymentTypeId: 1,
+				paymentType: "Credit card",
+				paymentStatusId: 1,
+				paymentStatus: "Pending",
+				providerName: "other",
+				paymentStatusDate: "2026-01-01",
+			},
+		],
+	};
 	mount();
-	await expect.element(page.getByText(/All outstanding funds are reserved/)).toBeVisible();
-	await expect.element(page.getByRole("button", { name: "Redeem voucher" })).toBeDisabled();
-	await expect.element(page.getByLabelText("Payment amount")).not.toBeInTheDocument();
+	await expect.element(page.getByText("Pending", { exact: true })).toBeVisible();
+	await expect.element(page.getByLabelText("Payment amount")).toHaveValue("60.00");
+	await page.getByRole("radio", { name: "Payfast" }).click();
+	await expect.element(page.getByRole("button", { name: "Pay now" })).toBeEnabled();
 });
 
 it("does not retry or duplicate a pending voucher submission", async () => {

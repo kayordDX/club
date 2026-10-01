@@ -109,6 +109,40 @@ public class PaymentResultValidationTests(AppFixture app)
 
         if (amount < 100)
         {
+            // An abandoned attempt must not reserve the remaining balance.
+            db.PaymentBooking.Add(
+                new PaymentBooking
+                {
+                    BookingId = booking.Id,
+                    Payment = new PaymentEntity
+                    {
+                        PaymentStatusId = (int)PaymentStatusEnum.Pending,
+                        PaymentStatusDate = DateTime.UtcNow,
+                        PaymentTypeId = (int)PaymentTypeEnum.CreditCard,
+                        TransactionId = Guid.NewGuid().ToString(),
+                        ProviderName = "other",
+                        PaymentStatus = await db.PaymentStatus.SingleAsync(s => s.Id == (int)PaymentStatusEnum.Pending),
+                        Amount = 60m,
+                    },
+                }
+            );
+            await db.SaveChangesAsync();
+            var balanceResponse = await app.Client.GetAsync($"/payment/booking/{booking.Id}");
+            balanceResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
+            var balance = await balanceResponse.Content.ReadFromJsonAsync<Club.DTO.BookingPaymentDTO>();
+            balance!.AmountAvailable.ShouldBe(60m);
+
+            await db.Booking.Where(x => x.Id == booking.Id).ExecuteUpdateAsync(x => x.SetProperty(b => b.ExpiresAt, DateTime.UtcNow.AddMinutes(-1)));
+            var initiateRemaining = await app.Client.PostAsJsonAsync(
+                "/payment/initiate",
+                new
+                {
+                    BookingId = booking.Id,
+                    ProviderName = "payfast",
+                    Amount = 60m,
+                }
+            );
+            initiateRemaining.StatusCode.ShouldBe(HttpStatusCode.OK);
             var remainder = new PaymentEntity
             {
                 PaymentStatusId = (int)PaymentStatusEnum.Pending,
@@ -131,7 +165,7 @@ public class PaymentResultValidationTests(AppFixture app)
     }
 
     [Fact]
-    public async Task Initiate_ReservesChosenAmount_AndRejectsOverpayment()
+    public async Task Initiate_IgnoresPendingAttempts_ServesPayfastForm_AndRejectsOverpayment()
     {
         await using var scope = app.Server.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -158,22 +192,38 @@ public class PaymentResultValidationTests(AppFixture app)
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var payment = await db.PaymentBooking.Where(x => x.BookingId == booking.Id).Select(x => x.Payment).SingleAsync();
         payment.Amount.ShouldBe(40m);
+        payment.FormActionUrl.ShouldNotBeNullOrWhiteSpace();
+        payment.FormFieldsJson.ShouldNotBeNullOrWhiteSpace();
+        var form = await app.Client.GetAsync($"/payment/form/payfast/{payment.TransactionId}");
+        form.StatusCode.ShouldBe(HttpStatusCode.OK);
+        var html = await form.Content.ReadAsStringAsync();
+        html.ShouldContain("https://sandbox.payfast.co.za/eng/process");
+        html.ShouldContain("name=\"amount\" value=\"40.00\"");
+        html.ShouldContain("name=\"signature\"");
+
+        await db.Payment.Where(x => x.Id == payment.Id).ExecuteUpdateAsync(x => x.SetProperty(p => p.FormFieldsJson, (string?)null));
+        var brokenForm = await app.Client.GetAsync($"/payment/form/payfast/{payment.TransactionId}");
+        brokenForm.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        (await brokenForm.Content.ReadAsStringAsync()).ShouldContain("Return to the booking and try again");
+        (await db.Payment.AsNoTracking().SingleAsync(x => x.Id == payment.Id)).PaymentStatusId.ShouldBe((int)PaymentStatusEnum.Failed);
+        var balance = await app.Client.GetFromJsonAsync<Club.DTO.BookingPaymentDTO>($"/payment/booking/{booking.Id}");
+        balance!.AmountAvailable.ShouldBe(100m);
         var tooMuch = await app.Client.PostAsJsonAsync(
             "/payment/initiate",
             new
             {
                 BookingId = booking.Id,
                 ProviderName = "payfast",
-                Amount = 61m,
+                Amount = 101m,
             }
         );
         tooMuch.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        (await tooMuch.Content.ReadAsStringAsync()).ShouldContain("cannot exceed the available balance of R60.00");
+        (await tooMuch.Content.ReadAsStringAsync()).ShouldContain("cannot exceed the outstanding balance of R100.00");
         var remainder = await app.Client.PostAsJsonAsync("/payment/initiate", new { BookingId = booking.Id, ProviderName = "payfast" });
         remainder.StatusCode.ShouldBe(HttpStatusCode.OK);
         var payments = await db.PaymentBooking.Where(x => x.BookingId == booking.Id).Select(x => x.Payment.Amount).ToListAsync();
         payments.Count.ShouldBe(2);
-        payments.Sum().ShouldBe(100m);
+        payments.Sum().ShouldBe(140m);
         var fullyReserved = await app.Client.PostAsJsonAsync(
             "/payment/initiate",
             new
@@ -183,7 +233,7 @@ public class PaymentResultValidationTests(AppFixture app)
                 Amount = 1m,
             }
         );
-        fullyReserved.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        fullyReserved.StatusCode.ShouldBe(HttpStatusCode.OK);
         (await db.Booking.AsNoTracking().SingleAsync(x => x.Id == booking.Id)).AmountPaid.ShouldBe(0m);
     }
 

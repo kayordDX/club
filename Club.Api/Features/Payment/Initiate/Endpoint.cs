@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Club.Features.Payment.Initiate;
 
-public class Endpoint(AppDbContext dbContext, IPaymentFactory paymentFactory, PaymentLogger paymentLogger)
+public class Endpoint(AppDbContext dbContext, IPaymentFactory paymentFactory, PaymentLogger paymentLogger, ILogger<Endpoint> logger)
     : Endpoint<PaymentInitiateRequest, PaymentInitiateResponse>
 {
     private readonly AppDbContext _dbContext = dbContext;
@@ -32,7 +32,7 @@ public class Endpoint(AppDbContext dbContext, IPaymentFactory paymentFactory, Pa
             return;
         }
 
-        if (booking.BookingStatusId != (int)Common.Enums.BookingStatusEnum.Pending || booking.ExpiresAt <= DateTime.UtcNow)
+        if (booking.BookingStatusId != (int)Common.Enums.BookingStatusEnum.Pending || (booking.AmountPaid == 0 && booking.ExpiresAt <= DateTime.UtcNow))
         {
             AddError(b => b.BookingId, "Booking is not in a pending state.");
             await Send.ErrorsAsync(400, ct);
@@ -68,8 +68,8 @@ public class Endpoint(AppDbContext dbContext, IPaymentFactory paymentFactory, Pa
             AddError(
                 x => x.Amount,
                 available <= 0
-                    ? "No balance is available to pay. Pending payments reserve the outstanding balance until they are confirmed or fail."
-                    : $"Payment amount must be greater than zero, have at most two decimal places, and cannot exceed the available balance of R{available:F2}."
+                    ? "No outstanding balance is available to pay."
+                    : $"Payment amount must be greater than zero, have at most two decimal places, and cannot exceed the outstanding balance of R{available:F2}."
             );
             await Send.ErrorsAsync(400, ct);
             return;
@@ -138,7 +138,35 @@ public class Endpoint(AppDbContext dbContext, IPaymentFactory paymentFactory, Pa
                 },
         };
 
-        var result = await provider.ProcessPaymentAsync(paymentRequest, ct);
+        PaymentResponse result;
+        try
+        {
+            result = await provider.ProcessPaymentAsync(paymentRequest, ct);
+            if (
+                result.Success
+                && (
+                    string.IsNullOrWhiteSpace(result.RedirectUrl)
+                    || (
+                        req.ProviderName.Equals("payfast", StringComparison.OrdinalIgnoreCase)
+                        && (string.IsNullOrWhiteSpace(result.FormActionUrl) || result.FormFields is not { Count: > 0 })
+                    )
+                )
+            )
+            {
+                result.Success = false;
+                result.ErrorMessage = "The provider did not return valid payment checkout details. Please try again.";
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogWarning(ex, "Payment initiation failed for provider {Provider}, transaction {TransactionId}.", req.ProviderName, transactionId);
+            result = new PaymentResponse
+            {
+                TransactionId = transactionId,
+                Success = false,
+                ErrorMessage = "Unable to start payment with this provider. Please try again.",
+            };
+        }
 
         await using var resultTransaction = await _dbContext.Database.BeginTransactionAsync(ct);
         await BookingPayments.LockAsync(_dbContext, booking.Id, ct);
@@ -174,15 +202,8 @@ public class Endpoint(AppDbContext dbContext, IPaymentFactory paymentFactory, Pa
 
         if (!result.Success)
         {
-            await Send.OkAsync(
-                new PaymentInitiateResponse
-                {
-                    TransactionId = transactionId,
-                    RedirectUrl = "",
-                    ProviderReference = result.ProviderReference,
-                },
-                ct
-            );
+            AddError(result.ErrorMessage ?? "Payment initiation failed. Please try again.");
+            await Send.ErrorsAsync(400, ct);
             return;
         }
 
