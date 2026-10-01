@@ -1,6 +1,6 @@
 services:
   club-api:
-    image: ghcr.io/kayorddx/club-api:${CLUB_IMAGE_TAG:-latest}
+    image: ghcr.io/kayorddx/club-api:latest
     restart: unless-stopped
     environment:
       ASPNETCORE_ENVIRONMENT: Production
@@ -38,7 +38,7 @@ services:
     networks: [kayord]
 
   club:
-    image: ghcr.io/kayorddx/club:${CLUB_IMAGE_TAG:-latest}
+    image: ghcr.io/kayorddx/club:latest
     restart: unless-stopped
     environment:
       NODE_ENV: production
@@ -54,7 +54,7 @@ services:
         - CMD
         - node
         - -e
-        - "fetch('http://127.0.0.1:3000/').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+        - "fetch('http://127.0.0.1:3000/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
       interval: 10s
       timeout: 5s
       retries: 3
