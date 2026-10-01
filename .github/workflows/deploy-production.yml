@@ -18,7 +18,7 @@ jobs:
         uses: appleboy/ssh-action@v1.2.5
         env:
           CLUB_IMAGE_TAG: ${{ github.sha }}
-          DEPLOY_PATH: ${{ vars.DEPLOY_PATH || 'kayord' }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH || 'club' }}
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
