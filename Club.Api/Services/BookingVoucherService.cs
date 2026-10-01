@@ -39,8 +39,8 @@ public class BookingVoucherService(AppDbContext db)
             ExpiryDate = grant.ExpiryDate,
         };
         var now = DateTime.UtcNow;
-        if (booking.BookingStatusId != (int)BookingStatusEnum.Pending || booking.ExpiresAt <= now || available <= 0)
-            dto.IneligibleReason = "Booking is not payable or has no unreserved balance.";
+        if (booking.BookingStatusId != (int)BookingStatusEnum.Pending || (booking.AmountPaid == 0 && booking.ExpiresAt <= now) || available <= 0)
+            dto.IneligibleReason = "Booking is not payable or has no outstanding balance.";
         else if (grant.Wallet.UserId != booking.UserId || !grant.Wallet.IsActive || grant.Wallet.Currency != "ZAR")
             dto.IneligibleReason = "Wallet is inactive or uses an unsupported currency.";
         else if (grant.GrantedAt > now || grant.ExpiryDate <= now || grant.AmountRemaining <= 0)

@@ -1,5 +1,7 @@
 using System.Text;
 using System.Text.Json;
+using Club.Common.Enums;
+using Club.Common.Payments;
 using Club.Data;
 using Club.Services;
 using Microsoft.EntityFrameworkCore;
@@ -22,33 +24,52 @@ internal static class PaymentFormHandler
         var dbContext = httpContext.RequestServices.GetRequiredService<AppDbContext>();
         var payment = await dbContext.Payment.FirstOrDefaultAsync(p => p.TransactionId == transactionId, ct);
 
-        if (payment is null)
+        if (payment is null || !string.Equals(payment.ProviderName, providerName, StringComparison.OrdinalIgnoreCase))
         {
             httpContext.Response.StatusCode = 404;
             return;
         }
 
-        if (string.IsNullOrEmpty(payment.FormActionUrl) || string.IsNullOrEmpty(payment.FormFieldsJson))
+        if (payment.PaymentStatusId != (int)PaymentStatusEnum.Pending)
         {
             httpContext.Response.StatusCode = 400;
-            await httpContext.Response.WriteAsync($"Provider '{payment.ProviderName}' does not support form-based payments.", ct);
+            await httpContext.Response.WriteAsync(
+                "This payment attempt is no longer pending. Return to the booking to check the balance or start another payment.",
+                ct
+            );
             return;
         }
 
         Dictionary<string, string>? fields;
         try
         {
-            fields = JsonSerializer.Deserialize<Dictionary<string, string>>(payment.FormFieldsJson);
+            fields = string.IsNullOrEmpty(payment.FormFieldsJson) ? null : JsonSerializer.Deserialize<Dictionary<string, string>>(payment.FormFieldsJson);
         }
         catch
         {
             fields = null;
         }
 
-        if (fields is null)
+        if (string.IsNullOrWhiteSpace(payment.FormActionUrl) || fields is not { Count: > 0 })
         {
-            httpContext.Response.StatusCode = 500;
-            await httpContext.Response.WriteAsync("Invalid stored form data.", ct);
+            await using var transaction = await dbContext.Database.BeginTransactionAsync(ct);
+            var bookingId = await dbContext.PaymentBooking.Where(x => x.PaymentId == payment.Id).Select(x => (int?)x.BookingId).FirstOrDefaultAsync(ct);
+            if (bookingId.HasValue)
+                await BookingPayments.LockAsync(dbContext, bookingId.Value, ct);
+            await dbContext.Entry(payment).ReloadAsync(ct);
+            if (payment.PaymentStatusId == (int)PaymentStatusEnum.Pending)
+            {
+                payment.PaymentStatusId = (int)PaymentStatusEnum.Failed;
+                payment.PaymentStatusDate = DateTime.UtcNow;
+                payment.ErrorMessage = "Payment checkout form is missing or invalid. Return to the booking and try again.";
+                await dbContext.SaveChangesAsync(ct);
+            }
+            await transaction.CommitAsync(ct);
+            httpContext.Response.StatusCode = 400;
+            await httpContext.Response.WriteAsync(
+                "Payment checkout form is missing or invalid. Return to the booking and try again; this attempt has not reduced your balance.",
+                ct
+            );
             return;
         }
 

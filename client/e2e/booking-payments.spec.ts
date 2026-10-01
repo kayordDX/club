@@ -67,20 +67,25 @@ test("returned vouchers support round, extra quantity, discount and credit split
 	await expect(page.getByRole("cell", { name: "Completed", exact: true }).last()).toBeVisible();
 });
 
-test("partial provider payments reserve funds, then refresh after success and failure callbacks", async ({ page }) => {
+test("only successful payments reduce the balance and remove the expiry countdown", async ({ page }) => {
 	await open(page, "split");
+	await expect(page.getByText("Expires in", { exact: true })).toBeVisible();
 	await page.getByRole("radio", { name: "Payfast" }).click();
 	await page.getByLabel("Payment amount").fill("300.01");
 	await expect(page.getByRole("button", { name: "Pay now" })).toBeDisabled();
+	await expect(page.getByText(/You cannot pay more than the outstanding amount/)).toBeVisible();
 	await page.getByLabel("Payment amount").fill("75");
 	await page.getByRole("button", { name: "Pay now" }).click();
 	await expect(page).toHaveURL(/\/payment\/success/);
 	await page.goto(payUrl);
-	await expect(page.getByLabel("Payment amount")).toHaveValue("225.00");
+	await expect(page.getByLabel("Payment amount")).toHaveValue("300.00");
 	await expect(page.getByRole("cell", { name: "Pending", exact: true })).toBeVisible();
+	await expect(page.getByText("Expires in", { exact: true })).toBeVisible();
 	await page.request.post(`${apiUrl}/_test/callback`, { data: { success: true } });
 	await page.getByRole("button", { name: "Refresh payments" }).click();
 	await expect(page.getByRole("cell", { name: "Partial", exact: true })).toBeVisible();
+	await expect(page.getByLabel("Payment amount")).toHaveValue("225.00");
+	await expect(page.getByText("Expires in", { exact: true })).toHaveCount(0);
 	await expect(page.getByText(/Remaining balance:.*Pay the rest/)).toBeVisible();
 	await page.getByRole("radio", { name: "Other provider" }).click();
 	await page.getByLabel("Payment amount").fill("25");
@@ -92,13 +97,14 @@ test("partial provider payments reserve funds, then refresh after success and fa
 	await expect(page.getByRole("cell", { name: "Failed", exact: true })).toBeVisible();
 });
 
-test("pending reservations never offer reserved funds", async ({ page }) => {
+test("abandoned pending payments do not hide payment methods", async ({ page }) => {
 	await page.request.post(`${apiUrl}/_test/reset`, { data: { scenario: "reserved" } });
 	await authenticate(page);
 	await page.goto(payUrl);
-	await expect(page.getByText(/All outstanding funds are reserved/)).toBeVisible();
-	await expect(page.getByLabel("Payment amount")).toHaveCount(0);
-	await expect(card(page, "Credit voucher").getByRole("button", { name: "Redeem voucher" })).toBeDisabled();
+	await expect(page.getByLabel("Payment amount")).toHaveValue("300.00");
+	await page.getByRole("radio", { name: "Payfast" }).click();
+	await expect(page.getByRole("button", { name: "Pay now" })).toBeEnabled();
+	await expect(card(page, "Credit voucher").getByRole("button", { name: "Redeem voucher" })).toBeEnabled();
 });
 
 test("stale selection rejection clears selection and prevents duplicate submissions", async ({ page }) => {

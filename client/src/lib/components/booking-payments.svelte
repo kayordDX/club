@@ -36,7 +36,7 @@
 			try {
 				await Promise.all([request.refresh(), onrefresh()]);
 				const balance = await request;
-				oneditable(!balance.isPaid && balance.amountPaid === 0 && balance.amountOutstanding === balance.amountAvailable);
+				oneditable(!balance.isPaid && balance.amountPaid === 0 && !balance.payments.some((payment) => payment.paymentStatus === "Pending"));
 				return balance;
 			} catch (cause) {
 				oneditable(false);
@@ -153,7 +153,8 @@
 			</div>
 		</dl>
 		<p class="text-muted-foreground text-sm">
-			Pending payments reserve funds until the provider confirms success or failure. Only the available balance can be paid.
+			Only successful payments reduce your outstanding balance. Pending or failed attempts do not count as paid; avoid completing multiple attempts for the same
+			balance.
 		</p>
 		<Button variant="outline" disabled={busy || history.isFetching} onclick={refresh}>Refresh payments</Button>
 		{#if history.data.isPaid}
@@ -166,7 +167,7 @@
 				{#key history.data.amountAvailable}
 					<PaymentAmountForm amountAvailable={history.data.amountAvailable} {methods} busy={unavailable || !!refreshError} onpay={pay} />
 				{/key}
-			{:else}<p>All outstanding funds are reserved by pending payments. Wait for confirmation before paying again.</p>{/if}
+			{:else}<p>No outstanding balance is available to pay.</p>{/if}
 			<h3 class="font-semibold">Your vouchers</h3>
 			{#if vouchers.isPending}<p role="status">Loading vouchers...</p>
 			{:else if vouchers.isError}<p role="alert">Unable to load vouchers: {paymentErrorMessage(vouchers.error, "Refresh to try again.")}</p>
