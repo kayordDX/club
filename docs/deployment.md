@@ -3,9 +3,8 @@
 Club uses the same SSH → Docker Compose → `docker rollout` approach as POS.
 `Deploy and Build All` runs on a published release or manually from GitHub Actions. It builds both
 multi-architecture images, waits for both builds, then rolls out `club-api` followed by
-`club`, using the triggering commit's SHA tag (not a potentially stale `latest`).
-`Deploy All` runs manually and performs only the same deployment steps, without building.
-Both images must already exist with the selected ref's commit SHA tag.
+`club`, always pulling the `latest` tag for both images.
+`Deploy All` runs manually and deploys the latest published images without building.
 Standalone `Build API` / `Build Client` workflows still build images but do not deploy.
 Both deployment workflows share the same concurrency lock; a failed build never reaches the server. Configure the
 GitHub `production` environment with required reviewers if releases need approval.
@@ -54,7 +53,7 @@ The API trusts forwarded headers, so do not give untrusted containers access to 
 
 Traefik labels expose only the frontend; SvelteKit proxies API requests internally to
 `http://club-api:5000`. The API `/health` checks Postgres, Redis, and process memory in
-production. The frontend health check verifies that its homepage responds successfully.
+production. The frontend health check verifies that `/api/health` responds successfully.
 Health checks do not validate Keycloak, SMTP, S3, or payment-provider credentials.
 
 ## GitHub configuration
@@ -147,8 +146,6 @@ cp deploy/.env.example ~/club/.env
 cd ~/club
 chmod 600 .env
 # Edit .env with production values before continuing.
-# Use a SHA tag already built by both image workflows (recommended), or latest.
-# Set CLUB_IMAGE_TAG=latest (or the built SHA) in .env.
 docker compose --env-file .env config --quiet
 docker compose --env-file .env pull club-api club
 docker compose --env-file .env up -d --wait --wait-timeout 180 club-api club
@@ -167,29 +164,30 @@ Rollouts overlap old/new API processes, so migrations must be backwards compatib
 ## Deployments and recovery
 
 Publish a release or run **Deploy and Build All** manually on the intended ref. Both builds
-must succeed before SSH runs. To deploy without rebuilding, run **Deploy All** manually on
-a ref whose commit SHA has already been built by both image workflows.
-Both SHA-tagged images are pulled before either service changes.
-After both rollouts succeed, `CLUB_IMAGE_TAG` in `.env` records the deployed SHA for subsequent manual
-Compose commands. Only dangling images are pruned (not volumes or unrelated running services).
+must succeed before SSH runs. To deploy without rebuilding, run **Deploy All** manually.
+Both `latest` images are pulled before either service changes. The workflow does not modify `.env`.
+Existing server Compose files must use `ghcr.io/kayorddx/club-api:latest` for `club-api` and
+`ghcr.io/kayorddx/club:latest` for `club`; remove any old `CLUB_IMAGE_TAG` interpolation.
+Only dangling images are pruned (not volumes or unrelated running services).
 
 A failed health check causes docker-rollout to remove the new replicas and retain the old
 ones. This is **not an atomic two-service rollback**: if the API succeeds but the frontend
-fails, the API stays upgraded. `.env` still records the last fully successful pair.
+fails, the API stays upgraded.
 First deployment should use `up --wait` as above, since rollout's first-start path does not
 wait for health. In-flight requests are not guaranteed to drain; see the plugin's
 [draining documentation](https://docker-rollout.wowu.dev/container-draining) if required.
 
-To roll both services back to a previously built SHA, after checking database compatibility:
+For an emergency rollback, check database compatibility and temporarily change both image tags
+in the server's Compose file from `latest` to a previously built commit SHA. Then run:
 
 ```sh
 cd /home/deploy/club
-# Set CLUB_IMAGE_TAG=PREVIOUS_SUCCESSFUL_COMMIT_SHA in .env.
-unset CLUB_IMAGE_TAG
 docker compose --env-file .env pull club-api club
 docker rollout --env-file .env --timeout 180 club-api
 docker rollout --env-file .env --timeout 180 club
 ```
+
+Restore both Compose image tags to `latest` before the next normal deployment.
 
 ### Missing frontend environment variables / Node running in `club-api`
 
@@ -216,6 +214,28 @@ the failed containers (this may interrupt service):
 docker compose --env-file .env pull club-api club
 docker compose --env-file .env up -d --force-recreate --wait --wait-timeout 180 club-api club
 ```
+
+### Health check timeout
+
+If rollout times out, inspect the failed replicas while it is waiting:
+
+```sh
+docker compose --env-file .env ps -a
+docker compose --env-file .env logs --tail 100 club-api club
+docker inspect CONTAINER_ID --format '{{json .State.Health}}'
+```
+
+If `club-api` uses the frontend image, it cannot serve `/health` on port 5000 and does not
+include `curl`. Correct its image to `ghcr.io/kayorddx/club-api:latest` first.
+With the correct API image, `/health` returns an unhealthy status if Postgres, Redis, or
+the memory check fails; inspect the response inside the container for the failing check:
+
+```sh
+docker exec CONTAINER_ID curl --silent --show-error http://localhost:5000/health
+```
+
+Use `http://127.0.0.1:3000/api/health` for the frontend probe so it does not depend on homepage
+rendering or API availability. Do not disable health checks to bypass a failed rollout.
 
 Database migrations are not reversed by an image rollback. Preserve previous image tags,
 back up secrets and data, and monitor `docker compose ... ps` / `logs` during recovery.

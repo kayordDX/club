@@ -17,7 +17,6 @@ jobs:
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.2.5
         env:
-          CLUB_IMAGE_TAG: ${{ github.sha }}
           DEPLOY_PATH: ${{ vars.DEPLOY_PATH || 'club' }}
         with:
           host: ${{ secrets.HOST }}
@@ -25,7 +24,7 @@ jobs:
           key: ${{ secrets.KEY }}
           fingerprint: ${{ secrets.HOST_FINGERPRINT }}
           command_timeout: 15m
-          envs: CLUB_IMAGE_TAG,DEPLOY_PATH
+          envs: DEPLOY_PATH
           script: |
             set -eu
             cd "$DEPLOY_PATH"
@@ -34,10 +33,4 @@ jobs:
             docker compose --env-file .env pull club-api club
             docker rollout --env-file .env --timeout 180 club-api
             docker rollout --env-file .env --timeout 180 club
-            env_tmp=$(mktemp .env.XXXXXX)
-            trap 'rm -f "$env_tmp"' EXIT
-            awk '!/^[[:space:]]*(export[[:space:]]+)?CLUB_IMAGE_TAG[[:space:]]*=/' .env > "$env_tmp"
-            printf 'CLUB_IMAGE_TAG=%s\n' "$CLUB_IMAGE_TAG" >> "$env_tmp"
-            chmod --reference=.env "$env_tmp"
-            mv "$env_tmp" .env
             docker image prune -f
