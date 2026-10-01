@@ -1,4 +1,5 @@
 using Club.Common.Enums;
+using Club.Common.Payments;
 using Club.Data;
 using Club.Entities;
 using Club.Features.Booking.Create;
@@ -25,6 +26,9 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<AdminBookingUpdateReque
             await Send.ErrorsAsync(400, ct);
             return;
         }
+
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        await BookingPayments.LockAsync(_dbContext, req.Id, ct);
 
         var booking = await _dbContext
             .Booking.Include(b => b.SlotContractBookings)
@@ -60,8 +64,6 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<AdminBookingUpdateReque
         }
 
         var slotIds = req.Bookings.Select(b => b.SlotId).Distinct().ToList();
-
-        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
 
         // Lock the affected slot rows so concurrent booking requests for the same slots are
         // serialized against the capacity check below.
@@ -137,6 +139,17 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<AdminBookingUpdateReque
         var totalPrice = req.Bookings.Sum(br => slotContracts.First(sc => sc.Id == br.SlotContractId && sc.SlotId == br.SlotId).Price);
         var extrasTotal = requestedExtras.Sum(requestedExtra => extras.First(extra => extra.Id == requestedExtra.ExtraId).Price * requestedExtra.Amount);
 
+        var total = totalPrice + extrasTotal;
+        var pending = await _dbContext
+            .PaymentBooking.Where(x => x.BookingId == booking.Id && x.Payment.PaymentStatusId == (int)PaymentStatusEnum.Pending)
+            .SumAsync(x => x.Payment.Amount, ct);
+        if (total < booking.AmountPaid + pending)
+        {
+            AddError(r => r.Bookings, "Booking total cannot be less than the amount already paid or reserved by pending payments.");
+            await Send.ErrorsAsync(400, ct);
+            return;
+        }
+
         _dbContext.SlotContractBooking.RemoveRange(booking.SlotContractBookings);
         _dbContext.ExtraBooking.RemoveRange(booking.ExtraBookings);
 
@@ -161,7 +174,8 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<AdminBookingUpdateReque
         });
         await _dbContext.ExtraBooking.AddRangeAsync(extraBookings, ct);
 
-        booking.AmountOutstanding = totalPrice + extrasTotal;
+        booking.AmountOutstanding = total - booking.AmountPaid;
+        booking.IsPaid = booking.AmountOutstanding == 0;
 
         await _dbContext.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);

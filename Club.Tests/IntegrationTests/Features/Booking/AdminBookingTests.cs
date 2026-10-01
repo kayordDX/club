@@ -270,6 +270,82 @@ public class AdminBookingTests(AppFixture app)
         detail!.BookingStatus.Id.ShouldBe((int)BookingStatusEnum.Confirmed);
     }
 
+    [Theory]
+    [InlineData(100, 60, false, 0)]
+    [InlineData(150, 110, false, 0)]
+    [InlineData(40, 0, true, 0)]
+    [InlineData(30, 60, false, 0)]
+    [InlineData(80, 60, false, 50)]
+    public async Task AdminBookingUpdate_AfterPartialPayment_PreservesPaidBalance(int price, int outstanding, bool isPaid, int pending)
+    {
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var (slot, slotContract, facilityId) = await CreateBookingSetup(db);
+        await AssignManagerRole(db, facilityId);
+        var player = new BookingRequest
+        {
+            SlotId = slot.Id,
+            SlotContractId = slotContract.Id,
+            Name = "Partial payment player",
+            Email = "partial@example.com",
+            Cellphone = "0842502311",
+        };
+        var (createResponse, created) = await app.Client.POSTAsync<BookingCreateEndpoint, BookingCreateRequest, BookingCreateResponse>(
+            new BookingCreateRequest { Bookings = [player] }
+        );
+        createResponse.IsSuccessStatusCode.ShouldBeTrue();
+        var booking = await db.Booking.SingleAsync(b => b.Id == created.Id);
+        var payment = new Club.Entities.Payment
+        {
+            Amount = 40m,
+            PaymentStatus = await db.PaymentStatus.SingleAsync(s => s.Id == (int)PaymentStatusEnum.Pending, app.Context.CancellationToken),
+            PaymentStatusId = (int)PaymentStatusEnum.Pending,
+            PaymentTypeId = (int)PaymentTypeEnum.CreditCard,
+            PaymentStatusDate = DateTime.UtcNow,
+            TransactionId = Guid.NewGuid().ToString(),
+            ProviderName = "payfast",
+        };
+        db.PaymentBooking.Add(new PaymentBooking { Booking = booking, Payment = payment });
+        await Club.Common.Payments.BookingPayments.ApplyAsync(db, booking, payment, app.Context.CancellationToken);
+        if (pending > 0)
+        {
+            db.PaymentBooking.Add(
+                new PaymentBooking
+                {
+                    Booking = booking,
+                    Payment = new Club.Entities.Payment
+                    {
+                        Amount = pending,
+                        PaymentStatus = payment.PaymentStatus,
+                        PaymentStatusId = (int)PaymentStatusEnum.Pending,
+                        PaymentTypeId = (int)PaymentTypeEnum.CreditCard,
+                        PaymentStatusDate = DateTime.UtcNow,
+                        TransactionId = Guid.NewGuid().ToString(),
+                        ProviderName = "payfast",
+                    },
+                }
+            );
+        }
+        slotContract.Price = price;
+        await db.SaveChangesAsync();
+
+        var response = await app.Client.PUTAsync<Club.Features.Admin.Booking.Update.Endpoint, Club.Features.Admin.Booking.Update.AdminBookingUpdateRequest>(
+            new Club.Features.Admin.Booking.Update.AdminBookingUpdateRequest
+            {
+                FacilityId = facilityId,
+                Id = booking.Id,
+                Bookings = [player],
+            }
+        );
+
+        response.StatusCode.ShouldBe(price < 40 + pending ? HttpStatusCode.BadRequest : HttpStatusCode.NoContent);
+        var persisted = await db.Booking.AsNoTracking().SingleAsync(b => b.Id == booking.Id);
+        persisted.AmountPaid.ShouldBe(40m);
+        persisted.AmountOutstanding.ShouldBe((decimal)outstanding);
+        persisted.IsPaid.ShouldBe(isPaid);
+        (await db.Payment.AsNoTracking().SingleAsync(p => p.Id == payment.Id)).Amount.ShouldBe(40m);
+    }
+
     private static async Task AssignManagerRole(AppDbContext db, int facilityId)
     {
         const string normalizedName = "MANAGER";

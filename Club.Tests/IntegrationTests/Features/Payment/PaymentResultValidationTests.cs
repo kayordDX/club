@@ -168,6 +168,7 @@ public class PaymentResultValidationTests(AppFixture app)
             }
         );
         tooMuch.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        (await tooMuch.Content.ReadAsStringAsync()).ShouldContain("cannot exceed the available balance of R60.00");
         var remainder = await app.Client.PostAsJsonAsync("/payment/initiate", new { BookingId = booking.Id, ProviderName = "payfast" });
         remainder.StatusCode.ShouldBe(HttpStatusCode.OK);
         var payments = await db.PaymentBooking.Where(x => x.BookingId == booking.Id).Select(x => x.Payment.Amount).ToListAsync();
