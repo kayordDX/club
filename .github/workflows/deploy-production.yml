@@ -30,11 +30,14 @@ jobs:
             set -eu
             cd "$DEPLOY_PATH"
             test -f .env
-            test -f .release.env
-            docker compose --env-file .env --env-file .release.env config --quiet
-            docker compose --env-file .env --env-file .release.env pull club-api club
-            docker rollout --env-file .env --env-file .release.env --timeout 180 club-api
-            docker rollout --env-file .env --env-file .release.env --timeout 180 club
-            printf 'CLUB_IMAGE_TAG=%s\n' "$CLUB_IMAGE_TAG" > .release.env.tmp
-            mv .release.env.tmp .release.env
+            docker compose --env-file .env config --quiet
+            docker compose --env-file .env pull club-api club
+            docker rollout --env-file .env --timeout 180 club-api
+            docker rollout --env-file .env --timeout 180 club
+            env_tmp=$(mktemp .env.XXXXXX)
+            trap 'rm -f "$env_tmp"' EXIT
+            awk '!/^[[:space:]]*(export[[:space:]]+)?CLUB_IMAGE_TAG[[:space:]]*=/' .env > "$env_tmp"
+            printf 'CLUB_IMAGE_TAG=%s\n' "$CLUB_IMAGE_TAG" >> "$env_tmp"
+            chmod --reference=.env "$env_tmp"
+            mv "$env_tmp" .env
             docker image prune -f
