@@ -65,7 +65,12 @@ public class Endpoint(AppDbContext dbContext, IPaymentFactory paymentFactory, Pa
         var amount = req.Amount ?? available;
         if (!BookingPayments.IsValidAmount(amount, available))
         {
-            AddError(x => x.Amount, "Amount must be positive and cannot exceed the unreserved outstanding balance.");
+            AddError(
+                x => x.Amount,
+                available <= 0
+                    ? "No balance is available to pay. Pending payments reserve the outstanding balance until they are confirmed or fail."
+                    : $"Payment amount must be greater than zero, have at most two decimal places, and cannot exceed the available balance of R{available:F2}."
+            );
             await Send.ErrorsAsync(400, ct);
             return;
         }

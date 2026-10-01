@@ -21,7 +21,7 @@ export function validatePaymentAmount(value: string, available: number): string 
 	if (!/^\d+(\.\d{1,2})?$/.test(value) || Number(value) <= 0) {
 		return "Enter a positive amount with at most two decimal places.";
 	}
-	if (Number(value) > available) return "Amount cannot exceed the available balance.";
+	if (Number(value) > available) return `Payment amount cannot exceed the available balance of ${formatCurrency(available)}.`;
 }
 
 export function paymentMessage(isPaid: boolean, outstanding: number): string {
