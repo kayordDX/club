@@ -66,6 +66,11 @@ Useful local endpoints when the AppHost is running:
 - Frontend: `http://localhost:5173`
 - Keycloak realm: `http://localhost:8088/realms/kayord`
 
+## Production deployment
+
+See [the deployment guide](docs/deployment.md) for the POS-style SSH/Docker rollout workflow,
+server prerequisites, GitHub secrets, and production environment variables.
+
 ## API (Backend)
 
 ```bash

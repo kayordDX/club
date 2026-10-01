@@ -37,6 +37,10 @@ await app.Services.ApplyMigrations(app.Environment, app.Lifetime.ApplicationStop
 
 app.UseForwardedHeaders();
 app.UseCorsKayord();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHealth();
+}
 app.UseAuthentication();
 app.UseAuthorization();
 

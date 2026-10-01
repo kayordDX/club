@@ -1,7 +1,6 @@
 name: Build Client
 on:
-  release:
-    types: [published]
+  workflow_call:
   workflow_dispatch:
 
 # Native runner per arch means no QEMU, so the GitHub-provided arm64 runner
@@ -93,10 +92,14 @@ jobs:
       - name: Create multi-arch manifest and push
         working-directory: /tmp/digests
         run: |
+          images=()
+          for digest in *; do
+            images+=("${{ env.REGISTRY_IMAGE }}@sha256:${digest}")
+          done
           docker buildx imagetools create \
             -t ${{ env.REGISTRY_IMAGE }}:latest \
             -t ${{ env.REGISTRY_IMAGE }}:${{ github.sha }} \
-            $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)
+            "${images[@]}"
 
       - name: Inspect image
         run: |

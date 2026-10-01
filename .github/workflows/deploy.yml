@@ -1,0 +1,56 @@
+name: Deploy All
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: club-production-deploy
+  cancel-in-progress: false
+
+jobs:
+  build-api:
+    uses: ./.github/workflows/build-api.yml
+
+  build-client:
+    uses: ./.github/workflows/build-client.yml
+
+  deploy:
+    needs: [build-api, build-client]
+    runs-on: ubuntu-latest
+    environment: production
+    permissions: {}
+    steps:
+      - name: Require SSH host verification
+        env:
+          HOST_FINGERPRINT: ${{ secrets.HOST_FINGERPRINT }}
+        run: test -n "$HOST_FINGERPRINT"
+
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.5
+        env:
+          CLUB_IMAGE_TAG: ${{ github.sha }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH || 'kayord' }}
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          fingerprint: ${{ secrets.HOST_FINGERPRINT }}
+          command_timeout: 15m
+          envs: CLUB_IMAGE_TAG,DEPLOY_PATH
+          script: |
+            set -eu
+            cd "$DEPLOY_PATH"
+            test -f .env
+            test -f .release.env
+            docker compose --env-file .env --env-file .release.env config --quiet
+            docker compose --env-file .env --env-file .release.env pull club-api club
+            docker rollout --env-file .env --env-file .release.env --timeout 180 club-api
+            docker rollout --env-file .env --env-file .release.env --timeout 180 club
+            printf 'CLUB_IMAGE_TAG=%s\n' "$CLUB_IMAGE_TAG" > .release.env.tmp
+            mv .release.env.tmp .release.env
+            docker image prune -f

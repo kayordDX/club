@@ -1,0 +1,75 @@
+services:
+  club-api:
+    image: ghcr.io/kayorddx/club-api:${CLUB_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: ${CLUB_DATABASE_CONNECTION:?Set CLUB_DATABASE_CONNECTION}
+      ConnectionStrings__Redis: ${CLUB_REDIS_CONNECTION:?Set CLUB_REDIS_CONNECTION}
+      Cors__0: ${APP_URL:?Set APP_URL}
+      Keycloak__Realm: ${KEYCLOAK_REALM:-kayord}
+      Keycloak__AuthServerUrl: ${KEYCLOAK_URL:?Set KEYCLOAK_URL}
+      Keycloak__Issuer: ${IDENTITY_URL:?Set IDENTITY_URL}
+      Keycloak__Audience: ${KEYCLOAK_AUDIENCE:?Set KEYCLOAK_AUDIENCE}
+      Keycloak__PublicClientId: public-client
+      Keycloak__AdminClientId: ${KEYCLOAK_ADMIN_CLIENT_ID:-admin-client}
+      Keycloak__AdminClientSecret: ${KEYCLOAK_ADMIN_CLIENT_SECRET:?Set KEYCLOAK_ADMIN_CLIENT_SECRET}
+      App__EncryptionKey: ${APP_ENCRYPTION_KEY:?Set APP_ENCRYPTION_KEY}
+      App__EncryptionSalt: ${APP_ENCRYPTION_SALT:?Set APP_ENCRYPTION_SALT}
+      TickerQBasicAuth__Username: ${TICKERQ_USERNAME:?Set TICKERQ_USERNAME}
+      TickerQBasicAuth__Password: ${TICKERQ_PASSWORD:?Set TICKERQ_PASSWORD}
+      Payment__FrontendBaseUrl: ${APP_URL}
+      Email__Host: ${SMTP_HOST:-}
+      Email__Port: ${SMTP_PORT:-587}
+      Email__Email: ${SMTP_EMAIL:-}
+      Email__Password: ${SMTP_PASSWORD:-}
+      Email__Name: ${SMTP_NAME:-Club}
+      AWS__Region: ${S3_REGION:-af-south-1}
+      AWS__BucketName: ${S3_BUCKET:-aviate-club}
+      AWS__AccessKeyId: ${S3_ACCESS_KEY_ID:-}
+      AWS__SecretAccessKey: ${S3_SECRET_ACCESS_KEY:-}
+    healthcheck:
+      test:
+        ["CMD", "curl", "--fail", "--silent", "http://localhost:5000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    networks: [kayord]
+
+  club:
+    image: ghcr.io/kayorddx/club:${CLUB_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3000
+      API_URL: http://club-api:5000
+      APP_URL: ${APP_URL:?Set APP_URL}
+      ORIGIN: ${APP_URL}
+      IDENTITY_URL: ${IDENTITY_URL:?Set IDENTITY_URL}
+      SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET}
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: ${DOCKER_NETWORK:-kayord_default}
+      traefik.http.routers.club.rule: Host(`${CLUB_HOST:?Set CLUB_HOST}`)
+      traefik.http.routers.club.entrypoints: ${TRAEFIK_ENTRYPOINT:-websecure}
+      traefik.http.routers.club.tls: "true"
+      traefik.http.routers.club.tls.certresolver: ${TRAEFIK_CERT_RESOLVER:-letsencrypt}
+      traefik.http.services.club.loadbalancer.server.port: "3000"
+    networks: [kayord]
+
+networks:
+  kayord:
+    external: true
+    name: ${DOCKER_NETWORK:-kayord_default}
