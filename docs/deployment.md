@@ -75,7 +75,7 @@ sudo ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub -E sha256
 ```
 
 Set Actions **variable** `DEPLOY_PATH` to the absolute directory containing the server's
-Compose file and env files, e.g. `/home/deploy/club`. If omitted, it uses `~/kayord`, like POS.
+Compose file and `.env`, e.g. `/home/deploy/club`. If omitted, it uses `~/club`.
 When using that existing directory, merge the `club` and `club-api` definitions into its
 Compose file rather than overwriting it, and keep its existing environment values.
 The workflow grants `packages: write` to image builds; no separate registry push secret is needed.
@@ -148,15 +148,14 @@ cd ~/club
 chmod 600 .env
 # Edit .env with production values before continuing.
 # Use a SHA tag already built by both image workflows (recommended), or latest.
-printf 'CLUB_IMAGE_TAG=latest\n' > .release.env
-chmod 600 .release.env
-docker compose --env-file .env --env-file .release.env config --quiet
-docker compose --env-file .env --env-file .release.env pull club-api club
-docker compose --env-file .env --env-file .release.env up -d --wait --wait-timeout 180 club-api club
+# Set CLUB_IMAGE_TAG=latest (or the built SHA) in .env.
+docker compose --env-file .env config --quiet
+docker compose --env-file .env pull club-api club
+docker compose --env-file .env up -d --wait --wait-timeout 180 club-api club
 ```
 
 For an existing POS deployment, add the two services to its Compose file and merge the
-example env values instead of running the copy commands. Ensure `.release.env` exists.
+example env values instead of running the copy commands. Only `.env` is needed.
 Set `DEPLOY_PATH` accordingly. The workflow never copies files or runs `git pull` on the
 server; update Compose/configuration files manually when they change in this repo.
 
@@ -171,12 +170,12 @@ Publish a release or run **Deploy and Build All** manually on the intended ref. 
 must succeed before SSH runs. To deploy without rebuilding, run **Deploy All** manually on
 a ref whose commit SHA has already been built by both image workflows.
 Both SHA-tagged images are pulled before either service changes.
-After both rollouts succeed, `.release.env` records the deployed SHA for subsequent manual
+After both rollouts succeed, `CLUB_IMAGE_TAG` in `.env` records the deployed SHA for subsequent manual
 Compose commands. Only dangling images are pruned (not volumes or unrelated running services).
 
 A failed health check causes docker-rollout to remove the new replicas and retain the old
 ones. This is **not an atomic two-service rollback**: if the API succeeds but the frontend
-fails, the API stays upgraded. `.release.env` still records the last fully successful pair.
+fails, the API stays upgraded. `.env` still records the last fully successful pair.
 First deployment should use `up --wait` as above, since rollout's first-start path does not
 wait for health. In-flight requests are not guaranteed to drain; see the plugin's
 [draining documentation](https://docker-rollout.wowu.dev/container-draining) if required.
@@ -185,12 +184,37 @@ To roll both services back to a previously built SHA, after checking database co
 
 ```sh
 cd /home/deploy/club
-export CLUB_IMAGE_TAG=PREVIOUS_SUCCESSFUL_COMMIT_SHA
-docker compose --env-file .env --env-file .release.env pull club-api club
-docker rollout --env-file .env --env-file .release.env --timeout 180 club-api
-docker rollout --env-file .env --env-file .release.env --timeout 180 club
-printf 'CLUB_IMAGE_TAG=%s\n' "$CLUB_IMAGE_TAG" > .release.env
+# Set CLUB_IMAGE_TAG=PREVIOUS_SUCCESSFUL_COMMIT_SHA in .env.
 unset CLUB_IMAGE_TAG
+docker compose --env-file .env pull club-api club
+docker rollout --env-file .env --timeout 180 club-api
+docker rollout --env-file .env --timeout 180 club
+```
+
+### Missing frontend environment variables / Node running in `club-api`
+
+The `club-api` image must be `ghcr.io/kayorddx/club-api` and run `dotnet Club.Api.dll`.
+The `club` image must be `ghcr.io/kayorddx/club` and run Node. If `club-api` logs a Node
+error requiring `API_URL`, `APP_URL`, `IDENTITY_URL`, or `SESSION_SECRET`, check for a
+swapped image or an override in the server's Compose files:
+
+```sh
+docker compose --env-file .env config --images
+docker inspect "$(docker compose ps -aq club-api | head -n 1)" \
+  --format '{{.Config.Image}} {{json .Config.Entrypoint}} {{json .Config.Cmd}}'
+```
+
+Compare the server's service definitions with `deploy/compose.yml`, including any
+Compose override files. `.env` is used for Compose interpolation; values are only
+injected into containers through `environment` or `env_file`. The frontend's four
+required variables are already mapped under `club.environment` in the supplied file.
+Do not fix a Node error in `club-api` by adding frontend secrets to the API service.
+After correcting the image/service definitions, pull the correct images and recreate
+the failed containers (this may interrupt service):
+
+```sh
+docker compose --env-file .env pull club-api club
+docker compose --env-file .env up -d --force-recreate --wait --wait-timeout 180 club-api club
 ```
 
 Database migrations are not reversed by an image rollback. Preserve previous image tags,
