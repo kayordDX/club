@@ -4,6 +4,7 @@
 	import { page } from "$app/state";
 	import PageHeading from "$lib/components/PageHeading.svelte";
 	import BookingDetails from "$lib/components/booking/booking-details.svelte";
+	import BookingSuccessfulPayments from "$lib/components/booking/booking-successful-payments.svelte";
 	import { BookingStatusEnum, type BookingPathDTO } from "$lib/api";
 	import { bookingGet, bookingGetPath } from "$lib/api/remote/booking.remote";
 	import { Button } from "@kayord/ui";
@@ -24,4 +25,5 @@
 		{/if}
 	</div>
 	<BookingDetails {booking} {path} />
+	<BookingSuccessfulPayments {bookingId} />
 </div>
