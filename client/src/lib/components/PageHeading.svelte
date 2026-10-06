@@ -1,10 +1,10 @@
 <script lang="ts">
-	import type { Icon } from "@lucide/svelte";
+	import type { LucideIcon } from "@lucide/svelte";
 
 	type Props = {
 		title: string;
 		description: string;
-		icon?: typeof Icon;
+		icon?: LucideIcon;
 	};
 
 	let { title, description, icon }: Props = $props();
