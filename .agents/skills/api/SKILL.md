@@ -25,7 +25,7 @@ Reach for it when the task mentions any of the following:
 - Shared DTO location: `Club.Api/DTO/`
 - Entities: `Club.Api/Entities/`
 - Service registration: `Club.Api/Common/Extensions/`
-- Dev API docs: `http://localhost:5000/scalar/v1`
+- Dev API docs: `<API URL from aspire describe>/scalar/v1` (port 5000 is not guaranteed, especially with `--isolated`)
 
 ## Core Rules
 
@@ -36,27 +36,25 @@ Reach for it when the task mentions any of the following:
 - Keep DTOs in `Club.Api/DTO/` unless there is a clear local-only reason not to
 - Pass `CancellationToken` through async database and service calls
 - Add `Description(x => x.WithName("FeatureAction"))` in `Configure()`
-- Prefer generated frontend clients over manual HTTP calls; regenerate after API changes
+- Use SvelteKit remote functions for browser data access; they wrap generated server transports. Regenerate transports, shared types, Zod schemas, and remote functions after API changes.
 
 ## Booking Domain (facility/outlet lookup)
 
 Booking summary UIs (edit/view/pay pages) already have what they need — do **not** add facility/outlet to `BookingDTO`.
 
-| Endpoint | Generated client | Returns | Carries |
+| Endpoint | Remote function (`$lib/api/remote/booking.remote.ts`) | Returns | Carries |
 | --- | --- | --- | --- |
-| `GET /booking/{id}` | `createBookingGet` | `BookingDTO` | status, `user`, amounts, `extraBookings[].extra` (name/price), `slotContractBookings[].slotContract.slot` (`startDatetime`, `facilityId`) |
-| `GET /booking/{id}/path` | `createBookingGetPath` | `BookingPathDTO` | `outletName`, `outletSlug`, `facilityName`, `facilityId`, `slotStartDatetime` |
+| `GET /booking/{id}` | `bookingGet` | `BookingDTO` | status, `user`, amounts, `extraBookings[].extra` (name/price), `slotContractBookings[].slotContract.slot` (`startDatetime`, `facilityId`) |
+| `GET /booking/{id}/path` | `bookingGetPath` | `BookingPathDTO` | `outletName`, `outletSlug`, `facilityName`, `facilityId`, `slotStartDatetime` |
 
-- Facility/outlet names for a booking come from `createBookingGetPath` (`/booking/{id}/path`), **not** from `BookingDTO`.
+- Facility/outlet names for a booking come from `bookingGetPath` (`/booking/{id}/path`), **not** from `BookingDTO`.
 - The path query powers booking navigation: `BookingBreadcrumbs` (`$lib/components/BookingBreadcrumbs.svelte`) and `getBookingPayUrl` (`$lib/booking/payUrl.ts`).
 - Frontend pattern for booking detail pages (view/edit/pay):
 
 ```ts
-const pathQuery = createBookingGetPath(
-	() => bookingId,
-	() => ({ query: { enabled: bookingId > 0 } })
-);
-const path = $derived(pathQuery.data);
+import { bookingGetPath } from "$lib/api/remote/booking.remote";
+
+const path = await bookingGetPath(bookingId);
 ```
 
 - `BookingGetPath` derives facility/outlet from the first `SlotContractBooking → SlotContract → Slot.Facility.Outlet`, so it assumes a booking has at least one slot contract booking.
@@ -76,8 +74,8 @@ mkdir -p Club.Api/Features/{FeatureName}/{ActionName}
 4. **Reuse or add a response DTO** under `Club.Api/DTO/`
 5. **Register services** if needed in `Club.Api/Common/Extensions/`
 6. **Build:** `dotnet build Club.Api/Club.Api.csproj`
-7. **Regenerate the frontend client** (needs the API running): `pnpm api` from `client/`
-8. **Update frontend usage** to the generated client in `client/src/lib/api/generated/`
+7. **Regenerate the frontend clients** (needs the API running): follow [API Client Generation](#api-client-generation)
+8. **Update frontend usage**: types from `client/src/lib/api/generated/`, browser calls via `client/src/lib/api/remote/`
 
 > Integration tests live in `Club.Tests/IntegrationTests/Features/` (xUnit + FastEndpoints.Testing). Target a single class: `dotnet test Club.Tests/IntegrationTests/IntegrationTests.csproj -- --filter-class <FullyQualifiedClassName>`
 
@@ -208,19 +206,19 @@ await Send.ConflictAsync(ct);                      // 409
 
 ## API Client Generation
 
-After changing endpoints or response shapes:
+After changing endpoints or response shapes, first inspect/reuse the running Aspire stack with `aspire describe --non-interactive`. Rebuild a changed API using `aspire resource api rebuild --non-interactive`, then `aspire wait api --non-interactive`.
 
-1. Start the API
-2. Regenerate the frontend client from `client/`
-3. Fix warnings before moving on
+`pnpm api` fetches Swagger from **hardcoded port 5000**. If the discovered API uses another port, run the following from `client/`, setting `API_BASE_URL` to that resource's actual HTTP URL:
 
 ```bash
-pnpm run api
+curl --fail --silent --show-error "$API_BASE_URL/openapi/v1.json" -o swagger.json.tmp &&
+  test -s swagger.json.tmp && mv swagger.json.tmp swagger.json &&
+  pnpm api:orval && pnpm api:remote && pnpm format
 ```
 
-Generated client output lives in:
+Do not regenerate from an empty/failed fetch. Orval emits shared types in `src/lib/api/generated/`, server transports in `src/lib/server/api/generated/`, and Zod schemas in `src/lib/server/api/schemas/`; `api:remote` emits the browser-facing SvelteKit remote functions.
 
-- `client/src/lib/api/generated/`
+Check generated body schemas before implementing forms: conditional FluentValidation property rules (`NotNull`, percentage bounds, etc.) can be inferred as **unconditional** OpenAPI requirements. Use `RuleFor(x => x).Custom(...)` with field-specific `AddFailure(...)` for cross-field conditions, retain unconditional property rules for schema generation, and verify nullable fields and alternative variants remain accepted.
 
 ## Recommended Workflow
 
@@ -232,7 +230,7 @@ Use one or more of these checks:
 
 - Build backend project
 - Run backend tests
-- Open Scalar at `http://localhost:5000/scalar/v1`
+- Open Scalar at the discovered API URL + `/scalar/v1`
 - Regenerate frontend client and verify it succeeds cleanly
 
 Useful commands:
@@ -251,6 +249,8 @@ dotnet test Club.Tests/IntegrationTests/IntegrationTests.csproj
 - Skipping `CancellationToken`
 - Changing the API without regenerating the frontend client
 - Packing too much business logic into the endpoint instead of a service
+- Naming a test namespace after an entity (`IntegrationTests.Features.Voucher` shadows `Club.Entities.Voucher` in sibling namespaces); use `Features.Vouchers` instead
+- Supplying numeric `InlineData` to nullable `decimal` parameters; use typed `MemberData`/`TheoryData` to avoid reflection conversion failures
 
 ## Quick Examples
 
@@ -311,4 +311,4 @@ If a task changes routes, contracts, auth, DTO shapes, or serialization behavior
 ## References
 
 - FastEndpoints docs: `https://fast-endpoints.com/`
-- Repo API docs in dev: `http://localhost:5000/scalar/v1`
+- Repo API docs in dev: discovered API URL + `/scalar/v1`
