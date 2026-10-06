@@ -2,7 +2,19 @@ import { expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { page } from "vitest/browser";
 import AdminVoucherForm from "./admin-voucher-form.svelte";
-import { VoucherDiscountMode, VoucherRedemptionKind } from "$lib/api/generated/api.schemas";
+import { VoucherDiscountMode, VoucherRedemptionKind, type AdminVoucherDTO } from "$lib/api/generated/api.schemas";
+
+const existingVoucher: AdminVoucherDTO = {
+	id: 5,
+	name: "Member discount",
+	description: "A member benefit",
+	isExtra: true,
+	redemptionKind: VoucherRedemptionKind.Discount,
+	discountMode: VoucherDiscountMode.FixedAmount,
+	discountValue: 150,
+	maxDiscountAmount: 100,
+	isInUse: false,
+};
 
 it("submits the defaults and allows targeting rounds as extras", async () => {
 	const onsave = vi.fn().mockResolvedValue(undefined);
@@ -72,6 +84,47 @@ it("validates discount inputs and clears stale discount values for other kinds",
 	expect(onsave).toHaveBeenLastCalledWith(
 		expect.objectContaining({ redemptionKind: VoucherRedemptionKind.Entitlement, discountMode: null, discountValue: null, maxDiscountAmount: null })
 	);
+});
+
+it("prepopulates an existing voucher and saves edited benefit fields", async () => {
+	const onsave = vi.fn().mockResolvedValue(undefined);
+	render(AdminVoucherForm, { voucher: existingVoucher, onsave, oncancel: vi.fn() });
+	await expect.element(page.getByLabelText("Name")).toHaveValue("Member discount");
+	await expect.element(page.getByLabelText("Description")).toHaveValue("A member benefit");
+	await expect.element(page.getByLabelText("Discount mode")).toHaveTextContent("Fixed amount");
+	await expect.element(page.getByLabelText("Discount value")).toHaveValue("150");
+	await page.getByLabelText("Name").fill("Updated discount");
+	await page.getByLabelText("Discount value").fill("175");
+	await page.getByRole("button", { name: "Save changes" }).click();
+	expect(onsave).toHaveBeenCalledExactlyOnceWith({
+		name: "Updated discount",
+		description: "A member benefit",
+		isExtra: true,
+		redemptionKind: VoucherRedemptionKind.Discount,
+		discountMode: VoucherDiscountMode.FixedAmount,
+		discountValue: 175,
+		maxDiscountAmount: 100,
+	});
+});
+
+it("locks used voucher benefits while allowing metadata updates", async () => {
+	const onsave = vi.fn().mockResolvedValue(undefined);
+	render(AdminVoucherForm, { voucher: { ...existingVoucher, isInUse: true }, onsave, oncancel: vi.fn() });
+	await expect.element(page.getByText(/This voucher is in use/)).toBeVisible();
+	for (const label of ["Use for extras instead of rounds", "Redemption kind", "Discount mode", "Discount value", "Maximum discount amount (optional)"]) {
+		await expect.element(page.getByLabelText(label)).toBeDisabled();
+	}
+	await page.getByLabelText("Description").fill("Updated description");
+	await page.getByRole("button", { name: "Save changes" }).click();
+	expect(onsave).toHaveBeenCalledExactlyOnceWith({
+		name: "Member discount",
+		description: "Updated description",
+		isExtra: true,
+		redemptionKind: VoucherRedemptionKind.Discount,
+		discountMode: VoucherDiscountMode.FixedAmount,
+		discountValue: 150,
+		maxDiscountAmount: 100,
+	});
 });
 
 it("disables controls during save and preserves entered data for retry after failure", async () => {

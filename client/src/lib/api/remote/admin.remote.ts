@@ -18,8 +18,16 @@ import {
 	AdminSlotGetAllQueryParams,
 	AdminVoucherCreateBody,
 	AdminVoucherIssueBody,
+	AdminVoucherUpdateBody,
 } from "$lib/server/api/schemas/admin";
 
+export const adminVoucherUpdate = command(
+	z.object({ facilityId: z.number().int(), id: z.number().int(), body: AdminVoucherUpdateBody }),
+	async ({ facilityId, id, body }) => api.adminVoucherUpdate(facilityId, id, body)
+);
+export const adminVoucherDelete = command(z.object({ facilityId: z.number().int(), id: z.number().int() }), async ({ facilityId, id }) =>
+	api.adminVoucherDelete(facilityId, id)
+);
 export const adminVoucherIssue = command(z.object({ facilityId: z.number().int(), body: AdminVoucherIssueBody }), async ({ facilityId, body }) =>
 	api.adminVoucherIssue(facilityId, body)
 );

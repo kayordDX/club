@@ -30,6 +30,7 @@ public class Endpoint(AppDbContext db) : Endpoint<AdminVoucherGetAllRequest, Lis
                 DiscountMode = x.DiscountMode,
                 DiscountValue = x.DiscountValue,
                 MaxDiscountAmount = x.MaxDiscountAmount,
+                IsInUse = db.WalletVoucherGrant.Any(g => g.VoucherId == x.Id) || db.ContractVoucher.Any(c => c.VoucherId == x.Id),
             })
             .ToListAsync(ct);
         await Send.OkAsync(vouchers, ct);

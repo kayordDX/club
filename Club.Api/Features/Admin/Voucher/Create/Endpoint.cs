@@ -49,6 +49,7 @@ public class Endpoint(AppDbContext db) : Endpoint<AdminVoucherCreateRequest, Adm
                 DiscountMode = voucher.DiscountMode,
                 DiscountValue = voucher.DiscountValue,
                 MaxDiscountAmount = voucher.MaxDiscountAmount,
+                IsInUse = false,
             },
             ct
         );

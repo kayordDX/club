@@ -12,4 +12,5 @@ public class AdminVoucherDTO
     public VoucherDiscountMode? DiscountMode { get; set; }
     public decimal? DiscountValue { get; set; }
     public decimal? MaxDiscountAmount { get; set; }
+    public bool IsInUse { get; set; }
 }

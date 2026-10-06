@@ -9,7 +9,12 @@ const mocks = vi.hoisted(() => ({
 }));
 vi.mock("$app/environment", () => ({ browser: false }));
 vi.mock("$app/state", () => ({ page: { params: { slug: "test-club", id: "7" } } }));
-vi.mock("$lib/api/remote/admin.remote", () => ({ adminVoucherGetAll: vi.fn(), adminVoucherCreate: vi.fn() }));
+vi.mock("$lib/api/remote/admin.remote", () => ({
+	adminVoucherGetAll: vi.fn(),
+	adminVoucherCreate: vi.fn(),
+	adminVoucherUpdate: vi.fn(),
+	adminVoucherDelete: vi.fn(),
+}));
 vi.mock("@tanstack/svelte-query", () => ({
 	createQuery: vi.fn((options: () => unknown) => {
 		options();
@@ -35,6 +40,7 @@ const voucher: AdminVoucherDTO = {
 	description: "A facility-only benefit",
 	isExtra: false,
 	redemptionKind: VoucherRedemptionKind.Entitlement,
+	isInUse: false,
 };
 
 describe("admin vouchers", () => {
@@ -94,9 +100,13 @@ describe("admin vouchers", () => {
 			"Extras only",
 			"20%",
 			"Maximum discount",
-			"Valid at this facility only.",
+			"Search vouchers",
+			"Usage",
+			"Unused",
 		])
 			expect(body).toContain(text);
 		expect(body).not.toContain("No vouchers yet");
+		expect(body).toContain("<table");
+		expect(body).toContain("Actions for Complimentary round");
 	});
 });

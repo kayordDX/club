@@ -22,11 +22,47 @@ import type {
 	AdminVoucherCreateRequest,
 	AdminVoucherDTO,
 	AdminVoucherIssueRequest,
+	AdminVoucherUpdateRequest,
 	BookingDTO,
 	PaginatedListOfAdminBookingDTO,
 } from "./server.schemas";
 
 import { customServerInstance } from "../client";
+
+export const getAdminVoucherUpdateUrl = (facilityId: number, id: number) => {
+	return `/admin/facility/${facilityId}/voucher/${id}`;
+};
+
+export const adminVoucherUpdate = async (
+	facilityId: number,
+	id: number,
+	adminVoucherUpdateRequest: AdminVoucherUpdateRequest,
+	options?: Parameters<typeof customServerInstance>[1]
+): Promise<void> => {
+	const getHeaders = (h?: NonNullable<RequestInit["headers"]>): Record<string, string | readonly string[]> => {
+		if (!h) return {};
+		if (h instanceof Headers) return Object.fromEntries(h.entries());
+		if (Array.isArray(h)) return Object.fromEntries(h);
+		return h;
+	};
+	return customServerInstance<void>(getAdminVoucherUpdateUrl(facilityId, id), {
+		...options,
+		method: "PUT",
+		headers: { "Content-Type": "application/json", ...getHeaders(options?.headers) },
+		body: JSON.stringify(adminVoucherUpdateRequest),
+	});
+};
+
+export const getAdminVoucherDeleteUrl = (facilityId: number, id: number) => {
+	return `/admin/facility/${facilityId}/voucher/${id}`;
+};
+
+export const adminVoucherDelete = async (facilityId: number, id: number, options?: Parameters<typeof customServerInstance>[1]): Promise<void> => {
+	return customServerInstance<void>(getAdminVoucherDeleteUrl(facilityId, id), {
+		...options,
+		method: "DELETE",
+	});
+};
 
 export const getAdminVoucherIssueUrl = (facilityId: number) => {
 	return `/admin/facility/${facilityId}/voucher/issue`;

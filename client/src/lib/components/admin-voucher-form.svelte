@@ -1,10 +1,19 @@
 <script lang="ts">
 	import { Button, Checkbox, Label, Select } from "@kayord/ui";
 	import { createAppForm } from "$lib/components/Form";
-	import type { AdminVoucherCreateRequest } from "$lib/api/generated/api.schemas";
+	import type { AdminVoucherCreateRequest, AdminVoucherDTO } from "$lib/api/generated/api.schemas";
 	import { VoucherDiscountMode, VoucherRedemptionKind } from "$lib/api/generated/api.schemas";
 
-	let { onsave, oncancel }: { onsave: (_body: Omit<AdminVoucherCreateRequest, "facilityId">) => Promise<void>; oncancel: () => void } = $props();
+	let {
+		voucher,
+		onsave,
+		oncancel,
+	}: {
+		voucher?: AdminVoucherDTO;
+		onsave: (_body: Omit<AdminVoucherCreateRequest, "facilityId">) => Promise<void>;
+		oncancel: () => void;
+	} = $props();
+	const benefitsLocked = $derived(voucher?.isInUse ?? false);
 	let saveError = $state("");
 	let pending = $state(false);
 	const redemptionKinds = [
@@ -17,13 +26,13 @@
 	];
 	const form = createAppForm(() => ({
 		defaultValues: {
-			name: "",
-			description: "",
-			isExtra: false,
-			redemptionKind: VoucherRedemptionKind.Entitlement as VoucherRedemptionKind,
-			discountMode: VoucherDiscountMode.Percentage as VoucherDiscountMode,
-			discountValue: "",
-			maxDiscountAmount: "",
+			name: voucher?.name ?? "",
+			description: voucher?.description ?? "",
+			isExtra: voucher?.isExtra ?? false,
+			redemptionKind: voucher?.redemptionKind ?? VoucherRedemptionKind.Entitlement,
+			discountMode: voucher?.discountMode ?? VoucherDiscountMode.Percentage,
+			discountValue: voucher?.discountValue?.toString() ?? "",
+			maxDiscountAmount: voucher?.maxDiscountAmount?.toString() ?? "",
 		} as {
 			name: string;
 			description: string;
@@ -80,7 +89,10 @@
 	}
 </script>
 
-<p class="text-muted-foreground mb-4 text-sm">Voucher definitions are created here. Issuance balances and expiry are assigned separately.</p>
+<p class="text-muted-foreground mb-4 text-sm">Voucher definitions set the benefit. Issuance balances and expiry are assigned separately.</p>
+{#if benefitsLocked}
+	<p class="text-muted-foreground mb-4 text-sm">This voucher is in use. You can update its name and description, but its benefit cannot be changed.</p>
+{/if}
 <form
 	class="space-y-4"
 	onsubmit={(event) => {
@@ -97,7 +109,12 @@
 	<form.AppField name="isExtra">
 		{#snippet children(field)}
 			<div class="flex items-center gap-2">
-				<Checkbox id="use-extras" disabled={pending} checked={field.state.value} onCheckedChange={(checked) => field.handleChange(checked === true)} />
+				<Checkbox
+					id="use-extras"
+					disabled={pending || benefitsLocked}
+					checked={field.state.value}
+					onCheckedChange={(checked) => field.handleChange(checked === true)}
+				/>
 				<Label for="use-extras">Use for extras instead of rounds</Label>
 			</div>
 		{/snippet}
@@ -108,7 +125,7 @@
 			<Select.Root
 				type="single"
 				name={field.name}
-				disabled={pending}
+				disabled={pending || benefitsLocked}
 				value={String(field.state.value)}
 				onOpenChange={() => field.handleBlur()}
 				onValueChange={(value) => {
@@ -117,7 +134,8 @@
 				}}
 			>
 				<Select.Trigger id="redemptionKind" class="mt-1 w-full">
-					{redemptionKinds.find((option) => option.value === field.state.value)?.label ?? "Select a voucher type"}
+					{redemptionKinds.find((option) => option.value === field.state.value)?.label ??
+						(field.state.value === VoucherRedemptionKind.Credit ? "Credit" : "Select a voucher type")}
 				</Select.Trigger>
 				<Select.Content>
 					{#each redemptionKinds as option (option.value)}
@@ -136,7 +154,7 @@
 						<Select.Root
 							type="single"
 							name={field.name}
-							disabled={pending}
+							disabled={pending || benefitsLocked}
 							value={String(field.state.value)}
 							onOpenChange={() => field.handleBlur()}
 							onValueChange={(value) => {
@@ -156,10 +174,14 @@
 					{/snippet}
 				</form.AppField>
 				<form.AppField name="discountValue"
-					>{#snippet children(field)}<field.Input label="Discount value" inputmode="decimal" disabled={pending} />{/snippet}</form.AppField
+					>{#snippet children(field)}<field.Input label="Discount value" inputmode="decimal" disabled={pending || benefitsLocked} />{/snippet}</form.AppField
 				>
 				<form.AppField name="maxDiscountAmount"
-					>{#snippet children(field)}<field.Input label="Maximum discount amount (optional)" inputmode="decimal" disabled={pending} />{/snippet}</form.AppField
+					>{#snippet children(field)}<field.Input
+							label="Maximum discount amount (optional)"
+							inputmode="decimal"
+							disabled={pending || benefitsLocked}
+						/>{/snippet}</form.AppField
 				>
 			{/if}
 		{/snippet}
@@ -176,7 +198,7 @@
 		<form.Subscribe selector={(state) => state.isSubmitting}>
 			{#snippet children(pending)}
 				<Button type="button" variant="outline" disabled={pending} onclick={oncancel}>Cancel</Button>
-				<Button type="submit" disabled={pending}>{pending ? "Saving…" : "Save voucher"}</Button>
+				<Button type="submit" disabled={pending}>{pending ? "Saving…" : voucher ? "Save changes" : "Save voucher"}</Button>
 			{/snippet}
 		</form.Subscribe>
 	</footer>

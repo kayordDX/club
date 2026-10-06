@@ -943,6 +943,26 @@ export interface BookingCreateRequest {
 	extras: BookingExtraRequest[];
 }
 
+export interface AdminVoucherUpdateRequest {
+	/**
+	 * @minLength 0
+	 * @maxLength 250
+	 */
+	name: string;
+	/**
+	 * @minLength 0
+	 * @maxLength 2000
+	 */
+	description: string;
+	isExtra: boolean;
+	redemptionKind: VoucherRedemptionKind;
+	discountMode?: VoucherDiscountMode | null;
+	/** @nullable */
+	discountValue?: number | null;
+	/** @nullable */
+	maxDiscountAmount?: number | null;
+}
+
 export interface AdminVoucherIssueRequest {
 	walletId: string;
 	voucherId: number;
@@ -968,6 +988,7 @@ export interface AdminVoucherDTO {
 	discountValue?: number | null;
 	/** @nullable */
 	maxDiscountAmount?: number | null;
+	isInUse: boolean;
 }
 
 export interface AdminVoucherCreateRequest {

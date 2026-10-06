@@ -6,6 +6,45 @@
  */
 import * as zod from "zod";
 
+export const AdminVoucherUpdateParams = zod.object({
+	facilityId: zod.int(),
+	id: zod.int(),
+});
+
+export const adminVoucherUpdateBodyNameMin = 0;
+export const adminVoucherUpdateBodyNameMax = 250;
+
+export const adminVoucherUpdateBodyDescriptionMin = 0;
+export const adminVoucherUpdateBodyDescriptionMax = 2000;
+
+export const AdminVoucherUpdateBody = zod.object({
+	name: zod.string().min(adminVoucherUpdateBodyNameMin).max(adminVoucherUpdateBodyNameMax),
+	description: zod.string().min(adminVoucherUpdateBodyDescriptionMin).max(adminVoucherUpdateBodyDescriptionMax),
+	isExtra: zod.boolean(),
+	redemptionKind: zod.enum({
+		Entitlement: 1,
+		Credit: 2,
+		Discount: 3,
+	}),
+	discountMode: zod
+		.enum({
+			Percentage: 1,
+			FixedAmount: 2,
+		})
+		.nullish(),
+	discountValue: zod.number().nullish(),
+	maxDiscountAmount: zod.number().nullish(),
+});
+
+export const AdminVoucherUpdateResponse = zod.void();
+
+export const AdminVoucherDeleteParams = zod.object({
+	facilityId: zod.int(),
+	id: zod.int(),
+});
+
+export const AdminVoucherDeleteResponse = zod.void();
+
 export const AdminVoucherIssueParams = zod.object({
 	facilityId: zod.int(),
 });
@@ -45,6 +84,7 @@ export const AdminVoucherGetAllResponseItem = zod.object({
 		.nullish(),
 	discountValue: zod.number().nullish(),
 	maxDiscountAmount: zod.number().nullish(),
+	isInUse: zod.boolean(),
 });
 export const AdminVoucherGetAllResponse = zod.array(AdminVoucherGetAllResponseItem);
 
@@ -95,6 +135,7 @@ export const AdminVoucherCreateResponse = zod.object({
 		.nullish(),
 	discountValue: zod.number().nullish(),
 	maxDiscountAmount: zod.number().nullish(),
+	isInUse: zod.boolean(),
 });
 
 export const AdminSlotGetAllParams = zod.object({
