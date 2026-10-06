@@ -844,8 +844,8 @@ export interface BookingPathDTO {
 	outletName: string;
 	facilityId: number;
 	facilityName: string;
-	slotId: string;
-	slotStartDatetime: string;
+	slotId?: string | null;
+	slotStartDatetime?: string | null;
 }
 
 export interface BookingStatusDTO {

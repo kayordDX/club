@@ -8,6 +8,6 @@ public class BookingPathDTO
     public string OutletName { get; set; } = "";
     public int FacilityId { get; set; }
     public string FacilityName { get; set; } = "";
-    public Guid SlotId { get; set; }
-    public DateTime SlotStartDatetime { get; set; }
+    public Guid? SlotId { get; set; }
+    public DateTime? SlotStartDatetime { get; set; }
 }

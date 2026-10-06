@@ -19,7 +19,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<AdminBookingGetRequest,
     public override async Task HandleAsync(AdminBookingGetRequest req, CancellationToken ct)
     {
         var result = await _dbContext
-            .Booking.Where(b => b.Id == req.Id && b.SlotContractBookings.Any(scb => scb.SlotContract.Slot.FacilityId == req.FacilityId))
+            .Booking.Where(b => b.Id == req.Id && b.FacilityId == req.FacilityId)
             .AsSplitQuery()
             .ProjectToDto()
             .FirstOrDefaultAsync(ct);

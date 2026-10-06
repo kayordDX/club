@@ -80,6 +80,13 @@ public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : E
             return;
         }
 
+        if (facilityIds.Count != 1 || slotContracts.Any(sc => sc.Slot.FacilityId == null))
+        {
+            AddError(r => r.Bookings, "All slots must belong to the same facility.");
+            await Send.ErrorsAsync(400, ct);
+            return;
+        }
+
         var slotIds = req.Bookings.Select(b => b.SlotId).Distinct().ToList();
 
         // Begin a transaction and lock the affected slot rows so concurrent booking requests for
@@ -153,6 +160,7 @@ public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : E
 
         var booking = new Entities.Booking
         {
+            FacilityId = facilityIds.Single(),
             BookingStatusId = (int)BookingStatusEnum.Pending,
             BookingStatusDate = now,
             IsPaid = false,

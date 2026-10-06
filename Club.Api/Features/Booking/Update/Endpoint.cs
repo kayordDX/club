@@ -125,6 +125,13 @@ public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : E
             return;
         }
 
+        if (facilityIds.Count != 1 || slotContracts.Any(sc => sc.Slot.FacilityId == null))
+        {
+            AddError(r => r.Bookings, "All slots must belong to the same facility.");
+            await Send.ErrorsAsync(400, ct);
+            return;
+        }
+
         var slotIds = req.Bookings.Select(b => b.SlotId).Distinct().ToList();
 
         // Begin a transaction and lock the affected slot rows so concurrent booking requests for
@@ -219,6 +226,7 @@ public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : E
         });
         await _dbContext.ExtraBooking.AddRangeAsync(extraBookings, ct);
 
+        booking.FacilityId = facilityIds.Single();
         booking.AmountOutstanding = totalPrice + extrasTotal;
         // Refresh the pending timeout so the user has time to complete payment after editing.
         booking.ExpiresAt = now.AddMinutes(Math.Max(1, _appConfig.PendingTimeoutMinutes));

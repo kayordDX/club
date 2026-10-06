@@ -3,6 +3,8 @@ namespace Club.Entities;
 public class Booking : AuditableEntity
 {
     public int Id { get; set; }
+    public int? FacilityId { get; set; }
+    public Facility? Facility { get; set; }
     public int BookingStatusId { get; set; }
     public BookingStatus BookingStatus { get; set; } = default!;
     public required DateTime BookingStatusDate { get; set; }

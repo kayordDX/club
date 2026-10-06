@@ -68,16 +68,19 @@ public class VoucherGrantMigrationTests(AppFixture app)
             ProviderName = "voucher",
             ProviderReference = id.ToString(),
         };
-        var booking = new Club.Entities.Booking
-        {
-            User = user,
-            BookingStatus = new BookingStatus { Name = "Legacy pending" },
-            BookingStatusDate = grantedAt,
-            AmountPaid = 376.55m,
-            AmountOutstanding = 23.45m,
-            ExpiresAt = expiry,
-        };
-        db.PaymentBooking.Add(new PaymentBooking { Booking = booking, Payment = payment });
+        var bookingStatus = new BookingStatus { Name = "Legacy pending" };
+        db.BookingStatus.Add(bookingStatus);
+        await db.SaveChangesAsync(ct);
+        const int bookingId = 12345;
+        // Seed the old schema directly: the current Booking model includes facility_id.
+        await db.Database.ExecuteSqlInterpolatedAsync(
+            $"""
+            INSERT INTO booking (id, user_id, booking_status_id, booking_status_date, amount_paid, amount_outstanding, expires_at, is_paid, created)
+            VALUES ({bookingId}, {user.Id}, {bookingStatus.Id}, {grantedAt}, {376.55m}, {23.45m}, {expiry}, false, {grantedAt})
+            """,
+            ct
+        );
+        db.PaymentBooking.Add(new PaymentBooking { BookingId = bookingId, Payment = payment });
         await db.SaveChangesAsync(ct);
         await db.Database.ExecuteSqlInterpolatedAsync(
             $"""
@@ -107,7 +110,7 @@ public class VoucherGrantMigrationTests(AppFixture app)
         redemption.Units.ShouldBe(376.55m);
         redemption.Payment.Amount.ShouldBe(376.55m);
         redemption.Payment.TransactionId.ShouldBe("legacy-voucher-payment");
-        (await db.PaymentBooking.AsNoTracking().SingleAsync(ct)).BookingId.ShouldBe(booking.Id);
+        (await db.PaymentBooking.AsNoTracking().SingleAsync(ct)).BookingId.ShouldBe(bookingId);
         var preservedBooking = await db.Booking.AsNoTracking().SingleAsync(ct);
         preservedBooking.AmountPaid.ShouldBe(376.55m);
         preservedBooking.AmountOutstanding.ShouldBe(23.45m);

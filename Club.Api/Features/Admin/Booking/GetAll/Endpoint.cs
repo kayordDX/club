@@ -24,7 +24,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<AdminBookingGetAllReque
         var now = DateTime.UtcNow;
         var query = (
             from b in _dbContext.Booking
-            where b.SlotContractBookings.Any(scb => scb.SlotContract.Slot.FacilityId == req.FacilityId)
+            where b.FacilityId == req.FacilityId
             select new AdminBookingDTO
             {
                 Id = b.Id,
@@ -36,10 +36,10 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<AdminBookingGetAllReque
                     (b.BookingStatusId == (int)BookingStatusEnum.Pending && b.ExpiresAt < now) ? nameof(BookingStatusEnum.Expired) : b.BookingStatus.Name,
                 BookingStatusDate = b.BookingStatusDate,
                 SlotStartDatetime = b.SlotContractBookings.Min(scb => (DateTime?)scb.SlotContract.Slot.StartDatetime),
-                SlotEndDatetime = b.SlotContractBookings.Max(scb => scb.SlotContract.Slot.EndDatetime),
+                SlotEndDatetime = b.SlotContractBookings.Max(scb => (DateTime?)scb.SlotContract.Slot.EndDatetime),
                 UserId = b.UserId,
                 CustomerName = b.User != null ? b.User.FirstName + " " + b.User.LastName : null,
-                FacilityName = b.SlotContractBookings.Select(scb => scb.SlotContract.Slot.Facility!.Name).FirstOrDefault(),
+                FacilityName = b.Facility != null ? b.Facility.Name : null,
                 PlayerCount = b.SlotContractBookings.Count,
                 ExtraCount = b.ExtraBookings.Count,
                 IsPaid = b.IsPaid,

@@ -22,20 +22,21 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingGetPathRequest, 
             return;
         }
 
-        // Guard against bookings without slot contract bookings so the First() projection
-        // below returns 404 instead of crashing with a 500.
         var path = await _dbContext
-            .Booking.Where(b => b.Id == req.Id && b.SlotContractBookings.Any())
+            .Booking.Where(b => b.Id == req.Id && b.FacilityId != null)
             .Select(b => new BookingPathDTO
             {
                 BookingId = b.Id,
-                OutletId = b.SlotContractBookings.First().SlotContract.Slot.Facility!.OutletId,
-                OutletSlug = b.SlotContractBookings.First().SlotContract.Slot.Facility!.Outlet.Slug,
-                OutletName = b.SlotContractBookings.First().SlotContract.Slot.Facility!.Outlet.Name,
-                FacilityId = b.SlotContractBookings.First().SlotContract.Slot.Facility!.Id,
-                FacilityName = b.SlotContractBookings.First().SlotContract.Slot.Facility!.Name,
-                SlotId = b.SlotContractBookings.First().SlotContract.Slot.Id,
-                SlotStartDatetime = b.SlotContractBookings.First().SlotContract.Slot.StartDatetime,
+                OutletId = b.Facility!.OutletId,
+                OutletSlug = b.Facility.Outlet.Slug,
+                OutletName = b.Facility.Outlet.Name,
+                FacilityId = b.Facility.Id,
+                FacilityName = b.Facility.Name,
+                SlotId = b.SlotContractBookings.OrderBy(scb => scb.Id).Select(scb => (Guid?)scb.SlotContract.SlotId).FirstOrDefault(),
+                SlotStartDatetime = b
+                    .SlotContractBookings.OrderBy(scb => scb.Id)
+                    .Select(scb => (DateTime?)scb.SlotContract.Slot.StartDatetime)
+                    .FirstOrDefault(),
             })
             .FirstOrDefaultAsync(ct);
 
