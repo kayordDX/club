@@ -25,7 +25,10 @@ it("validates discount inputs and clears stale discount values for other kinds",
 	const onsave = vi.fn().mockResolvedValue(undefined);
 	render(AdminVoucherForm, { onsave, oncancel: vi.fn() });
 	await page.getByLabelText("Name").fill("Discount");
-	await page.getByLabelText("Redemption kind").selectOptions(String(VoucherRedemptionKind.Discount));
+	await page.getByLabelText("Redemption kind").click();
+	await page.getByRole("option", { name: "Discount", exact: true }).click();
+	await expect.element(page.getByLabelText("Redemption kind")).toHaveTextContent("Discount");
+	await expect.element(page.getByLabelText("Discount mode")).toHaveTextContent("Percentage");
 	await page.getByLabelText("Discount value").fill("100.001");
 	await page.getByRole("button", { name: "Save voucher" }).click();
 	expect(onsave).not.toHaveBeenCalled();
@@ -40,7 +43,6 @@ it("validates discount inputs and clears stale discount values for other kinds",
 	expect(onsave).not.toHaveBeenCalled();
 	await expect.element(page.getByText("Maximum discount must be a positive amount with up to 2 decimal places.")).toBeVisible();
 	await page.getByLabelText("Maximum discount amount (optional)").fill("20.25");
-	await page.getByLabelText("Maximum discount amount (optional)").fill("20.25");
 	await page.getByRole("button", { name: "Save voucher" }).click();
 	expect(onsave).toHaveBeenLastCalledWith(
 		expect.objectContaining({
@@ -49,11 +51,15 @@ it("validates discount inputs and clears stale discount values for other kinds",
 			maxDiscountAmount: 20.25,
 		})
 	);
-	await page.getByLabelText("Discount mode").selectOptions(String(VoucherDiscountMode.FixedAmount));
+	await page.getByLabelText("Discount mode").click();
+	await page.getByRole("option", { name: "Fixed amount", exact: true }).click();
+	await expect.element(page.getByLabelText("Discount mode")).toHaveTextContent("Fixed amount");
 	await page.getByLabelText("Discount value").fill("25.00");
 	await page.getByRole("button", { name: "Save voucher" }).click();
 	expect(onsave).toHaveBeenLastCalledWith(expect.objectContaining({ discountMode: VoucherDiscountMode.FixedAmount, discountValue: 25 }));
-	await page.getByLabelText("Redemption kind").selectOptions(String(VoucherRedemptionKind.Credit));
+	await page.getByLabelText("Redemption kind").click();
+	await page.getByRole("option", { name: "Credit", exact: true }).click();
+	await expect.element(page.getByLabelText("Discount mode")).not.toBeInTheDocument();
 	await page.getByRole("button", { name: "Save voucher" }).click();
 	expect(onsave).toHaveBeenLastCalledWith(expect.objectContaining({ discountMode: null, discountValue: null, maxDiscountAmount: null }));
 });
@@ -72,9 +78,14 @@ it("disables controls during save and preserves entered data for retry after fai
 	const oncancel = vi.fn();
 	render(AdminVoucherForm, { onsave, oncancel });
 	await page.getByLabelText("Name").fill("Preserved");
+	await page.getByLabelText("Redemption kind").click();
+	await page.getByRole("option", { name: "Discount", exact: true }).click();
+	await page.getByLabelText("Discount value").fill("20");
 	await page.getByRole("button", { name: "Save voucher" }).click();
 	await expect.element(page.getByRole("button", { name: "Saving…" })).toBeDisabled();
 	await expect.element(page.getByLabelText("Name")).toBeDisabled();
+	await expect.element(page.getByLabelText("Redemption kind")).toBeDisabled();
+	await expect.element(page.getByLabelText("Discount mode")).toBeDisabled();
 	await expect.element(page.getByRole("button", { name: "Cancel" })).toBeDisabled();
 	expect(oncancel).not.toHaveBeenCalled();
 	rejectSave(new Error("rejected"));

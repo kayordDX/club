@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Checkbox, Label } from "@kayord/ui";
+	import { Button, Checkbox, Label, Select } from "@kayord/ui";
 	import { createAppForm } from "$lib/components/Form";
 	import type { AdminVoucherCreateRequest } from "$lib/api/generated/api.schemas";
 	import { VoucherDiscountMode, VoucherRedemptionKind } from "$lib/api/generated/api.schemas";
@@ -7,6 +7,15 @@
 	let { onsave, oncancel }: { onsave: (_body: Omit<AdminVoucherCreateRequest, "facilityId">) => Promise<void>; oncancel: () => void } = $props();
 	let saveError = $state("");
 	let pending = $state(false);
+	const redemptionKinds = [
+		{ value: VoucherRedemptionKind.Entitlement, label: "Entitlement" },
+		{ value: VoucherRedemptionKind.Credit, label: "Credit" },
+		{ value: VoucherRedemptionKind.Discount, label: "Discount" },
+	];
+	const discountModes = [
+		{ value: VoucherDiscountMode.Percentage, label: "Percentage" },
+		{ value: VoucherDiscountMode.FixedAmount, label: "Fixed amount" },
+	];
 	const form = createAppForm(() => ({
 		defaultValues: {
 			name: "",
@@ -97,17 +106,26 @@
 	<form.AppField name="redemptionKind">
 		{#snippet children(field)}
 			<Label for="redemptionKind">Redemption kind</Label>
-			<select
-				id="redemptionKind"
+			<Select.Root
+				type="single"
+				name={field.name}
 				disabled={pending}
-				class="bg-background mt-1 w-full rounded-md border p-2"
-				value={field.state.value}
-				onchange={(event) => field.handleChange(Number(event.currentTarget.value) as VoucherRedemptionKind)}
+				value={String(field.state.value)}
+				onOpenChange={() => field.handleBlur()}
+				onValueChange={(value) => {
+					const selected = redemptionKinds.find((option) => String(option.value) === value);
+					if (selected) field.handleChange(selected.value);
+				}}
 			>
-				<option value={VoucherRedemptionKind.Entitlement}>Entitlement</option><option value={VoucherRedemptionKind.Credit}>Credit</option><option
-					value={VoucherRedemptionKind.Discount}>Discount</option
-				>
-			</select>
+				<Select.Trigger id="redemptionKind" class="mt-1 w-full">
+					{redemptionKinds.find((option) => option.value === field.state.value)?.label ?? "Select a voucher type"}
+				</Select.Trigger>
+				<Select.Content>
+					{#each redemptionKinds as option (option.value)}
+						<Select.Item value={String(option.value)} label={option.label}>{option.label}</Select.Item>
+					{/each}
+				</Select.Content>
+			</Select.Root>
 		{/snippet}
 	</form.AppField>
 	<form.Subscribe selector={(state) => ({ kind: state.values.redemptionKind, pending: state.isSubmitting })}>
@@ -116,15 +134,26 @@
 				<form.AppField name="discountMode">
 					{#snippet children(field)}
 						<Label for="discountMode">Discount mode</Label>
-						<select
-							id="discountMode"
+						<Select.Root
+							type="single"
+							name={field.name}
 							disabled={pending}
-							class="bg-background mt-1 w-full rounded-md border p-2"
-							value={field.state.value}
-							onchange={(event) => field.handleChange(Number(event.currentTarget.value) as VoucherDiscountMode)}
+							value={String(field.state.value)}
+							onOpenChange={() => field.handleBlur()}
+							onValueChange={(value) => {
+								const selected = discountModes.find((option) => String(option.value) === value);
+								if (selected) field.handleChange(selected.value);
+							}}
 						>
-							<option value={VoucherDiscountMode.Percentage}>Percentage</option><option value={VoucherDiscountMode.FixedAmount}>Fixed amount</option>
-						</select>
+							<Select.Trigger id="discountMode" class="mt-1 w-full">
+								{discountModes.find((option) => option.value === field.state.value)?.label ?? "Select a discount mode"}
+							</Select.Trigger>
+							<Select.Content>
+								{#each discountModes as option (option.value)}
+									<Select.Item value={String(option.value)} label={option.label}>{option.label}</Select.Item>
+								{/each}
+							</Select.Content>
+						</Select.Root>
 					{/snippet}
 				</form.AppField>
 				<form.AppField name="discountValue"
