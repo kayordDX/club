@@ -33,7 +33,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<AdminBookingUpdateReque
         var booking = await _dbContext
             .Booking.Include(b => b.SlotContractBookings)
             .Include(b => b.ExtraBookings)
-            .Where(b => b.Id == req.Id && b.SlotContractBookings.Any(scb => scb.SlotContract.Slot.FacilityId == req.FacilityId))
+            .Where(b => b.Id == req.Id && b.FacilityId == req.FacilityId)
             .FirstOrDefaultAsync(ct);
 
         if (booking is null)
@@ -53,8 +53,8 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<AdminBookingUpdateReque
         foreach (var bookingReq in req.Bookings)
         {
             var sc = slotContracts.FirstOrDefault(sc => sc.Id == bookingReq.SlotContractId && sc.SlotId == bookingReq.SlotId);
-            if (sc is null)
-                AddError(r => r.Bookings, $"SlotContract {bookingReq.SlotContractId} not found for slot {bookingReq.SlotId}.");
+            if (sc is null || sc.Slot.FacilityId != req.FacilityId)
+                AddError(r => r.Bookings, $"SlotContract {bookingReq.SlotContractId} not found for slot {bookingReq.SlotId} in this facility.");
         }
 
         if (ValidationFailed)

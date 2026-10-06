@@ -126,11 +126,10 @@ public class OutletSearchTests(AppFixture app)
         await CreateOutlet(app, name: $"Everything Two {marker}", tags: null, address: null, description: null);
 
         // Act - a blank search term should not filter (same as the default listing)
-        var (rsp, result) = await SearchAsync(new OutletGetAllRequest { Search = "   ", PageSize = 100 });
+        var items = await ListAllAsync("   ");
 
         // Assert - both seeded outlets are present
-        rsp.IsSuccessStatusCode.ShouldBeTrue();
-        result.Items.Count(item => item.Name.Contains(marker)).ShouldBe(2);
+        items.Count(item => item.Name.Contains(marker)).ShouldBe(2);
     }
 
     [Fact, Priority(7)]
@@ -141,11 +140,30 @@ public class OutletSearchTests(AppFixture app)
         await CreateOutlet(app, name: $"NoFilter {marker}", tags: null, address: null, description: null);
 
         // Act
-        var (rsp, result) = await SearchAsync(new OutletGetAllRequest { PageSize = 100 });
+        var items = await ListAllAsync(null);
 
         // Assert
-        rsp.IsSuccessStatusCode.ShouldBeTrue();
-        result.Items.ShouldContain(item => item.Name.Contains(marker));
+        items.ShouldContain(item => item.Name.Contains(marker));
+    }
+
+    private async Task<List<OutletItem>> ListAllAsync(string? search)
+    {
+        List<OutletItem> items = [];
+        for (var page = 1; ; page++)
+        {
+            var (rsp, result) = await SearchAsync(
+                new OutletGetAllRequest
+                {
+                    Search = search,
+                    Page = page,
+                    PageSize = 100,
+                }
+            );
+            rsp.IsSuccessStatusCode.ShouldBeTrue();
+            items.AddRange(result.Items);
+            if (result.Items.Count < 100)
+                return items;
+        }
     }
 
     private static async Task<Outlet> CreateOutlet(AppFixture app, string name, string? tags, string? address, string? description)

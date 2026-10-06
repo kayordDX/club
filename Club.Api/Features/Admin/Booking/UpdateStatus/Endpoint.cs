@@ -23,9 +23,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<AdminBookingUpdateStatu
             return;
         }
 
-        var booking = await _dbContext
-            .Booking.Where(b => b.Id == req.Id && b.SlotContractBookings.Any(scb => scb.SlotContract.Slot.FacilityId == req.FacilityId))
-            .FirstOrDefaultAsync(ct);
+        var booking = await _dbContext.Booking.Where(b => b.Id == req.Id && b.FacilityId == req.FacilityId).FirstOrDefaultAsync(ct);
 
         if (booking is null)
         {
