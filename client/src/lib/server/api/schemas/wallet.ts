@@ -11,6 +11,9 @@ export const WalletVouchersResponseItem = zod.object({
 	voucherId: zod.int(),
 	name: zod.string(),
 	description: zod.string(),
+	facilityNames: zod.array(zod.string()),
+	gameTypes: zod.array(zod.string()),
+	extraNames: zod.array(zod.string()),
 	isExtra: zod.boolean(),
 	redemptionKind: zod.enum({
 		Entitlement: 1,
@@ -31,8 +34,5 @@ export const WalletVouchersResponseItem = zod.object({
 	expiryDate: zod.iso.datetime({ offset: true }),
 	currency: zod.string(),
 	isWalletActive: zod.boolean(),
-	facilityNames: zod.array(zod.string()),
-	gameTypes: zod.array(zod.string()),
-	extraNames: zod.array(zod.string()),
 });
 export const WalletVouchersResponse = zod.array(WalletVouchersResponseItem);

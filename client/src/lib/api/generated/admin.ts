@@ -19,11 +19,180 @@ import type {
 	AdminMemberSearchResultDTO,
 	AdminSlotGetAllParams,
 	AdminSlotGetAllResponse,
+	AdminVoucherCreateRequest,
+	AdminVoucherDTO,
+	AdminVoucherIssueRequest,
 	BookingDTO,
 	ErrorResponse,
 	InternalErrorResponse,
 	PaginatedListOfAdminBookingDTO,
 } from "./api.schemas";
+
+export type adminVoucherIssueResponse200 = {
+	data: string;
+	status: 200;
+};
+
+export type adminVoucherIssueResponse401 = {
+	data: void;
+	status: 401;
+};
+
+export type adminVoucherIssueResponse403 = {
+	data: void;
+	status: 403;
+};
+
+export type adminVoucherIssueResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
+
+export type adminVoucherIssueResponseSuccess = adminVoucherIssueResponse200 & {
+	headers: Headers;
+};
+export type adminVoucherIssueResponseError = (adminVoucherIssueResponse401 | adminVoucherIssueResponse403 | adminVoucherIssueResponse500) & {
+	headers: Headers;
+};
+
+export type adminVoucherIssueResponse = adminVoucherIssueResponseSuccess | adminVoucherIssueResponseError;
+
+export const getAdminVoucherIssueUrl = (facilityId: number) => {
+	return `/admin/facility/${facilityId}/voucher/issue`;
+};
+
+export const adminVoucherIssue = async (
+	facilityId: number,
+	adminVoucherIssueRequest: AdminVoucherIssueRequest,
+	options?: RequestInit
+): Promise<adminVoucherIssueResponse> => {
+	const getHeaders = (h?: NonNullable<RequestInit["headers"]>): Record<string, string | readonly string[]> => {
+		if (!h) return {};
+		if (h instanceof Headers) return Object.fromEntries(h.entries());
+		if (Array.isArray(h)) return Object.fromEntries(h);
+		return h;
+	};
+	const res = await fetch(getAdminVoucherIssueUrl(facilityId), {
+		...options,
+		method: "POST",
+		headers: { "Content-Type": "application/json", ...getHeaders(options?.headers) },
+		body: JSON.stringify(adminVoucherIssueRequest),
+	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: adminVoucherIssueResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as adminVoucherIssueResponse;
+};
+
+export type adminVoucherGetAllResponse200 = {
+	data: AdminVoucherDTO[];
+	status: 200;
+};
+
+export type adminVoucherGetAllResponse401 = {
+	data: void;
+	status: 401;
+};
+
+export type adminVoucherGetAllResponse403 = {
+	data: void;
+	status: 403;
+};
+
+export type adminVoucherGetAllResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
+
+export type adminVoucherGetAllResponseSuccess = adminVoucherGetAllResponse200 & {
+	headers: Headers;
+};
+export type adminVoucherGetAllResponseError = (adminVoucherGetAllResponse401 | adminVoucherGetAllResponse403 | adminVoucherGetAllResponse500) & {
+	headers: Headers;
+};
+
+export type adminVoucherGetAllResponse = adminVoucherGetAllResponseSuccess | adminVoucherGetAllResponseError;
+
+export const getAdminVoucherGetAllUrl = (facilityId: number) => {
+	return `/admin/facility/${facilityId}/voucher`;
+};
+
+export const adminVoucherGetAll = async (facilityId: number, options?: RequestInit): Promise<adminVoucherGetAllResponse> => {
+	const res = await fetch(getAdminVoucherGetAllUrl(facilityId), {
+		...options,
+		method: "GET",
+	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: adminVoucherGetAllResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as adminVoucherGetAllResponse;
+};
+
+export type adminVoucherCreateResponse200 = {
+	data: AdminVoucherDTO;
+	status: 200;
+};
+
+export type adminVoucherCreateResponse400 = {
+	data: ErrorResponse;
+	status: 400;
+};
+
+export type adminVoucherCreateResponse401 = {
+	data: void;
+	status: 401;
+};
+
+export type adminVoucherCreateResponse403 = {
+	data: void;
+	status: 403;
+};
+
+export type adminVoucherCreateResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
+
+export type adminVoucherCreateResponseSuccess = adminVoucherCreateResponse200 & {
+	headers: Headers;
+};
+export type adminVoucherCreateResponseError = (
+	adminVoucherCreateResponse400 | adminVoucherCreateResponse401 | adminVoucherCreateResponse403 | adminVoucherCreateResponse500
+) & {
+	headers: Headers;
+};
+
+export type adminVoucherCreateResponse = adminVoucherCreateResponseSuccess | adminVoucherCreateResponseError;
+
+export const getAdminVoucherCreateUrl = (facilityId: number) => {
+	return `/admin/facility/${facilityId}/voucher`;
+};
+
+export const adminVoucherCreate = async (
+	facilityId: number,
+	adminVoucherCreateRequest: AdminVoucherCreateRequest,
+	options?: RequestInit
+): Promise<adminVoucherCreateResponse> => {
+	const getHeaders = (h?: NonNullable<RequestInit["headers"]>): Record<string, string | readonly string[]> => {
+		if (!h) return {};
+		if (h instanceof Headers) return Object.fromEntries(h.entries());
+		if (Array.isArray(h)) return Object.fromEntries(h);
+		return h;
+	};
+	const res = await fetch(getAdminVoucherCreateUrl(facilityId), {
+		...options,
+		method: "POST",
+		headers: { "Content-Type": "application/json", ...getHeaders(options?.headers) },
+		body: JSON.stringify(adminVoucherCreateRequest),
+	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: adminVoucherCreateResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as adminVoucherCreateResponse;
+};
 
 export type adminSlotGetAllResponse200 = {
 	data: AdminSlotGetAllResponse[];

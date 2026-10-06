@@ -16,8 +16,17 @@ import {
 	AdminContractUpdateBody,
 	AdminContractUpdateMemberBody,
 	AdminSlotGetAllQueryParams,
+	AdminVoucherCreateBody,
+	AdminVoucherIssueBody,
 } from "$lib/server/api/schemas/admin";
 
+export const adminVoucherIssue = command(z.object({ facilityId: z.number().int(), body: AdminVoucherIssueBody }), async ({ facilityId, body }) =>
+	api.adminVoucherIssue(facilityId, body)
+);
+export const adminVoucherGetAll = query(z.number().int(), async (facilityId) => api.adminVoucherGetAll(facilityId));
+export const adminVoucherCreate = command(z.object({ facilityId: z.number().int(), body: AdminVoucherCreateBody }), async ({ facilityId, body }) =>
+	api.adminVoucherCreate(facilityId, body)
+);
 export const adminSlotGetAll = query(z.object({ facilityId: z.number().int(), params: AdminSlotGetAllQueryParams }), async ({ facilityId, params }) =>
 	api.adminSlotGetAll(facilityId, params)
 );

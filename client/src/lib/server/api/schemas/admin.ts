@@ -6,6 +6,97 @@
  */
 import * as zod from "zod";
 
+export const AdminVoucherIssueParams = zod.object({
+	facilityId: zod.int(),
+});
+
+export const AdminVoucherIssueBody = zod.object({
+	walletId: zod.string(),
+	voucherId: zod.int(),
+	sourceUserContractId: zod.int().nullish(),
+	amount: zod.number(),
+	validFrom: zod.iso.datetime({ offset: true }),
+	expiryDate: zod.iso.datetime({ offset: true }),
+	reason: zod.string().nullish(),
+	reference: zod.string().nullish(),
+});
+
+export const AdminVoucherIssueResponse = zod.string();
+
+export const AdminVoucherGetAllParams = zod.object({
+	facilityId: zod.int(),
+});
+
+export const AdminVoucherGetAllResponseItem = zod.object({
+	id: zod.int(),
+	name: zod.string(),
+	description: zod.string(),
+	isExtra: zod.boolean(),
+	redemptionKind: zod.enum({
+		Entitlement: 1,
+		Credit: 2,
+		Discount: 3,
+	}),
+	discountMode: zod
+		.enum({
+			Percentage: 1,
+			FixedAmount: 2,
+		})
+		.nullish(),
+	discountValue: zod.number().nullish(),
+	maxDiscountAmount: zod.number().nullish(),
+});
+export const AdminVoucherGetAllResponse = zod.array(AdminVoucherGetAllResponseItem);
+
+export const AdminVoucherCreateParams = zod.object({
+	facilityId: zod.int(),
+});
+
+export const adminVoucherCreateBodyNameMin = 0;
+export const adminVoucherCreateBodyNameMax = 250;
+
+export const adminVoucherCreateBodyDescriptionMin = 0;
+export const adminVoucherCreateBodyDescriptionMax = 2000;
+
+export const AdminVoucherCreateBody = zod.object({
+	name: zod.string().min(adminVoucherCreateBodyNameMin).max(adminVoucherCreateBodyNameMax),
+	description: zod.string().min(adminVoucherCreateBodyDescriptionMin).max(adminVoucherCreateBodyDescriptionMax),
+	isExtra: zod.boolean(),
+	redemptionKind: zod.enum({
+		Entitlement: 1,
+		Credit: 2,
+		Discount: 3,
+	}),
+	discountMode: zod
+		.enum({
+			Percentage: 1,
+			FixedAmount: 2,
+		})
+		.nullish(),
+	discountValue: zod.number().nullish(),
+	maxDiscountAmount: zod.number().nullish(),
+});
+
+export const AdminVoucherCreateResponse = zod.object({
+	id: zod.int(),
+	name: zod.string(),
+	description: zod.string(),
+	isExtra: zod.boolean(),
+	redemptionKind: zod.enum({
+		Entitlement: 1,
+		Credit: 2,
+		Discount: 3,
+	}),
+	discountMode: zod
+		.enum({
+			Percentage: 1,
+			FixedAmount: 2,
+		})
+		.nullish(),
+	discountValue: zod.number().nullish(),
+	maxDiscountAmount: zod.number().nullish(),
+});
+
 export const AdminSlotGetAllParams = zod.object({
 	facilityId: zod.int(),
 });
