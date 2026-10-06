@@ -280,7 +280,7 @@ public class VoucherPaymentTests(AppFixture app)
             $"/admin/facility/{facilityId}/voucher/issue",
             new
             {
-                template.WalletId,
+                Recipient = template.Wallet.User.Email,
                 template.VoucherId,
                 SourceUserContractId = membership?.Id,
                 Amount = 2,
@@ -345,7 +345,7 @@ public class VoucherPaymentTests(AppFixture app)
             $"/admin/facility/{facilityId}/voucher/issue",
             new
             {
-                template.WalletId,
+                Recipient = template.Wallet.User.Email,
                 template.VoucherId,
                 SourceUserContractId = invalid == "contract" ? int.MaxValue : (int?)null,
                 Amount = 2,

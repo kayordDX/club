@@ -50,7 +50,7 @@ export const AdminVoucherIssueParams = zod.object({
 });
 
 export const AdminVoucherIssueBody = zod.object({
-	walletId: zod.string(),
+	recipient: zod.string(),
 	voucherId: zod.int(),
 	sourceUserContractId: zod.int().nullish(),
 	amount: zod.number(),

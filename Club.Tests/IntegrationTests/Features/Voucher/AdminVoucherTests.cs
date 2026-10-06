@@ -243,7 +243,7 @@ public class AdminVoucherTests(AppFixture app)
         link.FacilityId.ShouldBe(facilityId);
     }
 
-    private static async Task AssignManagerRole(AppDbContext db, int facilityId)
+    internal static async Task AssignManagerRole(AppDbContext db, int facilityId)
     {
         const string normalizedName = "MANAGER";
         var role = await db.Roles.FirstOrDefaultAsync(x => x.NormalizedName == normalizedName);
@@ -268,7 +268,7 @@ public class AdminVoucherTests(AppFixture app)
         }
     }
 
-    private static async Task<int> CreateFacility(AppDbContext db)
+    internal static async Task<int> CreateFacility(AppDbContext db)
     {
         var business = new Business { Name = $"Business_{Guid.NewGuid()}" };
         db.Business.Add(business);

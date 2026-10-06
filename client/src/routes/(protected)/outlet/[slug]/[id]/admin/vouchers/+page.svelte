@@ -7,15 +7,17 @@
 	import { Alert, AlertDialog, Badge, Button, Dialog, DropdownMenu, Input } from "@kayord/ui";
 	import { EllipsisVerticalIcon, PencilIcon, PlusIcon, SearchIcon, TicketIcon, Trash2Icon } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
-	import { VoucherDiscountMode, VoucherRedemptionKind, type AdminVoucherCreateRequest, type AdminVoucherDTO } from "$lib/api";
-	import { adminVoucherCreate, adminVoucherDelete, adminVoucherGetAll, adminVoucherUpdate } from "$lib/api/remote/admin.remote";
+	import { VoucherDiscountMode, VoucherRedemptionKind, type AdminVoucherCreateRequest, type AdminVoucherDTO, type AdminVoucherIssueRequest } from "$lib/api";
+	import { adminVoucherCreate, adminVoucherDelete, adminVoucherGetAll, adminVoucherIssue, adminVoucherUpdate } from "$lib/api/remote/admin.remote";
 	import AdminVoucherForm from "$lib/components/admin-voucher-form.svelte";
+	import AdminVoucherSend from "$lib/components/admin-voucher-send.svelte";
 	import PageHeading from "$lib/components/PageHeading.svelte";
 	import { formatCurrency } from "$lib/booking/format";
 
 	const facilityId = $derived(Number(page.params.id) || 0);
 	const queryClient = useQueryClient();
 	let openVoucherDialog = $state(false);
+	let sendTarget = $state.raw<AdminVoucherDTO | undefined>();
 	let editing = $state.raw<AdminVoucherDTO | undefined>();
 	let deleteTarget = $state.raw<AdminVoucherDTO | undefined>();
 	let deleteError = $state("");
@@ -49,6 +51,14 @@
 			controlledState.pagination.pageIndex = 0;
 			toast.success("Voucher updated");
 			void queryClient.invalidateQueries({ queryKey: ["admin-vouchers", variables.facilityId] });
+		},
+	}));
+	const issueVoucher = createMutation(() => ({
+		mutationFn: (body: AdminVoucherIssueRequest) => adminVoucherIssue({ facilityId, body }),
+		onSuccess: () => {
+			sendTarget = undefined;
+			toast.success("Voucher sent");
+			void queryClient.invalidateQueries({ queryKey: ["admin-vouchers", facilityId] });
 		},
 	}));
 	const deleteVoucher = createMutation(() => ({
@@ -146,6 +156,7 @@
 		</DropdownMenu.Trigger>
 		<DropdownMenu.Content>
 			<DropdownMenu.Item onclick={() => openEdit(voucher)}><PencilIcon class="size-4" />Edit</DropdownMenu.Item>
+			<DropdownMenu.Item onclick={() => (sendTarget = voucher)}>Send voucher</DropdownMenu.Item>
 			<DropdownMenu.Item disabled={voucher.isInUse} onclick={() => openDelete(voucher)}><Trash2Icon class="size-4" />Delete</DropdownMenu.Item>
 		</DropdownMenu.Content>
 	</DropdownMenu.Root>
@@ -200,6 +211,22 @@
 				<AdminVoucherForm voucher={editing} onsave={saveVoucher} oncancel={() => (openVoucherDialog = false)} />
 			{/key}
 		{/if}
+	</Dialog.Content>
+</Dialog.Root>
+
+<Dialog.Root open={sendTarget !== undefined} onOpenChange={(open) => !open && !issueVoucher.isPending && (sendTarget = undefined)}>
+	<Dialog.Content class="sm:max-w-lg" showCloseButton={!issueVoucher.isPending}>
+		<Dialog.Header
+			><Dialog.Title>Send voucher</Dialog.Title><Dialog.Description>Send {sendTarget?.name} to an email address or phone number.</Dialog.Description
+			></Dialog.Header
+		>
+		{#if sendTarget}<AdminVoucherSend
+				voucher={sendTarget}
+				onsend={async (body) => {
+					await issueVoucher.mutateAsync(body);
+				}}
+				oncancel={() => (sendTarget = undefined)}
+			/>{/if}
 	</Dialog.Content>
 </Dialog.Root>
 

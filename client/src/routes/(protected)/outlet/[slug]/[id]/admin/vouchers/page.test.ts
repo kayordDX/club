@@ -14,6 +14,7 @@ vi.mock("$lib/api/remote/admin.remote", () => ({
 	adminVoucherCreate: vi.fn(),
 	adminVoucherUpdate: vi.fn(),
 	adminVoucherDelete: vi.fn(),
+	adminVoucherIssue: vi.fn(),
 }));
 vi.mock("@tanstack/svelte-query", () => ({
 	createQuery: vi.fn((options: () => unknown) => {

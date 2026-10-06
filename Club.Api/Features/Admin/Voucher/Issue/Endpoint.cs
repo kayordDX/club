@@ -23,6 +23,12 @@ public class Endpoint(AppDbContext db) : Endpoint<AdminVoucherIssueRequest, Guid
             await Send.UnauthorizedAsync(ct);
             return;
         }
+        if (string.IsNullOrWhiteSpace(req.Recipient) || req.Recipient.Length > 320)
+        {
+            AddError("Enter the recipient's full email address or phone number.");
+            await Send.ErrorsAsync(400, ct);
+            return;
+        }
         if (
             req.Amount <= 0
             || req.ValidFrom.Kind != DateTimeKind.Utc
@@ -38,7 +44,6 @@ public class Endpoint(AppDbContext db) : Endpoint<AdminVoucherIssueRequest, Guid
             return;
         }
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
-        var wallet = await db.Wallet.Include(x => x.User).FirstOrDefaultAsync(x => x.Id == req.WalletId && x.IsActive && x.Currency == "ZAR", ct);
         // Serialize issuance with benefit updates and voucher deletion.
         var voucher = await db.Voucher.FromSqlInterpolated($"SELECT * FROM voucher WHERE id = {req.VoucherId} FOR UPDATE").FirstOrDefaultAsync(ct);
         if (
@@ -49,7 +54,7 @@ public class Endpoint(AppDbContext db) : Endpoint<AdminVoucherIssueRequest, Guid
             )
         )
             voucher = null;
-        if (wallet is null || voucher is null)
+        if (voucher is null)
         {
             await Send.NotFoundAsync(ct);
             return;
@@ -63,12 +68,42 @@ public class Endpoint(AppDbContext db) : Endpoint<AdminVoucherIssueRequest, Guid
             await Send.ErrorsAsync(400, ct);
             return;
         }
+        var recipient = req.Recipient.Trim();
+        // Lock the recipient so concurrent sends cannot create two wallets for the same user.
+        var users = await db
+            .Users.FromSqlInterpolated($"SELECT * FROM \"user\" WHERE lower(email) = {recipient.ToLowerInvariant()} OR phone_number = {recipient} FOR UPDATE")
+            .Take(2)
+            .ToListAsync(ct);
+        if (users.Count != 1)
+        {
+            AddError(
+                users.Count == 0
+                    ? "No user found with that email address or phone number."
+                    : "More than one user matches. Use a unique email address or phone number."
+            );
+            await Send.ErrorsAsync(400, ct);
+            return;
+        }
+        var user = users[0];
+        var wallet = await db.Wallet.SingleOrDefaultAsync(x => x.UserId == user.Id, ct);
+        if (wallet is not null && (!wallet.IsActive || wallet.Currency != "ZAR"))
+        {
+            AddError("The recipient's wallet must be active and use ZAR.");
+            await Send.ErrorsAsync(400, ct);
+            return;
+        }
+        wallet ??= new Club.Entities.Wallet
+        {
+            Id = Guid.NewGuid(),
+            User = user,
+            Currency = "ZAR",
+        };
         if (
             req.SourceUserContractId.HasValue
             && !await db.UserContract.AnyAsync(
                 x =>
                     x.Id == req.SourceUserContractId
-                    && x.UserId == wallet.UserId
+                    && x.UserId == user.Id
                     && x.IsActive
                     && x.StartDate <= DateTime.UtcNow
                     && (!x.EndDate.HasValue || x.EndDate > DateTime.UtcNow)
@@ -107,7 +142,7 @@ public class Endpoint(AppDbContext db) : Endpoint<AdminVoucherIssueRequest, Guid
                 Reference = req.Reference,
             }
         );
-        // EF commits both inserts in one transaction, including failures of either insert.
+        // Create any new wallet, grant and audit together.
         await db.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
         await Send.OkAsync(grant.Id, ct);
