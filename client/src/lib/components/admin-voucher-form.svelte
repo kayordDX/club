@@ -9,7 +9,6 @@
 	let pending = $state(false);
 	const redemptionKinds = [
 		{ value: VoucherRedemptionKind.Entitlement, label: "Entitlement" },
-		{ value: VoucherRedemptionKind.Credit, label: "Credit" },
 		{ value: VoucherRedemptionKind.Discount, label: "Discount" },
 	];
 	const discountModes = [

@@ -21,6 +21,14 @@ it("submits the defaults and allows targeting rounds as extras", async () => {
 	});
 });
 
+it("only offers entitlement and discount vouchers", async () => {
+	render(AdminVoucherForm, { onsave: vi.fn(), oncancel: vi.fn() });
+	await page.getByLabelText("Redemption kind").click();
+	await expect.element(page.getByRole("option", { name: "Entitlement", exact: true })).toBeVisible();
+	await expect.element(page.getByRole("option", { name: "Discount", exact: true })).toBeVisible();
+	await expect.element(page.getByRole("option", { name: "Credit", exact: true })).not.toBeInTheDocument();
+});
+
 it("validates discount inputs and clears stale discount values for other kinds", async () => {
 	const onsave = vi.fn().mockResolvedValue(undefined);
 	render(AdminVoucherForm, { onsave, oncancel: vi.fn() });
@@ -58,10 +66,12 @@ it("validates discount inputs and clears stale discount values for other kinds",
 	await page.getByRole("button", { name: "Save voucher" }).click();
 	expect(onsave).toHaveBeenLastCalledWith(expect.objectContaining({ discountMode: VoucherDiscountMode.FixedAmount, discountValue: 25 }));
 	await page.getByLabelText("Redemption kind").click();
-	await page.getByRole("option", { name: "Credit", exact: true }).click();
+	await page.getByRole("option", { name: "Entitlement", exact: true }).click();
 	await expect.element(page.getByLabelText("Discount mode")).not.toBeInTheDocument();
 	await page.getByRole("button", { name: "Save voucher" }).click();
-	expect(onsave).toHaveBeenLastCalledWith(expect.objectContaining({ discountMode: null, discountValue: null, maxDiscountAmount: null }));
+	expect(onsave).toHaveBeenLastCalledWith(
+		expect.objectContaining({ redemptionKind: VoucherRedemptionKind.Entitlement, discountMode: null, discountValue: null, maxDiscountAmount: null })
+	);
 });
 
 it("disables controls during save and preserves entered data for retry after failure", async () => {
