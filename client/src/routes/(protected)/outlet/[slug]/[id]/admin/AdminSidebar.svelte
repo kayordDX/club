@@ -17,6 +17,7 @@
 	const facilityAdminHref = $derived(resolve(`/outlet/${slug}/${id}/admin/facility`));
 	const facilityRulesHref = $derived(resolve(`/outlet/${slug}/${id}/admin/facility/rules`));
 	const facilityContractsHref = $derived(resolve(`/outlet/${slug}/${id}/admin/contracts`));
+	const facilityVouchersHref = $derived(resolve(`/outlet/${slug}/${id}/admin/vouchers`));
 
 	const within = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
@@ -27,7 +28,7 @@
 		if (within(outletHref)) outletOpen = true;
 	});
 	$effect(() => {
-		if (within(facilityAdminHref) || within(facilityContractsHref)) facilityOpen = true;
+		if (within(facilityAdminHref) || within(facilityContractsHref) || within(facilityVouchersHref)) facilityOpen = true;
 	});
 </script>
 
@@ -120,6 +121,15 @@
 										{#snippet child({ props })}
 											<a href={facilityContractsHref} {...props}>
 												<span>Contracts</span>
+											</a>
+										{/snippet}
+									</Sidebar.MenuSubButton>
+								</Sidebar.MenuSubItem>
+								<Sidebar.MenuSubItem>
+									<Sidebar.MenuSubButton isActive={within(facilityVouchersHref)}>
+										{#snippet child({ props })}
+											<a href={facilityVouchersHref} {...props}>
+												<span>Vouchers</span>
 											</a>
 										{/snippet}
 									</Sidebar.MenuSubButton>

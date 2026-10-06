@@ -18,6 +18,44 @@ export interface InternalErrorResponse {
 	note: string;
 }
 
+export type VoucherRedemptionKind = (typeof VoucherRedemptionKind)[keyof typeof VoucherRedemptionKind];
+
+export const VoucherRedemptionKind = {
+	Entitlement: 1,
+	Credit: 2,
+	Discount: 3,
+} as const;
+
+export type VoucherDiscountMode = (typeof VoucherDiscountMode)[keyof typeof VoucherDiscountMode];
+
+export const VoucherDiscountMode = {
+	Percentage: 1,
+	FixedAmount: 2,
+} as const;
+
+export interface WalletVoucherDTO {
+	grantId: string;
+	voucherId: number;
+	name: string;
+	description: string;
+	facilityNames: string[];
+	gameTypes: string[];
+	extraNames: string[];
+	isExtra: boolean;
+	redemptionKind: VoucherRedemptionKind;
+	discountMode?: VoucherDiscountMode | null;
+	/** @nullable */
+	discountValue?: number | null;
+	/** @nullable */
+	maxDiscountAmount?: number | null;
+	amountGranted: number;
+	amountRemaining: number;
+	grantedAt: string;
+	expiryDate: string;
+	currency: string;
+	isWalletActive: boolean;
+}
+
 export interface TestResponse {
 	success: boolean;
 	/** @nullable */
@@ -77,21 +115,6 @@ export interface AvailableSlotRequest {
 	/** @nullable */
 	slotCount?: number | null;
 }
-
-export type VoucherRedemptionKind = (typeof VoucherRedemptionKind)[keyof typeof VoucherRedemptionKind];
-
-export const VoucherRedemptionKind = {
-	Entitlement: 1,
-	Credit: 2,
-	Discount: 3,
-} as const;
-
-export type VoucherDiscountMode = (typeof VoucherDiscountMode)[keyof typeof VoucherDiscountMode];
-
-export const VoucherDiscountMode = {
-	Percentage: 1,
-	FixedAmount: 2,
-} as const;
 
 export interface VoucherTargetDTO {
 	/** @nullable */
@@ -356,6 +379,46 @@ export interface BookingStatus {
 	name: string;
 }
 
+export interface UserContract {
+	created: string;
+	/** @nullable */
+	createdBy?: string | null;
+	/** @nullable */
+	lastModified?: string | null;
+	/** @nullable */
+	lastModifiedBy?: string | null;
+	id: number;
+	contractId: number;
+	contract: Contract;
+	startDate: string;
+	/** @nullable */
+	endDate?: string | null;
+	price: number;
+	isActive: boolean;
+	userId: string;
+	user: User;
+}
+
+export interface Role {
+	id: string;
+	/** @nullable */
+	name?: string | null;
+	/** @nullable */
+	normalizedName?: string | null;
+	/** @nullable */
+	concurrencyStamp?: string | null;
+}
+
+export interface UserRole {
+	userId: string;
+	roleId: string;
+	id: number;
+	/** @nullable */
+	facilityId?: number | null;
+	facility?: Facility | null;
+	role: Role;
+}
+
 export interface WalletBalance {
 	walletId: string;
 	wallet: Wallet;
@@ -386,17 +449,6 @@ export interface WalletTransaction {
 	referenceId: string;
 }
 
-export interface Wallet {
-	id: string;
-	userId: string;
-	user: User;
-	isActive: boolean;
-	currency: string;
-	balance?: WalletBalance | null;
-	transactions: WalletTransaction[];
-	voucherGrants: WalletVoucherGrant[];
-}
-
 export interface Voucher {
 	id: number;
 	name: string;
@@ -414,8 +466,6 @@ export interface WalletVoucherGrant {
 	id: string;
 	walletId: string;
 	wallet: Wallet;
-	userContractId: number;
-	userContract: UserContract;
 	voucherId: number;
 	voucher: Voucher;
 	amountGranted: number;
@@ -424,45 +474,15 @@ export interface WalletVoucherGrant {
 	expiryDate: string;
 }
 
-export interface UserContract {
-	created: string;
-	/** @nullable */
-	createdBy?: string | null;
-	/** @nullable */
-	lastModified?: string | null;
-	/** @nullable */
-	lastModifiedBy?: string | null;
-	id: number;
-	contractId: number;
-	contract: Contract;
-	startDate: string;
-	/** @nullable */
-	endDate?: string | null;
-	price: number;
-	isActive: boolean;
+export interface Wallet {
+	id: string;
 	userId: string;
 	user: User;
+	isActive: boolean;
+	currency: string;
+	balance?: WalletBalance | null;
+	transactions: WalletTransaction[];
 	voucherGrants: WalletVoucherGrant[];
-}
-
-export interface Role {
-	id: string;
-	/** @nullable */
-	name?: string | null;
-	/** @nullable */
-	normalizedName?: string | null;
-	/** @nullable */
-	concurrencyStamp?: string | null;
-}
-
-export interface UserRole {
-	userId: string;
-	roleId: string;
-	id: number;
-	/** @nullable */
-	facilityId?: number | null;
-	facility?: Facility | null;
-	role: Role;
 }
 
 export interface User {
@@ -923,6 +943,74 @@ export interface BookingCreateRequest {
 	extras: BookingExtraRequest[];
 }
 
+export interface AdminVoucherUpdateRequest {
+	/**
+	 * @minLength 0
+	 * @maxLength 250
+	 */
+	name: string;
+	/**
+	 * @minLength 0
+	 * @maxLength 2000
+	 */
+	description: string;
+	isExtra: boolean;
+	redemptionKind: VoucherRedemptionKind;
+	discountMode?: VoucherDiscountMode | null;
+	/** @nullable */
+	discountValue?: number | null;
+	/** @nullable */
+	maxDiscountAmount?: number | null;
+}
+
+export interface AdminVoucherIssueRequest {
+	walletId: string;
+	voucherId: number;
+	/** @nullable */
+	sourceUserContractId?: number | null;
+	amount: number;
+	validFrom: string;
+	expiryDate: string;
+	/** @nullable */
+	reason?: string | null;
+	/** @nullable */
+	reference?: string | null;
+}
+
+export interface AdminVoucherDTO {
+	id: number;
+	name: string;
+	description: string;
+	isExtra: boolean;
+	redemptionKind: VoucherRedemptionKind;
+	discountMode?: VoucherDiscountMode | null;
+	/** @nullable */
+	discountValue?: number | null;
+	/** @nullable */
+	maxDiscountAmount?: number | null;
+	isInUse: boolean;
+}
+
+export interface AdminVoucherCreateRequest {
+	/**
+	 * @minLength 0
+	 * @maxLength 250
+	 */
+	name: string;
+	/**
+	 * @minLength 0
+	 * @maxLength 2000
+	 */
+	description: string;
+	isExtra: boolean;
+	redemptionKind: VoucherRedemptionKind;
+	discountMode?: VoucherDiscountMode | null;
+	/** @nullable */
+	discountValue?: number | null;
+	/** @nullable */
+	maxDiscountAmount?: number | null;
+}
+
 export interface AdminSlotBookingDTO {
 	bookingId: number;
 	/** @nullable */
@@ -1116,29 +1204,6 @@ export interface AccountCredentialResponse {
 
 export interface CredentialDisableRequest {
 	token: string;
-}
-
-export interface WalletVoucherDTO {
-	grantId: string;
-	voucherId: number;
-	name: string;
-	description: string;
-	isExtra: boolean;
-	redemptionKind: VoucherRedemptionKind;
-	discountMode?: VoucherDiscountMode | null;
-	/** @nullable */
-	discountValue?: number | null;
-	/** @nullable */
-	maxDiscountAmount?: number | null;
-	amountGranted: number;
-	amountRemaining: number;
-	grantedAt: string;
-	expiryDate: string;
-	currency: string;
-	isWalletActive: boolean;
-	facilityNames: string[];
-	gameTypes: string[];
-	extraNames: string[];
 }
 
 export type TestParams = {

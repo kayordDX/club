@@ -19,11 +19,107 @@ import type {
 	AdminMemberSearchResultDTO,
 	AdminSlotGetAllParams,
 	AdminSlotGetAllResponse,
+	AdminVoucherCreateRequest,
+	AdminVoucherDTO,
+	AdminVoucherIssueRequest,
+	AdminVoucherUpdateRequest,
 	BookingDTO,
 	PaginatedListOfAdminBookingDTO,
 } from "./server.schemas";
 
 import { customServerInstance } from "../client";
+
+export const getAdminVoucherUpdateUrl = (facilityId: number, id: number) => {
+	return `/admin/facility/${facilityId}/voucher/${id}`;
+};
+
+export const adminVoucherUpdate = async (
+	facilityId: number,
+	id: number,
+	adminVoucherUpdateRequest: AdminVoucherUpdateRequest,
+	options?: Parameters<typeof customServerInstance>[1]
+): Promise<void> => {
+	const getHeaders = (h?: NonNullable<RequestInit["headers"]>): Record<string, string | readonly string[]> => {
+		if (!h) return {};
+		if (h instanceof Headers) return Object.fromEntries(h.entries());
+		if (Array.isArray(h)) return Object.fromEntries(h);
+		return h;
+	};
+	return customServerInstance<void>(getAdminVoucherUpdateUrl(facilityId, id), {
+		...options,
+		method: "PUT",
+		headers: { "Content-Type": "application/json", ...getHeaders(options?.headers) },
+		body: JSON.stringify(adminVoucherUpdateRequest),
+	});
+};
+
+export const getAdminVoucherDeleteUrl = (facilityId: number, id: number) => {
+	return `/admin/facility/${facilityId}/voucher/${id}`;
+};
+
+export const adminVoucherDelete = async (facilityId: number, id: number, options?: Parameters<typeof customServerInstance>[1]): Promise<void> => {
+	return customServerInstance<void>(getAdminVoucherDeleteUrl(facilityId, id), {
+		...options,
+		method: "DELETE",
+	});
+};
+
+export const getAdminVoucherIssueUrl = (facilityId: number) => {
+	return `/admin/facility/${facilityId}/voucher/issue`;
+};
+
+export const adminVoucherIssue = async (
+	facilityId: number,
+	adminVoucherIssueRequest: AdminVoucherIssueRequest,
+	options?: Parameters<typeof customServerInstance>[1]
+): Promise<string> => {
+	const getHeaders = (h?: NonNullable<RequestInit["headers"]>): Record<string, string | readonly string[]> => {
+		if (!h) return {};
+		if (h instanceof Headers) return Object.fromEntries(h.entries());
+		if (Array.isArray(h)) return Object.fromEntries(h);
+		return h;
+	};
+	return customServerInstance<string>(getAdminVoucherIssueUrl(facilityId), {
+		...options,
+		method: "POST",
+		headers: { "Content-Type": "application/json", ...getHeaders(options?.headers) },
+		body: JSON.stringify(adminVoucherIssueRequest),
+	});
+};
+
+export const getAdminVoucherGetAllUrl = (facilityId: number) => {
+	return `/admin/facility/${facilityId}/voucher`;
+};
+
+export const adminVoucherGetAll = async (facilityId: number, options?: Parameters<typeof customServerInstance>[1]): Promise<AdminVoucherDTO[]> => {
+	return customServerInstance<AdminVoucherDTO[]>(getAdminVoucherGetAllUrl(facilityId), {
+		...options,
+		method: "GET",
+	});
+};
+
+export const getAdminVoucherCreateUrl = (facilityId: number) => {
+	return `/admin/facility/${facilityId}/voucher`;
+};
+
+export const adminVoucherCreate = async (
+	facilityId: number,
+	adminVoucherCreateRequest: AdminVoucherCreateRequest,
+	options?: Parameters<typeof customServerInstance>[1]
+): Promise<AdminVoucherDTO> => {
+	const getHeaders = (h?: NonNullable<RequestInit["headers"]>): Record<string, string | readonly string[]> => {
+		if (!h) return {};
+		if (h instanceof Headers) return Object.fromEntries(h.entries());
+		if (Array.isArray(h)) return Object.fromEntries(h);
+		return h;
+	};
+	return customServerInstance<AdminVoucherDTO>(getAdminVoucherCreateUrl(facilityId), {
+		...options,
+		method: "POST",
+		headers: { "Content-Type": "application/json", ...getHeaders(options?.headers) },
+		body: JSON.stringify(adminVoucherCreateRequest),
+	});
+};
 
 export const getAdminSlotGetAllUrl = (facilityId: number, params: AdminSlotGetAllParams) => {
 	const normalizedParams = new URLSearchParams();

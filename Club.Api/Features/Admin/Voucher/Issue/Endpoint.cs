@@ -37,15 +37,18 @@ public class Endpoint(AppDbContext db) : Endpoint<AdminVoucherIssueRequest, Guid
             await Send.ErrorsAsync(400, ct);
             return;
         }
+        await using var transaction = await db.Database.BeginTransactionAsync(ct);
         var wallet = await db.Wallet.Include(x => x.User).FirstOrDefaultAsync(x => x.Id == req.WalletId && x.IsActive && x.Currency == "ZAR", ct);
-        // A facility manager cannot issue a voucher that also grants value at other facilities.
-        var voucher = await db.Voucher.FirstOrDefaultAsync(
-            x =>
-                x.Id == req.VoucherId
-                && db.VoucherFacility.Any(f => f.VoucherId == x.Id && f.FacilityId == req.FacilityId)
-                && !db.VoucherFacility.Any(f => f.VoucherId == x.Id && f.FacilityId != req.FacilityId),
-            ct
-        );
+        // Serialize issuance with benefit updates and voucher deletion.
+        var voucher = await db.Voucher.FromSqlInterpolated($"SELECT * FROM voucher WHERE id = {req.VoucherId} FOR UPDATE").FirstOrDefaultAsync(ct);
+        if (
+            voucher is not null
+            && (
+                !await db.VoucherFacility.AnyAsync(f => f.VoucherId == voucher.Id && f.FacilityId == req.FacilityId, ct)
+                || await db.VoucherFacility.AnyAsync(f => f.VoucherId == voucher.Id && f.FacilityId != req.FacilityId, ct)
+            )
+        )
+            voucher = null;
         if (wallet is null || voucher is null)
         {
             await Send.NotFoundAsync(ct);
@@ -106,6 +109,7 @@ public class Endpoint(AppDbContext db) : Endpoint<AdminVoucherIssueRequest, Guid
         );
         // EF commits both inserts in one transaction, including failures of either insert.
         await db.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
         await Send.OkAsync(grant.Id, ct);
     }
 }
