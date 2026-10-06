@@ -94,7 +94,7 @@
 	const data = $derived(vouchers.data ?? []);
 	const columns: ColumnDef<DataTableFeatures, AdminVoucherDTO>[] = [
 		{ header: "Name", accessorKey: "name" },
-		{ header: "Description", accessorKey: "description" },
+		{ header: "Description", accessorKey: "description", maxSize: 140, meta: { className: "overflow-hidden text-ellipsis" } },
 		{ header: "Type", id: "kind", accessorFn: (voucher) => kindLabels[voucher.redemptionKind] },
 		{ header: "Applies to", id: "target", accessorFn: (voucher) => (voucher.isExtra ? "Extras only" : "Rounds only") },
 		{
