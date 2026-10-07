@@ -26,16 +26,21 @@ public class VoucherPaymentTests(AppFixture app)
         var (booking, grant) = await SetupAsync(db, kind, mode, value, cap);
         var response = await app.Client.PostAsJsonAsync("/payment/voucher", Request(booking, grant), app.Context.CancellationToken);
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        var result = (await response.Content.ReadFromJsonAsync<PaymentVoucherResponse>())!;
+        var result = (await response.Content.ReadFromJsonAsync<PaymentVoucherResponse>(cancellationToken: TestContext.Current.CancellationToken))!;
         result.Amount.ShouldBe((decimal)expected);
         result.AmountOutstanding.ShouldBe(200m - expected);
         result.AmountPaid.ShouldBe((decimal)expected);
         result.IsPaid.ShouldBeFalse();
         result.PaymentStatusId.ShouldBe((int)PaymentStatusEnum.Partial);
-        var ledger = await db.PaymentVoucher.AsNoTracking().Include(x => x.Payment).SingleAsync(x => x.Payment.TransactionId == result.TransactionId);
+        var ledger = await db
+            .PaymentVoucher.AsNoTracking()
+            .Include(x => x.Payment)
+            .SingleAsync(x => x.Payment.TransactionId == result.TransactionId, cancellationToken: TestContext.Current.CancellationToken);
         ledger.WalletVoucherGrantId.ShouldBe(grant.Id);
         ledger.Payment.PaymentTypeId.ShouldBe((int)PaymentTypeEnum.Voucher);
-        var remaining = (await db.WalletVoucherGrant.AsNoTracking().SingleAsync(x => x.Id == grant.Id)).AmountRemaining;
+        var remaining = (
+            await db.WalletVoucherGrant.AsNoTracking().SingleAsync(x => x.Id == grant.Id, cancellationToken: TestContext.Current.CancellationToken)
+        ).AmountRemaining;
         remaining.ShouldBe(kind == VoucherRedemptionKind.Credit ? 0m : 1m);
     }
 
@@ -46,19 +51,32 @@ public class VoucherPaymentTests(AppFixture app)
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var (booking, grant) = await SetupAsync(db);
         var request = Request(booking, grant);
-        (await app.Client.PostAsJsonAsync("/payment/voucher", request)).StatusCode.ShouldBe(HttpStatusCode.OK);
-        (await app.Client.PostAsJsonAsync("/payment/voucher", request)).StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        await db.Booking.Where(x => x.Id == booking.Id).ExecuteUpdateAsync(x => x.SetProperty(b => b.ExpiresAt, DateTime.UtcNow.AddMinutes(-1)));
+        (await app.Client.PostAsJsonAsync("/payment/voucher", request, cancellationToken: TestContext.Current.CancellationToken)).StatusCode.ShouldBe(
+            HttpStatusCode.OK
+        );
+        (await app.Client.PostAsJsonAsync("/payment/voucher", request, cancellationToken: TestContext.Current.CancellationToken)).StatusCode.ShouldBe(
+            HttpStatusCode.BadRequest
+        );
+        await db
+            .Booking.Where(x => x.Id == booking.Id)
+            .ExecuteUpdateAsync(x => x.SetProperty(b => b.ExpiresAt, DateTime.UtcNow.AddMinutes(-1)), cancellationToken: TestContext.Current.CancellationToken);
         request.SlotContractBookingId = booking.SlotContractBookings.Last().Id;
-        (await app.Client.PostAsJsonAsync("/payment/voucher", request)).StatusCode.ShouldBe(HttpStatusCode.OK);
-        var after = await db.Booking.AsNoTracking().SingleAsync(x => x.Id == booking.Id);
+        (await app.Client.PostAsJsonAsync("/payment/voucher", request, cancellationToken: TestContext.Current.CancellationToken)).StatusCode.ShouldBe(
+            HttpStatusCode.OK
+        );
+        var after = await db.Booking.AsNoTracking().SingleAsync(x => x.Id == booking.Id, cancellationToken: TestContext.Current.CancellationToken);
         after.AmountPaid.ShouldBe(200m);
         after.AmountOutstanding.ShouldBe(0m);
         after.IsPaid.ShouldBeTrue();
-        var statuses = await db.PaymentBooking.Where(x => x.BookingId == booking.Id).Select(x => x.Payment.PaymentStatusId).ToListAsync();
+        var statuses = await db
+            .PaymentBooking.Where(x => x.BookingId == booking.Id)
+            .Select(x => x.Payment.PaymentStatusId)
+            .ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
         statuses.Count.ShouldBe(2);
         statuses.ShouldAllBe(x => x == (int)PaymentStatusEnum.Completed);
-        (await app.Client.PostAsJsonAsync("/payment/voucher", request)).StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        (await app.Client.PostAsJsonAsync("/payment/voucher", request, cancellationToken: TestContext.Current.CancellationToken)).StatusCode.ShouldBe(
+            HttpStatusCode.BadRequest
+        );
     }
 
     [Fact]
@@ -68,13 +86,17 @@ public class VoucherPaymentTests(AppFixture app)
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var (booking, grant) = await SetupAsync(db);
         var responses = await Task.WhenAll(
-            app.Client.PostAsJsonAsync("/payment/voucher", Request(booking, grant)),
-            app.Client.PostAsJsonAsync("/payment/voucher", Request(booking, grant))
+            app.Client.PostAsJsonAsync("/payment/voucher", Request(booking, grant), TestContext.Current.CancellationToken),
+            app.Client.PostAsJsonAsync("/payment/voucher", Request(booking, grant), TestContext.Current.CancellationToken)
         );
         responses.Count(x => x.StatusCode == HttpStatusCode.OK).ShouldBe(1);
         responses.Count(x => x.StatusCode == HttpStatusCode.BadRequest).ShouldBe(1);
-        (await db.Booking.AsNoTracking().SingleAsync(x => x.Id == booking.Id)).AmountPaid.ShouldBe(100m);
-        (await db.WalletVoucherGrant.AsNoTracking().SingleAsync(x => x.Id == grant.Id)).AmountRemaining.ShouldBe(1m);
+        (await db.Booking.AsNoTracking().SingleAsync(x => x.Id == booking.Id, cancellationToken: TestContext.Current.CancellationToken)).AmountPaid.ShouldBe(
+            100m
+        );
+        (
+            await db.WalletVoucherGrant.AsNoTracking().SingleAsync(x => x.Id == grant.Id, cancellationToken: TestContext.Current.CancellationToken)
+        ).AmountRemaining.ShouldBe(1m);
     }
 
     [Theory]
@@ -135,17 +157,23 @@ public class VoucherPaymentTests(AppFixture app)
                 booking.UserId = null;
                 break;
             case "facility":
-                db.VoucherFacility.RemoveRange(await db.VoucherFacility.Where(x => x.VoucherId == grant.VoucherId).ToListAsync());
+                db.VoucherFacility.RemoveRange(
+                    await db.VoucherFacility.Where(x => x.VoucherId == grant.VoucherId).ToListAsync(cancellationToken: TestContext.Current.CancellationToken)
+                );
                 break;
             case "booking-expired":
                 booking.ExpiresAt = DateTime.UtcNow.AddMinutes(-1);
                 break;
         }
-        await db.SaveChangesAsync();
-        var response = await app.Client.PostAsJsonAsync("/payment/voucher", Request(booking, grant));
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+        var response = await app.Client.PostAsJsonAsync("/payment/voucher", Request(booking, grant), cancellationToken: TestContext.Current.CancellationToken);
         response.StatusCode.ShouldBe(invalid is "owner" or "wallet-owner" ? HttpStatusCode.NotFound : HttpStatusCode.BadRequest);
-        (await db.WalletVoucherGrant.AsNoTracking().SingleAsync(x => x.Id == grant.Id)).AmountRemaining.ShouldBe(invalid == "exhausted" ? 0m : 2m);
-        (await db.Booking.AsNoTracking().SingleAsync(x => x.Id == booking.Id)).AmountPaid.ShouldBe(0m);
+        (
+            await db.WalletVoucherGrant.AsNoTracking().SingleAsync(x => x.Id == grant.Id, cancellationToken: TestContext.Current.CancellationToken)
+        ).AmountRemaining.ShouldBe(invalid == "exhausted" ? 0m : 2m);
+        (await db.Booking.AsNoTracking().SingleAsync(x => x.Id == booking.Id, cancellationToken: TestContext.Current.CancellationToken)).AmountPaid.ShouldBe(
+            0m
+        );
     }
 
     [Fact]
@@ -154,7 +182,12 @@ public class VoucherPaymentTests(AppFixture app)
         await using var scope = app.Server.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var (booking, grant) = await SetupAsync(db);
-        var results = (await app.Client.GetFromJsonAsync<List<BookingVoucherDTO>>($"/payment/booking/{booking.Id}/vouchers"))!;
+        var results = (
+            await app.Client.GetFromJsonAsync<List<BookingVoucherDTO>>(
+                $"/payment/booking/{booking.Id}/vouchers",
+                cancellationToken: TestContext.Current.CancellationToken
+            )
+        )!;
         var card = results.Single(x => x.GrantId == grant.Id);
         card.IsEligible.ShouldBeTrue();
         card.AmountRemaining.ShouldBe(2m);
@@ -169,11 +202,13 @@ public class VoucherPaymentTests(AppFixture app)
         await using var scope = app.Server.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var (booking, grant) = await SetupAsync(db, VoucherRedemptionKind.Discount, VoucherDiscountMode.FixedAmount, 500);
-        var response = await app.Client.PostAsJsonAsync("/payment/voucher", Request(booking, grant));
-        var result = (await response.Content.ReadFromJsonAsync<PaymentVoucherResponse>())!;
+        var response = await app.Client.PostAsJsonAsync("/payment/voucher", Request(booking, grant), cancellationToken: TestContext.Current.CancellationToken);
+        var result = (await response.Content.ReadFromJsonAsync<PaymentVoucherResponse>(cancellationToken: TestContext.Current.CancellationToken))!;
         result.Amount.ShouldBe(200m);
         result.IsPaid.ShouldBeTrue();
-        (await app.Client.PostAsJsonAsync("/payment/voucher", Request(booking, grant))).StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        (
+            await app.Client.PostAsJsonAsync("/payment/voucher", Request(booking, grant), cancellationToken: TestContext.Current.CancellationToken)
+        ).StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact]

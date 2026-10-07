@@ -142,7 +142,9 @@ public class FunctionJobTests(AppFixture app)
 
         updatedPendingBooking.BookingStatusId.ShouldBe((int)BookingStatusEnum.Expired);
         updatedConfirmedBooking.BookingStatusId.ShouldBe((int)BookingStatusEnum.Confirmed);
-        (await db.Booking.AsNoTracking().SingleAsync(x => x.Id == partiallyPaidBooking.Id)).BookingStatusId.ShouldBe((int)BookingStatusEnum.Pending);
+        (
+            await db.Booking.AsNoTracking().SingleAsync(x => x.Id == partiallyPaidBooking.Id, cancellationToken: TestContext.Current.CancellationToken)
+        ).BookingStatusId.ShouldBe((int)BookingStatusEnum.Pending);
         remainingSlotBookings.Count.ShouldBe(2);
         remainingSlotBookings.ShouldContain(x => x.BookingId == confirmedBooking.Id);
         remainingSlotBookings.ShouldContain(x => x.BookingId == partiallyPaidBooking.Id);
