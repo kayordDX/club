@@ -964,7 +964,7 @@ export interface AdminVoucherUpdateRequest {
 }
 
 export interface AdminVoucherIssueRequest {
-	walletId: string;
+	recipient: string;
 	voucherId: number;
 	/** @nullable */
 	sourceUserContractId?: number | null;

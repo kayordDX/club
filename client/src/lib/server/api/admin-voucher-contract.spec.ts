@@ -1,6 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { VoucherDiscountMode, VoucherRedemptionKind } from "$lib/api";
-import { AdminVoucherCreateBody, AdminVoucherUpdateBody } from "./schemas/admin";
+import { AdminVoucherCreateBody, AdminVoucherIssueBody, AdminVoucherUpdateBody } from "./schemas/admin";
+
+describe("admin voucher issue remote contract", () => {
+	const grant = { voucherId: 1, amount: 2, validFrom: "2026-10-06T10:00:00Z", expiryDate: "2026-11-06T10:00:00Z" };
+
+	it.each(["recipient@example.com", "+27821234567"])("accepts an exact recipient contact: %s", (recipient) => {
+		expect(AdminVoucherIssueBody.safeParse({ ...grant, recipient }).success).toBe(true);
+	});
+
+	it("requires a recipient instead of a wallet ID", () => {
+		expect(AdminVoucherIssueBody.safeParse({ ...grant, walletId: "00000000-0000-0000-0000-000000000001" }).success).toBe(false);
+	});
+});
 
 const voucher = {
 	name: "Facility voucher",

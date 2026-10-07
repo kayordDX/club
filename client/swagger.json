@@ -5848,11 +5848,10 @@
 			"AdminVoucherIssueRequest": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": ["walletId", "voucherId", "amount", "validFrom", "expiryDate"],
+				"required": ["recipient", "voucherId", "amount", "validFrom", "expiryDate"],
 				"properties": {
-					"walletId": {
-						"type": "string",
-						"format": "guid"
+					"recipient": {
+						"type": "string"
 					},
 					"voucherId": {
 						"type": "integer",

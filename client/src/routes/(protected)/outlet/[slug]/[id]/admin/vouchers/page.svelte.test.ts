@@ -4,7 +4,7 @@ import { page } from "vitest/browser";
 import Harness from "./voucher-page-harness.svelte";
 import { VoucherRedemptionKind, type AdminVoucherDTO } from "$lib/api";
 
-const api = vi.hoisted(() => ({ list: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn() }));
+const api = vi.hoisted(() => ({ list: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), issue: vi.fn() }));
 vi.mock("$app/environment", () => ({ browser: true, dev: true, building: false, version: "test" }));
 vi.mock("$app/state", () => ({ page: { params: { id: "7", slug: "test-club" } } }));
 vi.mock("$lib/api/remote/admin.remote", () => ({
@@ -12,6 +12,7 @@ vi.mock("$lib/api/remote/admin.remote", () => ({
 	adminVoucherCreate: api.create,
 	adminVoucherUpdate: api.update,
 	adminVoucherDelete: api.delete,
+	adminVoucherIssue: api.issue,
 }));
 const voucher: AdminVoucherDTO = {
 	id: 1,
@@ -34,6 +35,7 @@ beforeEach(() => {
 	api.update.mockImplementation(async ({ id, body }) => {
 		rows = rows.map((row) => (row.id === id ? { ...row, ...body } : row));
 	});
+	api.issue.mockResolvedValue("issued");
 	api.delete.mockImplementation(async ({ id }) => {
 		rows = rows.filter((row) => row.id !== id);
 	});
@@ -165,4 +167,68 @@ it("disables deletion of used vouchers but allows editing their metadata", async
 	await page.getByRole("button", { name: "Save changes" }).click();
 	await expect.element(page.getByRole("cell", { name: "Renamed benefit", exact: true })).toBeVisible();
 	expect(api.delete).not.toHaveBeenCalled();
+});
+
+it("sends a voucher to the exact recipient and submits dates", async () => {
+	render(Harness);
+	await page.getByRole("button", { name: "Actions for Free round" }).click();
+	await page.getByRole("menuitem", { name: "Send voucher" }).click();
+	await page.getByRole("textbox", { name: "Recipient email or phone" }).fill(" person@example.com ");
+	await page.getByRole("button", { name: "Send voucher" }).click();
+	await expect.element(page.getByRole("dialog")).not.toBeInTheDocument();
+	expect(api.issue).toHaveBeenCalledExactlyOnceWith(
+		expect.objectContaining({
+			facilityId: 7,
+			body: expect.objectContaining({
+				voucherId: 1,
+				recipient: "person@example.com",
+				amount: 1,
+				validFrom: expect.any(String),
+				expiryDate: expect.any(String),
+			}),
+		})
+	);
+});
+
+it("validates whole quantities and future expiry before issuing", async () => {
+	render(Harness);
+	await page.getByRole("button", { name: "Actions for Free round" }).click();
+	await page.getByRole("menuitem", { name: "Send voucher" }).click();
+	await expect.element(page.getByRole("textbox", { name: "Quantity" })).toBeVisible();
+	await page.getByRole("textbox", { name: "Recipient email or phone" }).fill("member@example.com");
+	await page.getByRole("textbox", { name: "Quantity" }).fill("1.5");
+	await page.getByRole("button", { name: "Send voucher" }).click();
+	await expect.element(page.getByText("Enter a valid positive whole quantity.", { exact: true })).toBeVisible();
+	expect(api.issue).not.toHaveBeenCalled();
+	await page.getByRole("textbox", { name: "Quantity" }).fill("2");
+	await page.getByLabelText("Expiry date").fill("2000-01-01");
+	await page.getByRole("button", { name: "Send voucher" }).click();
+	await expect.element(page.getByText("Expiry date must be in the future.", { exact: true })).toBeVisible();
+	expect(api.issue).not.toHaveBeenCalled();
+});
+
+it("blocks editing and cancellation while an issue is pending", async () => {
+	let finish!: (value: string) => void;
+	api.issue.mockImplementationOnce(() => new Promise((resolve) => (finish = resolve)));
+	render(Harness);
+	await page.getByRole("button", { name: "Actions for Free round" }).click();
+	await page.getByRole("menuitem", { name: "Send voucher" }).click();
+	await page.getByRole("textbox", { name: "Recipient email or phone" }).fill("member@example.com");
+	await page.getByRole("button", { name: "Send voucher" }).click();
+	await expect.element(page.getByRole("button", { name: "Sending…" })).toBeDisabled();
+	await expect.element(page.getByRole("textbox", { name: "Recipient email or phone" })).toBeDisabled();
+	await expect.element(page.getByRole("button", { name: "Cancel" })).toBeDisabled();
+	finish("done");
+	await expect.element(page.getByRole("dialog")).not.toBeInTheDocument();
+});
+
+it("shows remote HttpError messages and keeps the send dialog open", async () => {
+	api.issue.mockRejectedValueOnce({ body: { message: "No user found with that email address or phone number." } });
+	render(Harness);
+	await page.getByRole("button", { name: "Actions for Free round" }).click();
+	await page.getByRole("menuitem", { name: "Send voucher" }).click();
+	await page.getByRole("textbox", { name: "Recipient email or phone" }).fill("nobody@example.com");
+	await page.getByRole("button", { name: "Send voucher" }).click();
+	await expect.element(page.getByText("No user found with that email address or phone number.", { exact: true })).toBeVisible();
+	await expect.element(page.getByRole("dialog")).toBeVisible();
 });
