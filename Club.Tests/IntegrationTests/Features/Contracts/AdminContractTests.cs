@@ -49,7 +49,10 @@ public class AdminContractTests(AppFixture app)
         created.Id.ShouldBeGreaterThan(0);
         created.Name.ShouldBe("Annual Membership");
 
-        var link = await db.ContractFacility.FirstOrDefaultAsync(cf => cf.ContractId == created.Id && cf.FacilityId == facilityId);
+        var link = await db.ContractFacility.FirstOrDefaultAsync(
+            cf => cf.ContractId == created.Id && cf.FacilityId == facilityId,
+            cancellationToken: TestContext.Current.CancellationToken
+        );
         link.ShouldNotBeNull();
     }
 
@@ -65,12 +68,24 @@ public class AdminContractTests(AppFixture app)
 
         var mine = new Club.Entities.Contract { Name = $"Mine_{Guid.NewGuid()}" };
         db.Contract.Add(mine);
-        db.ContractFacility.Add(new ContractFacility { Contract = mine, Facility = await db.Facility.FirstAsync(f => f.Id == facilityId) });
+        db.ContractFacility.Add(
+            new ContractFacility
+            {
+                Contract = mine,
+                Facility = await db.Facility.FirstAsync(f => f.Id == facilityId, cancellationToken: TestContext.Current.CancellationToken),
+            }
+        );
 
         var theirs = new Club.Entities.Contract { Name = $"Theirs_{Guid.NewGuid()}" };
         db.Contract.Add(theirs);
-        db.ContractFacility.Add(new ContractFacility { Contract = theirs, Facility = await db.Facility.FirstAsync(f => f.Id == otherFacilityId) });
-        await db.SaveChangesAsync();
+        db.ContractFacility.Add(
+            new ContractFacility
+            {
+                Contract = theirs,
+                Facility = await db.Facility.FirstAsync(f => f.Id == otherFacilityId, cancellationToken: TestContext.Current.CancellationToken),
+            }
+        );
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
         var (response, result) = await app.Client.GETAsync<AdminContractGetAllEndpoint, AdminContractGetAllRequest, List<AdminContractDTO>>(
@@ -111,7 +126,7 @@ public class AdminContractTests(AppFixture app)
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
-        var updated = await db.Contract.AsNoTracking().FirstAsync(c => c.Id == contract.Id);
+        var updated = await db.Contract.AsNoTracking().FirstAsync(c => c.Id == contract.Id, cancellationToken: TestContext.Current.CancellationToken);
         updated.Name.ShouldBe("Updated");
         updated.Price.ShouldBe(999m);
         updated.Frequency.ShouldBe(4);
@@ -136,7 +151,7 @@ public class AdminContractTests(AppFixture app)
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
-        (await db.Contract.AnyAsync(c => c.Id == contract.Id)).ShouldBeFalse();
+        (await db.Contract.AnyAsync(c => c.Id == contract.Id, cancellationToken: TestContext.Current.CancellationToken)).ShouldBeFalse();
     }
 
     [Fact]
@@ -149,7 +164,7 @@ public class AdminContractTests(AppFixture app)
         await AssignManagerRole(db, facilityId);
         var contract = await CreateContract(db, facilityId, "InUse");
 
-        var facility = await db.Facility.FirstAsync(f => f.Id == facilityId);
+        var facility = await db.Facility.FirstAsync(f => f.Id == facilityId, cancellationToken: TestContext.Current.CancellationToken);
         var slot = new Club.Entities.Slot
         {
             Id = Guid.NewGuid(),
@@ -169,7 +184,7 @@ public class AdminContractTests(AppFixture app)
                 Price = 100m,
             }
         );
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
         var response = await app.Client.DELETEAsync<AdminContractDeleteEndpoint, Club.Features.Admin.Contract.Delete.AdminContractDeleteRequest>(
@@ -178,7 +193,7 @@ public class AdminContractTests(AppFixture app)
 
         // Assert - in-use contracts are protected from deletion
         response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
-        (await db.Contract.AnyAsync(c => c.Id == contract.Id)).ShouldBeTrue();
+        (await db.Contract.AnyAsync(c => c.Id == contract.Id, cancellationToken: TestContext.Current.CancellationToken)).ShouldBeTrue();
     }
 
     [Fact]
@@ -191,7 +206,7 @@ public class AdminContractTests(AppFixture app)
         await AssignManagerRole(db, facilityId);
         var contract = await CreateContract(db, facilityId, "Members");
         var otherContract = await CreateContract(db, facilityId, "Other");
-        var member = await db.Users.FirstAsync(u => u.Id == TestClaims.UserIdGuid);
+        var member = await db.Users.FirstAsync(u => u.Id == TestClaims.UserIdGuid, cancellationToken: TestContext.Current.CancellationToken);
 
         db.UserContract.AddRange(
             new UserContract
@@ -216,7 +231,7 @@ public class AdminContractTests(AppFixture app)
                 IsActive = true,
             }
         );
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
         var (response, members) = await app.Client.GETAsync<

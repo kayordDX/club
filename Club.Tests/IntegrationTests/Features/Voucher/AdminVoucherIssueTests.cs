@@ -26,17 +26,20 @@ public class AdminVoucherIssueTests(AppFixture app)
         var response = await Send(request);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        var grantId = await response.Content.ReadFromJsonAsync<Guid>();
-        var wallet = await db.Wallet.SingleAsync(x => x.UserId == user.Id);
+        var grantId = await response.Content.ReadFromJsonAsync<Guid>(cancellationToken: TestContext.Current.CancellationToken);
+        var wallet = await db.Wallet.SingleAsync(x => x.UserId == user.Id, cancellationToken: TestContext.Current.CancellationToken);
         wallet.Currency.ShouldBe("ZAR");
         wallet.IsActive.ShouldBeTrue();
-        var grant = await db.WalletVoucherGrant.SingleAsync(x => x.Id == grantId);
+        var grant = await db.WalletVoucherGrant.SingleAsync(x => x.Id == grantId, cancellationToken: TestContext.Current.CancellationToken);
         grant.WalletId.ShouldBe(wallet.Id);
         grant.AmountGranted.ShouldBe(2m);
         grant.AmountRemaining.ShouldBe(2m);
         grant.GrantedAt.ShouldBe(request.ValidFrom, TimeSpan.FromSeconds(1));
         grant.ExpiryDate.ShouldBe(request.ExpiryDate, TimeSpan.FromSeconds(1));
-        var audit = await db.WalletVoucherGrantAudit.SingleAsync(x => x.WalletVoucherGrantId == grantId);
+        var audit = await db.WalletVoucherGrantAudit.SingleAsync(
+            x => x.WalletVoucherGrantId == grantId,
+            cancellationToken: TestContext.Current.CancellationToken
+        );
         audit.AssigningUserId.ShouldBe(TestClaims.UserIdGuid);
         audit.SourceType.ShouldBe(WalletVoucherGrantSource.Admin);
     }
@@ -54,8 +57,14 @@ public class AdminVoucherIssueTests(AppFixture app)
             RedemptionKind = VoucherRedemptionKind.Entitlement,
             IsExtra = true,
         };
-        db.VoucherFacility.Add(new VoucherFacility { Voucher = otherVoucher, Facility = await db.Facility.SingleAsync(x => x.Id == request.FacilityId) });
-        await db.SaveChangesAsync();
+        db.VoucherFacility.Add(
+            new VoucherFacility
+            {
+                Voucher = otherVoucher,
+                Facility = await db.Facility.SingleAsync(x => x.Id == request.FacilityId, cancellationToken: TestContext.Current.CancellationToken),
+            }
+        );
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
         var otherRequest = new AdminVoucherIssueRequest
         {
             FacilityId = request.FacilityId,
@@ -68,11 +77,11 @@ public class AdminVoucherIssueTests(AppFixture app)
 
         var responses = await Task.WhenAll(Send(request), Send(otherRequest));
         responses.ShouldAllBe(x => x.StatusCode == HttpStatusCode.OK);
-        var wallet = await db.Wallet.SingleAsync(x => x.UserId == user.Id);
+        var wallet = await db.Wallet.SingleAsync(x => x.UserId == user.Id, cancellationToken: TestContext.Current.CancellationToken);
         (await Send(request)).StatusCode.ShouldBe(HttpStatusCode.OK);
 
-        (await db.Wallet.CountAsync(x => x.UserId == user.Id)).ShouldBe(1);
-        (await db.WalletVoucherGrant.CountAsync(x => x.WalletId == wallet.Id)).ShouldBe(3);
+        (await db.Wallet.CountAsync(x => x.UserId == user.Id, cancellationToken: TestContext.Current.CancellationToken)).ShouldBe(1);
+        (await db.WalletVoucherGrant.CountAsync(x => x.WalletId == wallet.Id, cancellationToken: TestContext.Current.CancellationToken)).ShouldBe(3);
     }
 
     [Theory]
@@ -99,7 +108,7 @@ public class AdminVoucherIssueTests(AppFixture app)
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         if (invalid != "blank")
-            (await response.Content.ReadAsStringAsync()).ShouldContain("No user found");
+            (await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken)).ShouldContain("No user found");
         await AssertNoWrites(db, request, user);
     }
 
@@ -118,13 +127,13 @@ public class AdminVoucherIssueTests(AppFixture app)
                 PhoneNumber = user.PhoneNumber,
             }
         );
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
         request.Recipient = user.PhoneNumber!;
 
         var response = await Send(request);
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        (await response.Content.ReadAsStringAsync()).ShouldContain("More than one user matches");
+        (await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken)).ShouldContain("More than one user matches");
         await AssertNoWrites(db, request, user);
     }
 
@@ -157,15 +166,17 @@ public class AdminVoucherIssueTests(AppFixture app)
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var (request, user) = await Setup(db);
         if (invalid == "facility")
-            db.VoucherFacility.RemoveRange(await db.VoucherFacility.Where(x => x.VoucherId == request.VoucherId).ToListAsync());
+            db.VoucherFacility.RemoveRange(
+                await db.VoucherFacility.Where(x => x.VoucherId == request.VoucherId).ToListAsync(cancellationToken: TestContext.Current.CancellationToken)
+            );
         if (invalid == "shared")
             db.VoucherFacility.Add(
                 new VoucherFacility
                 {
                     VoucherId = request.VoucherId,
-                    Voucher = await db.Voucher.SingleAsync(x => x.Id == request.VoucherId),
+                    Voucher = await db.Voucher.SingleAsync(x => x.Id == request.VoucherId, cancellationToken: TestContext.Current.CancellationToken),
                     FacilityId = await AdminVoucherTests.CreateFacility(db),
-                    Facility = (await db.Facility.OrderByDescending(x => x.Id).FirstAsync()),
+                    Facility = (await db.Facility.OrderByDescending(x => x.Id).FirstAsync(cancellationToken: TestContext.Current.CancellationToken)),
                 }
             );
         if (invalid == "amount")
@@ -176,7 +187,7 @@ public class AdminVoucherIssueTests(AppFixture app)
             request.ExpiryDate = request.ValidFrom.AddDays(-1);
         if (invalid == "source")
             request.SourceUserContractId = int.MaxValue;
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         (await Send(request)).StatusCode.ShouldBe(invalid is "facility" or "shared" ? HttpStatusCode.NotFound : HttpStatusCode.BadRequest);
 
@@ -199,14 +210,14 @@ public class AdminVoucherIssueTests(AppFixture app)
             Currency = currency,
         };
         db.Wallet.Add(wallet);
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         (await Send(request)).StatusCode.ShouldBe(HttpStatusCode.BadRequest);
 
-        await db.Entry(wallet).ReloadAsync();
+        await db.Entry(wallet).ReloadAsync(TestContext.Current.CancellationToken);
         wallet.Currency.ShouldBe(currency);
         wallet.IsActive.ShouldBe(active);
-        (await db.WalletVoucherGrant.AnyAsync(x => x.VoucherId == request.VoucherId)).ShouldBeFalse();
+        (await db.WalletVoucherGrant.AnyAsync(x => x.VoucherId == request.VoucherId, cancellationToken: TestContext.Current.CancellationToken)).ShouldBeFalse();
     }
 
     [Fact]
@@ -221,7 +232,7 @@ public class AdminVoucherIssueTests(AppFixture app)
         var response = await app.Client.PostAsJsonAsync($"/admin/facility/{facilityId}/voucher/issue", request, app.Context.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        (await db.Wallet.AnyAsync(x => x.UserId == user.Id)).ShouldBeTrue();
+        (await db.Wallet.AnyAsync(x => x.UserId == user.Id, cancellationToken: TestContext.Current.CancellationToken)).ShouldBeTrue();
     }
 
     private Task<HttpResponseMessage> Send(AdminVoucherIssueRequest request) =>

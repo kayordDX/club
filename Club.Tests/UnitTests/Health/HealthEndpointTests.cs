@@ -19,12 +19,12 @@ public class HealthEndpointTests
         await using var app = builder.Build();
         app.UseHealth();
         app.Urls.Add("http://127.0.0.1:0");
-        await app.StartAsync();
+        await app.StartAsync(TestContext.Current.CancellationToken);
 
         using var client = new HttpClient { BaseAddress = new Uri(app.Urls.Single()) };
-        var response = await client.GetAsync("/health");
+        var response = await client.GetAsync("/health", TestContext.Current.CancellationToken);
 
         Assert.Equal(expectedStatus, response.StatusCode);
-        await app.StopAsync();
+        await app.StopAsync(TestContext.Current.CancellationToken);
     }
 }
