@@ -40,7 +40,7 @@ public class AppFixture : AppFixture<Program>, IAsyncLifetime
         _connectionString = _dbContainer.GetConnectionString();
 
         // Start Redis TestContainer — the API connects to Redis eagerly at startup
-        _redisContainer = new RedisBuilder().WithImage("redis:7-alpine").Build();
+        _redisContainer = new RedisBuilder("redis:7-alpine").Build();
         await _redisContainer.StartAsync();
         _redisConnectionString = _redisContainer.GetConnectionString();
     }
