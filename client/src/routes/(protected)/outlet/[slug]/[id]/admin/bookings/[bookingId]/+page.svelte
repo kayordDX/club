@@ -2,9 +2,10 @@
 	import { page } from "$app/state";
 	import { resolve } from "$app/paths";
 	import { toast } from "svelte-sonner";
-	import { createMutation } from "@tanstack/svelte-query";
+	import { createMutation, useQueryClient } from "@tanstack/svelte-query";
 	import { BookingStatusEnum, type AdminBookingUpdateRequest } from "$lib/api";
-	import { adminBookingGet, adminBookingUpdate, adminBookingUpdateStatus } from "$lib/api/remote/admin.remote";
+	import { adminBookingGet, adminBookingUpdate, adminBookingUpdateStatus, adminSlotGetAll } from "$lib/api/remote/admin.remote";
+	import { slotGetAll } from "$lib/api/remote/slot.remote";
 	import { bookingGetPath } from "$lib/api/remote/booking.remote";
 	import { statusLabel } from "$lib/booking/status";
 	import { formatDate } from "$lib/booking/format";
@@ -35,13 +36,25 @@
 	const updateStatus = createMutation(() => ({
 		mutationFn: (status: BookingStatusEnum) => adminBookingUpdateStatus({ facilityId, id: bookingId, body: { status } }),
 	}));
+	const queryClient = useQueryClient();
 	let refreshing = $state(false);
-	const busy = $derived(update.isPending || updateStatus.isPending || refreshing);
+	let refreshError = $state("");
+	const busy = $derived(update.isPending || updateStatus.isPending || refreshing || !!refreshError);
 
 	async function refreshBooking() {
 		refreshing = true;
 		try {
-			await request.refresh();
+			const date = slot ? new Date(slot.startDatetime.slice(0, 10)).toISOString() : undefined;
+			const results = await Promise.allSettled([
+				request.refresh(),
+				queryClient.invalidateQueries({ queryKey: ["admin-bookings", facilityId] }),
+				...(date ? [adminSlotGetAll({ facilityId, params: { date } }).refresh(), slotGetAll({ facilityId, date }).refresh()] : []),
+			]);
+			if (results.some((result) => result.status === "rejected")) throw new Error("Refresh failed");
+			refreshError = "";
+		} catch {
+			refreshError = "Changes were saved, but current booking details or availability could not be refreshed. Refresh before making another change.";
+			throw new Error(refreshError);
 		} finally {
 			refreshing = false;
 		}
@@ -92,6 +105,13 @@
 			{/if}
 		</div>
 	</div>
+	{#if refreshError}
+		<Alert.Root variant="destructive">
+			<Alert.Title>Refresh required</Alert.Title>
+			<Alert.Description>{refreshError}</Alert.Description>
+			<Button disabled={refreshing} onclick={() => refreshBooking().catch(() => undefined)}>Refresh booking</Button>
+		</Alert.Root>
+	{/if}
 	<BookingDetails {booking} {path} showPlayers={!editing}>
 		{#snippet statusActions()}
 			<BookingStatusControl status={booking.bookingStatusId as BookingStatusEnum} disabled={busy || editing} onChange={changeStatus} />

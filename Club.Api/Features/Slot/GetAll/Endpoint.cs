@@ -31,6 +31,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List
 
         var now = DateTime.UtcNow;
 
+        // Keep the reservation join aligned with ReservationRules.ActiveReservations; the HTTP state matrix covers both query implementations.
         var result = await _dbContext
             .Database.SqlQuery<SlotGetAllResponse>(
                 $"""
@@ -53,8 +54,8 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List
                     ON scb.slot_contract_id = sc.id
                 LEFT JOIN booking b
                     ON b.id = scb.booking_id
-                    AND b.booking_status_id != {(int)BookingStatusEnum.Cancelled}
-                    AND (b.booking_status_id != {(int)BookingStatusEnum.Pending} OR b.expires_at >= {now})
+                    AND (b.booking_status_id = {(int)BookingStatusEnum.Confirmed}
+                         OR (b.booking_status_id = {(int)BookingStatusEnum.Pending} AND b.expires_at > {now}))
                 WHERE s.facility_id = {req.FacilityId}
                     AND s.start_datetime >= {dateStart}
                     AND s.start_datetime < {dateEnd}
