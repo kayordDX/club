@@ -38,26 +38,7 @@ Reach for it when the task mentions any of the following:
 - Add `Description(x => x.WithName("FeatureAction"))` in `Configure()`
 - Use SvelteKit remote functions for browser data access; they wrap generated server transports. Regenerate transports, shared types, Zod schemas, and remote functions after API changes.
 
-## Booking Domain (facility/outlet lookup)
-
-Booking summary UIs (edit/view/pay pages) already have what they need — do **not** add facility/outlet to `BookingDTO`.
-
-| Endpoint | Remote function (`$lib/api/remote/booking.remote.ts`) | Returns | Carries |
-| --- | --- | --- | --- |
-| `GET /booking/{id}` | `bookingGet` | `BookingDTO` | status, `user`, amounts, `extraBookings[].extra` (name/price), `slotContractBookings[].slotContract.slot` (`startDatetime`, `facilityId`) |
-| `GET /booking/{id}/path` | `bookingGetPath` | `BookingPathDTO` | `outletName`, `outletSlug`, `facilityName`, `facilityId`, `slotStartDatetime` |
-
-- Facility/outlet names for a booking come from `bookingGetPath` (`/booking/{id}/path`), **not** from `BookingDTO`.
-- The path query powers booking navigation: `BookingBreadcrumbs` (`$lib/components/BookingBreadcrumbs.svelte`) and `getBookingPayUrl` (`$lib/booking/payUrl.ts`).
-- Frontend pattern for booking detail pages (view/edit/pay):
-
-```ts
-import { bookingGetPath } from "$lib/api/remote/booking.remote";
-
-const path = await bookingGetPath(bookingId);
-```
-
-- `BookingGetPath` derives facility/outlet from the first `SlotContractBooking → SlotContract → Slot.Facility.Outlet`, so it assumes a booking has at least one slot contract booking.
+For booking DTO and facility/outlet lookup facts, see [the project reference](../../../docs/agent-project-reference.md#conventions-and-domain-facts).
 
 ## Adding a New Endpoint (Quick Start)
 
