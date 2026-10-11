@@ -32,10 +32,7 @@ public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : E
             req,
             userId.Value,
             (int)BookingStatusEnum.Pending,
-            null,
-            null,
-            true,
-            _appConfig.PendingTimeoutMinutes,
+            new BookingCreationPolicy { AllowManagerContractBypass = true, PendingTimeoutMinutes = _appConfig.PendingTimeoutMinutes },
             ct
         );
         if (!result.Succeeded)

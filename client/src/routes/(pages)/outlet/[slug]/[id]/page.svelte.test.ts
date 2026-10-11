@@ -7,6 +7,8 @@ const mocks = vi.hoisted(() => ({
 	isManager: true,
 	goto: vi.fn(),
 	available: vi.fn(),
+	refresh: vi.fn(),
+	error: vi.fn(),
 }));
 
 vi.mock("$app/state", () => ({ page: { params: { slug: "club", id: "7" } } }));
@@ -23,7 +25,7 @@ vi.mock("runed/kit", () => ({
 	useSearchParams: () => ({ date: "2026-08-02" }),
 }));
 vi.mock("$lib/auth", () => ({ hasRoles: () => mocks.isManager, useUser: () => ({ name: "Signed-in user" }) }));
-vi.mock("svelte-sonner", () => ({ toast: { error: vi.fn() } }));
+vi.mock("svelte-sonner", () => ({ toast: { error: mocks.error } }));
 vi.mock("$lib/api/remote/admin.remote", () => ({
 	adminSlotGetAll: () =>
 		Object.assign(
@@ -40,7 +42,7 @@ vi.mock("$lib/api/remote/admin.remote", () => ({
 					bookings: [],
 				},
 			]),
-			{ loading: false, refresh: vi.fn() }
+			{ loading: false, refresh: mocks.refresh }
 		),
 }));
 vi.mock("$lib/api/remote/slot.remote", () => ({
@@ -68,6 +70,7 @@ beforeEach(() => {
 	vi.clearAllMocks();
 	mocks.isManager = true;
 	mocks.available.mockResolvedValue(true);
+	mocks.refresh.mockResolvedValue(undefined);
 });
 
 it("manager slot actions require explicit customer selection in admin creation", async () => {
@@ -75,6 +78,24 @@ it("manager slot actions require explicit customer selection in admin creation",
 	await browserPage.getByRole("button", { name: "Create booking", exact: true }).click();
 	await expect.poll(() => mocks.goto.mock.calls[0]?.[0]).toBe("/outlet/club/7/admin/bookings/new?slotId=slot-1&date=2026-08-02&slotCount=1");
 	expect(mocks.available).toHaveBeenCalledWith({ id: "slot-1", slotCount: 1 });
+});
+
+it("a manager's unavailable slot refreshes the schedule instead of entering creation", async () => {
+	mocks.available.mockResolvedValue(false);
+	render(FacilityPage);
+	await browserPage.getByRole("button", { name: "Create booking", exact: true }).click();
+	await expect.poll(() => mocks.refresh.mock.calls.length).toBe(1);
+	expect(mocks.goto).not.toHaveBeenCalled();
+	expect(mocks.error).toHaveBeenCalledWith("Not enough slots available");
+});
+
+it("a manager's failed availability lookup shows a retryable error without navigating", async () => {
+	mocks.available.mockRejectedValue(new Error("Availability unavailable"));
+	render(FacilityPage);
+	await browserPage.getByRole("button", { name: "Create booking", exact: true }).click();
+	await expect.poll(() => mocks.error.mock.calls.length).toBe(1);
+	expect(mocks.goto).not.toHaveBeenCalled();
+	expect(mocks.error).toHaveBeenCalledWith("Unable to verify slot availability. Please try again.");
 });
 
 it("customer slot actions preserve the self-service creation route", async () => {

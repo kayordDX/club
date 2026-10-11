@@ -1,15 +1,12 @@
 <script lang="ts">
 	import { page } from "$app/state";
-	import { goto } from "$app/navigation";
-	import type { ResolvedPathname } from "$app/types";
 	import { resolve } from "$app/paths";
 	import { createSearchParamsSchema, useSearchParams } from "runed/kit";
 	import { getLocalTimeZone, parseDate, today } from "@internationalized/date";
 	import { Button, Skeleton } from "@kayord/ui";
 	import { BookIcon } from "@lucide/svelte";
 	import { adminSlotGetAll } from "$lib/api/remote/admin.remote";
-	import { slotAvailable } from "$lib/api/remote/slot.remote";
-	import { toast } from "svelte-sonner";
+	import { openAdminBookingCreation } from "$lib/booking/admin-creation-navigation";
 	import PageBoundary from "$lib/components/PageBoundary.svelte";
 	import ScheduleDateNavigation from "$lib/components/schedule/schedule-date-navigation.svelte";
 	import Slots from "$lib/components/schedule/slots.svelte";
@@ -26,23 +23,14 @@
 	const request = $derived(adminSlotGetAll({ facilityId, params: { date: selectedDate.toDate("UTC").toISOString() } }));
 	const bookingsHref = $derived(resolve(`/outlet/${page.params.slug}/${page.params.id}/admin/bookings`));
 
-	const createBooking = async (slotId: string, date: string) => {
-		try {
-			if (!(await slotAvailable({ id: slotId, slotCount: 1 }))) {
-				toast.error("Not enough slots available");
-				await request.refresh();
-				return;
-			}
-			const pathname = resolve("/(protected)/outlet/[slug]/[id]/admin/bookings/new", {
-				slug: page.params.slug ?? "",
-				id: page.params.id ?? "",
-			});
-			const query = new URLSearchParams({ slotId, date, slotCount: "1" });
-			await goto(`${pathname}?${query}` as ResolvedPathname);
-		} catch {
-			toast.error("Unable to verify slot availability. Please try again.");
-		}
-	};
+	const createBooking = (slotId: string, date: string) =>
+		openAdminBookingCreation({
+			slug: page.params.slug ?? "",
+			facilityId: page.params.id ?? "",
+			slotId,
+			date,
+			onUnavailable: () => request.refresh(),
+		});
 
 	const bookingHref = (bookingId: number) =>
 		resolve("/(protected)/outlet/[slug]/[id]/admin/bookings/[bookingId]", {

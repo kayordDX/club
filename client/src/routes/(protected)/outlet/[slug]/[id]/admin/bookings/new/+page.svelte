@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onDestroy } from "svelte";
 	import { goto } from "$app/navigation";
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
@@ -36,11 +37,14 @@
 	let createdBookingId = $state<number | null>(null);
 	let recoveryError = $state("");
 
-	$effect(() => {
-		const value = customerSearchInput.trim();
-		const timer = setTimeout(() => (customerSearch = value), 300);
-		return () => clearTimeout(timer);
-	});
+	let searchTimer: ReturnType<typeof setTimeout> | undefined;
+	onDestroy(() => clearTimeout(searchTimer));
+
+	function updateCustomerSearch(value: string) {
+		customerSearchInput = value;
+		clearTimeout(searchTimer);
+		searchTimer = setTimeout(() => (customerSearch = value.trim()), 300);
+	}
 
 	const customerLookup = createQuery(() => ({
 		queryKey: ["admin-booking-customer", facilityId, customerSearch],
@@ -173,7 +177,7 @@
 					<div class="flex max-w-2xl gap-2">
 						<div class="relative grow">
 							<SearchIcon class="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" /><Input
-								bind:value={customerSearchInput}
+								bind:value={() => customerSearchInput, updateCustomerSearch}
 								type="search"
 								placeholder="Email or phone number"
 								aria-label="Search customers"

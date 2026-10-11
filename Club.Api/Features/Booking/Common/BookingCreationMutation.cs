@@ -19,10 +19,7 @@ public static class BookingCreationMutation
         BookingCreateRequest request,
         Guid ownerId,
         int statusId,
-        int? expectedFacilityId,
-        Guid? actingAdminId,
-        bool allowManagerContractBypass,
-        int pendingTimeoutMinutes,
+        BookingCreationPolicy policy,
         CancellationToken ct
     )
     {
@@ -51,9 +48,9 @@ public static class BookingCreationMutation
             var contract = slotContracts.FirstOrDefault(x => x.Id == item.SlotContractId && x.SlotId == item.SlotId);
             if (contract is null)
                 return new(null, 404, $"SlotContract {item.SlotContractId} not found for slot {item.SlotId}.");
-            if (expectedFacilityId.HasValue && contract.Slot.FacilityId != expectedFacilityId)
+            if (policy.ExpectedFacilityId.HasValue && contract.Slot.FacilityId != policy.ExpectedFacilityId)
                 return new(null, 404, "Slot contract not found in this facility.");
-            if (expectedFacilityId.HasValue && contract.Slot.StartDatetime <= DateTime.UtcNow)
+            if (policy.ExpectedFacilityId.HasValue && contract.Slot.StartDatetime <= DateTime.UtcNow)
                 return new(null, 409, "Bookings can only be created for future available slots.");
         }
 
@@ -61,13 +58,13 @@ public static class BookingCreationMutation
         if (
             facilityIds.Count != 1
             || slotContracts.Any(x => x.Slot.FacilityId == null)
-            || (expectedFacilityId.HasValue && facilityIds[0] != expectedFacilityId)
+            || (policy.ExpectedFacilityId.HasValue && facilityIds[0] != policy.ExpectedFacilityId)
         )
             return new(null, 400, "All slots must belong to the same facility.");
 
         var ownerContracts = await db.UserContract.Where(x => x.UserId == ownerId && x.IsActive).ToListAsync(ct);
         HashSet<int> managerFacilityIds = [];
-        if (allowManagerContractBypass)
+        if (policy.AllowManagerContractBypass)
             managerFacilityIds = await db
                 .UserRoles.Where(x =>
                     x.UserId == ownerId
@@ -85,7 +82,7 @@ public static class BookingCreationMutation
             if (!isManager && !ContractEligibility.IsAllowed(contract.Contract, contract.Slot.StartDatetime, ownerContracts))
                 return new(
                     null,
-                    allowManagerContractBypass ? 404 : 400,
+                    policy.AllowManagerContractBypass ? 404 : 400,
                     $"Contract {contract.Contract.Name} is not available to the booking owner for slot {item.SlotId}."
                 );
         }
@@ -99,7 +96,7 @@ public static class BookingCreationMutation
         {
             var extra = extras.FirstOrDefault(x => x.Id == requested.ExtraId);
             if (extra is null || !extra.IsAvailable || !extra.IsOnline || extra.FacilityId != facilityIds[0])
-                return new(null, allowManagerContractBypass ? 404 : 400, $"Extra {requested.ExtraId} is not available for this booking.");
+                return new(null, policy.AllowManagerContractBypass ? 404 : 400, $"Extra {requested.ExtraId} is not available for this booking.");
         }
 
         var now = DateTime.UtcNow;
@@ -128,7 +125,7 @@ public static class BookingCreationMutation
             IsPaid = false,
             AmountOutstanding = total,
             AmountPaid = 0,
-            ExpiresAt = now.AddMinutes(Math.Max(1, pendingTimeoutMinutes)),
+            ExpiresAt = now.AddMinutes(Math.Max(1, policy.PendingTimeoutMinutes)),
             UserId = ownerId,
         };
         await db.Booking.AddAsync(booking, ct);
@@ -153,12 +150,12 @@ public static class BookingCreationMutation
             }),
             ct
         );
-        if (actingAdminId.HasValue)
+        if (policy.ActingAdminId.HasValue)
             db.BookingAction.Add(
                 new BookingAction
                 {
                     BookingId = booking.Id,
-                    ActingAdminId = actingAdminId.Value,
+                    ActingAdminId = policy.ActingAdminId.Value,
                     Kind = BookingActionKind.Created,
                     Timestamp = now,
                 }

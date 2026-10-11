@@ -11,6 +11,7 @@
 	import { toast } from "svelte-sonner";
 	import { adminSlotGetAll } from "$lib/api/remote/admin.remote";
 	import { hasRoles, useUser } from "$lib/auth";
+	import { openAdminBookingCreation } from "$lib/booking/admin-creation-navigation";
 	import Slots from "$lib/components/schedule/slots.svelte";
 	import ScheduleDateNavigation from "$lib/components/schedule/schedule-date-navigation.svelte";
 	import PageBoundary from "$lib/components/PageBoundary.svelte";
@@ -60,22 +61,14 @@
 		}
 	};
 
-	const managerCreateBooking = async (slotId: string, date: string) => {
-		try {
-			if (!(await slotAvailable({ id: slotId, slotCount: 1 }))) {
-				toast.error("Not enough slots available");
-				await slots.refresh();
-				return;
-			}
-			const pathname = resolve("/(protected)/outlet/[slug]/[id]/admin/bookings/new", {
-				slug: page.params.slug ?? "",
-				id: page.params.id ?? "",
-			});
-			await goto(`${pathname}?${new URLSearchParams({ slotId, date, slotCount: "1" })}` as ResolvedPathname);
-		} catch {
-			toast.error("Unable to verify slot availability. Please try again.");
-		}
-	};
+	const managerCreateBooking = (slotId: string, date: string) =>
+		openAdminBookingCreation({
+			slug: page.params.slug ?? "",
+			facilityId: page.params.id ?? "",
+			slotId,
+			date,
+			onUnavailable: () => slots.refresh(),
+		});
 
 	const bookingHref = (bookingId: number) =>
 		resolve("/(protected)/outlet/[slug]/[id]/admin/bookings/[bookingId]", {

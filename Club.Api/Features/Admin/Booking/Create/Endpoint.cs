@@ -82,10 +82,12 @@ public class Endpoint(AppDbContext dbContext, UserManager<User> userManager, ICu
             request,
             owner.Id,
             statusId,
-            req.FacilityId,
-            actorId,
-            false,
-            appConfig.Value.PendingTimeoutMinutes,
+            new BookingCreationPolicy
+            {
+                ExpectedFacilityId = req.FacilityId,
+                ActingAdminId = actorId,
+                PendingTimeoutMinutes = appConfig.Value.PendingTimeoutMinutes,
+            },
             ct
         );
         if (!result.Succeeded)
