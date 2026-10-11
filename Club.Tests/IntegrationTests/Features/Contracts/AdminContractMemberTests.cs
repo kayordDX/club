@@ -43,7 +43,10 @@ public class AdminContractMemberTests(AppFixture app)
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
-        var userContract = await db.UserContract.SingleAsync(uc => uc.ContractId == contract.Id && uc.UserId == user.Id);
+        var userContract = await db.UserContract.SingleAsync(
+            uc => uc.ContractId == contract.Id && uc.UserId == user.Id,
+            cancellationToken: TestContext.Current.CancellationToken
+        );
         userContract.EndDate.ShouldBe(endDate);
     }
 
@@ -101,7 +104,9 @@ public class AdminContractMemberTests(AppFixture app)
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
-        (await db.UserContract.AsNoTracking().SingleAsync(uc => uc.Id == link.Id)).EndDate.ShouldBe(endDate);
+        (await db.UserContract.AsNoTracking().SingleAsync(uc => uc.Id == link.Id, cancellationToken: TestContext.Current.CancellationToken)).EndDate.ShouldBe(
+            endDate
+        );
     }
 
     [Fact]
@@ -131,7 +136,7 @@ public class AdminContractMemberTests(AppFixture app)
 
         // Assert
         response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
-        (await db.UserContract.AnyAsync(uc => uc.Id == link.Id)).ShouldBeFalse();
+        (await db.UserContract.AnyAsync(uc => uc.Id == link.Id, cancellationToken: TestContext.Current.CancellationToken)).ShouldBeFalse();
     }
 
     [Fact]

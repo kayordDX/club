@@ -298,7 +298,7 @@ public class AdminBookingTests(AppFixture app)
             new BookingCreateRequest { Bookings = [player] }
         );
         createResponse.IsSuccessStatusCode.ShouldBeTrue();
-        var booking = await db.Booking.SingleAsync(b => b.Id == created.Id);
+        var booking = await db.Booking.SingleAsync(b => b.Id == created.Id, cancellationToken: TestContext.Current.CancellationToken);
         var payment = new Club.Entities.Payment
         {
             Amount = 40m,
@@ -331,7 +331,7 @@ public class AdminBookingTests(AppFixture app)
             );
         }
         slotContract.Price = price;
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var response = await app.Client.PUTAsync<Club.Features.Admin.Booking.Update.Endpoint, Club.Features.Admin.Booking.Update.AdminBookingUpdateRequest>(
             new Club.Features.Admin.Booking.Update.AdminBookingUpdateRequest
@@ -343,11 +343,11 @@ public class AdminBookingTests(AppFixture app)
         );
 
         response.StatusCode.ShouldBe(price < 40 + pending ? HttpStatusCode.BadRequest : HttpStatusCode.NoContent);
-        var persisted = await db.Booking.AsNoTracking().SingleAsync(b => b.Id == booking.Id);
+        var persisted = await db.Booking.AsNoTracking().SingleAsync(b => b.Id == booking.Id, cancellationToken: TestContext.Current.CancellationToken);
         persisted.AmountPaid.ShouldBe(40m);
         persisted.AmountOutstanding.ShouldBe((decimal)outstanding);
         persisted.IsPaid.ShouldBe(isPaid);
-        (await db.Payment.AsNoTracking().SingleAsync(p => p.Id == payment.Id)).Amount.ShouldBe(40m);
+        (await db.Payment.AsNoTracking().SingleAsync(p => p.Id == payment.Id, cancellationToken: TestContext.Current.CancellationToken)).Amount.ShouldBe(40m);
     }
 
     [Theory]

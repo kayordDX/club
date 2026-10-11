@@ -103,6 +103,7 @@ pnpm test   # make sure tests pass
 - Frontend unit: `ComponentName.svelte.test.ts` colocated with component
 - Frontend E2E: `feature-name.spec.ts` in `client/e2e/` — runs against the Aspire-started stack (see E2E workflow below)
 - Backend: `ClassNameTests.cs` — xUnit, arrange-act-assert
+- Backend tests must pass `TestContext.Current.CancellationToken` (or the FastEndpoints test context's `app.Context.CancellationToken`) to calls that accept a cancellation token, including async database, HTTP, and host operations. Propagate it through test helpers; keep builds free of `xUnit1051` warnings rather than suppressing them.
 - Target a single backend test class: `dotnet test Club.Tests/IntegrationTests/IntegrationTests.csproj -- --filter-class <FullyQualifiedClassName>`
 - FastEndpoints.Testing client: `POSTAsync`/`GETAsync<TEndpoint,TReq,TRes>` returns `(HttpResponseMessage, TRes?)` tuple; `PUTAsync<TEndpoint,TReq>` returns `HttpResponseMessage` directly
 

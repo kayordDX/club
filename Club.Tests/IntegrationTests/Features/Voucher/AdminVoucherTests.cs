@@ -50,10 +50,18 @@ public class AdminVoucherTests(AppFixture app)
         };
         db.Voucher.Add(shared);
         db.VoucherFacility.AddRange(
-            new VoucherFacility { Voucher = shared, Facility = await db.Facility.FirstAsync(x => x.Id == facilityId) },
-            new VoucherFacility { Voucher = shared, Facility = await db.Facility.FirstAsync(x => x.Id == otherFacilityId) }
+            new VoucherFacility
+            {
+                Voucher = shared,
+                Facility = await db.Facility.FirstAsync(x => x.Id == facilityId, cancellationToken: TestContext.Current.CancellationToken),
+            },
+            new VoucherFacility
+            {
+                Voucher = shared,
+                Facility = await db.Facility.FirstAsync(x => x.Id == otherFacilityId, cancellationToken: TestContext.Current.CancellationToken),
+            }
         );
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var (listResponse, vouchers) = await app.Client.GETAsync<GetAllEndpoint, AdminVoucherGetAllRequest, List<AdminVoucherDTO>>(
             new AdminVoucherGetAllRequest { FacilityId = facilityId }
@@ -61,8 +69,8 @@ public class AdminVoucherTests(AppFixture app)
         listResponse.IsSuccessStatusCode.ShouldBeTrue();
         vouchers.ShouldContain(x => x.Id == created.Id && x.IsExtra && x.DiscountValue == 15.25m);
         vouchers.ShouldNotContain(x => x.Id == shared.Id);
-        (await db.VoucherFacility.CountAsync(x => x.VoucherId == created.Id)).ShouldBe(1);
-        (await db.WalletVoucherGrant.CountAsync(x => x.VoucherId == created.Id)).ShouldBe(0);
+        (await db.VoucherFacility.CountAsync(x => x.VoucherId == created.Id, cancellationToken: TestContext.Current.CancellationToken)).ShouldBe(1);
+        (await db.WalletVoucherGrant.CountAsync(x => x.VoucherId == created.Id, cancellationToken: TestContext.Current.CancellationToken)).ShouldBe(0);
 
         await AssignManagerRole(db, otherFacilityId);
         var (otherResponse, otherVouchers) = await app.Client.GETAsync<GetAllEndpoint, AdminVoucherGetAllRequest, List<AdminVoucherDTO>>(
@@ -131,8 +139,8 @@ public class AdminVoucherTests(AppFixture app)
         voucher.ShouldNotBeNull();
         voucher.RedemptionKind.ShouldBe(kind);
         voucher.IsExtra.ShouldBe(isExtra);
-        (await db.VoucherFacility.CountAsync(x => x.VoucherId == voucher.Id)).ShouldBe(1);
-        (await db.WalletVoucherGrant.CountAsync(x => x.VoucherId == voucher.Id)).ShouldBe(0);
+        (await db.VoucherFacility.CountAsync(x => x.VoucherId == voucher.Id, cancellationToken: TestContext.Current.CancellationToken)).ShouldBe(1);
+        (await db.WalletVoucherGrant.CountAsync(x => x.VoucherId == voucher.Id, cancellationToken: TestContext.Current.CancellationToken)).ShouldBe(0);
     }
 
     [Theory]
