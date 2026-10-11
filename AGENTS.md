@@ -14,6 +14,20 @@ Before working in an area with a repository skill, read the matching `.agents/sk
 
 Give delegated agents the worktree path and explicit skill paths.
 
+## Agent skills
+
+### Issue tracker
+
+Track issues and specs in GitHub Issues for `kayordDX/club`. Before tracker operations, read `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Use the default five triage labels. Before triaging, read `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: root `GLOSSARY.md` and `docs/adr/`. Before domain exploration, read `docs/agents/domain.md`.
+
 ## General
 
 - Prefer focused checks while iterating; run relevant quality gates and tests before handoff. For docs-only changes, verify referenced paths and run `git diff --check`.
