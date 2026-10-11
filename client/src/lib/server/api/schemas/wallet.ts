@@ -21,11 +21,14 @@ export const WalletVouchersResponseItem = zod.object({
 		Discount: 3,
 	}),
 	discountMode: zod
-		.enum({
-			Percentage: 1,
-			FixedAmount: 2,
-		})
-		.nullish(),
+		.union([
+			zod.enum({
+				Percentage: 1,
+				FixedAmount: 2,
+			}),
+			zod.null(),
+		])
+		.optional(),
 	discountValue: zod.number().nullish(),
 	maxDiscountAmount: zod.number().nullish(),
 	amountGranted: zod.number(),

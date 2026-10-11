@@ -1,5 +1,6 @@
 using Club.Data;
 using Club.Entities;
+using Club.Services;
 using FastEndpoints.Testing;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
@@ -9,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Testcontainers.PostgreSql;
 using Testcontainers.Redis;
 
@@ -90,6 +92,11 @@ public class AppFixture : AppFixture<Program>, IAsyncLifetime
         {
             services.Remove(redisCacheDescriptor);
         }
+
+        // Avoid live Keycloak calls in integration tests. Tests can seed deterministic existing accounts.
+        services.RemoveAll<ICustomKeycloakService>();
+        services.AddSingleton<FakeCustomKeycloakService>();
+        services.AddSingleton<ICustomKeycloakService>(provider => provider.GetRequiredService<FakeCustomKeycloakService>());
 
         // Authenticate all test requests as a fixed test user (JwtBearer can't reach Keycloak in tests)
         services

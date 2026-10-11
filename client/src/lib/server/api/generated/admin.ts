@@ -5,7 +5,12 @@
  * OpenAPI spec version: v1
  */
 import type {
+	AdminBookingCreateRequest,
+	AdminBookingCustomerDTO,
 	AdminBookingGetAllParams,
+	AdminBookingGetOptionsParams,
+	AdminBookingOptionsDTO,
+	AdminBookingSearchCustomerParams,
 	AdminBookingUpdateRequest,
 	AdminBookingUpdateStatusRequest,
 	AdminContractAddMemberRequest,
@@ -23,6 +28,7 @@ import type {
 	AdminVoucherDTO,
 	AdminVoucherIssueRequest,
 	AdminVoucherUpdateRequest,
+	BookingCreateResponse,
 	BookingDTO,
 	PaginatedListOfAdminBookingDTO,
 } from "./server.schemas";
@@ -42,8 +48,14 @@ export const adminVoucherUpdate = async (
 	const getHeaders = (h?: NonNullable<RequestInit["headers"]>): Record<string, string | readonly string[]> => {
 		if (!h) return {};
 		if (h instanceof Headers) return Object.fromEntries(h.entries());
-		if (Array.isArray(h)) return Object.fromEntries(h);
-		return h;
+		if (Symbol.iterator in h) {
+			return Object.fromEntries(Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]));
+		}
+		const headers: Record<string, string | readonly string[]> = {};
+		for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+			if (value !== undefined) headers[name] = value;
+		}
+		return headers;
 	};
 	return customServerInstance<void>(getAdminVoucherUpdateUrl(facilityId, id), {
 		...options,
@@ -76,8 +88,14 @@ export const adminVoucherIssue = async (
 	const getHeaders = (h?: NonNullable<RequestInit["headers"]>): Record<string, string | readonly string[]> => {
 		if (!h) return {};
 		if (h instanceof Headers) return Object.fromEntries(h.entries());
-		if (Array.isArray(h)) return Object.fromEntries(h);
-		return h;
+		if (Symbol.iterator in h) {
+			return Object.fromEntries(Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]));
+		}
+		const headers: Record<string, string | readonly string[]> = {};
+		for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+			if (value !== undefined) headers[name] = value;
+		}
+		return headers;
 	};
 	return customServerInstance<string>(getAdminVoucherIssueUrl(facilityId), {
 		...options,
@@ -110,8 +128,14 @@ export const adminVoucherCreate = async (
 	const getHeaders = (h?: NonNullable<RequestInit["headers"]>): Record<string, string | readonly string[]> => {
 		if (!h) return {};
 		if (h instanceof Headers) return Object.fromEntries(h.entries());
-		if (Array.isArray(h)) return Object.fromEntries(h);
-		return h;
+		if (Symbol.iterator in h) {
+			return Object.fromEntries(Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]));
+		}
+		const headers: Record<string, string | readonly string[]> = {};
+		for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+			if (value !== undefined) headers[name] = value;
+		}
+		return headers;
 	};
 	return customServerInstance<AdminVoucherDTO>(getAdminVoucherCreateUrl(facilityId), {
 		...options,
@@ -160,8 +184,14 @@ export const adminContractUpdateMember = async (
 	const getHeaders = (h?: NonNullable<RequestInit["headers"]>): Record<string, string | readonly string[]> => {
 		if (!h) return {};
 		if (h instanceof Headers) return Object.fromEntries(h.entries());
-		if (Array.isArray(h)) return Object.fromEntries(h);
-		return h;
+		if (Symbol.iterator in h) {
+			return Object.fromEntries(Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]));
+		}
+		const headers: Record<string, string | readonly string[]> = {};
+		for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+			if (value !== undefined) headers[name] = value;
+		}
+		return headers;
 	};
 	return customServerInstance<void>(getAdminContractUpdateMemberUrl(facilityId, id, memberId), {
 		...options,
@@ -200,8 +230,14 @@ export const adminContractUpdate = async (
 	const getHeaders = (h?: NonNullable<RequestInit["headers"]>): Record<string, string | readonly string[]> => {
 		if (!h) return {};
 		if (h instanceof Headers) return Object.fromEntries(h.entries());
-		if (Array.isArray(h)) return Object.fromEntries(h);
-		return h;
+		if (Symbol.iterator in h) {
+			return Object.fromEntries(Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]));
+		}
+		const headers: Record<string, string | readonly string[]> = {};
+		for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+			if (value !== undefined) headers[name] = value;
+		}
+		return headers;
 	};
 	return customServerInstance<void>(getAdminContractUpdateUrl(facilityId, id), {
 		...options,
@@ -299,8 +335,14 @@ export const adminContractCreate = async (
 	const getHeaders = (h?: NonNullable<RequestInit["headers"]>): Record<string, string | readonly string[]> => {
 		if (!h) return {};
 		if (h instanceof Headers) return Object.fromEntries(h.entries());
-		if (Array.isArray(h)) return Object.fromEntries(h);
-		return h;
+		if (Symbol.iterator in h) {
+			return Object.fromEntries(Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]));
+		}
+		const headers: Record<string, string | readonly string[]> = {};
+		for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+			if (value !== undefined) headers[name] = value;
+		}
+		return headers;
 	};
 	return customServerInstance<AdminContractDTO>(getAdminContractCreateUrl(facilityId), {
 		...options,
@@ -323,8 +365,14 @@ export const adminContractCreateMember = async (
 	const getHeaders = (h?: NonNullable<RequestInit["headers"]>): Record<string, string | readonly string[]> => {
 		if (!h) return {};
 		if (h instanceof Headers) return Object.fromEntries(h.entries());
-		if (Array.isArray(h)) return Object.fromEntries(h);
-		return h;
+		if (Symbol.iterator in h) {
+			return Object.fromEntries(Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]));
+		}
+		const headers: Record<string, string | readonly string[]> = {};
+		for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+			if (value !== undefined) headers[name] = value;
+		}
+		return headers;
 	};
 	return customServerInstance<void>(getAdminContractCreateMemberUrl(facilityId, id), {
 		...options,
@@ -347,8 +395,14 @@ export const adminContractAddMember = async (
 	const getHeaders = (h?: NonNullable<RequestInit["headers"]>): Record<string, string | readonly string[]> => {
 		if (!h) return {};
 		if (h instanceof Headers) return Object.fromEntries(h.entries());
-		if (Array.isArray(h)) return Object.fromEntries(h);
-		return h;
+		if (Symbol.iterator in h) {
+			return Object.fromEntries(Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]));
+		}
+		const headers: Record<string, string | readonly string[]> = {};
+		for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+			if (value !== undefined) headers[name] = value;
+		}
+		return headers;
 	};
 	return customServerInstance<void>(getAdminContractAddMemberUrl(facilityId, id), {
 		...options,
@@ -371,8 +425,14 @@ export const adminBookingUpdateStatus = async (
 	const getHeaders = (h?: NonNullable<RequestInit["headers"]>): Record<string, string | readonly string[]> => {
 		if (!h) return {};
 		if (h instanceof Headers) return Object.fromEntries(h.entries());
-		if (Array.isArray(h)) return Object.fromEntries(h);
-		return h;
+		if (Symbol.iterator in h) {
+			return Object.fromEntries(Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]));
+		}
+		const headers: Record<string, string | readonly string[]> = {};
+		for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+			if (value !== undefined) headers[name] = value;
+		}
+		return headers;
 	};
 	return customServerInstance<void>(getAdminBookingUpdateStatusUrl(facilityId, id), {
 		...options,
@@ -395,8 +455,14 @@ export const adminBookingUpdate = async (
 	const getHeaders = (h?: NonNullable<RequestInit["headers"]>): Record<string, string | readonly string[]> => {
 		if (!h) return {};
 		if (h instanceof Headers) return Object.fromEntries(h.entries());
-		if (Array.isArray(h)) return Object.fromEntries(h);
-		return h;
+		if (Symbol.iterator in h) {
+			return Object.fromEntries(Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]));
+		}
+		const headers: Record<string, string | readonly string[]> = {};
+		for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+			if (value !== undefined) headers[name] = value;
+		}
+		return headers;
 	};
 	return customServerInstance<void>(getAdminBookingUpdateUrl(facilityId, id), {
 		...options,
@@ -412,6 +478,58 @@ export const getAdminBookingGetUrl = (facilityId: number, id: number) => {
 
 export const adminBookingGet = async (facilityId: number, id: number, options?: Parameters<typeof customServerInstance>[1]): Promise<BookingDTO> => {
 	return customServerInstance<BookingDTO>(getAdminBookingGetUrl(facilityId, id), {
+		...options,
+		method: "GET",
+	});
+};
+
+export const getAdminBookingSearchCustomerUrl = (facilityId: number, params: AdminBookingSearchCustomerParams) => {
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : String(value));
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0
+		? `/admin/facility/${facilityId}/booking/customer/search?${stringifiedParams}`
+		: `/admin/facility/${facilityId}/booking/customer/search`;
+};
+
+export const adminBookingSearchCustomer = async (
+	facilityId: number,
+	params: AdminBookingSearchCustomerParams,
+	options?: Parameters<typeof customServerInstance>[1]
+): Promise<AdminBookingCustomerDTO> => {
+	return customServerInstance<AdminBookingCustomerDTO>(getAdminBookingSearchCustomerUrl(facilityId, params), {
+		...options,
+		method: "GET",
+	});
+};
+
+export const getAdminBookingGetOptionsUrl = (facilityId: number, params: AdminBookingGetOptionsParams) => {
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? "null" : String(value));
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0 ? `/admin/facility/${facilityId}/booking/options?${stringifiedParams}` : `/admin/facility/${facilityId}/booking/options`;
+};
+
+export const adminBookingGetOptions = async (
+	facilityId: number,
+	params: AdminBookingGetOptionsParams,
+	options?: Parameters<typeof customServerInstance>[1]
+): Promise<AdminBookingOptionsDTO> => {
+	return customServerInstance<AdminBookingOptionsDTO>(getAdminBookingGetOptionsUrl(facilityId, params), {
 		...options,
 		method: "GET",
 	});
@@ -439,5 +557,34 @@ export const adminBookingGetAll = async (
 	return customServerInstance<PaginatedListOfAdminBookingDTO>(getAdminBookingGetAllUrl(facilityId, params), {
 		...options,
 		method: "GET",
+	});
+};
+
+export const getAdminBookingCreateUrl = (facilityId: number) => {
+	return `/admin/facility/${facilityId}/booking`;
+};
+
+export const adminBookingCreate = async (
+	facilityId: number,
+	adminBookingCreateRequest: AdminBookingCreateRequest,
+	options?: Parameters<typeof customServerInstance>[1]
+): Promise<BookingCreateResponse> => {
+	const getHeaders = (h?: NonNullable<RequestInit["headers"]>): Record<string, string | readonly string[]> => {
+		if (!h) return {};
+		if (h instanceof Headers) return Object.fromEntries(h.entries());
+		if (Symbol.iterator in h) {
+			return Object.fromEntries(Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]));
+		}
+		const headers: Record<string, string | readonly string[]> = {};
+		for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+			if (value !== undefined) headers[name] = value;
+		}
+		return headers;
+	};
+	return customServerInstance<BookingCreateResponse>(getAdminBookingCreateUrl(facilityId), {
+		...options,
+		method: "POST",
+		headers: { "Content-Type": "application/json", ...getHeaders(options?.headers) },
+		body: JSON.stringify(adminBookingCreateRequest),
 	});
 };

@@ -15,5 +15,5 @@ export const TestQueryParams = zod.object({
 export const TestResponse = zod.object({
 	success: zod.boolean(),
 	token: zod.string().nullish(),
-	other: zod.unknown().nullish(),
+	other: zod.unknown().optional(),
 });

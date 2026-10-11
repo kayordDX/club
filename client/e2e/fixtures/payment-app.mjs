@@ -8,6 +8,7 @@ let payments;
 let grants;
 let calls;
 let refreshFailed;
+let adminCreatedBooking;
 const grant = (id, name, kind, options = {}) => ({
 	grantId: `00000000-0000-4000-8000-00000000000${id}`,
 	voucherId: id,
@@ -29,6 +30,7 @@ function reset(name) {
 	payments = [];
 	calls = [];
 	refreshFailed = false;
+	adminCreatedBooking = null;
 	grants = [
 		grant(1, "Round entitlement", 1, { targets: [{ slotContractBookingId: 9, name: "Player One", unitPrice: 100, unitsAvailable: 1 }] }),
 		grant(2, "Extra entitlement", 1, { isExtra: true, targets: [{ extraId: 5, name: "Cart", unitPrice: 50, unitsAvailable: 4 }] }),
@@ -94,10 +96,37 @@ const api = createServer(async (req, res) => {
 		return send(balance());
 	}
 	calls.push({ path, method: req.method, body, authorization: req.headers.authorization });
-	if (req.headers.authorization !== "Bearer payment-test-token") return send({ message: "Unauthorized" }, 401);
+	if (!["Bearer payment-test-token", "Bearer customer-test-token"].includes(req.headers.authorization)) return send({ message: "Unauthorized" }, 401);
 	if (refreshFailed && path.startsWith("/payment/booking/")) return send({}, 503);
 	if (path === "/payment/booking/123/vouchers") return send(grants);
 	if (path === "/payment/booking/123") return send(balance());
+	if (path === "/booking/user")
+		return send({
+			items:
+				adminCreatedBooking?.body?.userId === "00000000-0000-4000-8000-000000000099"
+					? [
+							{
+								id: 44,
+								bookingStatusId: adminCreatedBooking.body.bookingStatusId ?? 2,
+								bookingStatusName: "Confirmed",
+								bookingStatusDate: "2026-08-02T09:00:00Z",
+								facilityName: "Test Course",
+								slotStartDatetime: "2026-08-02T10:00:00Z",
+								slotEndDatetime: "2026-08-02T11:00:00Z",
+								playerCount: 1,
+								amountOutstanding: 100,
+								amountPaid: 0,
+								isPaid: false,
+								expiresAt: "2026-08-02T09:15:00Z",
+							},
+						]
+					: [],
+			pageNumber: 1,
+			totalPages: 1,
+			totalCount: adminCreatedBooking ? 1 : 0,
+			hasPreviousPage: false,
+			hasNextPage: false,
+		});
 	if (path === "/booking/123")
 		return send({
 			id: 123,
@@ -118,7 +147,103 @@ const api = createServer(async (req, res) => {
 			{ providerName: "other", type: "Other provider" },
 		]);
 	if (path === "/outlet/basic/test") return send({ name: "Test Club", facilities: [{ id: 1, name: "Test Course" }] });
-	if (path === "/account/role/1") return send([]);
+	if (path === "/account/role/1") return send(scenario === "admin-creation" ? [{ normalizedName: "MANAGER" }] : []);
+	if (path === "/slot/available") return send(true);
+	if (path === "/slot")
+		return send([
+			{
+				id: "00000000-0000-4000-8000-000000000001",
+				total: 4,
+				booked: 1,
+				isAvailable: true,
+				startDatetime: "2026-08-02T10:00:00Z",
+				endDatetime: "2026-08-02T11:00:00Z",
+			},
+		]);
+	if (path === "/admin/facility/1/slot")
+		return send([
+			{
+				id: "00000000-0000-4000-8000-000000000001",
+				resourceName: "Court A",
+				startDatetime: "2026-08-02T10:00:00Z",
+				endDatetime: "2026-08-02T11:00:00Z",
+				booked: adminCreatedBooking ? 2 : 1,
+				total: 4,
+				isEnabled: true,
+				isAvailable: true,
+				bookings: [],
+			},
+		]);
+	if (path === "/admin/facility/1/booking/customer/search" && new URL(req.url, "http://127.0.0.1").searchParams.get("query") !== "casey@example.test")
+		return send(undefined);
+	if (path === "/admin/facility/1/booking/customer/search")
+		return send({
+			userId: "00000000-0000-4000-8000-000000000099",
+			firstName: "Casey",
+			lastName: "Customer",
+			email: "casey@example.test",
+			phoneNumber: "0821234567",
+		});
+	if (path === "/admin/facility/1/booking/options")
+		return send({
+			contracts: [
+				{
+					id: 31,
+					slotId: "00000000-0000-4000-8000-000000000001",
+					contractId: 9,
+					contractName: "Visitor",
+					price: 100,
+					validationId: null,
+					canPayLater: true,
+					description: "Standard",
+				},
+			],
+			extras: [{ id: 5, name: "Cart", price: 25, description: "Cart hire" }],
+		});
+	if (path === "/admin/facility/1/booking" && req.method === "POST") {
+		adminCreatedBooking = { id: 44, body };
+		return send({ id: 44 });
+	}
+	if (path === "/admin/facility/1/booking/44")
+		return send({
+			id: 44,
+			bookingStatusId: adminCreatedBooking?.body?.bookingStatusId ?? 2,
+			bookingStatusDate: "2026-08-02T09:00:00Z",
+			expiresAt: "2026-08-02T09:15:00Z",
+			isPaid: false,
+			amountPaid: 0,
+			amountOutstanding: 100,
+			user: { firstName: "Casey", lastName: "Customer" },
+			slotContractBookings: [
+				{
+					id: 1,
+					slotContractId: 31,
+					bookingId: 44,
+					name: "Player One",
+					cellphone: "0821234567",
+					email: "player@example.test",
+					slotContract: {
+						id: 31,
+						slotId: "00000000-0000-4000-8000-000000000001",
+						contractId: 9,
+						contractName: "Visitor",
+						price: 100,
+						canPayLater: true,
+						slot: { id: "00000000-0000-4000-8000-000000000001", startDatetime: "2026-08-02T10:00:00Z", endDatetime: "2026-08-02T11:00:00Z" },
+					},
+				},
+			],
+			extraBookings: [],
+		});
+	if (path === "/booking/44/path")
+		return send({
+			outletSlug: "test",
+			outletName: "Test Club",
+			facilityId: 1,
+			facilityName: "Test Course",
+			slotId: "00000000-0000-4000-8000-000000000001",
+			slotStartDatetime: "2026-08-02T10:00:00Z",
+		});
 	if (path === "/payment/voucher") {
 		await new Promise((resolve) => setTimeout(resolve, 300));
 		if (scenario === "stale" || scenario === "refresh-failure") {

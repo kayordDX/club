@@ -3,7 +3,7 @@
 	import { page } from "$app/state";
 	import LogoButton from "$lib/components/LogoButton.svelte";
 	import { Collapsible, Sidebar } from "@kayord/ui";
-	import { BookIcon, BuildingIcon, ChevronLeftIcon, ChevronRightIcon, CreditCardIcon, StoreIcon } from "@lucide/svelte";
+	import { BookIcon, BuildingIcon, CalendarDaysIcon, ChevronLeftIcon, ChevronRightIcon, CreditCardIcon, StoreIcon } from "@lucide/svelte";
 
 	const slug = $derived(page.params.slug ?? "");
 	const id = $derived(page.params.id ?? "");
@@ -11,6 +11,7 @@
 
 	const facilityHref = $derived(resolve(`/outlet/${slug}/${id}`));
 	const bookingsHref = $derived(resolve(`/outlet/${slug}/${id}/admin/bookings`));
+	const scheduleHref = $derived(resolve(`/outlet/${slug}/${id}/admin/schedule`));
 	const paymentsHref = $derived(resolve(`/outlet/${slug}/${id}/admin/payments`));
 	const outletHref = $derived(resolve(`/outlet/${slug}/${id}/admin/outlet`));
 	const outletRulesHref = $derived(resolve(`/outlet/${slug}/${id}/admin/outlet/rules`));
@@ -42,6 +43,16 @@
 		<Sidebar.Group class="gap-1">
 			<Sidebar.GroupLabel>Management</Sidebar.GroupLabel>
 			<Sidebar.Menu class="gap-1">
+				<Sidebar.MenuItem>
+					<Sidebar.MenuButton isActive={within(scheduleHref)}>
+						{#snippet child({ props })}
+							<a href={scheduleHref} {...props}>
+								<CalendarDaysIcon />
+								<span>Daily schedule</span>
+							</a>
+						{/snippet}
+					</Sidebar.MenuButton>
+				</Sidebar.MenuItem>
 				<Sidebar.MenuItem>
 					<Sidebar.MenuButton isActive={within(bookingsHref)}>
 						{#snippet child({ props })}

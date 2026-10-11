@@ -21,11 +21,15 @@ public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
+        var userId =
+            Request.Headers.TryGetValue("X-Test-User-Id", out var values) && Guid.TryParse(values.ToString(), out var parsedUserId)
+                ? parsedUserId
+                : TestClaims.UserIdGuid;
         var claims = new[]
         {
-            new Claim(ClaimTypes.NameIdentifier, TestClaims.UserId),
-            new Claim(ClaimTypes.Name, "Test User"),
-            new Claim(ClaimTypes.Email, "test@example.com"),
+            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+            new Claim(ClaimTypes.Name, userId == TestClaims.UserIdGuid ? "Test User" : "Test Customer"),
+            new Claim(ClaimTypes.Email, userId == TestClaims.UserIdGuid ? "test@example.com" : $"{userId}@example.com"),
         };
         var identity = new ClaimsIdentity(claims, SchemeName);
         var principal = new ClaimsPrincipal(identity);

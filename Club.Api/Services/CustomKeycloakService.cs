@@ -1,4 +1,6 @@
+using System.Net;
 using Club.Common.Config;
+using Keycloak.AuthServices.Sdk;
 using Keycloak.AuthServices.Sdk.Admin;
 using Keycloak.AuthServices.Sdk.Admin.Models;
 using Keycloak.AuthServices.Sdk.Admin.Requests.Users;
@@ -128,7 +130,15 @@ public class CustomKeycloakService(IKeycloakUserClient keycloakUserClient, IOpti
 
     public async Task<KeycloakUserResult?> GetUserAsync(Guid userId, CancellationToken ct)
     {
-        var user = await _keycloakUserClient.GetUserAsync(_config.Realm, userId.ToString(), cancellationToken: ct);
+        UserRepresentation? user;
+        try
+        {
+            user = await _keycloakUserClient.GetUserAsync(_config.Realm, userId.ToString(), cancellationToken: ct);
+        }
+        catch (KeycloakHttpClientException exception) when (exception.StatusCode == (int)HttpStatusCode.NotFound)
+        {
+            return null;
+        }
         if (user?.Id is null || !Guid.TryParse(user.Id, out var id))
         {
             return null;

@@ -599,7 +599,7 @@ public partial class AdminBookingTests(AppFixture app)
         (await db.Database.SqlQueryRaw<int>("SELECT count(*)::int AS \"Value\" FROM booking").SingleAsync(ct)).ShouldBe(4);
     }
 
-    private static async Task AssignManagerRole(AppDbContext db, int facilityId)
+    internal static async Task AssignManagerRole(AppDbContext db, int facilityId)
     {
         const string normalizedName = "MANAGER";
         var role = await db.Roles.FirstOrDefaultAsync(r => r.NormalizedName == normalizedName, TestContext.Current.CancellationToken);
@@ -628,7 +628,7 @@ public partial class AdminBookingTests(AppFixture app)
         }
     }
 
-    private static async Task<(Club.Entities.Slot Slot, SlotContract SlotContract, int FacilityId)> CreateBookingSetup(AppDbContext db)
+    internal static async Task<(Club.Entities.Slot Slot, SlotContract SlotContract, int FacilityId)> CreateBookingSetup(AppDbContext db)
     {
         var business = new Business { Name = $"Business_{Guid.NewGuid()}" };
         db.Business.Add(business);

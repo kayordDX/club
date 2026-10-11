@@ -1,49 +1,22 @@
 <script lang="ts">
 	import { Button, Input, Popover, StatusDot, Table } from "@kayord/ui";
-	import { page } from "$app/state";
-	import { cn } from "@kayord/ui/utils";
-	import { resolve } from "$app/paths";
 	import { type SlotGetAllResponse } from "$lib/api";
-	import { slotAvailable, slotGetContracts } from "$lib/api/remote/slot.remote";
+	import { slotGetContracts } from "$lib/api/remote/slot.remote";
 	import { Card } from "@kayord/ui";
 	import { ChevronRightIcon, CircleDotIcon, CircleQuestionMark, ClockIcon, MinusIcon, PlusIcon } from "@lucide/svelte";
-	import { toast } from "svelte-sonner";
-	import { goto } from "$app/navigation";
-	import { useUser } from "$lib/auth";
 
 	type Props = {
 		slot: SlotGetAllResponse;
 		selectedDate: string;
-		refetch: () => void;
+		onBook: (..._args: [string, number, string]) => void;
 	};
 
-	let { slot, selectedDate, refetch }: Props = $props();
-
-	const user = useUser();
+	let { slot, selectedDate, onBook }: Props = $props();
 
 	let slotCount = $state(1);
 	let slotContractEnabled = $state(false);
 	const available = $derived(slot.total - slot.booked);
 	const isUnavailable = $derived(available <= 0 || slot.isEnabled === false);
-
-	const checkAvailable = async (slot: SlotGetAllResponse) => {
-		try {
-			const isAvailable = await slotAvailable({ id: slot.id, slotCount });
-			if (isAvailable) {
-				const bookingUrl = resolve(`/outlet/${page.params.slug}/${page.params.id}/slot/${slot.id}?slotCount=${slotCount ?? 1}&date=${selectedDate}`);
-				if (user) {
-					goto(bookingUrl);
-				} else {
-					window.location.href = `/auth/login?next=${encodeURIComponent(bookingUrl)}`;
-				}
-			} else {
-				toast.error("Not enough slots available");
-				refetch();
-			}
-		} catch {
-			console.error("Check failed");
-		}
-	};
 
 	const formatTime = (datetime?: string | undefined | null) => {
 		if (!datetime) return "";
@@ -55,7 +28,7 @@
 	};
 </script>
 
-<Card.Root class={cn("w-full gap-0 p-0", isUnavailable && "pointer-events-none opacity-50")} aria-disabled={isUnavailable}>
+<Card.Root class={["w-full gap-0 p-0", isUnavailable && "pointer-events-none opacity-50"]} aria-disabled={isUnavailable}>
 	<Card.Header class="bg-muted/50 p-2 ">
 		<div class="flex items-center justify-start gap-4">
 			<div class="flex items-center gap-1">
@@ -147,7 +120,7 @@
 		<div class="flex justify-end gap-2">
 			<div class="flex flex-col gap-1">
 				<div class="text-muted-foreground text-center text-xs">Action</div>
-				<Button variant="outline" onclick={() => checkAvailable(slot)} disabled={available <= 0}>
+				<Button variant="outline" onclick={() => onBook(slot.id, slotCount, selectedDate)} disabled={available <= 0}>
 					<ChevronRightIcon /> Book
 				</Button>
 			</div>

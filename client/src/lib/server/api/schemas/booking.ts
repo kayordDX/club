@@ -56,12 +56,15 @@ export const BookingGetResponse = zod.object({
 	bookingStatusDate: zod.iso.datetime({ offset: true }),
 	userId: zod.string().nullish(),
 	user: zod
-		.object({
-			firstName: zod.string(),
-			lastName: zod.string(),
-			picture: zod.string().nullish(),
-		})
-		.nullish(),
+		.union([
+			zod.object({
+				firstName: zod.string(),
+				lastName: zod.string(),
+				picture: zod.string().nullish(),
+			}),
+			zod.null(),
+		])
+		.optional(),
 	isPaid: zod.boolean(),
 	amountOutstanding: zod.number(),
 	amountPaid: zod.number(),
@@ -154,8 +157,8 @@ export const BookingGetPathResponse = zod.object({
 	outletName: zod.string(),
 	facilityId: zod.int(),
 	facilityName: zod.string(),
-	slotId: zod.string(),
-	slotStartDatetime: zod.iso.datetime({ offset: true }),
+	slotId: zod.string().nullish(),
+	slotStartDatetime: zod.iso.datetime({ offset: true }).nullish(),
 });
 
 export const BookingCreateBody = zod.object({

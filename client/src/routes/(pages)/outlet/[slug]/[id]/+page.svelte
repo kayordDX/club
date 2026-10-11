@@ -1,21 +1,19 @@
 <script lang="ts">
-	import { Button, Popover, ButtonGroup, Skeleton } from "@kayord/ui";
-	import { Calendar } from "@kayord/ui/calendar";
-	import { CalendarIcon, ChevronRightIcon, ChevronLeftIcon, BuildingIcon, UserCogIcon } from "@lucide/svelte";
-	import { parseDate, today, getLocalTimeZone, DateFormatter, type DateValue } from "@internationalized/date";
+	import { Button, Skeleton } from "@kayord/ui";
+	import { BuildingIcon, UserCogIcon } from "@lucide/svelte";
+	import { parseDate, today, getLocalTimeZone } from "@internationalized/date";
 	import { page } from "$app/state";
+	import { goto } from "$app/navigation";
+	import type { ResolvedPathname } from "$app/types";
 	import { resolve } from "$app/paths";
-	import { cn } from "@kayord/ui/utils";
 	import { createSearchParamsSchema, useSearchParams } from "runed/kit";
-	import { slotGetAll } from "$lib/api/remote/slot.remote";
+	import { slotAvailable, slotGetAll } from "$lib/api/remote/slot.remote";
+	import { toast } from "svelte-sonner";
 	import { adminSlotGetAll } from "$lib/api/remote/admin.remote";
-	import { hasRoles } from "$lib/auth";
-	import Slots from "./Slots.svelte";
+	import { hasRoles, useUser } from "$lib/auth";
+	import Slots from "$lib/components/schedule/slots.svelte";
+	import ScheduleDateNavigation from "$lib/components/schedule/schedule-date-navigation.svelte";
 	import PageBoundary from "$lib/components/PageBoundary.svelte";
-
-	const df = new DateFormatter("en-ZA", {
-		dateStyle: "long",
-	});
 
 	const searchParamsSchema = createSearchParamsSchema({
 		date: { type: "string", default: today(getLocalTimeZone()).toString() },
@@ -31,56 +29,64 @@
 		}
 	});
 
-	const incrementDate = (incrementValue: number) => {
-		params.date = value.add({ days: incrementValue }).toString();
-	};
-
 	// Facility managers see the same day's slots, but rendered as admin cards that
 	// list who booked each slot (players + status) instead of the public pricing UI.
 	const isAdmin = $derived(hasRoles("MANAGER"));
+	const user = useUser();
 	const slots = $derived(
 		isAdmin
 			? adminSlotGetAll({ facilityId: Number(page.params.id), params: { date: value.toDate("UTC").toISOString() } })
 			: slotGetAll({ facilityId: Number(page.params.id), date: value.toDate("UTC").toISOString() })
 	);
+
+	const createBooking = async (slotId: string, slotCount: number, date: string) => {
+		try {
+			const isAvailable = await slotAvailable({ id: slotId, slotCount });
+			if (!isAvailable) {
+				toast.error("Not enough slots available");
+				await slots.refresh();
+				return;
+			}
+			const pathname = resolve("/(protected)/outlet/[slug]/[id]/slot/[slot]", {
+				slug: page.params.slug ?? "",
+				id: page.params.id ?? "",
+				slot: slotId,
+			});
+			const href = `${pathname}?${new URLSearchParams({ slotCount: String(slotCount), date })}` as ResolvedPathname;
+			if (user) await goto(href);
+			else window.location.href = `/auth/login?next=${encodeURIComponent(href)}`;
+		} catch {
+			toast.error("Unable to verify slot availability. Please try again.");
+		}
+	};
+
+	const managerCreateBooking = async (slotId: string, date: string) => {
+		try {
+			if (!(await slotAvailable({ id: slotId, slotCount: 1 }))) {
+				toast.error("Not enough slots available");
+				await slots.refresh();
+				return;
+			}
+			const pathname = resolve("/(protected)/outlet/[slug]/[id]/admin/bookings/new", {
+				slug: page.params.slug ?? "",
+				id: page.params.id ?? "",
+			});
+			await goto(`${pathname}?${new URLSearchParams({ slotId, date, slotCount: "1" })}` as ResolvedPathname);
+		} catch {
+			toast.error("Unable to verify slot availability. Please try again.");
+		}
+	};
+
+	const bookingHref = (bookingId: number) =>
+		resolve("/(protected)/outlet/[slug]/[id]/admin/bookings/[bookingId]", {
+			slug: page.params.slug ?? "",
+			id: page.params.id ?? "",
+			bookingId: String(bookingId),
+		});
 </script>
 
-<div class="flex flex-row items-center gap-2 px-1">
-	<div class="flex w-full flex-col gap-2">
-		<div class="flex-row gap-4 py-4 sm:flex">
-			<div class="hidden flex-col sm:flex">
-				<div class="font-bold">Select Date</div>
-				<div class="text-muted-foreground text-xs">Pick a day</div>
-			</div>
-			<Popover.Root>
-				<Popover.Trigger>
-					{#snippet child({ props })}
-						<ButtonGroup.Root>
-							<Button size="icon" variant="outline" onclick={() => incrementDate(-1)}>
-								<ChevronLeftIcon />
-							</Button>
-							<Button variant="outline" class={cn("w-70 justify-start text-start font-normal", !value && "text-muted-foreground")} {...props}>
-								<CalendarIcon class="me-2 size-4" />
-								{value ? df.format(value.toDate(getLocalTimeZone())) : "Select a date"}
-							</Button>
-							<Button size="icon" variant="outline" onclick={() => incrementDate(1)}>
-								<ChevronRightIcon />
-							</Button>
-						</ButtonGroup.Root>
-					{/snippet}
-				</Popover.Trigger>
-				<Popover.Content class="w-auto p-0">
-					<Calendar
-						{value}
-						onValueChange={(v: DateValue | undefined) => v && (params.date = v.toString())}
-						type="single"
-						initialFocus
-						captionLayout="dropdown"
-					/>
-				</Popover.Content>
-			</Popover.Root>
-		</div>
-	</div>
+<div class="flex items-center gap-2 px-1">
+	<ScheduleDateNavigation {value} onChange={(date) => (params.date = date)} />
 	<div class="flex items-center gap-2">
 		{#if hasRoles("MANAGER")}
 			<Button variant="destructive" href={resolve(`/outlet/${page.params.slug}/${page.params.id}/admin`)}>
@@ -106,7 +112,15 @@
 				<Skeleton class="h-25 w-full" />
 			</div>
 		{:else}
-			<Slots slots={await slots} selectedDate={value.toString()} refetch={() => slots.refresh()} {isAdmin} />
+			<Slots
+				slots={await slots}
+				selectedDate={value.toString()}
+				{isAdmin}
+				adminContext={isAdmin}
+				onCreateBooking={managerCreateBooking}
+				onPublicBook={createBooking}
+				{bookingHref}
+			/>
 		{/if}
 	</PageBoundary>
 </div>

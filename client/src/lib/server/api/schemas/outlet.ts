@@ -121,9 +121,9 @@ export const OutletGetAllResponse = zod.object({
 									lastModifiedBy: zod.string().nullish(),
 									id: zod.string(),
 									resourceId: zod.int().nullish(),
-									resource: zod.unknown().nullish(),
+									resource: zod.union([zod.unknown(), zod.null()]).optional(),
 									facilityId: zod.int().nullish(),
-									facility: zod.unknown().nullish(),
+									facility: zod.union([zod.unknown(), zod.null()]).optional(),
 									startDatetime: zod.iso.datetime({ offset: true }),
 									endDatetime: zod.iso.datetime({ offset: true }).nullish(),
 									maxBookings: zod.int(),
@@ -162,11 +162,14 @@ export const OutletGetAllResponse = zod.object({
 											price: zod.number(),
 											validationId: zod.int().nullish(),
 											validation: zod
-												.object({
-													id: zod.int(),
-													name: zod.string(),
-												})
-												.nullish(),
+												.union([
+													zod.object({
+														id: zod.int(),
+														name: zod.string(),
+													}),
+													zod.null(),
+												])
+												.optional(),
 											canPayLater: zod.boolean(),
 											description: zod.string().nullish(),
 										})
@@ -192,6 +195,8 @@ export const OutletGetAllResponse = zod.object({
 												lastModified: zod.iso.datetime({ offset: true }).nullish(),
 												lastModifiedBy: zod.string().nullish(),
 												id: zod.int(),
+												facilityId: zod.int().nullish(),
+												facility: zod.union([zod.unknown(), zod.null()]).optional(),
 												bookingStatusId: zod.int(),
 												bookingStatus: zod.object({
 													id: zod.int(),
@@ -200,149 +205,161 @@ export const OutletGetAllResponse = zod.object({
 												bookingStatusDate: zod.iso.datetime({ offset: true }),
 												userId: zod.string().nullish(),
 												user: zod
-													.object({
-														id: zod.string(),
-														userName: zod.string().nullish(),
-														normalizedUserName: zod.string().nullish(),
-														email: zod.string().nullish(),
-														normalizedEmail: zod.string().nullish(),
-														emailConfirmed: zod.boolean(),
-														passwordHash: zod.string().nullish(),
-														securityStamp: zod.string().nullish(),
-														concurrencyStamp: zod.string().nullish(),
-														phoneNumber: zod.string().nullish(),
-														phoneNumberConfirmed: zod.boolean(),
-														twoFactorEnabled: zod.boolean(),
-														lockoutEnd: zod.iso.datetime({ offset: true }).nullish(),
-														lockoutEnabled: zod.boolean(),
-														accessFailedCount: zod.int(),
-														firstName: zod.string(),
-														lastName: zod.string(),
-														picture: zod.string().nullish(),
-														userContracts: zod.array(
-															zod.object({
-																created: zod.iso.datetime({ offset: true }),
-																createdBy: zod.string().nullish(),
-																lastModified: zod.iso.datetime({ offset: true }).nullish(),
-																lastModifiedBy: zod.string().nullish(),
-																id: zod.int(),
-																contractId: zod.int(),
-																contract: zod.object({
+													.union([
+														zod.object({
+															id: zod.string(),
+															userName: zod.string().nullish(),
+															normalizedUserName: zod.string().nullish(),
+															email: zod.string().nullish(),
+															normalizedEmail: zod.string().nullish(),
+															emailConfirmed: zod.boolean(),
+															passwordHash: zod.string().nullish(),
+															securityStamp: zod.string().nullish(),
+															concurrencyStamp: zod.string().nullish(),
+															phoneNumber: zod.string().nullish(),
+															phoneNumberConfirmed: zod.boolean(),
+															twoFactorEnabled: zod.boolean(),
+															lockoutEnd: zod.iso.datetime({ offset: true }).nullish(),
+															lockoutEnabled: zod.boolean(),
+															accessFailedCount: zod.int(),
+															firstName: zod.string(),
+															lastName: zod.string(),
+															picture: zod.string().nullish(),
+															userContracts: zod.array(
+																zod.object({
 																	created: zod.iso.datetime({ offset: true }),
 																	createdBy: zod.string().nullish(),
 																	lastModified: zod.iso.datetime({ offset: true }).nullish(),
 																	lastModifiedBy: zod.string().nullish(),
 																	id: zod.int(),
-																	name: zod.string(),
-																	price: zod.number(),
-																	frequency: zod.int(),
+																	contractId: zod.int(),
+																	contract: zod.object({
+																		created: zod.iso.datetime({ offset: true }),
+																		createdBy: zod.string().nullish(),
+																		lastModified: zod.iso.datetime({ offset: true }).nullish(),
+																		lastModifiedBy: zod.string().nullish(),
+																		id: zod.int(),
+																		name: zod.string(),
+																		price: zod.number(),
+																		frequency: zod.int(),
+																		startDate: zod.iso.datetime({ offset: true }),
+																		endDate: zod.iso.datetime({ offset: true }),
+																		isActive: zod.boolean(),
+																		isPublic: zod.boolean(),
+																		contractFacilities: zod.array(
+																			zod.object({
+																				contractId: zod.int(),
+																				contract: zod.unknown(),
+																				facilityId: zod.int(),
+																				facility: zod.unknown(),
+																			})
+																		),
+																	}),
 																	startDate: zod.iso.datetime({ offset: true }),
-																	endDate: zod.iso.datetime({ offset: true }),
+																	endDate: zod.iso.datetime({ offset: true }).nullish(),
+																	price: zod.number(),
 																	isActive: zod.boolean(),
-																	isPublic: zod.boolean(),
-																	contractFacilities: zod.array(
-																		zod.object({
-																			contractId: zod.int(),
-																			contract: zod.unknown(),
-																			facilityId: zod.int(),
-																			facility: zod.unknown(),
-																		})
-																	),
-																}),
-																startDate: zod.iso.datetime({ offset: true }),
-																endDate: zod.iso.datetime({ offset: true }).nullish(),
-																price: zod.number(),
-																isActive: zod.boolean(),
-																userId: zod.string(),
-																user: zod.unknown(),
-															})
-														),
-														userRoles: zod.array(
-															zod.object({
-																userId: zod.string(),
-																roleId: zod.string(),
-																id: zod.int(),
-																facilityId: zod.int().nullish(),
-																facility: zod.unknown().nullish(),
-																role: zod.object({
-																	id: zod.string(),
-																	name: zod.string().nullish(),
-																	normalizedName: zod.string().nullish(),
-																	concurrencyStamp: zod.string().nullish(),
-																}),
-															})
-														),
-														wallet: zod
-															.object({
-																id: zod.string(),
-																userId: zod.string(),
-																user: zod.unknown(),
-																isActive: zod.boolean(),
-																currency: zod.string(),
-																balance: zod
-																	.object({
-																		walletId: zod.string(),
-																		wallet: zod.unknown(),
-																		balance: zod.number(),
-																		updatedAt: zod.iso.datetime({ offset: true }),
-																	})
-																	.nullish(),
-																transactions: zod.array(
+																	userId: zod.string(),
+																	user: zod.unknown(),
+																})
+															),
+															userRoles: zod.array(
+																zod.object({
+																	userId: zod.string(),
+																	roleId: zod.string(),
+																	id: zod.int(),
+																	facilityId: zod.int().nullish(),
+																	facility: zod.union([zod.unknown(), zod.null()]).optional(),
+																	role: zod.object({
+																		id: zod.string(),
+																		name: zod.string().nullish(),
+																		normalizedName: zod.string().nullish(),
+																		concurrencyStamp: zod.string().nullish(),
+																	}),
+																})
+															),
+															wallet: zod
+																.union([
 																	zod.object({
 																		id: zod.string(),
-																		walletId: zod.string(),
-																		wallet: zod.unknown(),
-																		amount: zod.number(),
-																		walletTransactionStatusId: zod.int(),
-																		walletTransactionStatus: zod.object({
-																			id: zod.int(),
-																			name: zod.string(),
-																		}),
-																		walletTransactionTypeId: zod.int(),
-																		walletTransactionType: zod.object({
-																			id: zod.int(),
-																			name: zod.string(),
-																		}),
-																		createdAt: zod.iso.datetime({ offset: true }),
-																		referenceId: zod.string(),
-																	})
-																),
-																voucherGrants: zod.array(
-																	zod.object({
-																		id: zod.string(),
-																		walletId: zod.string(),
-																		wallet: zod.unknown(),
-																		voucherId: zod.int(),
-																		voucher: zod.object({
-																			id: zod.int(),
-																			name: zod.string(),
-																			description: zod.string(),
-																			isExtra: zod.boolean(),
-																			redemptionKind: zod.enum({
-																				Entitlement: 1,
-																				Credit: 2,
-																				Discount: 3,
-																			}),
-																			discountMode: zod
-																				.enum({
-																					Percentage: 1,
-																					FixedAmount: 2,
-																				})
-																				.nullish(),
-																			discountValue: zod.number().nullish(),
-																			maxDiscountAmount: zod.number().nullish(),
-																		}),
-																		amountGranted: zod.number(),
-																		amountRemaining: zod.number(),
-																		grantedAt: zod.iso.datetime({ offset: true }),
-																		expiryDate: zod.iso.datetime({ offset: true }),
-																	})
-																),
-															})
-															.nullish(),
-														lastSync: zod.iso.datetime({ offset: true }),
-													})
-													.nullish(),
+																		userId: zod.string(),
+																		user: zod.unknown(),
+																		isActive: zod.boolean(),
+																		currency: zod.string(),
+																		balance: zod
+																			.union([
+																				zod.object({
+																					walletId: zod.string(),
+																					wallet: zod.unknown(),
+																					balance: zod.number(),
+																					updatedAt: zod.iso.datetime({ offset: true }),
+																				}),
+																				zod.null(),
+																			])
+																			.optional(),
+																		transactions: zod.array(
+																			zod.object({
+																				id: zod.string(),
+																				walletId: zod.string(),
+																				wallet: zod.unknown(),
+																				amount: zod.number(),
+																				walletTransactionStatusId: zod.int(),
+																				walletTransactionStatus: zod.object({
+																					id: zod.int(),
+																					name: zod.string(),
+																				}),
+																				walletTransactionTypeId: zod.int(),
+																				walletTransactionType: zod.object({
+																					id: zod.int(),
+																					name: zod.string(),
+																				}),
+																				createdAt: zod.iso.datetime({ offset: true }),
+																				referenceId: zod.string(),
+																			})
+																		),
+																		voucherGrants: zod.array(
+																			zod.object({
+																				id: zod.string(),
+																				walletId: zod.string(),
+																				wallet: zod.unknown(),
+																				voucherId: zod.int(),
+																				voucher: zod.object({
+																					id: zod.int(),
+																					name: zod.string(),
+																					description: zod.string(),
+																					isExtra: zod.boolean(),
+																					redemptionKind: zod.enum({
+																						Entitlement: 1,
+																						Credit: 2,
+																						Discount: 3,
+																					}),
+																					discountMode: zod
+																						.union([
+																							zod.enum({
+																								Percentage: 1,
+																								FixedAmount: 2,
+																							}),
+																							zod.null(),
+																						])
+																						.optional(),
+																					discountValue: zod.number().nullish(),
+																					maxDiscountAmount: zod.number().nullish(),
+																				}),
+																				amountGranted: zod.number(),
+																				amountRemaining: zod.number(),
+																				grantedAt: zod.iso.datetime({ offset: true }),
+																				expiryDate: zod.iso.datetime({ offset: true }),
+																			})
+																		),
+																	}),
+																	zod.null(),
+																])
+																.optional(),
+															lastSync: zod.iso.datetime({ offset: true }),
+														}),
+														zod.null(),
+													])
+													.optional(),
 												isPaid: zod.boolean(),
 												amountOutstanding: zod.number(),
 												amountPaid: zod.number(),
@@ -385,11 +402,14 @@ export const OutletGetAllResponse = zod.object({
 															price: zod.number(),
 															validationId: zod.int().nullish(),
 															validation: zod
-																.object({
-																	id: zod.int(),
-																	name: zod.string(),
-																})
-																.nullish(),
+																.union([
+																	zod.object({
+																		id: zod.int(),
+																		name: zod.string(),
+																	}),
+																	zod.null(),
+																])
+																.optional(),
 															canPayLater: zod.boolean(),
 															description: zod.string().nullish(),
 														}),
@@ -419,21 +439,24 @@ export const OutletGetAllResponse = zod.object({
 							id: zod.string(),
 							resourceId: zod.int().nullish(),
 							resource: zod
-								.object({
-									created: zod.iso.datetime({ offset: true }),
-									createdBy: zod.string().nullish(),
-									lastModified: zod.iso.datetime({ offset: true }).nullish(),
-									lastModifiedBy: zod.string().nullish(),
-									id: zod.int(),
-									name: zod.string(),
-									facilityId: zod.int(),
-									facility: zod.unknown(),
-									isActive: zod.boolean(),
-									slots: zod.array(zod.unknown()),
-								})
-								.nullish(),
+								.union([
+									zod.object({
+										created: zod.iso.datetime({ offset: true }),
+										createdBy: zod.string().nullish(),
+										lastModified: zod.iso.datetime({ offset: true }).nullish(),
+										lastModifiedBy: zod.string().nullish(),
+										id: zod.int(),
+										name: zod.string(),
+										facilityId: zod.int(),
+										facility: zod.unknown(),
+										isActive: zod.boolean(),
+										slots: zod.array(zod.unknown()),
+									}),
+									zod.null(),
+								])
+								.optional(),
 							facilityId: zod.int().nullish(),
-							facility: zod.unknown().nullish(),
+							facility: zod.union([zod.unknown(), zod.null()]).optional(),
 							startDatetime: zod.iso.datetime({ offset: true }),
 							endDatetime: zod.iso.datetime({ offset: true }).nullish(),
 							maxBookings: zod.int(),
@@ -472,11 +495,14 @@ export const OutletGetAllResponse = zod.object({
 									price: zod.number(),
 									validationId: zod.int().nullish(),
 									validation: zod
-										.object({
-											id: zod.int(),
-											name: zod.string(),
-										})
-										.nullish(),
+										.union([
+											zod.object({
+												id: zod.int(),
+												name: zod.string(),
+											}),
+											zod.null(),
+										])
+										.optional(),
 									canPayLater: zod.boolean(),
 									description: zod.string().nullish(),
 								})
@@ -502,6 +528,8 @@ export const OutletGetAllResponse = zod.object({
 										lastModified: zod.iso.datetime({ offset: true }).nullish(),
 										lastModifiedBy: zod.string().nullish(),
 										id: zod.int(),
+										facilityId: zod.int().nullish(),
+										facility: zod.union([zod.unknown(), zod.null()]).optional(),
 										bookingStatusId: zod.int(),
 										bookingStatus: zod.object({
 											id: zod.int(),
@@ -510,149 +538,161 @@ export const OutletGetAllResponse = zod.object({
 										bookingStatusDate: zod.iso.datetime({ offset: true }),
 										userId: zod.string().nullish(),
 										user: zod
-											.object({
-												id: zod.string(),
-												userName: zod.string().nullish(),
-												normalizedUserName: zod.string().nullish(),
-												email: zod.string().nullish(),
-												normalizedEmail: zod.string().nullish(),
-												emailConfirmed: zod.boolean(),
-												passwordHash: zod.string().nullish(),
-												securityStamp: zod.string().nullish(),
-												concurrencyStamp: zod.string().nullish(),
-												phoneNumber: zod.string().nullish(),
-												phoneNumberConfirmed: zod.boolean(),
-												twoFactorEnabled: zod.boolean(),
-												lockoutEnd: zod.iso.datetime({ offset: true }).nullish(),
-												lockoutEnabled: zod.boolean(),
-												accessFailedCount: zod.int(),
-												firstName: zod.string(),
-												lastName: zod.string(),
-												picture: zod.string().nullish(),
-												userContracts: zod.array(
-													zod.object({
-														created: zod.iso.datetime({ offset: true }),
-														createdBy: zod.string().nullish(),
-														lastModified: zod.iso.datetime({ offset: true }).nullish(),
-														lastModifiedBy: zod.string().nullish(),
-														id: zod.int(),
-														contractId: zod.int(),
-														contract: zod.object({
+											.union([
+												zod.object({
+													id: zod.string(),
+													userName: zod.string().nullish(),
+													normalizedUserName: zod.string().nullish(),
+													email: zod.string().nullish(),
+													normalizedEmail: zod.string().nullish(),
+													emailConfirmed: zod.boolean(),
+													passwordHash: zod.string().nullish(),
+													securityStamp: zod.string().nullish(),
+													concurrencyStamp: zod.string().nullish(),
+													phoneNumber: zod.string().nullish(),
+													phoneNumberConfirmed: zod.boolean(),
+													twoFactorEnabled: zod.boolean(),
+													lockoutEnd: zod.iso.datetime({ offset: true }).nullish(),
+													lockoutEnabled: zod.boolean(),
+													accessFailedCount: zod.int(),
+													firstName: zod.string(),
+													lastName: zod.string(),
+													picture: zod.string().nullish(),
+													userContracts: zod.array(
+														zod.object({
 															created: zod.iso.datetime({ offset: true }),
 															createdBy: zod.string().nullish(),
 															lastModified: zod.iso.datetime({ offset: true }).nullish(),
 															lastModifiedBy: zod.string().nullish(),
 															id: zod.int(),
-															name: zod.string(),
-															price: zod.number(),
-															frequency: zod.int(),
+															contractId: zod.int(),
+															contract: zod.object({
+																created: zod.iso.datetime({ offset: true }),
+																createdBy: zod.string().nullish(),
+																lastModified: zod.iso.datetime({ offset: true }).nullish(),
+																lastModifiedBy: zod.string().nullish(),
+																id: zod.int(),
+																name: zod.string(),
+																price: zod.number(),
+																frequency: zod.int(),
+																startDate: zod.iso.datetime({ offset: true }),
+																endDate: zod.iso.datetime({ offset: true }),
+																isActive: zod.boolean(),
+																isPublic: zod.boolean(),
+																contractFacilities: zod.array(
+																	zod.object({
+																		contractId: zod.int(),
+																		contract: zod.unknown(),
+																		facilityId: zod.int(),
+																		facility: zod.unknown(),
+																	})
+																),
+															}),
 															startDate: zod.iso.datetime({ offset: true }),
-															endDate: zod.iso.datetime({ offset: true }),
+															endDate: zod.iso.datetime({ offset: true }).nullish(),
+															price: zod.number(),
 															isActive: zod.boolean(),
-															isPublic: zod.boolean(),
-															contractFacilities: zod.array(
-																zod.object({
-																	contractId: zod.int(),
-																	contract: zod.unknown(),
-																	facilityId: zod.int(),
-																	facility: zod.unknown(),
-																})
-															),
-														}),
-														startDate: zod.iso.datetime({ offset: true }),
-														endDate: zod.iso.datetime({ offset: true }).nullish(),
-														price: zod.number(),
-														isActive: zod.boolean(),
-														userId: zod.string(),
-														user: zod.unknown(),
-													})
-												),
-												userRoles: zod.array(
-													zod.object({
-														userId: zod.string(),
-														roleId: zod.string(),
-														id: zod.int(),
-														facilityId: zod.int().nullish(),
-														facility: zod.unknown().nullish(),
-														role: zod.object({
-															id: zod.string(),
-															name: zod.string().nullish(),
-															normalizedName: zod.string().nullish(),
-															concurrencyStamp: zod.string().nullish(),
-														}),
-													})
-												),
-												wallet: zod
-													.object({
-														id: zod.string(),
-														userId: zod.string(),
-														user: zod.unknown(),
-														isActive: zod.boolean(),
-														currency: zod.string(),
-														balance: zod
-															.object({
-																walletId: zod.string(),
-																wallet: zod.unknown(),
-																balance: zod.number(),
-																updatedAt: zod.iso.datetime({ offset: true }),
-															})
-															.nullish(),
-														transactions: zod.array(
+															userId: zod.string(),
+															user: zod.unknown(),
+														})
+													),
+													userRoles: zod.array(
+														zod.object({
+															userId: zod.string(),
+															roleId: zod.string(),
+															id: zod.int(),
+															facilityId: zod.int().nullish(),
+															facility: zod.union([zod.unknown(), zod.null()]).optional(),
+															role: zod.object({
+																id: zod.string(),
+																name: zod.string().nullish(),
+																normalizedName: zod.string().nullish(),
+																concurrencyStamp: zod.string().nullish(),
+															}),
+														})
+													),
+													wallet: zod
+														.union([
 															zod.object({
 																id: zod.string(),
-																walletId: zod.string(),
-																wallet: zod.unknown(),
-																amount: zod.number(),
-																walletTransactionStatusId: zod.int(),
-																walletTransactionStatus: zod.object({
-																	id: zod.int(),
-																	name: zod.string(),
-																}),
-																walletTransactionTypeId: zod.int(),
-																walletTransactionType: zod.object({
-																	id: zod.int(),
-																	name: zod.string(),
-																}),
-																createdAt: zod.iso.datetime({ offset: true }),
-																referenceId: zod.string(),
-															})
-														),
-														voucherGrants: zod.array(
-															zod.object({
-																id: zod.string(),
-																walletId: zod.string(),
-																wallet: zod.unknown(),
-																voucherId: zod.int(),
-																voucher: zod.object({
-																	id: zod.int(),
-																	name: zod.string(),
-																	description: zod.string(),
-																	isExtra: zod.boolean(),
-																	redemptionKind: zod.enum({
-																		Entitlement: 1,
-																		Credit: 2,
-																		Discount: 3,
-																	}),
-																	discountMode: zod
-																		.enum({
-																			Percentage: 1,
-																			FixedAmount: 2,
-																		})
-																		.nullish(),
-																	discountValue: zod.number().nullish(),
-																	maxDiscountAmount: zod.number().nullish(),
-																}),
-																amountGranted: zod.number(),
-																amountRemaining: zod.number(),
-																grantedAt: zod.iso.datetime({ offset: true }),
-																expiryDate: zod.iso.datetime({ offset: true }),
-															})
-														),
-													})
-													.nullish(),
-												lastSync: zod.iso.datetime({ offset: true }),
-											})
-											.nullish(),
+																userId: zod.string(),
+																user: zod.unknown(),
+																isActive: zod.boolean(),
+																currency: zod.string(),
+																balance: zod
+																	.union([
+																		zod.object({
+																			walletId: zod.string(),
+																			wallet: zod.unknown(),
+																			balance: zod.number(),
+																			updatedAt: zod.iso.datetime({ offset: true }),
+																		}),
+																		zod.null(),
+																	])
+																	.optional(),
+																transactions: zod.array(
+																	zod.object({
+																		id: zod.string(),
+																		walletId: zod.string(),
+																		wallet: zod.unknown(),
+																		amount: zod.number(),
+																		walletTransactionStatusId: zod.int(),
+																		walletTransactionStatus: zod.object({
+																			id: zod.int(),
+																			name: zod.string(),
+																		}),
+																		walletTransactionTypeId: zod.int(),
+																		walletTransactionType: zod.object({
+																			id: zod.int(),
+																			name: zod.string(),
+																		}),
+																		createdAt: zod.iso.datetime({ offset: true }),
+																		referenceId: zod.string(),
+																	})
+																),
+																voucherGrants: zod.array(
+																	zod.object({
+																		id: zod.string(),
+																		walletId: zod.string(),
+																		wallet: zod.unknown(),
+																		voucherId: zod.int(),
+																		voucher: zod.object({
+																			id: zod.int(),
+																			name: zod.string(),
+																			description: zod.string(),
+																			isExtra: zod.boolean(),
+																			redemptionKind: zod.enum({
+																				Entitlement: 1,
+																				Credit: 2,
+																				Discount: 3,
+																			}),
+																			discountMode: zod
+																				.union([
+																					zod.enum({
+																						Percentage: 1,
+																						FixedAmount: 2,
+																					}),
+																					zod.null(),
+																				])
+																				.optional(),
+																			discountValue: zod.number().nullish(),
+																			maxDiscountAmount: zod.number().nullish(),
+																		}),
+																		amountGranted: zod.number(),
+																		amountRemaining: zod.number(),
+																		grantedAt: zod.iso.datetime({ offset: true }),
+																		expiryDate: zod.iso.datetime({ offset: true }),
+																	})
+																),
+															}),
+															zod.null(),
+														])
+														.optional(),
+													lastSync: zod.iso.datetime({ offset: true }),
+												}),
+												zod.null(),
+											])
+											.optional(),
 										isPaid: zod.boolean(),
 										amountOutstanding: zod.number(),
 										amountPaid: zod.number(),
@@ -695,11 +735,14 @@ export const OutletGetAllResponse = zod.object({
 													price: zod.number(),
 													validationId: zod.int().nullish(),
 													validation: zod
-														.object({
-															id: zod.int(),
-															name: zod.string(),
-														})
-														.nullish(),
+														.union([
+															zod.object({
+																id: zod.int(),
+																name: zod.string(),
+															}),
+															zod.null(),
+														])
+														.optional(),
 													canPayLater: zod.boolean(),
 													description: zod.string().nullish(),
 												}),
@@ -805,9 +848,9 @@ export const OutletGetAllResponse = zod.object({
 										lastModifiedBy: zod.string().nullish(),
 										id: zod.string(),
 										resourceId: zod.int().nullish(),
-										resource: zod.unknown().nullish(),
+										resource: zod.union([zod.unknown(), zod.null()]).optional(),
 										facilityId: zod.int().nullish(),
-										facility: zod.unknown().nullish(),
+										facility: zod.union([zod.unknown(), zod.null()]).optional(),
 										startDatetime: zod.iso.datetime({ offset: true }),
 										endDatetime: zod.iso.datetime({ offset: true }).nullish(),
 										maxBookings: zod.int(),
@@ -846,11 +889,14 @@ export const OutletGetAllResponse = zod.object({
 												price: zod.number(),
 												validationId: zod.int().nullish(),
 												validation: zod
-													.object({
-														id: zod.int(),
-														name: zod.string(),
-													})
-													.nullish(),
+													.union([
+														zod.object({
+															id: zod.int(),
+															name: zod.string(),
+														}),
+														zod.null(),
+													])
+													.optional(),
 												canPayLater: zod.boolean(),
 												description: zod.string().nullish(),
 											})
@@ -866,6 +912,8 @@ export const OutletGetAllResponse = zod.object({
 													lastModified: zod.iso.datetime({ offset: true }).nullish(),
 													lastModifiedBy: zod.string().nullish(),
 													id: zod.int(),
+													facilityId: zod.int().nullish(),
+													facility: zod.union([zod.unknown(), zod.null()]).optional(),
 													bookingStatusId: zod.int(),
 													bookingStatus: zod.object({
 														id: zod.int(),
@@ -874,149 +922,161 @@ export const OutletGetAllResponse = zod.object({
 													bookingStatusDate: zod.iso.datetime({ offset: true }),
 													userId: zod.string().nullish(),
 													user: zod
-														.object({
-															id: zod.string(),
-															userName: zod.string().nullish(),
-															normalizedUserName: zod.string().nullish(),
-															email: zod.string().nullish(),
-															normalizedEmail: zod.string().nullish(),
-															emailConfirmed: zod.boolean(),
-															passwordHash: zod.string().nullish(),
-															securityStamp: zod.string().nullish(),
-															concurrencyStamp: zod.string().nullish(),
-															phoneNumber: zod.string().nullish(),
-															phoneNumberConfirmed: zod.boolean(),
-															twoFactorEnabled: zod.boolean(),
-															lockoutEnd: zod.iso.datetime({ offset: true }).nullish(),
-															lockoutEnabled: zod.boolean(),
-															accessFailedCount: zod.int(),
-															firstName: zod.string(),
-															lastName: zod.string(),
-															picture: zod.string().nullish(),
-															userContracts: zod.array(
-																zod.object({
-																	created: zod.iso.datetime({ offset: true }),
-																	createdBy: zod.string().nullish(),
-																	lastModified: zod.iso.datetime({ offset: true }).nullish(),
-																	lastModifiedBy: zod.string().nullish(),
-																	id: zod.int(),
-																	contractId: zod.int(),
-																	contract: zod.object({
+														.union([
+															zod.object({
+																id: zod.string(),
+																userName: zod.string().nullish(),
+																normalizedUserName: zod.string().nullish(),
+																email: zod.string().nullish(),
+																normalizedEmail: zod.string().nullish(),
+																emailConfirmed: zod.boolean(),
+																passwordHash: zod.string().nullish(),
+																securityStamp: zod.string().nullish(),
+																concurrencyStamp: zod.string().nullish(),
+																phoneNumber: zod.string().nullish(),
+																phoneNumberConfirmed: zod.boolean(),
+																twoFactorEnabled: zod.boolean(),
+																lockoutEnd: zod.iso.datetime({ offset: true }).nullish(),
+																lockoutEnabled: zod.boolean(),
+																accessFailedCount: zod.int(),
+																firstName: zod.string(),
+																lastName: zod.string(),
+																picture: zod.string().nullish(),
+																userContracts: zod.array(
+																	zod.object({
 																		created: zod.iso.datetime({ offset: true }),
 																		createdBy: zod.string().nullish(),
 																		lastModified: zod.iso.datetime({ offset: true }).nullish(),
 																		lastModifiedBy: zod.string().nullish(),
 																		id: zod.int(),
-																		name: zod.string(),
-																		price: zod.number(),
-																		frequency: zod.int(),
+																		contractId: zod.int(),
+																		contract: zod.object({
+																			created: zod.iso.datetime({ offset: true }),
+																			createdBy: zod.string().nullish(),
+																			lastModified: zod.iso.datetime({ offset: true }).nullish(),
+																			lastModifiedBy: zod.string().nullish(),
+																			id: zod.int(),
+																			name: zod.string(),
+																			price: zod.number(),
+																			frequency: zod.int(),
+																			startDate: zod.iso.datetime({ offset: true }),
+																			endDate: zod.iso.datetime({ offset: true }),
+																			isActive: zod.boolean(),
+																			isPublic: zod.boolean(),
+																			contractFacilities: zod.array(
+																				zod.object({
+																					contractId: zod.int(),
+																					contract: zod.unknown(),
+																					facilityId: zod.int(),
+																					facility: zod.unknown(),
+																				})
+																			),
+																		}),
 																		startDate: zod.iso.datetime({ offset: true }),
-																		endDate: zod.iso.datetime({ offset: true }),
+																		endDate: zod.iso.datetime({ offset: true }).nullish(),
+																		price: zod.number(),
 																		isActive: zod.boolean(),
-																		isPublic: zod.boolean(),
-																		contractFacilities: zod.array(
-																			zod.object({
-																				contractId: zod.int(),
-																				contract: zod.unknown(),
-																				facilityId: zod.int(),
-																				facility: zod.unknown(),
-																			})
-																		),
-																	}),
-																	startDate: zod.iso.datetime({ offset: true }),
-																	endDate: zod.iso.datetime({ offset: true }).nullish(),
-																	price: zod.number(),
-																	isActive: zod.boolean(),
-																	userId: zod.string(),
-																	user: zod.unknown(),
-																})
-															),
-															userRoles: zod.array(
-																zod.object({
-																	userId: zod.string(),
-																	roleId: zod.string(),
-																	id: zod.int(),
-																	facilityId: zod.int().nullish(),
-																	facility: zod.unknown().nullish(),
-																	role: zod.object({
-																		id: zod.string(),
-																		name: zod.string().nullish(),
-																		normalizedName: zod.string().nullish(),
-																		concurrencyStamp: zod.string().nullish(),
-																	}),
-																})
-															),
-															wallet: zod
-																.object({
-																	id: zod.string(),
-																	userId: zod.string(),
-																	user: zod.unknown(),
-																	isActive: zod.boolean(),
-																	currency: zod.string(),
-																	balance: zod
-																		.object({
-																			walletId: zod.string(),
-																			wallet: zod.unknown(),
-																			balance: zod.number(),
-																			updatedAt: zod.iso.datetime({ offset: true }),
-																		})
-																		.nullish(),
-																	transactions: zod.array(
+																		userId: zod.string(),
+																		user: zod.unknown(),
+																	})
+																),
+																userRoles: zod.array(
+																	zod.object({
+																		userId: zod.string(),
+																		roleId: zod.string(),
+																		id: zod.int(),
+																		facilityId: zod.int().nullish(),
+																		facility: zod.union([zod.unknown(), zod.null()]).optional(),
+																		role: zod.object({
+																			id: zod.string(),
+																			name: zod.string().nullish(),
+																			normalizedName: zod.string().nullish(),
+																			concurrencyStamp: zod.string().nullish(),
+																		}),
+																	})
+																),
+																wallet: zod
+																	.union([
 																		zod.object({
 																			id: zod.string(),
-																			walletId: zod.string(),
-																			wallet: zod.unknown(),
-																			amount: zod.number(),
-																			walletTransactionStatusId: zod.int(),
-																			walletTransactionStatus: zod.object({
-																				id: zod.int(),
-																				name: zod.string(),
-																			}),
-																			walletTransactionTypeId: zod.int(),
-																			walletTransactionType: zod.object({
-																				id: zod.int(),
-																				name: zod.string(),
-																			}),
-																			createdAt: zod.iso.datetime({ offset: true }),
-																			referenceId: zod.string(),
-																		})
-																	),
-																	voucherGrants: zod.array(
-																		zod.object({
-																			id: zod.string(),
-																			walletId: zod.string(),
-																			wallet: zod.unknown(),
-																			voucherId: zod.int(),
-																			voucher: zod.object({
-																				id: zod.int(),
-																				name: zod.string(),
-																				description: zod.string(),
-																				isExtra: zod.boolean(),
-																				redemptionKind: zod.enum({
-																					Entitlement: 1,
-																					Credit: 2,
-																					Discount: 3,
-																				}),
-																				discountMode: zod
-																					.enum({
-																						Percentage: 1,
-																						FixedAmount: 2,
-																					})
-																					.nullish(),
-																				discountValue: zod.number().nullish(),
-																				maxDiscountAmount: zod.number().nullish(),
-																			}),
-																			amountGranted: zod.number(),
-																			amountRemaining: zod.number(),
-																			grantedAt: zod.iso.datetime({ offset: true }),
-																			expiryDate: zod.iso.datetime({ offset: true }),
-																		})
-																	),
-																})
-																.nullish(),
-															lastSync: zod.iso.datetime({ offset: true }),
-														})
-														.nullish(),
+																			userId: zod.string(),
+																			user: zod.unknown(),
+																			isActive: zod.boolean(),
+																			currency: zod.string(),
+																			balance: zod
+																				.union([
+																					zod.object({
+																						walletId: zod.string(),
+																						wallet: zod.unknown(),
+																						balance: zod.number(),
+																						updatedAt: zod.iso.datetime({ offset: true }),
+																					}),
+																					zod.null(),
+																				])
+																				.optional(),
+																			transactions: zod.array(
+																				zod.object({
+																					id: zod.string(),
+																					walletId: zod.string(),
+																					wallet: zod.unknown(),
+																					amount: zod.number(),
+																					walletTransactionStatusId: zod.int(),
+																					walletTransactionStatus: zod.object({
+																						id: zod.int(),
+																						name: zod.string(),
+																					}),
+																					walletTransactionTypeId: zod.int(),
+																					walletTransactionType: zod.object({
+																						id: zod.int(),
+																						name: zod.string(),
+																					}),
+																					createdAt: zod.iso.datetime({ offset: true }),
+																					referenceId: zod.string(),
+																				})
+																			),
+																			voucherGrants: zod.array(
+																				zod.object({
+																					id: zod.string(),
+																					walletId: zod.string(),
+																					wallet: zod.unknown(),
+																					voucherId: zod.int(),
+																					voucher: zod.object({
+																						id: zod.int(),
+																						name: zod.string(),
+																						description: zod.string(),
+																						isExtra: zod.boolean(),
+																						redemptionKind: zod.enum({
+																							Entitlement: 1,
+																							Credit: 2,
+																							Discount: 3,
+																						}),
+																						discountMode: zod
+																							.union([
+																								zod.enum({
+																									Percentage: 1,
+																									FixedAmount: 2,
+																								}),
+																								zod.null(),
+																							])
+																							.optional(),
+																						discountValue: zod.number().nullish(),
+																						maxDiscountAmount: zod.number().nullish(),
+																					}),
+																					amountGranted: zod.number(),
+																					amountRemaining: zod.number(),
+																					grantedAt: zod.iso.datetime({ offset: true }),
+																					expiryDate: zod.iso.datetime({ offset: true }),
+																				})
+																			),
+																		}),
+																		zod.null(),
+																	])
+																	.optional(),
+																lastSync: zod.iso.datetime({ offset: true }),
+															}),
+															zod.null(),
+														])
+														.optional(),
 													isPaid: zod.boolean(),
 													amountOutstanding: zod.number(),
 													amountPaid: zod.number(),
@@ -1059,11 +1119,14 @@ export const OutletGetAllResponse = zod.object({
 																price: zod.number(),
 																validationId: zod.int().nullish(),
 																validation: zod
-																	.object({
-																		id: zod.int(),
-																		name: zod.string(),
-																	})
-																	.nullish(),
+																	.union([
+																		zod.object({
+																			id: zod.int(),
+																			name: zod.string(),
+																		}),
+																		zod.null(),
+																	])
+																	.optional(),
 																canPayLater: zod.boolean(),
 																description: zod.string().nullish(),
 															}),
@@ -1093,21 +1156,24 @@ export const OutletGetAllResponse = zod.object({
 								id: zod.string(),
 								resourceId: zod.int().nullish(),
 								resource: zod
-									.object({
-										created: zod.iso.datetime({ offset: true }),
-										createdBy: zod.string().nullish(),
-										lastModified: zod.iso.datetime({ offset: true }).nullish(),
-										lastModifiedBy: zod.string().nullish(),
-										id: zod.int(),
-										name: zod.string(),
-										facilityId: zod.int(),
-										facility: zod.unknown(),
-										isActive: zod.boolean(),
-										slots: zod.array(zod.unknown()),
-									})
-									.nullish(),
+									.union([
+										zod.object({
+											created: zod.iso.datetime({ offset: true }),
+											createdBy: zod.string().nullish(),
+											lastModified: zod.iso.datetime({ offset: true }).nullish(),
+											lastModifiedBy: zod.string().nullish(),
+											id: zod.int(),
+											name: zod.string(),
+											facilityId: zod.int(),
+											facility: zod.unknown(),
+											isActive: zod.boolean(),
+											slots: zod.array(zod.unknown()),
+										}),
+										zod.null(),
+									])
+									.optional(),
 								facilityId: zod.int().nullish(),
-								facility: zod.unknown().nullish(),
+								facility: zod.union([zod.unknown(), zod.null()]).optional(),
 								startDatetime: zod.iso.datetime({ offset: true }),
 								endDatetime: zod.iso.datetime({ offset: true }).nullish(),
 								maxBookings: zod.int(),
@@ -1146,11 +1212,14 @@ export const OutletGetAllResponse = zod.object({
 										price: zod.number(),
 										validationId: zod.int().nullish(),
 										validation: zod
-											.object({
-												id: zod.int(),
-												name: zod.string(),
-											})
-											.nullish(),
+											.union([
+												zod.object({
+													id: zod.int(),
+													name: zod.string(),
+												}),
+												zod.null(),
+											])
+											.optional(),
 										canPayLater: zod.boolean(),
 										description: zod.string().nullish(),
 									})
@@ -1166,6 +1235,8 @@ export const OutletGetAllResponse = zod.object({
 											lastModified: zod.iso.datetime({ offset: true }).nullish(),
 											lastModifiedBy: zod.string().nullish(),
 											id: zod.int(),
+											facilityId: zod.int().nullish(),
+											facility: zod.union([zod.unknown(), zod.null()]).optional(),
 											bookingStatusId: zod.int(),
 											bookingStatus: zod.object({
 												id: zod.int(),
@@ -1174,149 +1245,161 @@ export const OutletGetAllResponse = zod.object({
 											bookingStatusDate: zod.iso.datetime({ offset: true }),
 											userId: zod.string().nullish(),
 											user: zod
-												.object({
-													id: zod.string(),
-													userName: zod.string().nullish(),
-													normalizedUserName: zod.string().nullish(),
-													email: zod.string().nullish(),
-													normalizedEmail: zod.string().nullish(),
-													emailConfirmed: zod.boolean(),
-													passwordHash: zod.string().nullish(),
-													securityStamp: zod.string().nullish(),
-													concurrencyStamp: zod.string().nullish(),
-													phoneNumber: zod.string().nullish(),
-													phoneNumberConfirmed: zod.boolean(),
-													twoFactorEnabled: zod.boolean(),
-													lockoutEnd: zod.iso.datetime({ offset: true }).nullish(),
-													lockoutEnabled: zod.boolean(),
-													accessFailedCount: zod.int(),
-													firstName: zod.string(),
-													lastName: zod.string(),
-													picture: zod.string().nullish(),
-													userContracts: zod.array(
-														zod.object({
-															created: zod.iso.datetime({ offset: true }),
-															createdBy: zod.string().nullish(),
-															lastModified: zod.iso.datetime({ offset: true }).nullish(),
-															lastModifiedBy: zod.string().nullish(),
-															id: zod.int(),
-															contractId: zod.int(),
-															contract: zod.object({
+												.union([
+													zod.object({
+														id: zod.string(),
+														userName: zod.string().nullish(),
+														normalizedUserName: zod.string().nullish(),
+														email: zod.string().nullish(),
+														normalizedEmail: zod.string().nullish(),
+														emailConfirmed: zod.boolean(),
+														passwordHash: zod.string().nullish(),
+														securityStamp: zod.string().nullish(),
+														concurrencyStamp: zod.string().nullish(),
+														phoneNumber: zod.string().nullish(),
+														phoneNumberConfirmed: zod.boolean(),
+														twoFactorEnabled: zod.boolean(),
+														lockoutEnd: zod.iso.datetime({ offset: true }).nullish(),
+														lockoutEnabled: zod.boolean(),
+														accessFailedCount: zod.int(),
+														firstName: zod.string(),
+														lastName: zod.string(),
+														picture: zod.string().nullish(),
+														userContracts: zod.array(
+															zod.object({
 																created: zod.iso.datetime({ offset: true }),
 																createdBy: zod.string().nullish(),
 																lastModified: zod.iso.datetime({ offset: true }).nullish(),
 																lastModifiedBy: zod.string().nullish(),
 																id: zod.int(),
-																name: zod.string(),
-																price: zod.number(),
-																frequency: zod.int(),
+																contractId: zod.int(),
+																contract: zod.object({
+																	created: zod.iso.datetime({ offset: true }),
+																	createdBy: zod.string().nullish(),
+																	lastModified: zod.iso.datetime({ offset: true }).nullish(),
+																	lastModifiedBy: zod.string().nullish(),
+																	id: zod.int(),
+																	name: zod.string(),
+																	price: zod.number(),
+																	frequency: zod.int(),
+																	startDate: zod.iso.datetime({ offset: true }),
+																	endDate: zod.iso.datetime({ offset: true }),
+																	isActive: zod.boolean(),
+																	isPublic: zod.boolean(),
+																	contractFacilities: zod.array(
+																		zod.object({
+																			contractId: zod.int(),
+																			contract: zod.unknown(),
+																			facilityId: zod.int(),
+																			facility: zod.unknown(),
+																		})
+																	),
+																}),
 																startDate: zod.iso.datetime({ offset: true }),
-																endDate: zod.iso.datetime({ offset: true }),
+																endDate: zod.iso.datetime({ offset: true }).nullish(),
+																price: zod.number(),
 																isActive: zod.boolean(),
-																isPublic: zod.boolean(),
-																contractFacilities: zod.array(
-																	zod.object({
-																		contractId: zod.int(),
-																		contract: zod.unknown(),
-																		facilityId: zod.int(),
-																		facility: zod.unknown(),
-																	})
-																),
-															}),
-															startDate: zod.iso.datetime({ offset: true }),
-															endDate: zod.iso.datetime({ offset: true }).nullish(),
-															price: zod.number(),
-															isActive: zod.boolean(),
-															userId: zod.string(),
-															user: zod.unknown(),
-														})
-													),
-													userRoles: zod.array(
-														zod.object({
-															userId: zod.string(),
-															roleId: zod.string(),
-															id: zod.int(),
-															facilityId: zod.int().nullish(),
-															facility: zod.unknown().nullish(),
-															role: zod.object({
-																id: zod.string(),
-																name: zod.string().nullish(),
-																normalizedName: zod.string().nullish(),
-																concurrencyStamp: zod.string().nullish(),
-															}),
-														})
-													),
-													wallet: zod
-														.object({
-															id: zod.string(),
-															userId: zod.string(),
-															user: zod.unknown(),
-															isActive: zod.boolean(),
-															currency: zod.string(),
-															balance: zod
-																.object({
-																	walletId: zod.string(),
-																	wallet: zod.unknown(),
-																	balance: zod.number(),
-																	updatedAt: zod.iso.datetime({ offset: true }),
-																})
-																.nullish(),
-															transactions: zod.array(
+																userId: zod.string(),
+																user: zod.unknown(),
+															})
+														),
+														userRoles: zod.array(
+															zod.object({
+																userId: zod.string(),
+																roleId: zod.string(),
+																id: zod.int(),
+																facilityId: zod.int().nullish(),
+																facility: zod.union([zod.unknown(), zod.null()]).optional(),
+																role: zod.object({
+																	id: zod.string(),
+																	name: zod.string().nullish(),
+																	normalizedName: zod.string().nullish(),
+																	concurrencyStamp: zod.string().nullish(),
+																}),
+															})
+														),
+														wallet: zod
+															.union([
 																zod.object({
 																	id: zod.string(),
-																	walletId: zod.string(),
-																	wallet: zod.unknown(),
-																	amount: zod.number(),
-																	walletTransactionStatusId: zod.int(),
-																	walletTransactionStatus: zod.object({
-																		id: zod.int(),
-																		name: zod.string(),
-																	}),
-																	walletTransactionTypeId: zod.int(),
-																	walletTransactionType: zod.object({
-																		id: zod.int(),
-																		name: zod.string(),
-																	}),
-																	createdAt: zod.iso.datetime({ offset: true }),
-																	referenceId: zod.string(),
-																})
-															),
-															voucherGrants: zod.array(
-																zod.object({
-																	id: zod.string(),
-																	walletId: zod.string(),
-																	wallet: zod.unknown(),
-																	voucherId: zod.int(),
-																	voucher: zod.object({
-																		id: zod.int(),
-																		name: zod.string(),
-																		description: zod.string(),
-																		isExtra: zod.boolean(),
-																		redemptionKind: zod.enum({
-																			Entitlement: 1,
-																			Credit: 2,
-																			Discount: 3,
-																		}),
-																		discountMode: zod
-																			.enum({
-																				Percentage: 1,
-																				FixedAmount: 2,
-																			})
-																			.nullish(),
-																		discountValue: zod.number().nullish(),
-																		maxDiscountAmount: zod.number().nullish(),
-																	}),
-																	amountGranted: zod.number(),
-																	amountRemaining: zod.number(),
-																	grantedAt: zod.iso.datetime({ offset: true }),
-																	expiryDate: zod.iso.datetime({ offset: true }),
-																})
-															),
-														})
-														.nullish(),
-													lastSync: zod.iso.datetime({ offset: true }),
-												})
-												.nullish(),
+																	userId: zod.string(),
+																	user: zod.unknown(),
+																	isActive: zod.boolean(),
+																	currency: zod.string(),
+																	balance: zod
+																		.union([
+																			zod.object({
+																				walletId: zod.string(),
+																				wallet: zod.unknown(),
+																				balance: zod.number(),
+																				updatedAt: zod.iso.datetime({ offset: true }),
+																			}),
+																			zod.null(),
+																		])
+																		.optional(),
+																	transactions: zod.array(
+																		zod.object({
+																			id: zod.string(),
+																			walletId: zod.string(),
+																			wallet: zod.unknown(),
+																			amount: zod.number(),
+																			walletTransactionStatusId: zod.int(),
+																			walletTransactionStatus: zod.object({
+																				id: zod.int(),
+																				name: zod.string(),
+																			}),
+																			walletTransactionTypeId: zod.int(),
+																			walletTransactionType: zod.object({
+																				id: zod.int(),
+																				name: zod.string(),
+																			}),
+																			createdAt: zod.iso.datetime({ offset: true }),
+																			referenceId: zod.string(),
+																		})
+																	),
+																	voucherGrants: zod.array(
+																		zod.object({
+																			id: zod.string(),
+																			walletId: zod.string(),
+																			wallet: zod.unknown(),
+																			voucherId: zod.int(),
+																			voucher: zod.object({
+																				id: zod.int(),
+																				name: zod.string(),
+																				description: zod.string(),
+																				isExtra: zod.boolean(),
+																				redemptionKind: zod.enum({
+																					Entitlement: 1,
+																					Credit: 2,
+																					Discount: 3,
+																				}),
+																				discountMode: zod
+																					.union([
+																						zod.enum({
+																							Percentage: 1,
+																							FixedAmount: 2,
+																						}),
+																						zod.null(),
+																					])
+																					.optional(),
+																				discountValue: zod.number().nullish(),
+																				maxDiscountAmount: zod.number().nullish(),
+																			}),
+																			amountGranted: zod.number(),
+																			amountRemaining: zod.number(),
+																			grantedAt: zod.iso.datetime({ offset: true }),
+																			expiryDate: zod.iso.datetime({ offset: true }),
+																		})
+																	),
+																}),
+																zod.null(),
+															])
+															.optional(),
+														lastSync: zod.iso.datetime({ offset: true }),
+													}),
+													zod.null(),
+												])
+												.optional(),
 											isPaid: zod.boolean(),
 											amountOutstanding: zod.number(),
 											amountPaid: zod.number(),
@@ -1359,11 +1442,14 @@ export const OutletGetAllResponse = zod.object({
 														price: zod.number(),
 														validationId: zod.int().nullish(),
 														validation: zod
-															.object({
-																id: zod.int(),
-																name: zod.string(),
-															})
-															.nullish(),
+															.union([
+																zod.object({
+																	id: zod.int(),
+																	name: zod.string(),
+																}),
+																zod.null(),
+															])
+															.optional(),
 														canPayLater: zod.boolean(),
 														description: zod.string().nullish(),
 													}),
