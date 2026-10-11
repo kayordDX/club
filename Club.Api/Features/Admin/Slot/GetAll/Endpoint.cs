@@ -1,5 +1,6 @@
 using Club.Common.Enums;
 using Club.Data;
+using Club.Features.Booking.Common;
 using Microsoft.EntityFrameworkCore;
 
 namespace Club.Features.Admin.Slot.GetAll;
@@ -49,11 +50,8 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<AdminSlotGetAllRequest,
         // Mirrors the SlotGetAll capacity count: cancelled bookings never hold a
         // slot and pending bookings stop holding it once they expire.
         var bookings = await _dbContext
-            .SlotContractBooking.Where(scb =>
-                slotIds.Contains(scb.SlotContract.SlotId)
-                && scb.Booking.BookingStatusId != (int)BookingStatusEnum.Cancelled
-                && (scb.Booking.BookingStatusId != (int)BookingStatusEnum.Pending || scb.Booking.ExpiresAt >= now)
-            )
+            .SlotContractBooking.ActiveReservations(now)
+            .Where(scb => slotIds.Contains(scb.SlotContract.SlotId))
             .Select(scb => new
             {
                 scb.SlotContract.SlotId,

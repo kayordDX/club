@@ -24,7 +24,7 @@ using BookingCreateEndpoint = Club.Features.Booking.Create.Endpoint;
 namespace IntegrationTests.Features.Booking;
 
 [Collection("AppFixture collection")]
-public class AdminBookingTests(AppFixture app)
+public partial class AdminBookingTests(AppFixture app)
 {
     [Fact]
     public async Task AdminBookingGetAll_WhenManager_ReturnsFacilityBookings()
@@ -395,15 +395,15 @@ public class AdminBookingTests(AppFixture app)
         }
 
         (await db.Booking.AsNoTracking().SingleAsync(b => b.Id == booking.Id, ct)).FacilityId.ShouldBe(facilityId);
-        (await db.SlotContractBooking.CountAsync(scb => scb.BookingId == booking.Id, ct)).ShouldBe(0);
+        (await db.SlotContractBooking.CountAsync(scb => scb.BookingId == booking.Id, ct)).ShouldBe(status == BookingStatusEnum.Expired ? 1 : 0);
         var list = await app.Client.GetAsync($"/admin/facility/{facilityId}/booking?filters={Uri.EscapeDataString($"id == {booking.Id}")}", ct);
         list.IsSuccessStatusCode.ShouldBeTrue();
         using var document = JsonDocument.Parse(await list.Content.ReadAsStringAsync(ct));
         var item = document.RootElement.GetProperty("items").EnumerateArray().Single();
         item.GetProperty("bookingStatusId").GetInt32().ShouldBe((int)status);
         item.GetProperty("facilityName").GetString().ShouldBe("Admin Facility");
-        item.GetProperty("slotStartDatetime").ValueKind.ShouldBe(JsonValueKind.Null);
-        item.GetProperty("slotEndDatetime").ValueKind.ShouldBe(JsonValueKind.Null);
+        item.GetProperty("slotStartDatetime").ValueKind.ShouldBe(status == BookingStatusEnum.Expired ? JsonValueKind.String : JsonValueKind.Null);
+        item.GetProperty("slotEndDatetime").ValueKind.ShouldBe(status == BookingStatusEnum.Expired ? JsonValueKind.String : JsonValueKind.Null);
 
         var (detailResponse, _) = await app.Client.GETAsync<AdminBookingGetEndpoint, AdminBookingGetRequest, BookingDTO>(
             new AdminBookingGetRequest { FacilityId = facilityId, Id = booking.Id }
@@ -423,8 +423,11 @@ public class AdminBookingTests(AppFixture app)
         pathResponse.IsSuccessStatusCode.ShouldBeTrue();
         path.FacilityId.ShouldBe(facilityId);
         path.OutletName.ShouldNotBeNullOrEmpty();
-        path.SlotId.ShouldBeNull();
-        path.SlotStartDatetime.ShouldBeNull();
+        path.SlotId.ShouldBe(status == BookingStatusEnum.Expired ? (Guid?)slot.Id : null);
+        if (status == BookingStatusEnum.Expired)
+            path.SlotStartDatetime!.Value.ShouldBe(slot.StartDatetime, TimeSpan.FromMilliseconds(1));
+        else
+            path.SlotStartDatetime.ShouldBeNull();
 
         var summaryResponse = await app.Client.GetAsync($"/booking/user?filters={Uri.EscapeDataString($"id == {booking.Id}")}", ct);
         summaryResponse.IsSuccessStatusCode.ShouldBeTrue();
@@ -599,15 +602,18 @@ public class AdminBookingTests(AppFixture app)
     private static async Task AssignManagerRole(AppDbContext db, int facilityId)
     {
         const string normalizedName = "MANAGER";
-        var role = await db.Roles.FirstOrDefaultAsync(r => r.NormalizedName == normalizedName);
+        var role = await db.Roles.FirstOrDefaultAsync(r => r.NormalizedName == normalizedName, TestContext.Current.CancellationToken);
         if (role is null)
         {
             role = new Role { Name = Club.Constants.Policy.Manager, NormalizedName = normalizedName };
             db.Roles.Add(role);
-            await db.SaveChangesAsync();
+            await db.SaveChangesAsync(TestContext.Current.CancellationToken);
         }
 
-        var alreadyAssigned = await db.UserRoles.AnyAsync(ur => ur.UserId == TestClaims.UserIdGuid && ur.RoleId == role.Id && ur.FacilityId == facilityId);
+        var alreadyAssigned = await db.UserRoles.AnyAsync(
+            ur => ur.UserId == TestClaims.UserIdGuid && ur.RoleId == role.Id && ur.FacilityId == facilityId,
+            TestContext.Current.CancellationToken
+        );
         if (!alreadyAssigned)
         {
             db.UserRoles.Add(
@@ -618,7 +624,7 @@ public class AdminBookingTests(AppFixture app)
                     FacilityId = facilityId,
                 }
             );
-            await db.SaveChangesAsync();
+            await db.SaveChangesAsync(TestContext.Current.CancellationToken);
         }
     }
 
@@ -626,11 +632,11 @@ public class AdminBookingTests(AppFixture app)
     {
         var business = new Business { Name = $"Business_{Guid.NewGuid()}" };
         db.Business.Add(business);
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var outletType = new OutletType { Name = $"OutletType_{Guid.NewGuid()}" };
         db.OutletType.Add(outletType);
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var outlet = new Outlet
         {
@@ -645,10 +651,16 @@ public class AdminBookingTests(AppFixture app)
             IsActive = true,
         };
         db.Outlet.Add(outlet);
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        await db.Database.ExecuteSqlRawAsync("INSERT INTO facility_type (name) VALUES ({0}) ON CONFLICT DO NOTHING", $"FacilityType_{Guid.NewGuid()}");
-        var facilityType = await db.Database.SqlQueryRaw<FacilityType>("SELECT id, name FROM facility_type ORDER BY id DESC LIMIT 1").FirstOrDefaultAsync();
+        await db.Database.ExecuteSqlRawAsync(
+            "INSERT INTO facility_type (name) VALUES ({0}) ON CONFLICT DO NOTHING",
+            [$"FacilityType_{Guid.NewGuid()}"],
+            TestContext.Current.CancellationToken
+        );
+        var facilityType = await db
+            .Database.SqlQueryRaw<FacilityType>("SELECT id, name FROM facility_type ORDER BY id DESC LIMIT 1")
+            .FirstOrDefaultAsync(TestContext.Current.CancellationToken);
 
         var facility = new Facility
         {
@@ -659,7 +671,7 @@ public class AdminBookingTests(AppFixture app)
             IsActive = true,
         };
         db.Facility.Add(facility);
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var slot = new Club.Entities.Slot
         {
@@ -674,7 +686,7 @@ public class AdminBookingTests(AppFixture app)
         var contract = new Contract { Name = $"Contract_{Guid.NewGuid()}", IsPublic = true };
         db.Contract.Add(contract);
         db.ContractFacility.Add(new ContractFacility { Contract = contract, Facility = facility });
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var slotContract = new SlotContract
         {
@@ -686,7 +698,7 @@ public class AdminBookingTests(AppFixture app)
             CanPayLater = false,
         };
         db.SlotContract.Add(slotContract);
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         return (slot, slotContract, facility.Id);
     }

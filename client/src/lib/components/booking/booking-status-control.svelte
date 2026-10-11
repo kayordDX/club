@@ -18,7 +18,7 @@
 	let error = $state("");
 
 	async function save() {
-		if (saving || !nextStatus || Number(nextStatus) === status) return;
+		if (disabled || saving || !nextStatus || Number(nextStatus) === status) return;
 		saving = true;
 		error = "";
 		try {
@@ -57,7 +57,7 @@
 			<Dialog.Title>Change booking status</Dialog.Title>
 			<Dialog.Description>Current status: {statusLabel(status)}. Changing status does not change the payment balance.</Dialog.Description>
 		</Dialog.Header>
-		<Select.Root type="single" bind:value={nextStatus} disabled={saving}>
+		<Select.Root type="single" bind:value={nextStatus} disabled={saving || disabled}>
 			<Select.Trigger aria-label="New booking status">{statusLabel(Number(nextStatus))}</Select.Trigger>
 			<Select.Content>
 				{#each BOOKING_STATUS_OPTIONS as option (option.value)}
@@ -69,11 +69,11 @@
 			<p class="text-muted-foreground text-sm">Cancelling releases the reserved places. Player details are kept.</p>
 		{/if}
 		{#if error}
-			<Alert.Root variant="destructive"><Alert.Title>Status not changed</Alert.Title><Alert.Description>{error}</Alert.Description></Alert.Root>
+			<Alert.Root variant="destructive"><Alert.Title>Unable to complete status change</Alert.Title><Alert.Description>{error}</Alert.Description></Alert.Root>
 		{/if}
 		<Dialog.Footer>
 			<Button variant="outline" disabled={saving} onclick={() => (openChangeStatusDialog = false)}>Cancel</Button>
-			<Button disabled={saving || !nextStatus || Number(nextStatus) === status} onclick={save}>{saving ? "Saving..." : "Save status"}</Button>
+			<Button disabled={disabled || saving || !nextStatus || Number(nextStatus) === status} onclick={save}>{saving ? "Saving..." : "Save status"}</Button>
 		</Dialog.Footer>
 	</Dialog.Content>
 </Dialog.Root>

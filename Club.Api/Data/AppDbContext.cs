@@ -18,6 +18,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, IHttpContextAc
     }
 
     public DbSet<Booking> Booking => Set<Booking>();
+    public DbSet<BookingAction> BookingAction => Set<BookingAction>();
     public DbSet<BookingItem> BookingItem => Set<BookingItem>();
     public DbSet<BookingStatus> BookingStatus => Set<BookingStatus>();
     public DbSet<Business> Business => Set<Business>();
