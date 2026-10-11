@@ -94,15 +94,12 @@ public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : E
         // simultaneous requests could both pass the availability check and oversell a slot.
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
 
-        await _dbContext.Slot.FromSqlInterpolated($"SELECT * FROM slot WHERE id = ANY({slotIds}) ORDER BY id FOR UPDATE").ToListAsync(ct);
+        await ReservationRules.LockSlotsAsync(_dbContext, slotIds, ct);
 
         var now = DateTime.UtcNow;
         var existingCounts = await _dbContext
-            .SlotContractBooking.Where(scb =>
-                slotIds.Contains(scb.SlotContract.SlotId)
-                && (scb.Booking.BookingStatusId != (int)BookingStatusEnum.Cancelled)
-                && (scb.Booking.BookingStatusId != (int)BookingStatusEnum.Pending || scb.Booking.ExpiresAt >= now)
-            )
+            .SlotContractBooking.ActiveReservations(now)
+            .Where(scb => slotIds.Contains(scb.SlotContract.SlotId))
             .GroupBy(scb => scb.SlotContract.SlotId)
             .Select(g => new { SlotId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.SlotId, x => x.Count, ct);

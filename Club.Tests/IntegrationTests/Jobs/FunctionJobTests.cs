@@ -144,17 +144,24 @@ public class FunctionJobTests(AppFixture app)
         updatedConfirmedBooking.BookingStatusId.ShouldBe((int)BookingStatusEnum.Confirmed);
         (
             await db.Booking.AsNoTracking().SingleAsync(x => x.Id == partiallyPaidBooking.Id, cancellationToken: TestContext.Current.CancellationToken)
-        ).BookingStatusId.ShouldBe((int)BookingStatusEnum.Pending);
-        remainingSlotBookings.Count.ShouldBe(2);
+        ).BookingStatusId.ShouldBe((int)BookingStatusEnum.Expired);
+        remainingSlotBookings.Count.ShouldBe(3);
+        remainingSlotBookings.ShouldContain(x => x.BookingId == expiredPendingBooking.Id);
         remainingSlotBookings.ShouldContain(x => x.BookingId == confirmedBooking.Id);
         remainingSlotBookings.ShouldContain(x => x.BookingId == partiallyPaidBooking.Id);
     }
 
     private static async Task<int> CreateFacilityType(AppDbContext db)
     {
-        await db.Database.ExecuteSqlRawAsync("INSERT INTO facility_type (name) VALUES ({0}) ON CONFLICT DO NOTHING", $"FacilityType_{Guid.NewGuid()}");
+        await db.Database.ExecuteSqlRawAsync(
+            "INSERT INTO facility_type (name) VALUES ({0}) ON CONFLICT DO NOTHING",
+            [$"FacilityType_{Guid.NewGuid()}"],
+            TestContext.Current.CancellationToken
+        );
 
-        var facilityType = await db.Database.SqlQueryRaw<FacilityType>("SELECT id, name FROM facility_type ORDER BY id DESC LIMIT 1").FirstOrDefaultAsync();
+        var facilityType = await db
+            .Database.SqlQueryRaw<FacilityType>("SELECT id, name FROM facility_type ORDER BY id DESC LIMIT 1")
+            .FirstOrDefaultAsync(TestContext.Current.CancellationToken);
 
         return facilityType?.Id ?? 1;
     }

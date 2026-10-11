@@ -28,18 +28,13 @@ public class FunctionJob(AppDbContext dbContext)
                   SELECT id
                   FROM booking
                   WHERE booking_status_id = {(int)BookingStatusEnum.Pending}
-                    AND amount_paid = 0
                     AND expires_at <= now()
+                  ORDER BY id
                   FOR UPDATE
-                ),
-                updated AS (
-                  UPDATE booking
-                  SET booking_status_id = 4
-                  WHERE id IN (SELECT id FROM expired)
-                  RETURNING id
                 )
-                DELETE FROM slot_contract_booking
-                WHERE booking_id IN (SELECT id FROM updated);
+                UPDATE booking
+                SET booking_status_id = {(int)BookingStatusEnum.Expired}, booking_status_date = now()
+                WHERE id IN (SELECT id FROM expired);
             """,
             ct
         );

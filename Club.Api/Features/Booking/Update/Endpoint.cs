@@ -137,16 +137,13 @@ public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : E
         // Begin a transaction and lock the affected slot rows so concurrent booking requests for
         // the same slots are serialized against the capacity check below. Without this, two
         // simultaneous requests could both pass the availability check and oversell a slot.
-        await _dbContext.Slot.FromSqlInterpolated($"SELECT * FROM slot WHERE id = ANY({slotIds}) ORDER BY id FOR UPDATE").ToListAsync(ct);
+        var previousSlotIds = await _dbContext.SlotContractBooking.Where(x => x.BookingId == booking.Id).Select(x => x.SlotContract.SlotId).ToListAsync(ct);
+        await ReservationRules.LockSlotsAsync(_dbContext, slotIds.Concat(previousSlotIds), ct);
 
         var now = DateTime.UtcNow;
         var existingCounts = await _dbContext
-            .SlotContractBooking.Where(scb =>
-                slotIds.Contains(scb.SlotContract.SlotId)
-                && scb.BookingId != booking.Id
-                && (scb.Booking.BookingStatusId != (int)BookingStatusEnum.Cancelled)
-                && (scb.Booking.BookingStatusId != (int)BookingStatusEnum.Pending || scb.Booking.ExpiresAt >= now)
-            )
+            .SlotContractBooking.ActiveReservations(now)
+            .Where(scb => slotIds.Contains(scb.SlotContract.SlotId) && scb.BookingId != booking.Id)
             .GroupBy(scb => scb.SlotContract.SlotId)
             .Select(g => new { SlotId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.SlotId, x => x.Count, ct);

@@ -1,12 +1,14 @@
+using Club.Common;
+using Club.Common.Config;
+using Club.Common.Enums;
 using Club.Data;
-using Microsoft.EntityFrameworkCore;
+using Club.Features.Booking.Common;
+using Microsoft.Extensions.Options;
 
 namespace Club.Features.Admin.Booking.UpdateStatus;
 
-public class Endpoint(AppDbContext dbContext) : Endpoint<AdminBookingUpdateStatusRequest>
+public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : Endpoint<AdminBookingUpdateStatusRequest>
 {
-    private readonly AppDbContext _dbContext = dbContext;
-
     public override void Configure()
     {
         Put("/admin/facility/{FacilityId}/booking/{Id}/status");
@@ -16,28 +18,33 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<AdminBookingUpdateStatu
 
     public override async Task HandleAsync(AdminBookingUpdateStatusRequest req, CancellationToken ct)
     {
+        var actorId = Helpers.GetCurrentUserId(HttpContext);
+        if (!actorId.HasValue)
+        {
+            await Send.UnauthorizedAsync(ct);
+            return;
+        }
         if (!Enum.IsDefined(req.Status))
         {
             AddError(r => r.Status, "Invalid status.");
             await Send.ErrorsAsync(400, ct);
             return;
         }
-
-        var booking = await _dbContext.Booking.Where(b => b.Id == req.Id && b.FacilityId == req.FacilityId).FirstOrDefaultAsync(ct);
-
-        if (booking is null)
+        var failure = await BookingStatusMutation.ChangeAsync(
+            dbContext,
+            req.Id,
+            actorId.Value,
+            req.FacilityId,
+            req.Status,
+            appConfig.Value.PendingTimeoutMinutes,
+            ct
+        );
+        if (failure is not null)
         {
-            AddError(r => r.Id, "Booking not found.");
-            await Send.ErrorsAsync(404, ct);
+            AddError(failure.Message);
+            await Send.ErrorsAsync(failure.StatusCode, ct);
             return;
         }
-
-        // Managers can freely change status. We intentionally do NOT remove slot contract
-        // bookings here (unlike the user-facing cancel) so status changes stay reversible.
-        booking.BookingStatusId = (int)req.Status;
-        booking.BookingStatusDate = DateTime.UtcNow;
-
-        await _dbContext.SaveChangesAsync(ct);
         await Send.NoContentAsync(ct);
     }
 }

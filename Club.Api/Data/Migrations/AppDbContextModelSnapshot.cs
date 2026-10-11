@@ -95,6 +95,40 @@ namespace Club.Data.Migrations
                     b.ToTable("booking", (string)null);
                 });
 
+            modelBuilder.Entity("Club.Entities.BookingAction", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<Guid>("ActingAdminId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("acting_admin_id");
+
+                    b.Property<int>("BookingId")
+                        .HasColumnType("integer")
+                        .HasColumnName("booking_id");
+
+                    b.Property<int>("Kind")
+                        .HasColumnType("integer")
+                        .HasColumnName("kind");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("timestamp");
+
+                    b.HasKey("Id")
+                        .HasName("pk_booking_action");
+
+                    b.HasIndex("BookingId", "Timestamp")
+                        .HasDatabaseName("ix_booking_action_booking_id_timestamp");
+
+                    b.ToTable("booking_action", (string)null);
+                });
+
             modelBuilder.Entity("Club.Entities.BookingItem", b =>
                 {
                     b.Property<int>("Id")
@@ -2039,6 +2073,18 @@ namespace Club.Data.Migrations
                     b.Navigation("Facility");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Club.Entities.BookingAction", b =>
+                {
+                    b.HasOne("Club.Entities.Booking", "Booking")
+                        .WithMany()
+                        .HasForeignKey("BookingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_booking_action_booking_booking_id");
+
+                    b.Navigation("Booking");
                 });
 
             modelBuilder.Entity("Club.Entities.BookingItem", b =>
