@@ -12,7 +12,7 @@
 	import { type ColumnDef, type PaginationState, type SortingState } from "@tanstack/svelte-table";
 	import { DataTable, createShadTable, renderSnippet, type DataTableFeatures } from "@kayord/ui/data-table";
 	import { Alert, Badge, Button, Card, Input, Select } from "@kayord/ui";
-	import { BookIcon, SearchIcon } from "@lucide/svelte";
+	import { BookIcon, CalendarDaysIcon, SearchIcon } from "@lucide/svelte";
 
 	const facilityId = $derived(Number(page.params.id) || 0);
 
@@ -126,7 +126,12 @@
 {/snippet}
 
 <div class="m-4 space-y-6">
-	<PageHeading title="Bookings" description="View and manage bookings for this facility." icon={BookIcon} />
+	<div class="flex flex-wrap items-start justify-between gap-4">
+		<PageHeading title="Bookings" description="View and manage bookings for this facility." icon={BookIcon} />
+		<Button href={resolve(`/outlet/${page.params.slug}/${page.params.id}/admin/schedule`)} variant="outline"
+			><CalendarDaysIcon class="size-4" />Daily schedule</Button
+		>
+	</div>
 	{#if bookings.isError}
 		<Alert.Root variant="destructive">
 			<Alert.Title>Unable to load bookings</Alert.Title>

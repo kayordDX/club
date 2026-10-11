@@ -3,8 +3,7 @@
 	import { CirclePlusIcon, TrashIcon } from "@lucide/svelte";
 
 	import { extraGetFacility } from "$lib/api/remote/extra.remote";
-	import type { ExtraDTO } from "$lib/api";
-	import type { SelectedExtra } from "$lib/booking/schema";
+	import type { BookingExtraOption, SelectedExtra } from "$lib/booking/schema";
 	import ExtrasAmount from "./ExtrasAmount.svelte";
 
 	let open = $state(false);
@@ -12,11 +11,12 @@
 	type Props = {
 		facilityId: number;
 		selectedExtras: Array<SelectedExtra>;
+		availableExtras?: BookingExtraOption[];
 	};
 
-	let { facilityId, selectedExtras = $bindable() }: Props = $props();
+	let { facilityId, selectedExtras = $bindable(), availableExtras }: Props = $props();
 
-	const selectItem = (id: number, extras: ExtraDTO[]) => {
+	const selectItem = (id: number, extras: BookingExtraOption[]) => {
 		const extra = extras.find((item) => item.id === id);
 		if (extra == undefined) {
 			open = false;
@@ -31,7 +31,7 @@
 </script>
 
 <svelte:boundary>
-	{@const extras = await extraGetFacility(facilityId)}
+	{@const extras = availableExtras ?? (await extraGetFacility(facilityId))}
 
 	<Button onclick={() => (open = true)}>
 		<CirclePlusIcon /> Add Extra

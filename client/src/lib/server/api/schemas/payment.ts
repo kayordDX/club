@@ -22,11 +22,14 @@ export const PaymentVouchersResponseItem = zod.object({
 		Discount: 3,
 	}),
 	discountMode: zod
-		.enum({
-			Percentage: 1,
-			FixedAmount: 2,
-		})
-		.nullish(),
+		.union([
+			zod.enum({
+				Percentage: 1,
+				FixedAmount: 2,
+			}),
+			zod.null(),
+		])
+		.optional(),
 	discountValue: zod.number().nullish(),
 	maxDiscountAmount: zod.number().nullish(),
 	amountRemaining: zod.number(),
@@ -81,18 +84,21 @@ export const PaymentInitiateBody = zod.object({
 	providerName: zod.string(),
 	amount: zod.number().nullish(),
 	recurring: zod
-		.object({
-			frequency: zod.enum({
-				Monthly: 3,
-				Quarterly: 4,
-				Biannually: 5,
-				Annually: 6,
+		.union([
+			zod.object({
+				frequency: zod.enum({
+					Monthly: 3,
+					Quarterly: 4,
+					Biannually: 5,
+					Annually: 6,
+				}),
+				cycles: zod.int(),
+				recurringAmount: zod.number().nullish(),
+				firstBillingDate: zod.iso.date().nullish(),
 			}),
-			cycles: zod.int(),
-			recurringAmount: zod.number().nullish(),
-			firstBillingDate: zod.iso.date().nullish(),
-		})
-		.nullish(),
+			zod.null(),
+		])
+		.optional(),
 });
 
 export const PaymentInitiateResponse = zod.object({

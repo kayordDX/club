@@ -6,7 +6,10 @@ import { query, command } from "$app/server";
 import { z } from "zod";
 import * as api from "$lib/server/api/generated/admin";
 import {
+	AdminBookingCreateBody,
 	AdminBookingGetAllQueryParams,
+	AdminBookingGetOptionsQueryParams,
+	AdminBookingSearchCustomerQueryParams,
 	AdminBookingUpdateBody,
 	AdminBookingUpdateStatusBody,
 	AdminContractAddMemberBody,
@@ -86,7 +89,18 @@ export const adminBookingUpdate = command(
 export const adminBookingGet = query(z.object({ facilityId: z.number().int(), id: z.number().int() }), async ({ facilityId, id }) =>
 	api.adminBookingGet(facilityId, id)
 );
+export const adminBookingSearchCustomer = query(
+	z.object({ facilityId: z.number().int(), params: AdminBookingSearchCustomerQueryParams }),
+	async ({ facilityId, params }) => api.adminBookingSearchCustomer(facilityId, params)
+);
+export const adminBookingGetOptions = query(
+	z.object({ facilityId: z.number().int(), params: AdminBookingGetOptionsQueryParams }),
+	async ({ facilityId, params }) => api.adminBookingGetOptions(facilityId, params)
+);
 export const adminBookingGetAll = query(
 	z.object({ facilityId: z.number().int(), params: AdminBookingGetAllQueryParams.optional() }),
 	async ({ facilityId, params }) => api.adminBookingGetAll(facilityId, params)
+);
+export const adminBookingCreate = command(z.object({ facilityId: z.number().int(), body: AdminBookingCreateBody }), async ({ facilityId, body }) =>
+	api.adminBookingCreate(facilityId, body)
 );

@@ -33,6 +33,13 @@ export type BookingFormSubmitValues = {
 /** Submit handler signature consumed by the booking details form. */
 export type BookingFormSubmitHandler = (values: BookingFormSubmitValues) => Promise<void>;
 
+export type BookingExtraOption = {
+	id: number;
+	name: string;
+	price: number;
+	description?: string | null;
+};
+
 export type SelectedExtra = {
 	id: number;
 	name: string;

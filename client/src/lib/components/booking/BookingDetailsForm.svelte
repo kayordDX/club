@@ -7,7 +7,7 @@
 	import { applyFirstPlayerContract, applyProfileToPlayer, type PlayerDraft } from "$lib/booking/players";
 	import { formatCurrency, formatTime } from "$lib/booking/format";
 	import { getSelectedExtrasTotal } from "$lib/booking/pricing";
-	import { playersSchema, type Players, type BookingFormSubmitHandler, type SelectedExtra } from "$lib/booking/schema";
+	import { playersSchema, type BookingExtraOption, type Players, type BookingFormSubmitHandler, type SelectedExtra } from "$lib/booking/schema";
 	import { createAppForm, Form } from "$lib/components/Form";
 	import Extras from "$lib/components/booking/Extras.svelte";
 	import { Badge, Button, Card } from "@kayord/ui";
@@ -43,6 +43,12 @@
 		initialPlayers: PlayerDraft[];
 		/** Initial selected extras. */
 		initialExtras: SelectedExtra[];
+		/** Already-authorized contracts for the booking owner (admin creation/edit). */
+		availableContracts?: Array<{ id: number; contractName: string; description?: string | null; price: number }>;
+		/** Already-authorized extras for this booking owner and slot. */
+		availableExtras?: BookingExtraOption[];
+		/** Optional status included in the pre-save review. */
+		reviewStatus?: string;
 		/**
 		 * Players on this slot that already belong to the current booking. They are
 		 * added back to the slot's booked count so the capacity calculation is
@@ -73,6 +79,9 @@
 		slotEndDatetime,
 		initialPlayers,
 		initialExtras,
+		availableContracts,
+		availableExtras,
+		reviewStatus,
 		ownPlayerCount = 0,
 		onSubmit,
 	}: Props = $props();
@@ -80,10 +89,10 @@
 	const user = useUser();
 
 	// svelte-ignore state_referenced_locally
-	const contracts = await slotGetContracts(slotId);
+	const contracts = availableContracts ?? (await slotGetContracts(slotId));
 	const contractItems = contracts.map((contract) => ({
 		value: contract.id.toString(),
-		label: `${contract.contractName} ${contract.description} - R ${contract.price.toFixed(2)}`,
+		label: `${contract.contractName}${contract.description ? ` ${contract.description}` : ""} - R ${contract.price.toFixed(2)}`,
 	}));
 
 	// svelte-ignore state_referenced_locally
@@ -279,7 +288,28 @@
 							<p class="text-muted-foreground text-sm">Add or remove extras for this booking.</p>
 						</div>
 					</div>
-					<Extras {facilityId} bind:selectedExtras />
+					<Extras {facilityId} bind:selectedExtras {availableExtras} />
+				</div>
+				<div class="bg-muted/30 space-y-3 rounded-2xl border p-4" aria-label="Booking review">
+					<h2 class="text-lg font-semibold">Review before saving</h2>
+					<dl class="grid gap-2 text-sm sm:grid-cols-2">
+						{#if reviewStatus}<div>
+								<dt class="text-muted-foreground">Status</dt>
+								<dd class="font-medium">{reviewStatus}</dd>
+							</div>{/if}
+						<div>
+							<dt class="text-muted-foreground">Players</dt>
+							<dd class="font-medium">{(players.current ?? []).map((player) => player.name || "Unnamed player").join(", ")}</dd>
+						</div>
+						<div>
+							<dt class="text-muted-foreground">Extras</dt>
+							<dd class="font-medium">{selectedExtras.length ? selectedExtras.map((extra) => `${extra.amount} × ${extra.name}`).join(", ") : "None"}</dd>
+						</div>
+						<div>
+							<dt class="text-muted-foreground">Total</dt>
+							<dd class="font-medium">{formatCurrency(totalPrice)}</dd>
+						</div>
+					</dl>
 				</div>
 			</Card.Content>
 			<Card.Footer class="flex flex-wrap justify-between gap-3 border-t">

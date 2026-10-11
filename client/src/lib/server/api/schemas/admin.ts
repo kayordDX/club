@@ -27,11 +27,14 @@ export const AdminVoucherUpdateBody = zod.object({
 		Discount: 3,
 	}),
 	discountMode: zod
-		.enum({
-			Percentage: 1,
-			FixedAmount: 2,
-		})
-		.nullish(),
+		.union([
+			zod.enum({
+				Percentage: 1,
+				FixedAmount: 2,
+			}),
+			zod.null(),
+		])
+		.optional(),
 	discountValue: zod.number().nullish(),
 	maxDiscountAmount: zod.number().nullish(),
 });
@@ -77,11 +80,14 @@ export const AdminVoucherGetAllResponseItem = zod.object({
 		Discount: 3,
 	}),
 	discountMode: zod
-		.enum({
-			Percentage: 1,
-			FixedAmount: 2,
-		})
-		.nullish(),
+		.union([
+			zod.enum({
+				Percentage: 1,
+				FixedAmount: 2,
+			}),
+			zod.null(),
+		])
+		.optional(),
 	discountValue: zod.number().nullish(),
 	maxDiscountAmount: zod.number().nullish(),
 	isInUse: zod.boolean(),
@@ -108,11 +114,14 @@ export const AdminVoucherCreateBody = zod.object({
 		Discount: 3,
 	}),
 	discountMode: zod
-		.enum({
-			Percentage: 1,
-			FixedAmount: 2,
-		})
-		.nullish(),
+		.union([
+			zod.enum({
+				Percentage: 1,
+				FixedAmount: 2,
+			}),
+			zod.null(),
+		])
+		.optional(),
 	discountValue: zod.number().nullish(),
 	maxDiscountAmount: zod.number().nullish(),
 });
@@ -128,11 +137,14 @@ export const AdminVoucherCreateResponse = zod.object({
 		Discount: 3,
 	}),
 	discountMode: zod
-		.enum({
-			Percentage: 1,
-			FixedAmount: 2,
-		})
-		.nullish(),
+		.union([
+			zod.enum({
+				Percentage: 1,
+				FixedAmount: 2,
+			}),
+			zod.null(),
+		])
+		.optional(),
 	discountValue: zod.number().nullish(),
 	maxDiscountAmount: zod.number().nullish(),
 	isInUse: zod.boolean(),
@@ -400,12 +412,15 @@ export const AdminBookingGetResponse = zod.object({
 	bookingStatusDate: zod.iso.datetime({ offset: true }),
 	userId: zod.string().nullish(),
 	user: zod
-		.object({
-			firstName: zod.string(),
-			lastName: zod.string(),
-			picture: zod.string().nullish(),
-		})
-		.nullish(),
+		.union([
+			zod.object({
+				firstName: zod.string(),
+				lastName: zod.string(),
+				picture: zod.string().nullish(),
+			}),
+			zod.null(),
+		])
+		.optional(),
 	isPaid: zod.boolean(),
 	amountOutstanding: zod.number(),
 	amountPaid: zod.number(),
@@ -456,6 +471,54 @@ export const AdminBookingGetResponse = zod.object({
 	),
 });
 
+export const AdminBookingSearchCustomerParams = zod.object({
+	facilityId: zod.int(),
+});
+
+export const AdminBookingSearchCustomerQueryParams = zod.object({
+	query: zod.string(),
+});
+
+export const AdminBookingSearchCustomerResponse = zod.object({
+	userId: zod.string(),
+	firstName: zod.string().nullish(),
+	lastName: zod.string().nullish(),
+	email: zod.string().nullish(),
+	phoneNumber: zod.string().nullish(),
+});
+
+export const AdminBookingGetOptionsParams = zod.object({
+	facilityId: zod.int(),
+});
+
+export const AdminBookingGetOptionsQueryParams = zod.object({
+	slotId: zod.string(),
+	userId: zod.string(),
+});
+
+export const AdminBookingGetOptionsResponse = zod.object({
+	contracts: zod.array(
+		zod.object({
+			id: zod.int(),
+			slotId: zod.string(),
+			contractId: zod.int(),
+			contractName: zod.string(),
+			price: zod.number(),
+			validationId: zod.int().nullish(),
+			canPayLater: zod.boolean(),
+			description: zod.string().nullish(),
+		})
+	),
+	extras: zod.array(
+		zod.object({
+			id: zod.int(),
+			name: zod.string(),
+			price: zod.number(),
+			description: zod.string().nullish(),
+		})
+	),
+});
+
 export const AdminBookingGetAllParams = zod.object({
 	facilityId: zod.int(),
 });
@@ -492,4 +555,34 @@ export const AdminBookingGetAllResponse = zod.object({
 	totalCount: zod.int(),
 	hasPreviousPage: zod.boolean(),
 	hasNextPage: zod.boolean(),
+});
+
+export const AdminBookingCreateParams = zod.object({
+	facilityId: zod.int(),
+});
+
+export const AdminBookingCreateBody = zod.object({
+	bookings: zod
+		.array(
+			zod.object({
+				slotId: zod.string(),
+				slotContractId: zod.int(),
+				name: zod.string().nullish(),
+				email: zod.string().nullish(),
+				cellphone: zod.string().nullish(),
+			})
+		)
+		.min(1),
+	extras: zod.array(
+		zod.object({
+			extraId: zod.int(),
+			amount: zod.int(),
+		})
+	),
+	userId: zod.string().min(1),
+	bookingStatusId: zod.int().nullish(),
+});
+
+export const AdminBookingCreateResponse = zod.object({
+	id: zod.int(),
 });

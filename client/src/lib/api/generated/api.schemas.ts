@@ -60,7 +60,7 @@ export interface TestResponse {
 	success: boolean;
 	/** @nullable */
 	token?: string | null;
-	other?: unknown | null;
+	other?: unknown;
 }
 
 export interface SlotGetContractsResponse {
@@ -545,6 +545,9 @@ export interface Booking {
 	/** @nullable */
 	lastModifiedBy?: string | null;
 	id: number;
+	/** @nullable */
+	facilityId?: number | null;
+	facility?: Facility | null;
 	bookingStatusId: number;
 	bookingStatus: BookingStatus;
 	bookingStatusDate: string;
@@ -844,7 +847,9 @@ export interface BookingPathDTO {
 	outletName: string;
 	facilityId: number;
 	facilityName: string;
+	/** @nullable */
 	slotId?: string | null;
+	/** @nullable */
 	slotStartDatetime?: string | null;
 }
 
@@ -1137,6 +1142,31 @@ export interface AdminBookingUpdateRequest {
 	extras: BookingExtraRequest[];
 }
 
+export interface AdminBookingCustomerDTO {
+	userId: string;
+	/** @nullable */
+	firstName?: string | null;
+	/** @nullable */
+	lastName?: string | null;
+	/** @nullable */
+	email?: string | null;
+	/** @nullable */
+	phoneNumber?: string | null;
+}
+
+export interface AdminBookingExtraOptionDTO {
+	id: number;
+	name: string;
+	price: number;
+	/** @nullable */
+	description?: string | null;
+}
+
+export interface AdminBookingOptionsDTO {
+	contracts: SlotGetContractsResponse[];
+	extras: AdminBookingExtraOptionDTO[];
+}
+
 export interface AdminBookingDTO {
 	id: number;
 	bookingStatusId: number;
@@ -1167,6 +1197,16 @@ export interface PaginatedListOfAdminBookingDTO {
 	totalCount: number;
 	hasPreviousPage: boolean;
 	hasNextPage: boolean;
+}
+
+export interface AdminBookingCreateRequest {
+	/** @minLength 1 */
+	bookings: BookingRequest[];
+	extras: BookingExtraRequest[];
+	/** @minLength 1 */
+	userId: string;
+	/** @nullable */
+	bookingStatusId?: number | null;
 }
 
 export interface AccountSyncRequest {
@@ -1267,6 +1307,15 @@ export type AdminSlotGetAllParams = {
 
 export type AdminContractSearchMemberParams = {
 	query: string;
+};
+
+export type AdminBookingSearchCustomerParams = {
+	query: string;
+};
+
+export type AdminBookingGetOptionsParams = {
+	slotId: string;
+	userId: string;
 };
 
 export type AdminBookingGetAllParams = {
