@@ -7,6 +7,7 @@
 import type {
 	BookingPaymentDTO,
 	BookingVoucherDTO,
+	ErrorResponse,
 	InternalErrorResponse,
 	PaymentCheckoutRequest,
 	PaymentCheckoutResponse,
@@ -185,6 +186,16 @@ export type paymentInitiateResponse200 = {
 	status: 200;
 };
 
+export type paymentInitiateResponse400 = {
+	data: ErrorResponse;
+	status: 400;
+};
+
+export type paymentInitiateResponse401 = {
+	data: void;
+	status: 401;
+};
+
 export type paymentInitiateResponse500 = {
 	data: InternalErrorResponse;
 	status: 500;
@@ -193,7 +204,7 @@ export type paymentInitiateResponse500 = {
 export type paymentInitiateResponseSuccess = paymentInitiateResponse200 & {
 	headers: Headers;
 };
-export type paymentInitiateResponseError = paymentInitiateResponse500 & {
+export type paymentInitiateResponseError = (paymentInitiateResponse400 | paymentInitiateResponse401 | paymentInitiateResponse500) & {
 	headers: Headers;
 };
 

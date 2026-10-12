@@ -109,38 +109,11 @@ public class PaymentResultValidationTests(AppFixture app)
 
         if (amount < 100)
         {
-            // An abandoned attempt must not reserve the remaining balance.
-            db.PaymentBooking.Add(
-                new PaymentBooking
-                {
-                    BookingId = booking.Id,
-                    Payment = new PaymentEntity
-                    {
-                        PaymentStatusId = (int)PaymentStatusEnum.Pending,
-                        PaymentStatusDate = DateTime.UtcNow,
-                        PaymentTypeId = (int)PaymentTypeEnum.CreditCard,
-                        TransactionId = Guid.NewGuid().ToString(),
-                        ProviderName = "other",
-                        PaymentStatus = await db.PaymentStatus.SingleAsync(
-                            s => s.Id == (int)PaymentStatusEnum.Pending,
-                            cancellationToken: TestContext.Current.CancellationToken
-                        ),
-                        Amount = 60m,
-                    },
-                }
-            );
-            await db.SaveChangesAsync(TestContext.Current.CancellationToken);
-            var balanceResponse = await app.Client.GetAsync($"/payment/booking/{booking.Id}", TestContext.Current.CancellationToken);
+            var balanceResponse = await app.Client.GetAsync($"/payment/booking/{booking.Id}", app.Context.CancellationToken);
             balanceResponse.StatusCode.ShouldBe(HttpStatusCode.OK);
-            var balance = await balanceResponse.Content.ReadFromJsonAsync<Club.DTO.BookingPaymentDTO>(cancellationToken: TestContext.Current.CancellationToken);
+            var balance = await balanceResponse.Content.ReadFromJsonAsync<Club.DTO.BookingPaymentDTO>(cancellationToken: app.Context.CancellationToken);
             balance!.AmountAvailable.ShouldBe(60m);
 
-            await db
-                .Booking.Where(x => x.Id == booking.Id)
-                .ExecuteUpdateAsync(
-                    x => x.SetProperty(b => b.ExpiresAt, DateTime.UtcNow.AddMinutes(-1)),
-                    cancellationToken: TestContext.Current.CancellationToken
-                );
             var initiateRemaining = await app.Client.PostAsJsonAsync(
                 "/payment/initiate",
                 new
@@ -149,24 +122,12 @@ public class PaymentResultValidationTests(AppFixture app)
                     ProviderName = "payfast",
                     Amount = 60m,
                 },
-                cancellationToken: TestContext.Current.CancellationToken
+                app.Context.CancellationToken
             );
             initiateRemaining.StatusCode.ShouldBe(HttpStatusCode.OK);
-            var remainder = new PaymentEntity
-            {
-                PaymentStatusId = (int)PaymentStatusEnum.Pending,
-                PaymentStatus = await db.PaymentStatus.SingleAsync(
-                    s => s.Id == (int)PaymentStatusEnum.Pending,
-                    cancellationToken: TestContext.Current.CancellationToken
-                ),
-                PaymentStatusDate = DateTime.UtcNow,
-                PaymentTypeId = (int)PaymentTypeEnum.CreditCard,
-                TransactionId = Guid.NewGuid().ToString(),
-                ProviderName = "payfast",
-                Amount = 100m - amount,
-            };
-            db.PaymentBooking.Add(new PaymentBooking { BookingId = booking.Id, Payment = remainder });
-            await db.SaveChangesAsync(TestContext.Current.CancellationToken);
+            var remainder = (
+                await initiateRemaining.Content.ReadFromJsonAsync<Club.Features.Payment.Initiate.PaymentInitiateResponse>(app.Context.CancellationToken)
+            )!;
             await redirectClient.GetAsync($"/payment/result/payfast?merchantTransactionId={remainder.TransactionId}", app.Context.CancellationToken);
             bookingAfter = await db.Booking.AsNoTracking().SingleAsync(b => b.Id == booking.Id, cancellationToken: TestContext.Current.CancellationToken);
             bookingAfter.IsPaid.ShouldBeTrue();
@@ -179,7 +140,7 @@ public class PaymentResultValidationTests(AppFixture app)
     }
 
     [Fact]
-    public async Task Initiate_IgnoresPendingAttempts_ServesPayfastForm_AndRejectsOverpayment()
+    public async Task Initiate_ReservesPendingAttempts_ServesPayfastForm_AndRejectsOverpayment()
     {
         await using var scope = app.Server.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -267,7 +228,7 @@ public class PaymentResultValidationTests(AppFixture app)
             },
             cancellationToken: TestContext.Current.CancellationToken
         );
-        fullyReserved.StatusCode.ShouldBe(HttpStatusCode.OK);
+        fullyReserved.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         (await db.Booking.AsNoTracking().SingleAsync(x => x.Id == booking.Id, cancellationToken: TestContext.Current.CancellationToken)).AmountPaid.ShouldBe(
             0m
         );

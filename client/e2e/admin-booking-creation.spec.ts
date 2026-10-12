@@ -144,6 +144,60 @@ test("creation → move retains drafts, requires corrections, previews prices an
 	await expect(page).toHaveURL(/\/admin\/bookings\/44$/);
 });
 
+test("schedule → select customer → Confirmed unpaid → edit/move → checkout → admin return", async ({ page }) => {
+	let phase = "creation";
+	const runtimeErrors: string[] = [];
+	page.on("pageerror", (error) => {
+		runtimeErrors.push(`${phase}: ${error.message}`);
+	});
+	await createForMove(page);
+	let state = await (await page.request.get(`${apiUrl}/_test/state`)).json();
+	const creation = state.calls.find((call: { path: string; method: string }) => call.path === "/admin/facility/1/booking" && call.method === "POST");
+	expect(creation.body.userId).toBe("00000000-0000-4000-8000-000000000099");
+	expect(creation.body.bookingStatusId).toBe(2);
+	const paymentRegion = page.getByRole("region", { name: "Booking payments" });
+	await expect(paymentRegion.getByLabel("Payment amount")).toHaveValue("125.00");
+	phase = "move";
+	await selectDestination(page);
+	await page.getByRole("button", { name: "Save changes" }).click();
+	await expect(page.getByRole("button", { name: "Edit booking", exact: true })).toBeEnabled();
+	await expect(page.getByText("Retained Draft", { exact: true })).toBeVisible();
+	await expect(paymentRegion.getByLabel("Payment amount")).toHaveValue("150.00");
+	phase = "checkout";
+	await paymentRegion.getByRole("radio", { name: "Payfast" }).click();
+	await paymentRegion.getByLabel("Payment amount").fill("50");
+	await paymentRegion.getByRole("button", { name: "Pay now" }).click();
+	await expect(page).toHaveURL(/\/payment\/success\?transactionId=tx-1$/);
+	await page.request.post(`${apiUrl}/_test/callback`, { data: { success: true } });
+	await page.reload();
+	await expect(page.getByText(/Payment received\. Remaining balance/)).toContainText("100,00");
+	phase = "admin return";
+	await page.getByRole("link", { name: "Back to booking management" }).click();
+	await expect(page).toHaveURL(/\/admin\/bookings\/44$/);
+	await expect(page.getByText("Retained Draft", { exact: true })).toBeVisible();
+	await expect(paymentRegion.getByLabel("Payment amount")).toHaveValue("100.00");
+	await expect(paymentRegion.getByRole("cell", { name: "Partial", exact: true })).toBeVisible();
+	state = await (await page.request.get(`${apiUrl}/_test/state`)).json();
+	const checkout = state.calls.find((call: { path: string }) => call.path === "/admin/facility/1/booking/44/payment/initiate");
+	expect(checkout.body).toEqual({ providerName: "payfast", amount: 50 });
+	const latestDetails = await (
+		await page.request.get(`${apiUrl}/admin/facility/1/booking/44`, { headers: { authorization: "Bearer payment-test-token" } })
+	).json();
+	expect(latestDetails.bookingStatusId).toBe(2);
+	expect(latestDetails.amountPaid).toBe(50);
+	expect(latestDetails.amountOutstanding).toBe(100);
+	expect(latestDetails.slotContractBookings[0].slotId).toBe("00000000-0000-4000-8000-000000000002");
+	expect(state.calls.some((call: { path: string }) => call.path.startsWith("/payment/booking/") || call.path === "/payment/voucher")).toBe(false);
+	phase = "customer view";
+	await page.context().clearCookies();
+	await authenticate(page, true);
+	await page.goto("/outlet/test/1/booking/44/pay");
+	await expect(page.getByText("Your booking is confirmed.", { exact: true })).toBeVisible();
+	await expect(paymentRegion.getByLabel("Payment amount")).toHaveValue("100.00");
+	await expect(paymentRegion.getByRole("cell", { name: "Partial", exact: true })).toBeVisible();
+	expect(runtimeErrors).toEqual([]);
+});
+
 test("failed moves retain drafts for retry, while cancel discards them without saving", async ({ page }) => {
 	await createForMove(page, "admin-move-save-error");
 	await selectDestination(page);

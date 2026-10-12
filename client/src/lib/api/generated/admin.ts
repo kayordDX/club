@@ -9,6 +9,7 @@ import type {
 	AdminBookingCustomerDTO,
 	AdminBookingGetAllParams,
 	AdminBookingGetOptionsParams,
+	AdminBookingInitiatePaymentRequest,
 	AdminBookingOptionsDTO,
 	AdminBookingSearchCustomerParams,
 	AdminBookingUpdateRequest,
@@ -30,9 +31,12 @@ import type {
 	AdminVoucherUpdateRequest,
 	BookingCreateResponse,
 	BookingDTO,
+	BookingPathDTO,
+	BookingPaymentDTO,
 	ErrorResponse,
 	InternalErrorResponse,
 	PaginatedListOfAdminBookingDTO,
+	PaymentInitiateResponse,
 } from "./api.schemas";
 
 export type adminVoucherUpdateResponse204 = {
@@ -1283,6 +1287,172 @@ export const adminBookingSearchCustomer = async (
 
 	const data: adminBookingSearchCustomerResponse["data"] = body ? JSON.parse(body) : {};
 	return { data, status: res.status, headers: res.headers } as adminBookingSearchCustomerResponse;
+};
+
+export type adminBookingInitiatePaymentResponse200 = {
+	data: PaymentInitiateResponse;
+	status: 200;
+};
+
+export type adminBookingInitiatePaymentResponse400 = {
+	data: ErrorResponse;
+	status: 400;
+};
+
+export type adminBookingInitiatePaymentResponse401 = {
+	data: void;
+	status: 401;
+};
+
+export type adminBookingInitiatePaymentResponse403 = {
+	data: void;
+	status: 403;
+};
+
+export type adminBookingInitiatePaymentResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
+
+export type adminBookingInitiatePaymentResponseSuccess = adminBookingInitiatePaymentResponse200 & {
+	headers: Headers;
+};
+export type adminBookingInitiatePaymentResponseError = (
+	| adminBookingInitiatePaymentResponse400
+	| adminBookingInitiatePaymentResponse401
+	| adminBookingInitiatePaymentResponse403
+	| adminBookingInitiatePaymentResponse500
+) & {
+	headers: Headers;
+};
+
+export type adminBookingInitiatePaymentResponse = adminBookingInitiatePaymentResponseSuccess | adminBookingInitiatePaymentResponseError;
+
+export const getAdminBookingInitiatePaymentUrl = (facilityId: number, id: number) => {
+	return `/admin/facility/${facilityId}/booking/${id}/payment/initiate`;
+};
+
+export const adminBookingInitiatePayment = async (
+	facilityId: number,
+	id: number,
+	adminBookingInitiatePaymentRequest: AdminBookingInitiatePaymentRequest,
+	options?: RequestInit
+): Promise<adminBookingInitiatePaymentResponse> => {
+	const getHeaders = (h?: NonNullable<RequestInit["headers"]>): Record<string, string | readonly string[]> => {
+		if (!h) return {};
+		if (h instanceof Headers) return Object.fromEntries(h.entries());
+		if (Symbol.iterator in h) {
+			return Object.fromEntries(Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]));
+		}
+		const headers: Record<string, string | readonly string[]> = {};
+		for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+			if (value !== undefined) headers[name] = value;
+		}
+		return headers;
+	};
+	const res = await fetch(getAdminBookingInitiatePaymentUrl(facilityId, id), {
+		...options,
+		method: "POST",
+		headers: { "Content-Type": "application/json", ...getHeaders(options?.headers) },
+		body: JSON.stringify(adminBookingInitiatePaymentRequest),
+	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: adminBookingInitiatePaymentResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as adminBookingInitiatePaymentResponse;
+};
+
+export type adminBookingGetPaymentsResponse200 = {
+	data: BookingPaymentDTO;
+	status: 200;
+};
+
+export type adminBookingGetPaymentsResponse401 = {
+	data: void;
+	status: 401;
+};
+
+export type adminBookingGetPaymentsResponse403 = {
+	data: void;
+	status: 403;
+};
+
+export type adminBookingGetPaymentsResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
+
+export type adminBookingGetPaymentsResponseSuccess = adminBookingGetPaymentsResponse200 & {
+	headers: Headers;
+};
+export type adminBookingGetPaymentsResponseError = (
+	adminBookingGetPaymentsResponse401 | adminBookingGetPaymentsResponse403 | adminBookingGetPaymentsResponse500
+) & {
+	headers: Headers;
+};
+
+export type adminBookingGetPaymentsResponse = adminBookingGetPaymentsResponseSuccess | adminBookingGetPaymentsResponseError;
+
+export const getAdminBookingGetPaymentsUrl = (facilityId: number, id: number) => {
+	return `/admin/facility/${facilityId}/booking/${id}/payments`;
+};
+
+export const adminBookingGetPayments = async (facilityId: number, id: number, options?: RequestInit): Promise<adminBookingGetPaymentsResponse> => {
+	const res = await fetch(getAdminBookingGetPaymentsUrl(facilityId, id), {
+		...options,
+		method: "GET",
+	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: adminBookingGetPaymentsResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as adminBookingGetPaymentsResponse;
+};
+
+export type adminBookingGetPathResponse200 = {
+	data: BookingPathDTO;
+	status: 200;
+};
+
+export type adminBookingGetPathResponse401 = {
+	data: void;
+	status: 401;
+};
+
+export type adminBookingGetPathResponse403 = {
+	data: void;
+	status: 403;
+};
+
+export type adminBookingGetPathResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
+
+export type adminBookingGetPathResponseSuccess = adminBookingGetPathResponse200 & {
+	headers: Headers;
+};
+export type adminBookingGetPathResponseError = (adminBookingGetPathResponse401 | adminBookingGetPathResponse403 | adminBookingGetPathResponse500) & {
+	headers: Headers;
+};
+
+export type adminBookingGetPathResponse = adminBookingGetPathResponseSuccess | adminBookingGetPathResponseError;
+
+export const getAdminBookingGetPathUrl = (facilityId: number, id: number) => {
+	return `/admin/facility/${facilityId}/booking/${id}/path`;
+};
+
+export const adminBookingGetPath = async (facilityId: number, id: number, options?: RequestInit): Promise<adminBookingGetPathResponse> => {
+	const res = await fetch(getAdminBookingGetPathUrl(facilityId, id), {
+		...options,
+		method: "GET",
+	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: adminBookingGetPathResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as adminBookingGetPathResponse;
 };
 
 export type adminBookingGetOptionsResponse200 = {

@@ -7,6 +7,8 @@
 - Starts an isolated SvelteKit dev server on `127.0.0.1:5174` and a deterministic API fixture on `127.0.0.1:5194`. Both ports must be free.
 - Uses an encrypted session cookie with a test-only secret, exercising the real protected layouts, remote functions and server-side bearer-token proxy. The fixture rejects API requests without the expected token.
 - Covers entitlement targets and quantities, capped discounts, credits, split-provider payments, pending reservations, rejected selections, duplicate submission protection, and refresh failures.
+- Covers admin/customer success, failure and cancellation returns; transaction/booking association and safe internal admin navigation; copied customer URLs requiring sign-in and owner access.
+- Exercises the combined admin schedule → customer selection → Confirmed unpaid creation → edit/move → checkout → admin return journey, with customer visibility and payment regression checks.
 - Does not mock browser payment requests or add a production authentication bypass. API fixtures and scenario controls exist only in the test process.
 
 `pnpm test` runs unit/component tests, these isolated payment scenarios, then the Aspire-dependent suite.

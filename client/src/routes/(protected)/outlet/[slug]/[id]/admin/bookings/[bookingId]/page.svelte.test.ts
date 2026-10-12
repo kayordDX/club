@@ -55,13 +55,16 @@ vi.mock("@tanstack/svelte-query", () => ({
 }));
 vi.mock("$lib/api/remote/admin.remote", () => ({
 	adminBookingGet: () => Object.assign(Promise.resolve(booking), { refresh: mocks.refresh }),
+	adminBookingGetPath: () => Object.assign(Promise.resolve(undefined), { refresh: mocks.pathRefresh }),
 	adminBookingUpdate: vi.fn(),
+	adminBookingGetPayments: vi.fn(),
+	adminBookingInitiatePayment: vi.fn(),
 	adminBookingUpdateStatus: mocks.change,
 	adminBookingGetOptions: vi.fn(() => ({ refresh: vi.fn().mockResolvedValue(undefined) })),
 	adminSlotGetAll: vi.fn(() => ({ refresh: mocks.adminSlots })),
 }));
+vi.mock("$lib/api/remote/facility.remote", () => ({ facilityPaymentMethods: vi.fn() }));
 vi.mock("$lib/api/remote/slot.remote", () => ({ slotGetAll: vi.fn(() => ({ refresh: mocks.publicSlots })), slotGetContracts: vi.fn() }));
-vi.mock("$lib/api/remote/booking.remote", () => ({ bookingGetPath: () => Object.assign(Promise.resolve(undefined), { refresh: mocks.pathRefresh }) }));
 
 beforeEach(() => {
 	vi.clearAllMocks();
@@ -87,6 +90,7 @@ it("refreshes booking details, cached list and public/admin availability after r
 	expect(slotGetAll).toHaveBeenCalledWith({ facilityId: 7, date: "2026-08-01T00:00:00.000Z" });
 	expect(mocks.invalidate).toHaveBeenCalledWith({ queryKey: ["admin-bookings", 7] });
 	expect(mocks.invalidate).toHaveBeenCalledWith({ queryKey: ["admin-slots", 7] });
+	expect(mocks.invalidate).toHaveBeenCalledWith({ queryKey: ["admin-booking-payments", 7, 42] });
 	expect(mocks.pathRefresh).toHaveBeenCalledOnce();
 	expect(mocks.toast).toHaveBeenCalledExactlyOnceWith("Status changed to Confirmed");
 });

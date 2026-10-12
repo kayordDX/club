@@ -10,6 +10,7 @@ let calls;
 let refreshFailed;
 let adminCreatedBooking;
 let updateFailed;
+let checkoutBookingId;
 const sourceSlotId = "00000000-0000-4000-8000-000000000001";
 const destinationSlotId = "00000000-0000-4000-8000-000000000002";
 const slotFor = (id) => ({
@@ -63,8 +64,19 @@ function reset(name) {
 	payments = [];
 	calls = [];
 	refreshFailed = false;
-	adminCreatedBooking = null;
+	adminCreatedBooking = name.startsWith("admin-payment")
+		? {
+				id: 44,
+				body: {
+					userId: "00000000-0000-4000-8000-000000000099",
+					bookingStatusId: 2,
+					bookings: [{ slotId: sourceSlotId, slotContractId: 31, name: "Player One", cellphone: "0821234567", email: "player@example.test" }],
+					extras: [],
+				},
+			}
+		: null;
 	updateFailed = false;
+	checkoutBookingId = 123;
 	grants = [
 		grant(1, "Round entitlement", 1, { targets: [{ slotContractBookingId: 9, name: "Player One", unitPrice: 100, unitsAvailable: 1 }] }),
 		grant(2, "Extra entitlement", 1, { isExtra: true, targets: [{ extraId: 5, name: "Cart", unitPrice: 50, unitsAvailable: 4 }] }),
@@ -87,14 +99,26 @@ function payment(status, amount, providerName) {
 		paymentStatusDate: "2026-05-01T10:00:00Z",
 	};
 }
-function balance() {
+function total(bookingId) {
+	if (bookingId !== 44) return 300;
+	const players = adminCreatedBooking.body.bookings;
+	return (
+		players.length * (players[0].slotId === destinationSlotId ? 150 : 100) +
+		adminCreatedBooking.body.extras.reduce((sum, extra) => sum + extra.amount * (extra.extraId === 5 ? 25 : 40), 0)
+	);
+}
+function balance(bookingId = checkoutBookingId) {
+	const attempts = bookingId === checkoutBookingId ? payments : [];
+	const amountPaid = bookingId === checkoutBookingId ? paid : 0;
+	const outstanding = total(bookingId) - amountPaid;
+	const reserved = attempts.filter((attempt) => attempt.paymentStatusId === 1).reduce((sum, attempt) => sum + attempt.amount, 0);
 	return {
-		bookingId: 123,
-		amountPaid: paid,
-		amountOutstanding: 300 - paid,
-		amountAvailable: 300 - paid,
-		isPaid: paid === 300,
-		payments,
+		bookingId,
+		amountPaid,
+		amountOutstanding: outstanding,
+		amountAvailable: Math.max(0, outstanding - reserved),
+		isPaid: outstanding === 0,
+		payments: attempts,
 	};
 }
 reset("vouchers");
@@ -121,7 +145,7 @@ const api = createServer(async (req, res) => {
 		current.paymentStatus = body.success ? "Partial" : "Failed";
 		current.paymentStatusId = body.success ? 5 : 3;
 		if (body.success) paid += current.amount;
-		if (paid === 300)
+		if (paid === total(checkoutBookingId))
 			for (const p of payments)
 				if (p.paymentStatus === "Partial") {
 					p.paymentStatus = "Completed";
@@ -129,11 +153,23 @@ const api = createServer(async (req, res) => {
 				}
 		return send(balance());
 	}
+	if (path === "/outlet") return send({ items: [], pageNumber: 1, totalPages: 0, totalCount: 0, hasPreviousPage: false, hasNextPage: false });
 	calls.push({ path, query: new URL(req.url, "http://127.0.0.1").search, method: req.method, body, authorization: req.headers.authorization });
-	if (!["Bearer payment-test-token", "Bearer customer-test-token"].includes(req.headers.authorization)) return send({ message: "Unauthorized" }, 401);
+	if (!["Bearer payment-test-token", "Bearer customer-test-token", "Bearer other-customer-test-token"].includes(req.headers.authorization))
+		return send({ message: "Unauthorized" }, 401);
+	const manager = req.headers.authorization === "Bearer payment-test-token";
+	const customer = req.headers.authorization === "Bearer customer-test-token";
+	if (path.startsWith("/admin/facility/") && (!manager || !path.startsWith("/admin/facility/1/"))) return send({ message: "Forbidden" }, 403);
+	if ((path === "/booking/44" || path === "/booking/44/path" || path.startsWith("/payment/booking/44")) && !customer)
+		return send({ message: "Forbidden" }, 403);
+	if (path === "/payment/initiate" && body.bookingId === 44 && !customer) return send({ message: "Forbidden" }, 403);
+	if (path === "/admin/facility/1/booking/44/payments") return send(balance(44));
+	if (path === "/admin/facility/1/booking/123/payments") return send(balance(123));
+	if (path === "/payment/booking/44/vouchers") return send([]);
+	if (path === "/payment/booking/44") return send(balance(44));
 	if (refreshFailed && path.startsWith("/payment/booking/")) return send({}, 503);
 	if (path === "/payment/booking/123/vouchers") return send(grants);
-	if (path === "/payment/booking/123") return send(balance());
+	if (path === "/payment/booking/123") return send(balance(123));
 	if (path === "/booking/user")
 		return send({
 			items:
@@ -164,8 +200,9 @@ const api = createServer(async (req, res) => {
 	if (path === "/booking/123")
 		return send({
 			id: 123,
+			bookingStatusId: paid === 300 ? 2 : 1,
 			bookingStatus: { id: paid === 300 ? 2 : 1, name: paid === 300 ? "Confirmed" : "Pending" },
-			...balance(),
+			...balance(123),
 			expiresAt: new Date(Date.now() + 1800000).toISOString(),
 			user: { firstName: "Payment", lastName: "Tester" },
 			slotContractBookings: [
@@ -181,7 +218,7 @@ const api = createServer(async (req, res) => {
 			{ providerName: "other", type: "Other provider" },
 		]);
 	if (path === "/outlet/basic/test") return send({ name: "Test Club", facilities: [{ id: 1, name: "Test Course" }] });
-	if (path === "/account/role/1") return send(scenario.startsWith("admin-") ? [{ normalizedName: "MANAGER" }] : []);
+	if (path === "/account/role/1") return send(manager && scenario.startsWith("admin-") ? [{ normalizedName: "MANAGER" }] : []);
 	if (path === "/slot/available") return send(true);
 	if (path === "/slot" || path === "/admin/facility/1/slot") return send(adminSlots(new URL(req.url, "http://127.0.0.1").searchParams.get("date")));
 	if (path === "/admin/facility/1/booking/customer/search" && new URL(req.url, "http://127.0.0.1").searchParams.get("query") !== "casey@example.test")
@@ -225,7 +262,7 @@ const api = createServer(async (req, res) => {
 		if (scenario === "admin-move-refresh-error") refreshFailed = true;
 		return send({});
 	}
-	if (path === "/admin/facility/1/booking/44") {
+	if (path === "/admin/facility/1/booking/44" || path === "/booking/44") {
 		if (refreshFailed) return send({}, 503);
 		const players = adminCreatedBooking.body.bookings;
 		const moved = players[0].slotId === destinationSlotId;
@@ -236,10 +273,7 @@ const api = createServer(async (req, res) => {
 			bookingStatus: { id: adminCreatedBooking.body.bookingStatusId ?? 2, name: "Confirmed" },
 			bookingStatusDate: "2026-08-02T09:00:00Z",
 			expiresAt: "2026-08-02T09:15:00Z",
-			isPaid: false,
-			amountPaid: 0,
-			amountOutstanding:
-				players.length * (moved ? 150 : 100) + adminCreatedBooking.body.extras.reduce((sum, extra) => sum + extra.amount * (extra.extraId === 5 ? 25 : 40), 0),
+			...balance(44),
 			user: { firstName: "Casey", lastName: "Customer" },
 			slotContractBookings: players.map((player, index) => ({
 				...player,
@@ -262,7 +296,7 @@ const api = createServer(async (req, res) => {
 			})),
 		});
 	}
-	if (path === "/booking/44/path")
+	if (path === "/booking/44/path" || path === "/admin/facility/1/booking/44/path")
 		return send({
 			outletSlug: "test",
 			outletName: "Test Club",
@@ -291,13 +325,14 @@ const api = createServer(async (req, res) => {
 		selected.ineligibleReason = "Voucher already used for this booking.";
 		return send({ transactionId: payments.at(-1).transactionId, amount, paymentStatusId: paid === 300 ? 2 : 5, ...balance() });
 	}
-	if (path === "/payment/initiate") {
+	if (path === "/payment/initiate" || path === "/admin/facility/1/booking/44/payment/initiate") {
+		checkoutBookingId = path.startsWith("/admin/") ? 44 : body.bookingId;
 		if (scenario === "provider-failure") return send({ errors: { generalErrors: ["Provider unavailable."] } }, 400);
 		if (body.amount > balance().amountAvailable) return send({ errors: { generalErrors: ["Amount exceeds available balance."] } }, 400);
 		payments.push(payment("Pending", body.amount, body.providerName));
 		return send({
 			transactionId: payments.at(-1).transactionId,
-			redirectUrl: `http://127.0.0.1:5174/payment/success?transactionId=${payments.at(-1).transactionId}`,
+			redirectUrl: `http://127.0.0.1:5174/payment/${scenario.endsWith("-failure") ? "failure" : scenario.endsWith("-cancelled") ? "cancelled" : "success"}?transactionId=${payments.at(-1).transactionId}`,
 		});
 	}
 	console.error("Unhandled fixture endpoint:", req.method, path);

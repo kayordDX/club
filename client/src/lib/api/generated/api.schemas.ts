@@ -185,19 +185,25 @@ export const PaymentFrequencyEnum = {
 
 export interface PaymentInitiateRecurring {
 	frequency: PaymentFrequencyEnum;
+	/** @minimum 0 */
 	cycles: number;
-	/** @nullable */
+	/**
+	 * @exclusiveMinimum 0
+	 * @nullable
+	 */
 	recurringAmount?: number | null;
 	/** @nullable */
 	firstBillingDate?: string | null;
 }
 
 export interface PaymentInitiateRequest {
-	bookingId: number;
+	/** @minLength 1 */
 	providerName: string;
 	/** @nullable */
 	amount?: number | null;
 	recurring?: PaymentInitiateRecurring | null;
+	/** @exclusiveMinimum 0 */
+	bookingId: number;
 }
 
 export interface PaymentDTO {
@@ -1152,6 +1158,14 @@ export interface AdminBookingCustomerDTO {
 	email?: string | null;
 	/** @nullable */
 	phoneNumber?: string | null;
+}
+
+export interface AdminBookingInitiatePaymentRequest {
+	/** @minLength 1 */
+	providerName: string;
+	/** @nullable */
+	amount?: number | null;
+	recurring?: PaymentInitiateRecurring | null;
 }
 
 export interface AdminBookingExtraOptionDTO {

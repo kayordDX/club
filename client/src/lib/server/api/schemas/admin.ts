@@ -487,6 +487,84 @@ export const AdminBookingSearchCustomerResponse = zod.object({
 	phoneNumber: zod.string().nullish(),
 });
 
+export const AdminBookingInitiatePaymentParams = zod.object({
+	facilityId: zod.int(),
+	id: zod.int(),
+});
+
+export const adminBookingInitiatePaymentBodyRecurringOneCyclesMin = 0;
+
+export const adminBookingInitiatePaymentBodyRecurringOneRecurringAmountExclusiveMin = 0;
+
+export const AdminBookingInitiatePaymentBody = zod.object({
+	providerName: zod.string().min(1),
+	amount: zod.number().nullish(),
+	recurring: zod
+		.union([
+			zod.object({
+				frequency: zod.enum({
+					Monthly: 3,
+					Quarterly: 4,
+					Biannually: 5,
+					Annually: 6,
+				}),
+				cycles: zod.int().min(adminBookingInitiatePaymentBodyRecurringOneCyclesMin),
+				recurringAmount: zod.number().gt(adminBookingInitiatePaymentBodyRecurringOneRecurringAmountExclusiveMin).nullish(),
+				firstBillingDate: zod.iso.date().nullish(),
+			}),
+			zod.null(),
+		])
+		.optional(),
+});
+
+export const AdminBookingInitiatePaymentResponse = zod.object({
+	transactionId: zod.string(),
+	redirectUrl: zod.string(),
+	providerReference: zod.string().nullish(),
+});
+
+export const AdminBookingGetPaymentsParams = zod.object({
+	facilityId: zod.int(),
+	id: zod.int(),
+});
+
+export const AdminBookingGetPaymentsResponse = zod.object({
+	bookingId: zod.int(),
+	amountPaid: zod.number(),
+	amountOutstanding: zod.number(),
+	amountAvailable: zod.number(),
+	isPaid: zod.boolean(),
+	payments: zod.array(
+		zod.object({
+			id: zod.int(),
+			transactionId: zod.string(),
+			amount: zod.number(),
+			paymentTypeId: zod.int(),
+			paymentType: zod.string(),
+			paymentStatusId: zod.int(),
+			paymentStatus: zod.string(),
+			providerName: zod.string(),
+			paymentStatusDate: zod.iso.datetime({ offset: true }),
+		})
+	),
+});
+
+export const AdminBookingGetPathParams = zod.object({
+	facilityId: zod.int(),
+	id: zod.int(),
+});
+
+export const AdminBookingGetPathResponse = zod.object({
+	bookingId: zod.int(),
+	outletId: zod.int(),
+	outletSlug: zod.string(),
+	outletName: zod.string(),
+	facilityId: zod.int(),
+	facilityName: zod.string(),
+	slotId: zod.string().nullish(),
+	slotStartDatetime: zod.iso.datetime({ offset: true }).nullish(),
+});
+
 export const AdminBookingGetOptionsParams = zod.object({
 	facilityId: zod.int(),
 });

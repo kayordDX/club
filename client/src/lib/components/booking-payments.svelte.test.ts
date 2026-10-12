@@ -2,7 +2,7 @@ import { beforeEach, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { page } from "vitest/browser";
 import Harness from "./testing/booking-payments-harness.svelte";
-import { VoucherRedemptionKind, type BookingPaymentDTO, type BookingVoucherDTO } from "$lib/api";
+import { BookingStatusEnum, VoucherRedemptionKind, type BookingPaymentDTO, type BookingVoucherDTO } from "$lib/api";
 
 const api = vi.hoisted(() => ({ history: vi.fn(), vouchers: vi.fn(), redeem: vi.fn(), initiate: vi.fn() }));
 vi.mock("$app/env", () => ({ browser: true, dev: true, building: false, version: "test" }));
@@ -33,10 +33,17 @@ let failRefresh: boolean;
 function remote<T>(value: T) {
 	return Object.assign(Promise.resolve(value), { refresh: () => (failRefresh ? Promise.reject(new Error("Offline")) : Promise.resolve()) });
 }
-function mount() {
+function mount(status: BookingStatusEnum = BookingStatusEnum.Confirmed, expiresAt = "2026-01-01") {
 	const onrefresh = vi.fn().mockResolvedValue(undefined);
 	const onbusy = vi.fn();
-	render(Harness, { bookingId: 123, methods: [{ providerName: "payfast", type: "Payfast" }], onrefresh, onbusy, oneditable: vi.fn() });
+	render(Harness, {
+		bookingId: 123,
+		booking: { bookingStatusId: status, expiresAt },
+		methods: [{ providerName: "payfast", type: "Payfast" }],
+		onrefresh,
+		onbusy,
+		oneditable: vi.fn(),
+	});
 	return { onrefresh, onbusy };
 }
 beforeEach(() => {
@@ -153,4 +160,28 @@ it("does not retry or duplicate a pending voucher submission", async () => {
 	expect(api.redeem).toHaveBeenCalledTimes(1);
 	complete({ isPaid: false, amountOutstanding: 100 });
 	await expect.element(page.getByText(/Payment received. Remaining balance/)).toBeVisible();
+});
+
+it.each([BookingStatusEnum.Cancelled, BookingStatusEnum.Expired, BookingStatusEnum.Pending])(
+	"shows customer history without checkout or redemption for inactive status %s",
+	async (status) => {
+		balance = { ...balance, amountPaid: 40, amountOutstanding: 160, amountAvailable: 160 };
+		mount(status);
+		await expect.element(page.getByText(/Restore the booking before checkout/)).toBeVisible();
+		await expect.element(page.getByLabelText("Payment amount")).not.toBeInTheDocument();
+		await expect.element(page.getByRole("button", { name: "Redeem voucher" })).not.toBeInTheDocument();
+		expect(api.initiate).not.toHaveBeenCalled();
+		expect(api.redeem).not.toHaveBeenCalled();
+	}
+);
+
+it("retains customer checkout and transaction/booking return mapping for an active hold", async () => {
+	api.initiate.mockResolvedValue({ transactionId: "customer-tx", redirectUrl: "#customer-checkout" });
+	mount(BookingStatusEnum.Pending, "2999-01-01");
+	await page.getByRole("radio", { name: "Payfast" }).click();
+	await page.getByLabelText("Payment amount").fill("25");
+	await page.getByRole("button", { name: "Pay now" }).click();
+	await vi.waitFor(() => expect(sessionStorage.getItem("payment-booking:customer-tx")).toBe("123"));
+	expect(api.initiate).toHaveBeenCalledExactlyOnceWith({ bookingId: 123, providerName: "payfast", amount: 25 });
+	expect(JSON.parse(sessionStorage.getItem("payment-return:customer-tx")!)).toEqual({ transactionId: "customer-tx", bookingId: 123 });
 });

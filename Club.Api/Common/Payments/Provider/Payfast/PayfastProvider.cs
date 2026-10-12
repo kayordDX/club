@@ -42,7 +42,7 @@ public class PayfastProvider(IPaymentOptionsAccessor<PayfastOptions> optionsAcce
             new("merchant_id", options.MerchantId),
             new("merchant_key", options.MerchantKey),
             new("return_url", returnUrl),
-            new("cancel_url", options.CancelUrl),
+            new("cancel_url", Microsoft.AspNetCore.WebUtilities.QueryHelpers.AddQueryString(options.CancelUrl, "transactionId", request.TransactionId)),
             new("notify_url", options.NotifyUrl),
             new("m_payment_id", request.TransactionId),
             new("amount", request.Amount.ToString("F2", CultureInfo.InvariantCulture)),

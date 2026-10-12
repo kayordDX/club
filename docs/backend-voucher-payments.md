@@ -1,14 +1,23 @@
 # Backend split and voucher payments
 
-Frontend work and API client regeneration are deferred to the next step.
+Customer checkout and facility booking management share payment presentation, with separately authorised data adapters.
 
 ## Split payments
 
-`POST /payment/initiate` accepts an optional `amount`. Omit it to pay the unreserved outstanding balance. Amounts must be positive, have at most two decimal places and not exceed that balance. Pending provider payments reserve their amounts until a success or failure callback arrives. Different providers can pay different parts of the same booking.
+`POST /payment/initiate` requires authentication and booking ownership, and accepts an optional `amount`. Omit it to pay the unreserved outstanding balance. Amounts must be positive, have at most two decimal places and not exceed that balance. Pending provider payments reserve their amounts until a success or failure callback arrives. Different providers can pay different parts of the same booking.
 
-A successful payment is `Partial` (payment status ID 5) while the booking has an outstanding balance. Partial payments have already been credited: repeat callbacks do not credit them again. The booking remains pending and `isPaid` is false. Once fully settled, its payments become `Completed` and the booking becomes confirmed. Failed payments do not contribute to the balance. Bookings cannot be edited while payments are pending or after any amount has been paid.
+A successful payment is `Partial` (payment status ID 5) while the booking has an outstanding balance. Partial payments have already been credited: repeat callbacks do not credit them again. Partial settlement preserves the booking status and `isPaid` is false. Once fully settled, its payments become `Completed`; an active Pending booking becomes Confirmed, while an inactive reservation is not silently restored. Confirmed bookings remain Confirmed during initiation and partial/full settlement, regardless of the old hold deadline. Failed payments release their reservations and do not contribute to the paid balance. Customer edits remain restricted after payment; authorised admin edits cannot reduce the total below settled amounts plus pending reservations.
 
 `GET /payment/booking/{bookingId}` returns the owner's payment history, paid amount, outstanding amount, unreserved available amount and paid flag.
+
+## Facility management checkout
+
+- `GET /admin/facility/{FacilityId}/booking/{Id}/payments` returns the same booking payment history/balance DTO through a separate facility Manager policy and booking/facility check. The matching `/path` interface supplies booking navigation to admin management; customer `/booking/{Id}` and `/booking/{Id}/path` remain owner-only.
+- `POST /admin/facility/{FacilityId}/booking/{Id}/payment/initiate` accepts `{ "providerName": "payfast", "amount": 50 }` (optional amount and recurring intent), returning the existing transaction/redirect response. Ownership stays with the booking owner; the acting admin does not impersonate the customer.
+- Both checkout adapters require an active Pending or Confirmed reservation. Cancelled/Expired bookings require restoration; expired Pending holds cannot start checkout, even after partial settlement. Confirmation does not mark payment.
+- Booking-row locking serialises checkout, settlement, status changes and repricing. Pending reservations reduce the available balance, preventing concurrent initiation from over-reserving it.
+- The admin payment adapter never queries or redeems vouchers. It can copy the existing authenticated customer payment URL for manual handoff; the customer must sign in as the booking owner. No anonymous or bearer payment link is created.
+- Provider result pages recover transaction-associated return hints from browser session storage, validate the exact internal facility booking-management route and verify the transaction against authorised history before showing admin return navigation. Customer returns remain customer-context. Refresh uncertain payment state before retrying; a cancelled browser return does not itself release a pending provider reservation.
 
 ## Voucher payments
 

@@ -79,9 +79,14 @@ export const PaymentResultPostParams = zod.object({
 
 export const PaymentResultPostResponse = zod.void();
 
+export const paymentInitiateBodyRecurringOneCyclesMin = 0;
+
+export const paymentInitiateBodyRecurringOneRecurringAmountExclusiveMin = 0;
+
+export const paymentInitiateBodyBookingIdExclusiveMin = 0;
+
 export const PaymentInitiateBody = zod.object({
-	bookingId: zod.int(),
-	providerName: zod.string(),
+	providerName: zod.string().min(1),
 	amount: zod.number().nullish(),
 	recurring: zod
 		.union([
@@ -92,13 +97,14 @@ export const PaymentInitiateBody = zod.object({
 					Biannually: 5,
 					Annually: 6,
 				}),
-				cycles: zod.int(),
-				recurringAmount: zod.number().nullish(),
+				cycles: zod.int().min(paymentInitiateBodyRecurringOneCyclesMin),
+				recurringAmount: zod.number().gt(paymentInitiateBodyRecurringOneRecurringAmountExclusiveMin).nullish(),
 				firstBillingDate: zod.iso.date().nullish(),
 			}),
 			zod.null(),
 		])
 		.optional(),
+	bookingId: zod.int().gt(paymentInitiateBodyBookingIdExclusiveMin),
 });
 
 export const PaymentInitiateResponse = zod.object({

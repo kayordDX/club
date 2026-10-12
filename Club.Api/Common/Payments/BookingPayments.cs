@@ -1,6 +1,7 @@
 using Club.Common.Enums;
 using Club.Data;
 using Club.Entities;
+using Club.Features.Booking.Common;
 using Microsoft.EntityFrameworkCore;
 
 namespace Club.Common.Payments;
@@ -15,13 +16,21 @@ public static class BookingPayments
     public static Task<Booking?> LockAsync(AppDbContext db, int bookingId, CancellationToken ct) =>
         db.Booking.FromSqlInterpolated($"SELECT * FROM booking WHERE id = {bookingId} FOR UPDATE").FirstOrDefaultAsync(ct);
 
-    public static Task<decimal> AvailableAsync(AppDbContext db, Booking booking, CancellationToken ct) =>
-        Task.FromResult(Math.Max(0, booking.AmountOutstanding));
+    public static async Task<decimal> AvailableAsync(AppDbContext db, Booking booking, CancellationToken ct)
+    {
+        var reserved = await db
+            .PaymentBooking.Where(x => x.BookingId == booking.Id && x.Payment.PaymentStatusId == (int)PaymentStatusEnum.Pending)
+            .SumAsync(x => x.Payment.Amount, ct);
+        return Math.Max(0, booking.AmountOutstanding - reserved);
+    }
 
     public static async Task ApplyAsync(AppDbContext db, Booking booking, Payment payment, CancellationToken ct)
     {
-        if (!IsValidAmount(payment.Amount, booking.AmountOutstanding))
-            throw new InvalidOperationException("Payment exceeds the outstanding booking balance or has an invalid amount.");
+        var otherReservations = await db
+            .PaymentBooking.Where(x => x.BookingId == booking.Id && x.PaymentId != payment.Id && x.Payment.PaymentStatusId == (int)PaymentStatusEnum.Pending)
+            .SumAsync(x => x.Payment.Amount, ct);
+        if (!IsValidAmount(payment.Amount, booking.AmountOutstanding - otherReservations))
+            throw new InvalidOperationException("Payment exceeds the unreserved outstanding booking balance or has an invalid amount.");
 
         booking.AmountPaid += payment.Amount;
         booking.AmountOutstanding -= payment.Amount;
@@ -31,8 +40,18 @@ public static class BookingPayments
 
         if (booking.IsPaid)
         {
-            booking.BookingStatusId = (int)BookingStatusEnum.Confirmed;
-            booking.BookingStatusDate = DateTime.UtcNow;
+            if (booking.BookingStatusId == (int)BookingStatusEnum.Pending)
+            {
+                var slotIds = await db.SlotContractBooking.Where(x => x.BookingId == booking.Id).Select(x => x.SlotContract.SlotId).ToListAsync(ct);
+                await ReservationRules.LockSlotsAsync(db, slotIds, ct);
+                // Check after slot locking: another reservation may have acquired capacity while
+                // this hold expired. Settlement records money, but cannot restore that reservation.
+                if (ReservationRules.IsActive(booking, DateTime.UtcNow))
+                {
+                    booking.BookingStatusId = (int)BookingStatusEnum.Confirmed;
+                    booking.BookingStatusDate = DateTime.UtcNow;
+                }
+            }
             var partials = await db
                 .PaymentBooking.Where(x => x.BookingId == booking.Id && x.Payment.PaymentStatusId == (int)PaymentStatusEnum.Partial)
                 .Select(x => x.Payment)
