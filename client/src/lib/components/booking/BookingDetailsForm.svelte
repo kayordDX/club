@@ -107,14 +107,10 @@
 	const remainingSlots = $derived(slot ? slot.total - slot.booked + ownPlayerCount : undefined);
 	const summaryStart = $derived(slot?.startDatetime ?? slotStartDatetime);
 	const summaryEnd = $derived(slot?.endDatetime ?? slotEndDatetime);
-	const originalContractIds = untrack(() => initialPlayers.map((player) => player.contractId));
-	let retainedContractIds = $state([...originalContractIds]);
-
 	function playerContracts(index: number) {
-		const original = preservedContracts.find(
-			(contract) => String(contract.id) === originalContractIds[index] && String(contract.id) === retainedContractIds[index]
-		);
-		return original && !contracts.some((contract) => contract.id === original.id) ? [...contracts, original] : contracts;
+		const selected = players.current?.[index]?.contractId ?? "";
+		const preserved = preservedContracts.find((contract) => String(contract.id) === selected);
+		return preserved && !contracts.some((contract) => contract.id === preserved.id) ? [...contracts, preserved] : contracts;
 	}
 
 	function contractItems(index: number) {
@@ -145,12 +141,10 @@
 	const addPlayer = () => {
 		const firstContractId = players.current?.[0]?.contractId ?? "";
 		const eligible = contracts.some((contract) => String(contract.id) === firstContractId);
-		retainedContractIds = [...retainedContractIds, ""];
 		form.setFieldValue("players", (prev) => [...prev, { name: "", cellNo: "", email: "", contractId: eligible ? firstContractId : "" }]);
 	};
 
 	const removePlayer = (index: number) => {
-		retainedContractIds = retainedContractIds.filter((_, i) => i !== index);
 		form.setFieldValue("players", (prev) => prev.filter((_, i) => i !== index));
 	};
 

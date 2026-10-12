@@ -40,7 +40,7 @@ it("keeps contact drafts usable while destination options reload and blocks savi
 	await expect.element(page.getByRole("button", { name: "Save changes" })).toBeEnabled();
 });
 
-it("does not transfer retained legacy eligibility to new or shifted players", async () => {
+it("preserves an unchanged legacy contract when a preceding player is removed, but denies it to new players", async () => {
 	render(Harness, { onSubmit: vi.fn(), legacy: true });
 	await page.getByRole("button", { name: "Add player" }).click();
 	await page.getByRole("button", { name: "Contract", exact: true }).click();
@@ -48,8 +48,9 @@ it("does not transfer retained legacy eligibility to new or shifted players", as
 	await expect.element(page.getByRole("option", { name: "Legacy Two - R 100.00" })).not.toBeInTheDocument();
 	await page.getByRole("option", { name: "Public - R 200.00" }).click();
 	await page.getByRole("button", { name: "Remove player 1" }).click();
-	await expect.element(page.getByText("Correct selections before saving")).toBeVisible();
-	await expect.element(page.getByRole("button", { name: "Save changes" })).toBeDisabled();
+	// Player Two's unchanged Legacy Two contract is retained even though its position shifted.
+	await expect.element(page.getByText("Correct selections before saving")).not.toBeInTheDocument();
+	await expect.element(page.getByRole("button", { name: "Save changes" })).toBeEnabled();
 });
 
 it("allows inactive reservation edits even when the slot is full", async () => {

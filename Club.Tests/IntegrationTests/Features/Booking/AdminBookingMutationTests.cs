@@ -25,9 +25,9 @@ public class AdminBookingMutationTests(AppFixture app)
     [Theory]
     [InlineData("contacts", true)]
     [InlineData("append", false)]
-    [InlineData("reorder", false)]
-    [InlineData("remove-first", false)]
-    public async Task LegacyAllowance_IsPerOriginalPlayerIndex_NotAPool(string operation, bool succeeds)
+    [InlineData("reorder", true)]
+    [InlineData("remove-first", true)]
+    public async Task LegacyAllowance_PreservesUnchangedContracts_AndRequiresEligibilityForNewInstances(string operation, bool succeeds)
     {
         await using var scope = app.Server.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -87,8 +87,25 @@ public class AdminBookingMutationTests(AppFixture app)
         else
         {
             var persisted = await ReadAsync(db, id);
-            persisted.SlotContractBookings.OrderBy(x => x.Id).Last().Name.ShouldBe("Changed contact");
-            persisted.AmountOutstanding.ShouldBe(125m);
+            switch (operation)
+            {
+                case "contacts":
+                    persisted.SlotContractBookings.OrderBy(x => x.Id).Last().Name.ShouldBe("Changed contact");
+                    persisted.AmountOutstanding.ShouldBe(125m);
+                    break;
+                case "reorder":
+                    persisted.SlotContractBookings.Count.ShouldBe(2);
+                    persisted.SlotContractBookings.Select(x => x.SlotContractId).ShouldContain(publicContract.Id);
+                    persisted.SlotContractBookings.Select(x => x.SlotContractId).ShouldContain(legacy.Id);
+                    persisted.AmountOutstanding.ShouldBe(125m);
+                    break;
+                case "remove-first":
+                    persisted.SlotContractBookings.ShouldHaveSingleItem().SlotContractId.ShouldBe(legacy.Id);
+                    persisted.AmountOutstanding.ShouldBe(25m);
+                    break;
+            }
+            // The legacy contract is retained without the owner regaining eligibility.
+            persisted.SlotContractBookings.Select(x => x.SlotContractId).ShouldContain(legacy.Id);
             await AssertActionAsync(db, id, BookingActionKind.Edited);
             foreach (var path in new[] { $"/booking/{id}", $"/admin/facility/{facilityId}/booking/{id}" })
             {
@@ -96,7 +113,6 @@ public class AdminBookingMutationTests(AppFixture app)
                 detail.StatusCode.ShouldBe(HttpStatusCode.OK);
                 var dto = (await detail.Content.ReadFromJsonAsync<BookingDTO>(Ct))!;
                 dto.SlotContractBookings.Select(x => x.Id).ShouldBe(dto.SlotContractBookings.Select(x => x.Id).Order());
-                dto.SlotContractBookings.Last().SlotContractId.ShouldBe(legacy.Id);
             }
         }
     }

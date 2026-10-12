@@ -65,11 +65,20 @@ public static class BookingMutationValidation
                 x => x.UserId == ownerId && x.FacilityId == facilityId && x.Role.NormalizedName == Constants.Policy.Manager.ToUpperInvariant(),
                 ct
             );
+        // The update wire contract carries no player identity, so an unchanged contract is matched by
+        // instance count, not list position. A contract keeps at most its existing count without
+        // re-checking owner eligibility; any instance beyond that (newly added or re-pointed) is a new
+        // benefit that must satisfy current eligibility. Removing or reordering a preceding player
+        // therefore never re-qualifies a retained contract.
+        var preservedRemaining = existingPlayers.GroupBy(x => (x.SlotContractId, x.SlotContract.SlotId)).ToDictionary(x => x.Key, x => x.Count());
         for (var index = 0; index < request.Bookings.Count; index++)
         {
             var player = request.Bookings[index];
             var contract = selectedContracts[index];
-            var unchanged = RetainsPreviousSelection(existingPlayers, index, player);
+            var key = (player.SlotContractId, player.SlotId);
+            var unchanged = preservedRemaining.TryGetValue(key, out var remaining) && remaining > 0;
+            if (unchanged)
+                preservedRemaining[key] = remaining - 1;
             if (!unchanged && !isManager && !ContractEligibility.IsAllowed(contract.Contract, contract.Slot.StartDatetime, ownerContracts))
                 return (
                     null,
@@ -121,11 +130,4 @@ public static class BookingMutationValidation
         }
         return (new(facilityId, total, requestedExtras), null);
     }
-
-    // The existing wire contract has no player ID. Detail responses and edit inputs use Id order;
-    // only the player at the same position keeping its slot and contract retains prior allowances.
-    private static bool RetainsPreviousSelection(IReadOnlyList<SlotContractBooking> existingPlayers, int index, BookingRequest player) =>
-        index < existingPlayers.Count
-        && existingPlayers[index].SlotContractId == player.SlotContractId
-        && existingPlayers[index].SlotContract.SlotId == player.SlotId;
 }
