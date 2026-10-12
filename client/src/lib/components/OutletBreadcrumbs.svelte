@@ -1,13 +1,26 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
+	import { browser } from "$app/env";
+	import { createQuery } from "@tanstack/svelte-query";
 	import { outletGetBasic } from "$lib/api/remote/outlet.remote";
 	import { Breadcrumb, Skeleton } from "@kayord/ui";
 	import { HouseIcon } from "@lucide/svelte";
 
 	let { children } = $props();
 
-	const outlet = $derived(await outletGetBasic(page.params.slug ?? ""));
+	const outletQuery = createQuery(() => ({
+		queryKey: ["outlet-basic", page.params.slug ?? ""],
+		retry: false,
+		enabled: browser,
+		queryFn: async () => {
+			const request = outletGetBasic(page.params.slug ?? "");
+			await request.refresh();
+			return await request;
+		},
+	}));
+	const outlet = $derived(outletQuery.data);
+
 	const facilityName = (o: { facilities: { id: number; name?: string | null }[] }) => o.facilities.find((x) => x.id == Number(page.params.id))?.name ?? "—";
 
 	const facilityHref = $derived.by(() => {
@@ -16,12 +29,11 @@
 	});
 </script>
 
-<svelte:boundary>
-	{#snippet pending()}
-		<div class="m-2">
-			<Skeleton class="h-4 w-95" />
-		</div>
-	{/snippet}
+{#if outletQuery.isPending}
+	<div class="m-2">
+		<Skeleton class="h-4 w-95" />
+	</div>
+{:else if outlet}
 	<div class="m-2">
 		<Breadcrumb.Root>
 			<Breadcrumb.List>
@@ -78,5 +90,5 @@
 			</Breadcrumb.List>
 		</Breadcrumb.Root>
 	</div>
-</svelte:boundary>
+{/if}
 {@render children?.()}

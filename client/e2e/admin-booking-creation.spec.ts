@@ -160,6 +160,7 @@ test("schedule → select customer → Confirmed unpaid → edit/move → checko
 	phase = "move";
 	await selectDestination(page);
 	await page.getByRole("button", { name: "Save changes" }).click();
+	await expect(page.getByRole("button", { name: "Edit booking", exact: true })).toBeEnabled();
 	await expect(page.getByText("Retained Draft", { exact: true })).toBeVisible();
 	await expect(paymentRegion.getByLabel("Payment amount")).toHaveValue("150.00");
 	phase = "checkout";

@@ -1,6 +1,7 @@
 using Club.Common.Enums;
 using Club.Data;
 using Club.Entities;
+using Club.Features.Booking.Common;
 using Microsoft.EntityFrameworkCore;
 
 namespace Club.Common.Payments;
@@ -39,11 +40,17 @@ public static class BookingPayments
 
         if (booking.IsPaid)
         {
-            // Late settlement must not restore an inactive reservation without a capacity check.
-            if (booking.BookingStatusId == (int)BookingStatusEnum.Pending && booking.ExpiresAt > DateTime.UtcNow)
+            if (booking.BookingStatusId == (int)BookingStatusEnum.Pending)
             {
-                booking.BookingStatusId = (int)BookingStatusEnum.Confirmed;
-                booking.BookingStatusDate = DateTime.UtcNow;
+                var slotIds = await db.SlotContractBooking.Where(x => x.BookingId == booking.Id).Select(x => x.SlotContract.SlotId).ToListAsync(ct);
+                await ReservationRules.LockSlotsAsync(db, slotIds, ct);
+                // Check after slot locking: another reservation may have acquired capacity while
+                // this hold expired. Settlement records money, but cannot restore that reservation.
+                if (ReservationRules.IsActive(booking, DateTime.UtcNow))
+                {
+                    booking.BookingStatusId = (int)BookingStatusEnum.Confirmed;
+                    booking.BookingStatusDate = DateTime.UtcNow;
+                }
             }
             var partials = await db
                 .PaymentBooking.Where(x => x.BookingId == booking.Id && x.Payment.PaymentStatusId == (int)PaymentStatusEnum.Partial)

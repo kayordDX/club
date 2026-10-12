@@ -39,6 +39,8 @@ test("payment routes require an authenticated session", async ({ page }) => {
 });
 
 test("returned vouchers support round, extra quantity, discount and credit split settlement", async ({ page }) => {
+	const runtimeErrors: string[] = [];
+	page.on("pageerror", (error) => runtimeErrors.push(error.message));
 	await open(page, "vouchers");
 	await expect(page.getByText("Not eligible: This facility is not eligible.")).toBeVisible();
 	await expect(card(page, "Wrong facility").getByRole("button", { name: "Redeem voucher" })).toBeDisabled();
@@ -65,9 +67,12 @@ test("returned vouchers support round, extra quantity, discount and credit split
 	]);
 	expect(state.calls.every((call: { authorization: string }) => call.authorization === "Bearer payment-test-token")).toBe(true);
 	await expect(page.getByRole("cell", { name: "Completed", exact: true }).last()).toBeVisible();
+	expect(runtimeErrors).toEqual([]);
 });
 
-test("only successful payments reduce the balance and remove the expiry countdown", async ({ page }) => {
+test("only successful payments reduce the balance and partial Pending bookings retain their expiry countdown", async ({ page }) => {
+	const runtimeErrors: string[] = [];
+	page.on("pageerror", (error) => runtimeErrors.push(error.message));
 	await open(page, "split");
 	await expect(page.getByText("Expires in", { exact: true })).toBeVisible();
 	await page.getByRole("radio", { name: "Payfast" }).click();
@@ -89,7 +94,7 @@ test("only successful payments reduce the balance and remove the expiry countdow
 	await page.getByRole("button", { name: "Refresh payments" }).click();
 	await expect(page.getByRole("cell", { name: "Partial", exact: true })).toBeVisible();
 	await expect(page.getByLabel("Payment amount")).toHaveValue("225.00");
-	await expect(page.getByText("Expires in", { exact: true })).toHaveCount(0);
+	await expect(page.getByText("Expires in", { exact: true })).toBeVisible();
 	await expect(page.getByText(/Remaining balance:.*Pay the rest/)).toBeVisible();
 	await page.getByRole("radio", { name: "Other provider" }).click();
 	await page.getByLabel("Payment amount").fill("25");
@@ -99,6 +104,7 @@ test("only successful payments reduce the balance and remove the expiry countdow
 	await page.goto(payUrl);
 	await expect(page.getByLabel("Payment amount")).toHaveValue("225.00");
 	await expect(page.getByRole("cell", { name: "Failed", exact: true })).toBeVisible();
+	expect(runtimeErrors).toEqual([]);
 });
 
 test("pending payments reserve the balance without counting as paid or allowing a duplicate checkout", async ({ page }) => {

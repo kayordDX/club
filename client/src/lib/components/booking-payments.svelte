@@ -3,7 +3,8 @@
 	import { Alert, Button } from "@kayord/ui";
 	import { createMutation, createQuery } from "@tanstack/svelte-query";
 	import { paymentGetBooking, paymentInitiate, paymentVoucher, paymentVouchers } from "$lib/api/remote/payment.remote";
-	import { BookingStatusEnum, type BookingDTO, type FacilityPaymentMethodsResponse, type PaymentInitiateRequest, type PaymentVoucherRequest } from "$lib/api";
+	import type { BookingDTO, FacilityPaymentMethodsResponse, PaymentInitiateRequest, PaymentVoucherRequest } from "$lib/api";
+	import { isActiveReservation } from "$lib/booking/status";
 	import { rememberPaymentReturn } from "$lib/booking/payment-return-context";
 	import { paymentErrorMessage, paymentMessage, validatePaymentAmount } from "$lib/booking/payments";
 	import VoucherCard from "./voucher-card.svelte";
@@ -30,9 +31,7 @@
 	let selectionVersion = $state(0);
 	let refreshError = $state("");
 	let now = $state(Date.now());
-	const checkoutAllowed = $derived(
-		booking.bookingStatusId === BookingStatusEnum.Confirmed || (booking.bookingStatusId === BookingStatusEnum.Pending && Date.parse(booking.expiresAt) > now)
-	);
+	const checkoutAllowed = $derived(isActiveReservation(booking, now));
 	const history = createQuery(() => ({
 		queryKey: ["booking-payments", bookingId],
 		retry: false,

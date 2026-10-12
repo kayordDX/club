@@ -9,7 +9,7 @@ export type PaymentReturnContext = {
 };
 
 const validId = (id: unknown): id is number => typeof id === "number" && Number.isSafeInteger(id) && id > 0;
-const validTransaction = (id: string) => /^[a-zA-Z0-9_-]{1,256}$/.exec(id)?.[0] === id;
+const validTransaction = (id: string) => typeof id === "string" && /^[a-zA-Z0-9_-]{1,256}$/.exec(id)?.[0] === id;
 const contextKey = (transactionId: string) => `payment-return:${transactionId}`;
 
 // This is a navigation hint, never an authorisation grant. Result pages must also

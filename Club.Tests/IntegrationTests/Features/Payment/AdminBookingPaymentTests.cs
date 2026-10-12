@@ -339,6 +339,63 @@ public class AdminBookingPaymentTests(AppFixture app)
         after.BookingStatusId.ShouldBe((int)status);
     }
 
+    [Fact]
+    public async Task ExpiryAndLastPlaceCreation_FullCaptureWaitingForCapacityLock_DoesNotReactivateHold()
+    {
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var (slot, contract, facilityId) = await SetupAsync(db, scope.ServiceProvider);
+        slot.MaxBookings = 1;
+        await db.SaveChangesAsync(Ct);
+        var id = await CreateAsync(facilityId, TestClaims.UserIdGuid, slot, contract);
+        (await StatusAsync(facilityId, id, BookingStatusEnum.Pending)).StatusCode.ShouldBe(HttpStatusCode.NoContent);
+        var attempt = await InitiatedAsync(facilityId, id);
+        var deadline = DateTime.UtcNow.AddSeconds(5);
+        await db.Booking.Where(x => x.Id == id).ExecuteUpdateAsync(x => x.SetProperty(b => b.ExpiresAt, deadline), Ct);
+
+        // External lock control makes the deadline interleaving deterministic without invoking
+        // the settlement implementation: both callers still perform their mutations via HTTP.
+        await using var gate = await db.Database.BeginTransactionAsync(Ct);
+        await db.Slot.FromSqlInterpolated($"SELECT * FROM slot WHERE id = {slot.Id} FOR UPDATE").SingleAsync(Ct);
+        var gatePid = await db.Database.SqlQuery<int>($"SELECT pg_backend_pid() AS \"Value\"").SingleAsync(Ct);
+        var capture = SettleAsync(attempt.TransactionId);
+        var waitUntil = DateTime.UtcNow.AddSeconds(10);
+        while (
+            await db
+                .Database.SqlQuery<int>($"SELECT count(*)::int AS \"Value\" FROM pg_stat_activity WHERE {gatePid} = ANY(pg_blocking_pids(pid))")
+                .SingleAsync(Ct) == 0
+        )
+        {
+            capture.IsCompleted.ShouldBeFalse("full capture must wait for the capacity lock");
+            (DateTime.UtcNow < waitUntil).ShouldBeTrue("capture did not reach the capacity lock");
+            await Task.Delay(20, Ct);
+        }
+        var delay = deadline - DateTime.UtcNow;
+        if (delay > TimeSpan.Zero)
+            await Task.Delay(delay + TimeSpan.FromMilliseconds(50), Ct);
+        var creation = CreateAsync(facilityId, TestClaims.UserIdGuid, slot, contract);
+        await gate.CommitAsync(Ct);
+        await capture;
+        var replacementId = await creation;
+
+        var history = await HistoryAsync(facilityId, id);
+        history.AmountPaid.ShouldBe(100m);
+        history.IsPaid.ShouldBeTrue();
+        var captured = (await app.Client.GetFromJsonAsync<BookingDTO>($"/admin/facility/{facilityId}/booking/{id}", Ct))!;
+        captured.BookingStatusId.ShouldBe((int)BookingStatusEnum.Expired);
+        var replacement = (await app.Client.GetFromJsonAsync<BookingDTO>($"/admin/facility/{facilityId}/booking/{replacementId}", Ct))!;
+        replacement.BookingStatusId.ShouldBe((int)BookingStatusEnum.Confirmed);
+        replacement.AmountPaid.ShouldBe(0m);
+        var schedule = (
+            await app.Client.GetFromJsonAsync<List<Club.Features.Admin.Slot.GetAll.AdminSlotGetAllResponse>>(
+                $"/admin/facility/{facilityId}/slot?date={Uri.EscapeDataString(slot.StartDatetime.ToString("O"))}",
+                Ct
+            )
+        )!;
+        schedule.ShouldHaveSingleItem().Booked.ShouldBe(1);
+        schedule.Single().Bookings.ShouldHaveSingleItem().BookingId.ShouldBe(replacementId);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

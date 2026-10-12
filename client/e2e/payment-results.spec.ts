@@ -49,6 +49,24 @@ for (const outcome of ["success", "failure", "cancelled"]) {
 	});
 }
 
+test("customer payment hydration does not emit runtime errors", async ({ page }) => {
+	const runtimeErrors: string[] = [];
+	page.on("pageerror", (error) => runtimeErrors.push(error.message));
+	await page.request.post(`${paymentApiUrl}/_test/reset`, { data: { scenario: "customer-success" } });
+	await authenticatePaymentSession(page);
+	await page.goto(customerUrl);
+	await expect(payments(page).getByLabel("Payment amount")).toHaveValue("300.00");
+	await expect(payments(page).getByRole("radio", { name: "Payfast" })).toBeVisible();
+	expect(runtimeErrors).toEqual([]);
+});
+
+test("admin payment hydration does not emit runtime errors", async ({ page }) => {
+	const runtimeErrors: string[] = [];
+	page.on("pageerror", (error) => runtimeErrors.push(error.message));
+	await openAdmin(page);
+	expect(runtimeErrors).toEqual([]);
+});
+
 for (const outcome of ["success", "failure", "cancelled"]) {
 	test(`customer ${outcome} retains owner history and customer navigation`, async ({ page }) => {
 		await page.request.post(`${paymentApiUrl}/_test/reset`, { data: { scenario: `customer-${outcome}` } });

@@ -5,7 +5,8 @@
 	import { createMutation, createQuery } from "@tanstack/svelte-query";
 	import { adminBookingGetPayments, adminBookingInitiatePayment } from "$lib/api/remote/admin.remote";
 	import { facilityPaymentMethods } from "$lib/api/remote/facility.remote";
-	import { BookingStatusEnum, type BookingDTO } from "$lib/api";
+	import type { BookingDTO } from "$lib/api";
+	import { isActiveReservation } from "$lib/booking/status";
 	import { paymentErrorMessage, validatePaymentAmount } from "$lib/booking/payments";
 	import { rememberPaymentReturn } from "$lib/booking/payment-return-context";
 	import BookingPaymentDetails from "./booking-payment-details.svelte";
@@ -37,9 +38,7 @@
 	let copyError = $state("");
 	let copying = $state(false);
 	let now = $state(Date.now());
-	const checkoutAllowed = $derived(
-		booking.bookingStatusId === BookingStatusEnum.Confirmed || (booking.bookingStatusId === BookingStatusEnum.Pending && Date.parse(booking.expiresAt) > now)
-	);
+	const checkoutAllowed = $derived(isActiveReservation(booking, now));
 	const history = createQuery(() => ({
 		queryKey: ["admin-booking-payments", facilityId, bookingId],
 		retry: false,

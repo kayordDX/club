@@ -23,6 +23,11 @@ it("preserves the customer mapping and independently associates each transaction
 	expect(getPaymentReturn("unknown")).toBeUndefined();
 });
 
+it.each(["", "tx\n", "tx/other", "https://evil.test", " tx", "tx?bookingId=44"])("rejects invalid transaction IDs %s", (transactionId) => {
+	expect(rememberPaymentReturn(transactionId, 44, admin)).toBe(false);
+	expect(getPaymentReturn(transactionId)).toBeUndefined();
+});
+
 it("supports previously stored customer transactions without trusting query-only booking IDs", () => {
 	values.set("payment-booking:old-tx", "123");
 	expect(getPaymentReturn("old-tx")).toEqual({ transactionId: "old-tx", bookingId: 123 });
