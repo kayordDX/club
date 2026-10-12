@@ -10,7 +10,7 @@
 	import { playersSchema, type BookingExtraOption, type Players, type BookingFormSubmitHandler, type SelectedExtra } from "$lib/booking/schema";
 	import { createAppForm, Form } from "$lib/components/Form";
 	import Extras from "$lib/components/booking/Extras.svelte";
-	import { Badge, Button, Card } from "@kayord/ui";
+	import { Alert, Badge, Button, Card } from "@kayord/ui";
 	import { CalendarDaysIcon, ChevronLeftIcon, Clock3Icon, CreditCardIcon, PlusIcon, Trash2Icon, UserRoundIcon } from "@lucide/svelte";
 
 	type Props = {
@@ -47,6 +47,13 @@
 		availableContracts?: Array<{ id: number; contractName: string; description?: string | null; price: number }>;
 		/** Already-authorized extras for this booking owner and slot. */
 		availableExtras?: BookingExtraOption[];
+		/** Legacy contracts are only offered to players that already held them. */
+		preservedContracts?: Array<{ id: number; contractName: string; description?: string | null; price: number }>;
+		/** Admin adapters supply capacity without querying customer-authorized endpoints. */
+		slotAvailability?: { total: number; booked: number; startDatetime: string; endDatetime?: string | null };
+		authorizedAvailability?: boolean;
+		optionsLoading?: boolean;
+		enforceCapacity?: boolean;
 		/** Optional status included in the pre-save review. */
 		reviewStatus?: string;
 		/**
@@ -81,6 +88,11 @@
 		initialExtras,
 		availableContracts,
 		availableExtras,
+		preservedContracts = [],
+		slotAvailability,
+		authorizedAvailability = false,
+		optionsLoading = false,
+		enforceCapacity = true,
 		reviewStatus,
 		ownPlayerCount = 0,
 		onSubmit,
@@ -88,25 +100,29 @@
 
 	const user = useUser();
 
-	// svelte-ignore state_referenced_locally
-	const contracts = availableContracts ?? (await slotGetContracts(slotId));
-	const contractItems = contracts.map((contract) => ({
-		value: contract.id.toString(),
-		label: `${contract.contractName}${contract.description ? ` ${contract.description}` : ""} - R ${contract.price.toFixed(2)}`,
-	}));
+	const customerContracts = untrack(() => availableContracts) === undefined ? await slotGetContracts(untrack(() => slotId)) : [];
+	const contracts = $derived(availableContracts ?? customerContracts);
+	const customerSlots = untrack(() => authorizedAvailability) ? [] : await slotGetAll(untrack(() => ({ facilityId, date: new Date(date).toISOString() })));
+	const slot = $derived(authorizedAvailability ? slotAvailability : customerSlots.find((item) => item.id === slotId));
+	const remainingSlots = $derived(slot ? slot.total - slot.booked + ownPlayerCount : undefined);
+	const summaryStart = $derived(slot?.startDatetime ?? slotStartDatetime);
+	const summaryEnd = $derived(slot?.endDatetime ?? slotEndDatetime);
+	const originalContractIds = untrack(() => initialPlayers.map((player) => player.contractId));
+	let retainedContractIds = $state([...originalContractIds]);
 
-	// svelte-ignore state_referenced_locally
-	const slots = await slotGetAll({ facilityId, date: new Date(date).toISOString() });
-	const slot = slots.find((item) => item.id === slotId);
-	// The slot query's booked count includes this booking's own players when
-	// editing, so add them back to get the number of players that can still be added.
-	// svelte-ignore state_referenced_locally
-	const remainingSlots = slot ? slot.total - slot.booked + ownPlayerCount : undefined;
+	function playerContracts(index: number) {
+		const original = preservedContracts.find(
+			(contract) => String(contract.id) === originalContractIds[index] && String(contract.id) === retainedContractIds[index]
+		);
+		return original && !contracts.some((contract) => contract.id === original.id) ? [...contracts, original] : contracts;
+	}
 
-	// svelte-ignore state_referenced_locally
-	const summaryStart = slot?.startDatetime ?? slotStartDatetime;
-	// svelte-ignore state_referenced_locally
-	const summaryEnd = slot?.endDatetime ?? slotEndDatetime;
+	function contractItems(index: number) {
+		return playerContracts(index).map((contract) => ({
+			value: String(contract.id),
+			label: `${contract.contractName}${contract.description ? ` ${contract.description}` : ""} - R ${contract.price.toFixed(2)}`,
+		}));
+	}
 
 	let selectedExtras: Array<SelectedExtra> = $state(untrack(() => initialExtras));
 
@@ -118,7 +134,8 @@
 			onChange: playersSchema,
 		},
 		onSubmit: async ({ value }) => {
-			await onSubmit({ players: value.players, extras: selectedExtras });
+			if (optionsLoading || incompatiblePlayers.length || incompatibleExtras.length || overCapacity) return;
+			await onSubmit({ players: value.players, extras: pricedExtras });
 		},
 	}));
 
@@ -127,10 +144,13 @@
 
 	const addPlayer = () => {
 		const firstContractId = players.current?.[0]?.contractId ?? "";
-		form.setFieldValue("players", (prev) => [...prev, { name: "", cellNo: "", email: "", contractId: firstContractId }]);
+		const eligible = contracts.some((contract) => String(contract.id) === firstContractId);
+		retainedContractIds = [...retainedContractIds, ""];
+		form.setFieldValue("players", (prev) => [...prev, { name: "", cellNo: "", email: "", contractId: eligible ? firstContractId : "" }]);
 	};
 
 	const removePlayer = (index: number) => {
+		retainedContractIds = retainedContractIds.filter((_, i) => i !== index);
 		form.setFieldValue("players", (prev) => prev.filter((_, i) => i !== index));
 	};
 
@@ -139,16 +159,27 @@
 	let lastFirstContractId = $state("");
 	$effect(() => {
 		const firstContractId = players.current?.[0]?.contractId ?? "";
-		if (firstContractId && firstContractId !== lastFirstContractId) {
+		if (firstContractId && firstContractId !== lastFirstContractId && contracts.some((contract) => String(contract.id) === firstContractId)) {
 			lastFirstContractId = firstContractId;
 			form.setFieldValue("players", (prev) => applyFirstPlayerContract(prev));
 		}
 	});
 
+	const incompatiblePlayers = $derived(
+		(players.current ?? []).flatMap((player, index) =>
+			player.contractId && !playerContracts(index).some((contract) => String(contract.id) === player.contractId) ? [index + 1] : []
+		)
+	);
+	const incompatibleExtras = $derived(availableExtras ? selectedExtras.filter((extra) => !availableExtras.some((option) => option.id === extra.id)) : []);
+	const pricedExtras = $derived(
+		selectedExtras.map((extra) => ({ ...extra, price: availableExtras?.find((option) => option.id === extra.id)?.price ?? extra.price }))
+	);
+	const overCapacity = $derived(enforceCapacity && remainingSlots !== undefined && playerCount > remainingSlots);
+	const incompletePreview = $derived(optionsLoading || incompatiblePlayers.length > 0 || incompatibleExtras.length > 0);
 	const totalPrice = $derived(
 		(players.current ?? [])
-			.map((player) => contracts.find((contract) => contract.id === Number(player.contractId))?.price ?? 0)
-			.reduce((sum, price) => sum + price, 0) + getSelectedExtrasTotal(selectedExtras)
+			.map((player, index) => playerContracts(index).find((contract) => contract.id === Number(player.contractId))?.price ?? 0)
+			.reduce((sum, price) => sum + price, 0) + getSelectedExtrasTotal(pricedExtras)
 	);
 </script>
 
@@ -167,6 +198,19 @@
 	<Form {form}>
 		<fieldset disabled={isSubmitting} class="contents">
 			<Card.Content class="space-y-6 p-6">
+				{#if optionsLoading}<p role="status">Loading destination capacity, eligible contracts and prices. Your drafts are retained.</p>{/if}
+				{#if !optionsLoading && (incompatiblePlayers.length || incompatibleExtras.length || overCapacity)}
+					<Alert.Root variant="destructive">
+						<Alert.Title>Correct selections before saving</Alert.Title>
+						<Alert.Description>
+							{#if incompatiblePlayers.length}Choose an eligible destination contract for player(s) {incompatiblePlayers.join(", ")}.
+							{/if}
+							{#if incompatibleExtras.length}Remove unavailable extras: {incompatibleExtras.map((extra) => extra.name).join(", ")}.
+							{/if}
+							{#if overCapacity}This slot has only {remainingSlots} place(s) available for this booking. Choose another slot or remove players.{/if}
+						</Alert.Description>
+					</Alert.Root>
+				{/if}
 				<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
 					<div class="rounded-2xl border p-4">
 						<div class="text-muted-foreground flex items-center gap-2 text-xs tracking-[0.18em] uppercase">
@@ -194,7 +238,7 @@
 							<CreditCardIcon class="size-4" />
 							Total
 						</div>
-						<p class="mt-3 text-sm font-semibold">{formatCurrency(totalPrice)}</p>
+						<p class="mt-3 text-sm font-semibold">{incompletePreview ? "Awaiting corrections" : formatCurrency(totalPrice)}</p>
 					</div>
 				</div>
 
@@ -209,7 +253,12 @@
 								<span class="text-muted-foreground text-sm">{remainingSlots} of {slot?.total} slot(s) remaining</span>
 							{/if}
 							<Badge variant="outline">{playerCount} players</Badge>
-							<Button variant="outline" size="sm" onclick={addPlayer} disabled={remainingSlots !== undefined && playerCount >= remainingSlots}>
+							<Button
+								variant="outline"
+								size="sm"
+								onclick={addPlayer}
+								disabled={enforceCapacity && remainingSlots !== undefined && playerCount >= remainingSlots}
+							>
 								<PlusIcon class="size-4" />
 								Add player
 							</Button>
@@ -253,7 +302,7 @@
 												<div class="grid gap-4 md:grid-cols-2">
 													<form.AppField name={`players[${index}].contractId`}>
 														{#snippet children(field)}
-															<field.Select label="Contract" items={contractItems} />
+															<field.Select label="Contract" items={contractItems(index)} disabled={optionsLoading} />
 														{/snippet}
 													</form.AppField>
 													<form.AppField name={`players[${index}].name`}>
@@ -307,7 +356,7 @@
 						</div>
 						<div>
 							<dt class="text-muted-foreground">Total</dt>
-							<dd class="font-medium">{formatCurrency(totalPrice)}</dd>
+							<dd class="font-medium">{incompletePreview ? "Awaiting corrections" : formatCurrency(totalPrice)}</dd>
 						</div>
 					</dl>
 				</div>
@@ -322,8 +371,8 @@
 					</Button>
 				{/if}
 				<div class="flex items-center gap-3">
-					<span class="text-muted-foreground text-sm">Total: {formatCurrency(totalPrice)}</span>
-					<Button type="submit" disabled={isSubmitting}>{isSubmitting ? submittingLabel : submitLabel}</Button>
+					<span class="text-muted-foreground text-sm">Total: {incompletePreview ? "Awaiting corrections" : formatCurrency(totalPrice)}</span>
+					<Button type="submit" disabled={isSubmitting || incompletePreview || overCapacity}>{isSubmitting ? submittingLabel : submitLabel}</Button>
 				</div>
 			</Card.Footer>
 		</fieldset>

@@ -51,13 +51,22 @@
 				<Table.Body>
 					{#each selectedExtras as extra, index (extra.id)}
 						<Table.Row>
-							<Table.Cell>{extra.name}</Table.Cell>
-							<Table.Cell class="font-bold">R {extra.price.toFixed(2)}</Table.Cell>
+							<Table.Cell
+								>{extra.name}{#if availableExtras && !availableExtras.some((option) => option.id === extra.id)}<span class="text-destructive ml-2"
+										>Unavailable — remove to continue</span
+									>{/if}</Table.Cell
+							>
+							<Table.Cell class="font-bold">R {(extras.find((option) => option.id === extra.id)?.price ?? extra.price).toFixed(2)}</Table.Cell>
 							<Table.Cell>
 								<ExtrasAmount bind:selectedExtras {index} />
 							</Table.Cell>
 							<Table.Cell class="text-end">
-								<Button size="icon" variant="destructive" onclick={() => (selectedExtras = selectedExtras.filter((_, i) => i !== index))}>
+								<Button
+									size="icon"
+									variant="destructive"
+									aria-label={`Remove extra ${extra.name}`}
+									onclick={() => (selectedExtras = selectedExtras.filter((_, i) => i !== index))}
+								>
 									<TrashIcon />
 								</Button>
 							</Table.Cell>

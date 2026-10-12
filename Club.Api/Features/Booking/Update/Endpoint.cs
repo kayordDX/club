@@ -1,20 +1,14 @@
 using Club.Common;
 using Club.Common.Config;
-using Club.Common.Enums;
-using Club.Common.Payments;
 using Club.Data;
-using Club.Entities;
 using Club.Features.Booking.Common;
-using Microsoft.EntityFrameworkCore;
+using Club.Features.Booking.Create;
 using Microsoft.Extensions.Options;
 
 namespace Club.Features.Booking.Update;
 
 public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : Endpoint<BookingUpdateRequest>
 {
-    private readonly AppDbContext _dbContext = dbContext;
-    private readonly AppConfig _appConfig = appConfig.Value;
-
     public override void Configure()
     {
         Put("/booking/{Id}");
@@ -23,214 +17,27 @@ public class Endpoint(AppDbContext dbContext, IOptions<AppConfig> appConfig) : E
 
     public override async Task HandleAsync(BookingUpdateRequest req, CancellationToken ct)
     {
-        var userId = Helpers.GetCurrentUserId(HttpContext);
-        if (userId == null)
+        var actorId = Helpers.GetCurrentUserId(HttpContext);
+        if (!actorId.HasValue)
         {
             await Send.UnauthorizedAsync(ct);
             return;
         }
-
-        if (req.Bookings.Count == 0)
+        var failure = await BookingEditMutation.EditAsync(
+            dbContext,
+            req.Id,
+            new BookingCreateRequest { Bookings = req.Bookings, Extras = req.Extras },
+            actorId.Value,
+            null,
+            appConfig.Value.PendingTimeoutMinutes,
+            ct
+        );
+        if (failure is not null)
         {
-            AddError(r => r.Bookings, "At least one booking is required.");
-            await Send.ErrorsAsync(400, ct);
+            AddError(failure.Message);
+            await Send.ErrorsAsync(failure.StatusCode, ct);
             return;
         }
-
-        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
-        var booking = await BookingPayments.LockAsync(_dbContext, req.Id, ct);
-
-        if (booking is null)
-        {
-            AddError(r => r.Id, "Booking not found.");
-            await Send.ErrorsAsync(404, ct);
-            return;
-        }
-
-        if (booking.UserId != userId)
-        {
-            AddError(r => r.Id, "You can only edit your own bookings.");
-            await Send.ErrorsAsync(403, ct);
-            return;
-        }
-
-        if (booking.BookingStatusId != (int)BookingStatusEnum.Pending)
-        {
-            AddError(r => r.Id, "Only pending bookings can be edited.");
-            await Send.ErrorsAsync(400, ct);
-            return;
-        }
-
-        if (booking.ExpiresAt < DateTime.UtcNow)
-        {
-            AddError(r => r.Id, "The booking has expired and can no longer be edited.");
-            await Send.ErrorsAsync(400, ct);
-            return;
-        }
-
-        if (
-            booking.AmountPaid > 0
-            || await _dbContext.PaymentBooking.AnyAsync(x => x.BookingId == booking.Id && x.Payment.PaymentStatusId == (int)PaymentStatusEnum.Pending, ct)
-        )
-        {
-            AddError(r => r.Id, "Bookings with paid or pending payments cannot be edited.");
-            await Send.ErrorsAsync(409, ct);
-            return;
-        }
-        await _dbContext.Entry(booking).Collection(x => x.SlotContractBookings).LoadAsync(ct);
-        await _dbContext.Entry(booking).Collection(x => x.ExtraBookings).LoadAsync(ct);
-
-        var slotContractIds = req.Bookings.Select(b => b.SlotContractId).Distinct().ToList();
-
-        var slotContracts = await _dbContext
-            .SlotContract.Include(sc => sc.Slot)
-            .Include(sc => sc.Contract)
-            .Where(sc => slotContractIds.Contains(sc.Id))
-            .ToListAsync(ct);
-
-        var userContracts = await _dbContext.UserContract.Where(uc => uc.UserId == userId && uc.IsActive).ToListAsync(ct);
-        var facilityIds = slotContracts
-            .Select(sc => sc.Slot.FacilityId)
-            .Where(facilityId => facilityId.HasValue)
-            .Select(facilityId => facilityId!.Value)
-            .Distinct()
-            .ToList();
-        var managerFacilityIds = await _dbContext
-            .UserRoles.Where(ur =>
-                ur.UserId == userId
-                && ur.FacilityId.HasValue
-                && facilityIds.Contains(ur.FacilityId.Value)
-                && ur.Role.NormalizedName == Constants.Policy.Manager.ToUpperInvariant()
-            )
-            .Select(ur => ur.FacilityId!.Value)
-            .ToHashSetAsync(ct);
-
-        foreach (var bookingReq in req.Bookings)
-        {
-            var sc = slotContracts.FirstOrDefault(sc => sc.Id == bookingReq.SlotContractId && sc.SlotId == bookingReq.SlotId);
-            if (sc is null)
-            {
-                AddError(r => r.Bookings, $"SlotContract {bookingReq.SlotContractId} not found for slot {bookingReq.SlotId}.");
-                continue;
-            }
-
-            var isManager = sc.Slot.FacilityId.HasValue && managerFacilityIds.Contains(sc.Slot.FacilityId.Value);
-            if (!isManager && !ContractEligibility.IsAllowed(sc.Contract, sc.Slot.StartDatetime, userContracts))
-                AddError(r => r.Bookings, $"Contract {sc.Contract.Name} is not available to you for slot {bookingReq.SlotId}.");
-        }
-
-        if (ValidationFailed)
-        {
-            await Send.ErrorsAsync(404, ct);
-            return;
-        }
-
-        if (facilityIds.Count != 1 || slotContracts.Any(sc => sc.Slot.FacilityId == null))
-        {
-            AddError(r => r.Bookings, "All slots must belong to the same facility.");
-            await Send.ErrorsAsync(400, ct);
-            return;
-        }
-
-        var slotIds = req.Bookings.Select(b => b.SlotId).Distinct().ToList();
-
-        // Begin a transaction and lock the affected slot rows so concurrent booking requests for
-        // the same slots are serialized against the capacity check below. Without this, two
-        // simultaneous requests could both pass the availability check and oversell a slot.
-        var previousSlotIds = await _dbContext.SlotContractBooking.Where(x => x.BookingId == booking.Id).Select(x => x.SlotContract.SlotId).ToListAsync(ct);
-        await ReservationRules.LockSlotsAsync(_dbContext, slotIds.Concat(previousSlotIds), ct);
-
-        var now = DateTime.UtcNow;
-        var existingCounts = await _dbContext
-            .SlotContractBooking.ActiveReservations(now)
-            .Where(scb => slotIds.Contains(scb.SlotContract.SlotId) && scb.BookingId != booking.Id)
-            .GroupBy(scb => scb.SlotContract.SlotId)
-            .Select(g => new { SlotId = g.Key, Count = g.Count() })
-            .ToDictionaryAsync(x => x.SlotId, x => x.Count, ct);
-
-        foreach (var slotGroup in req.Bookings.GroupBy(b => b.SlotId))
-        {
-            var slot = slotContracts.First(sc => sc.SlotId == slotGroup.Key).Slot;
-            var existing = existingCounts.GetValueOrDefault(slotGroup.Key, 0);
-            var available = slot.MaxBookings - existing;
-
-            if (available < slotGroup.Count())
-                AddError(r => r.Bookings, $"Not enough availability for slot {slotGroup.Key}. Only {available} slot(s) remaining.");
-        }
-
-        if (ValidationFailed)
-        {
-            await Send.ErrorsAsync(409, ct);
-            return;
-        }
-
-        var requestedExtras = req
-            .Extras.GroupBy(extra => extra.ExtraId)
-            .Select(group => new { ExtraId = group.Key, Amount = group.Sum(extra => extra.Amount) })
-            .ToList();
-
-        if (requestedExtras.Any(extra => extra.Amount <= 0))
-        {
-            AddError(r => r.Extras, "Extra amounts must be greater than zero.");
-            await Send.ErrorsAsync(400, ct);
-            return;
-        }
-
-        var extras =
-            requestedExtras.Count == 0
-                ? []
-                : await _dbContext.Extra.Where(extra => requestedExtras.Select(requestedExtra => requestedExtra.ExtraId).Contains(extra.Id)).ToListAsync(ct);
-
-        foreach (var requestedExtra in requestedExtras)
-        {
-            var extra = extras.FirstOrDefault(item => item.Id == requestedExtra.ExtraId);
-            if (extra is null || !extra.IsAvailable || !extra.IsOnline || !facilityIds.Contains(extra.FacilityId))
-            {
-                AddError(r => r.Extras, $"Extra {requestedExtra.ExtraId} is not available for this booking.");
-            }
-        }
-
-        if (ValidationFailed)
-        {
-            await Send.ErrorsAsync(404, ct);
-            return;
-        }
-
-        var totalPrice = req.Bookings.Sum(br => slotContracts.First(sc => sc.Id == br.SlotContractId && sc.SlotId == br.SlotId).Price);
-        var extrasTotal = requestedExtras.Sum(requestedExtra => extras.First(extra => extra.Id == requestedExtra.ExtraId).Price * requestedExtra.Amount);
-
-        _dbContext.SlotContractBooking.RemoveRange(booking.SlotContractBookings);
-        _dbContext.ExtraBooking.RemoveRange(booking.ExtraBookings);
-
-        var slotContractBookings = req
-            .Bookings.Select(br => new SlotContractBooking
-            {
-                SlotContractId = br.SlotContractId,
-                BookingId = booking.Id,
-                Name = br.Name,
-                Email = br.Email,
-                Cellphone = br.Cellphone,
-            })
-            .ToList();
-
-        await _dbContext.SlotContractBooking.AddRangeAsync(slotContractBookings, ct);
-
-        var extraBookings = requestedExtras.Select(requestedExtra => new ExtraBooking
-        {
-            ExtraId = requestedExtra.ExtraId,
-            BookingId = booking.Id,
-            Amount = requestedExtra.Amount,
-        });
-        await _dbContext.ExtraBooking.AddRangeAsync(extraBookings, ct);
-
-        booking.FacilityId = facilityIds.Single();
-        booking.AmountOutstanding = totalPrice + extrasTotal;
-        // Refresh the pending timeout so the user has time to complete payment after editing.
-        booking.ExpiresAt = now.AddMinutes(Math.Max(1, _appConfig.PendingTimeoutMinutes));
-
-        await _dbContext.SaveChangesAsync(ct);
-        await transaction.CommitAsync(ct);
-
         await Send.NoContentAsync(ct);
     }
 }

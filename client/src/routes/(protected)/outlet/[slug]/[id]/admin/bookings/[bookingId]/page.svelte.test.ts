@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => ({
 	adminSlots: vi.fn(),
 	invalidate: vi.fn(),
 	toast: vi.fn(),
+	pathRefresh: vi.fn(),
 }));
 const booking: BookingDTO = {
 	id: 42,
@@ -49,20 +50,22 @@ vi.mock("@tanstack/svelte-query", () => ({
 		mutateAsync: (value: unknown) => options().mutationFn(value),
 		isPending: false,
 	}),
+	createQuery: () => ({ data: undefined, isFetching: false, isPending: false, isError: false, refetch: vi.fn() }),
 	useQueryClient: () => ({ invalidateQueries: mocks.invalidate }),
 }));
 vi.mock("$lib/api/remote/admin.remote", () => ({
 	adminBookingGet: () => Object.assign(Promise.resolve(booking), { refresh: mocks.refresh }),
 	adminBookingUpdate: vi.fn(),
 	adminBookingUpdateStatus: mocks.change,
+	adminBookingGetOptions: vi.fn(() => ({ refresh: vi.fn().mockResolvedValue(undefined) })),
 	adminSlotGetAll: vi.fn(() => ({ refresh: mocks.adminSlots })),
 }));
 vi.mock("$lib/api/remote/slot.remote", () => ({ slotGetAll: vi.fn(() => ({ refresh: mocks.publicSlots })), slotGetContracts: vi.fn() }));
-vi.mock("$lib/api/remote/booking.remote", () => ({ bookingGetPath: () => Promise.resolve(undefined) }));
+vi.mock("$lib/api/remote/booking.remote", () => ({ bookingGetPath: () => Object.assign(Promise.resolve(undefined), { refresh: mocks.pathRefresh }) }));
 
 beforeEach(() => {
-	vi.resetAllMocks();
-	for (const mock of [mocks.change, mocks.refresh, mocks.publicSlots, mocks.adminSlots, mocks.invalidate]) mock.mockResolvedValue(undefined);
+	vi.clearAllMocks();
+	for (const mock of [mocks.change, mocks.refresh, mocks.publicSlots, mocks.adminSlots, mocks.invalidate, mocks.pathRefresh]) mock.mockResolvedValue(undefined);
 });
 
 async function restore() {
@@ -82,7 +85,9 @@ it("refreshes booking details, cached list and public/admin availability after r
 	expect(mocks.adminSlots).toHaveBeenCalledOnce();
 	expect(adminSlotGetAll).toHaveBeenCalledWith({ facilityId: 7, params: { date: "2026-08-01T00:00:00.000Z" } });
 	expect(slotGetAll).toHaveBeenCalledWith({ facilityId: 7, date: "2026-08-01T00:00:00.000Z" });
-	expect(mocks.invalidate).toHaveBeenCalledExactlyOnceWith({ queryKey: ["admin-bookings", 7] });
+	expect(mocks.invalidate).toHaveBeenCalledWith({ queryKey: ["admin-bookings", 7] });
+	expect(mocks.invalidate).toHaveBeenCalledWith({ queryKey: ["admin-slots", 7] });
+	expect(mocks.pathRefresh).toHaveBeenCalledOnce();
 	expect(mocks.toast).toHaveBeenCalledExactlyOnceWith("Status changed to Confirmed");
 });
 
