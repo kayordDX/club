@@ -1,4 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { expect, test } from "./fixtures/payment-test";
 import { authenticatePaymentSession, paymentApiUrl, paymentAppUrl } from "./fixtures/payment-session";
 
 const adminUrl = "/outlet/test/1/admin/bookings/44";
@@ -113,11 +114,10 @@ test("copied customer payment URL requires sign-in and only the owner can open i
 	expect(new URL(copied).searchParams.has("token")).toBe(false);
 
 	await page.context().clearCookies();
-	await page.route("**/auth/login?**", (route) => route.fulfill({ status: 200, body: "Sign in required" }));
 	await page.goto(copied);
-	await expect(page).toHaveURL(/\/auth\/login/);
+	await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:5194\/identity\/authorize\?/);
+	await expect(page.getByText("Sign in required", { exact: true })).toBeVisible();
 	await expect(page.getByRole("region", { name: "Booking payments" })).toHaveCount(0);
-	await page.unroute("**/auth/login?**");
 
 	for (const actor of ["other", "manager"] as const) {
 		await authenticatePaymentSession(page, actor);

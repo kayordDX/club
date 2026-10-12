@@ -1,5 +1,6 @@
 import { createCipheriv, createHash, randomBytes } from "node:crypto";
-import { expect, test, type Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { expect, test } from "./fixtures/payment-test";
 
 const payUrl = "/outlet/test/1/booking/123/pay";
 const apiUrl = "http://127.0.0.1:5194";
@@ -33,9 +34,9 @@ async function open(page: Page, scenario: string) {
 const card = (page: Page, name: string) => page.locator("form").filter({ has: page.getByText(name, { exact: true }) });
 
 test("payment routes require an authenticated session", async ({ page }) => {
-	await page.route("**/auth/login?**", (route) => route.fulfill({ status: 200, body: "Sign in required" }));
 	await page.goto(payUrl);
-	await expect(page).toHaveURL(/\/auth\/login/);
+	await expect(page).toHaveURL(/^http:\/\/127\.0\.0\.1:5194\/identity\/authorize\?/);
+	await expect(page.getByText("Sign in required", { exact: true })).toBeVisible();
 });
 
 test("returned vouchers support round, extra quantity, discount and credit split settlement", async ({ page }) => {

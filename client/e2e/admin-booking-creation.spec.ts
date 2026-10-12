@@ -1,5 +1,6 @@
 import { createCipheriv, createHash, randomBytes } from "node:crypto";
-import { expect, test, type Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
+import { expect, test } from "./fixtures/payment-test";
 
 const scheduleUrl = "/outlet/test/1/admin/schedule?date=2026-08-02";
 const apiUrl = "http://127.0.0.1:5194";

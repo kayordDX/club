@@ -11,6 +11,14 @@
 - Exercises the combined admin schedule → customer selection → Confirmed unpaid creation → edit/move → checkout → admin return journey, with customer visibility and payment regression checks.
 - Does not mock browser payment requests or add a production authentication bypass. API fixtures and scenario controls exist only in the test process.
 
+The client PR job runs this isolated suite with Chromium; failures include an HTML report, retained trace, screenshot and runtime diagnostics.
+
+All isolated specs import `test`/`expect` from `./fixtures/payment-test`. Its automatic fixture fails on unhandled browser errors (including additional pages), server error-channel output and API-fixture exceptions. Warnings and ordinary browser console messages are diagnostic context, not failures; handled negative HTTP responses remain valid. Error records survive scenario resets and are consumed between tests, so a worker restart cannot erase them. No runtime-error allowlist is installed.
+
+The fixture supplies OIDC discovery and a sign-in-required authorization endpoint, not a login/token exchange. This keeps unauthenticated redirects deterministic without Keycloak or a production auth bypass. `pnpm test:e2e:diagnostics` verifies that deliberately injected browser/rejection/additional-page/fixture errors fail otherwise-passing tests, while handled failures and warnings pass; it also tests server error capture.
+
+The `Batch has scheduled effects` invariant reported in #90 was fixed by [PR #91](https://github.com/kayordDX/club/pull/91): `OutletBreadcrumbs.svelte` now uses a synchronous query-backed render instead of an awaited remote-derived breadcrumb during hydration. Customer/admin hydration and refresh/return journeys remain covered by the shared guard. Existing environment/proxy-identity warnings are not unhandled errors and remain visible.
+
 `pnpm test` runs unit/component tests, these isolated payment scenarios, then the Aspire-dependent suite.
 
 These tests verify frontend behaviour against the documented API contract, **not** real Keycloak login, database voucher eligibility/locking/consumption, or live provider callbacks. Those require the running stack and backend integration tests. Fixture callback controls simulate provider outcomes; they do not contact payment providers. Grant issuance, revocation and refunds are not covered or implemented here.

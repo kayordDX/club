@@ -1,5 +1,15 @@
 import { createServer } from "node:http";
 import { spawn } from "node:child_process";
+import { mkdtempSync, readFileSync, writeFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { installErrorCapture } from "./runtime-errors.mjs";
+
+const diagnosticDirectory = mkdtempSync(join(tmpdir(), "club-payment-errors-"));
+const diagnosticPath = join(diagnosticDirectory, "errors.jsonl");
+writeFileSync(diagnosticPath, "");
+const recordError = installErrorCapture(diagnosticPath, "API fixture");
+let diagnosticCursor = 0;
 
 // Test-only backend: browser requests still pass through the real authenticated SvelteKit proxy.
 let scenario;
@@ -122,7 +132,7 @@ function balance(bookingId = checkoutBookingId) {
 	};
 }
 reset("vouchers");
-const api = createServer(async (req, res) => {
+async function handleRequest(req, res) {
 	const path = new URL(req.url, "http://127.0.0.1").pathname;
 	let text = "";
 	for await (const chunk of req) text += chunk;
@@ -131,6 +141,33 @@ const api = createServer(async (req, res) => {
 		res.writeHead(status, { "content-type": "application/json" });
 		res.end(JSON.stringify(data));
 	};
+	if (path === "/identity/.well-known/openid-configuration") {
+		return send({
+			issuer: "http://127.0.0.1:5194/identity",
+			authorization_endpoint: "http://127.0.0.1:5194/identity/authorize",
+			token_endpoint: "http://127.0.0.1:5194/identity/token",
+			jwks_uri: "http://127.0.0.1:5194/identity/jwks",
+			response_types_supported: ["code"],
+			subject_types_supported: ["public"],
+			id_token_signing_alg_values_supported: ["RS256"],
+		});
+	}
+	if (path === "/identity/authorize") {
+		res.writeHead(200, { "content-type": "text/plain" });
+		return res.end("Sign in required");
+	}
+	if (path === "/_test/errors") {
+		const errors = readFileSync(diagnosticPath, "utf8")
+			.split("\n")
+			.filter(Boolean)
+			.map((line) => JSON.parse(line));
+		if (req.method === "POST") {
+			const unread = errors.slice(diagnosticCursor);
+			diagnosticCursor = errors.length;
+			return send(unread);
+		}
+		return send(errors);
+	}
 	if (path === "/_test/reset") {
 		reset(body.scenario);
 		return send({ ok: true });
@@ -337,25 +374,45 @@ const api = createServer(async (req, res) => {
 	}
 	console.error("Unhandled fixture endpoint:", req.method, path);
 	return send({ message: "Unknown fixture endpoint" }, 404);
+}
+const api = createServer((req, res) => {
+	handleRequest(req, res).catch((error) => {
+		recordError(`${req.method} ${req.url}: ${error.stack ?? error}`);
+		res.writeHead(500);
+		res.end("Unexpected API fixture error");
+	});
 });
 api.listen(5194, "127.0.0.1", () => {
-	const vite = spawn("pnpm", ["exec", "vite", "dev", "--host", "127.0.0.1", "--port", "5174", "--strictPort"], {
-		stdio: "inherit",
-		env: {
-			...process.env,
-			API_URL: "http://127.0.0.1:5194",
-			APP_URL: "http://127.0.0.1:5174",
-			SESSION_SECRET: "isolated-payment-playwright-secret",
-			NODE_ENV: "development",
-		},
-	});
+	const vite = spawn(
+		process.execPath,
+		["--import", "./e2e/fixtures/runtime-errors.mjs", "./node_modules/vite/bin/vite.js", "dev", "--host", "127.0.0.1", "--port", "5174", "--strictPort"],
+		{
+			stdio: "inherit",
+			env: {
+				...process.env,
+				PAYMENT_ERROR_LOG: diagnosticPath,
+				API_URL: "http://127.0.0.1:5194",
+				IDENTITY_URL: "http://127.0.0.1:5194/identity",
+				APP_URL: "http://127.0.0.1:5174",
+				SESSION_SECRET: "isolated-payment-playwright-secret",
+				NODE_ENV: "development",
+			},
+		}
+	);
 	const stop = () => {
 		vite.kill("SIGTERM");
 		api.close();
 	};
 	process.on("SIGTERM", stop);
 	process.on("SIGINT", stop);
-	vite.on("exit", () => {
+	vite.on("error", (error) => {
+		recordError(error.stack ?? error.message);
 		api.close();
+		process.exitCode = 1;
+	});
+	vite.on("exit", (code, signal) => {
+		api.close();
+		if (code && !signal) process.exitCode = code;
+		rmSync(diagnosticDirectory, { recursive: true, force: true });
 	});
 });
