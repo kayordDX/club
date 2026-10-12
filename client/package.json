@@ -18,6 +18,7 @@
 		"test": "pnpm run test:unit -- --run && pnpm run test:e2e:payments && pnpm run test:e2e",
 		"test:e2e": "playwright test",
 		"test:e2e:payments": "playwright test --config playwright.payments.config.ts",
+		"test:e2e:diagnostics": "node --test e2e/fixtures/runtime-errors.test.mjs",
 		"test:install": "pnpm exec playwright install chromium",
 		"api": "pnpm run api:swagger && pnpm run api:orval && pnpm run api:remote && pnpm run format",
 		"api:swagger": "curl http://localhost:5000/openapi/v1.json > swagger.json",

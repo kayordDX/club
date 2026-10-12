@@ -62,3 +62,23 @@ jobs:
       - name: Unit tests
         working-directory: client
         run: pnpm run test:unit -- --run
+
+      - name: Runtime diagnostics regression tests
+        working-directory: client
+        run: pnpm test:e2e:diagnostics
+
+      - name: Isolated payment and admin booking browser tests
+        working-directory: client
+        run: pnpm test:e2e:payments
+
+      - name: Upload isolated browser failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: isolated-browser-failures
+          path: |
+            client/playwright-report/payments
+            client/test-results/payments
+            client/test-results/diagnostics
+          retention-days: 7
+          if-no-files-found: ignore
