@@ -4,15 +4,16 @@
 	import { toast } from "svelte-sonner";
 	import { createMutation, useQueryClient } from "@tanstack/svelte-query";
 	import { BookingStatusEnum, type AdminBookingUpdateRequest } from "$lib/api";
-	import { adminBookingGet, adminBookingUpdate, adminBookingUpdateStatus, adminSlotGetAll } from "$lib/api/remote/admin.remote";
+	import { adminBookingGet, adminBookingGetPath, adminBookingUpdate, adminBookingUpdateStatus, adminSlotGetAll } from "$lib/api/remote/admin.remote";
 	import { slotGetAll } from "$lib/api/remote/slot.remote";
-	import { bookingGetPath } from "$lib/api/remote/booking.remote";
 	import { statusLabel } from "$lib/booking/status";
+	import { getBookingPayUrl } from "$lib/booking/payUrl";
 	import type { BookingFormSubmitValues } from "$lib/booking/schema";
 	import PageHeading from "$lib/components/PageHeading.svelte";
 	import BookingDetails from "$lib/components/booking/booking-details.svelte";
 	import BookingStatusControl from "$lib/components/booking/booking-status-control.svelte";
 	import AdminBookingEditor from "$lib/components/booking/admin-booking-editor.svelte";
+	import AdminBookingPayments from "$lib/components/admin-booking-payments.svelte";
 	import { Alert, Button } from "@kayord/ui";
 	import { BookIcon, ChevronLeftIcon, PencilIcon } from "@lucide/svelte";
 
@@ -21,10 +22,12 @@
 	const request = adminBookingGet({ facilityId, id: bookingId });
 	const initialBooking = await request;
 	const booking = $derived(request.current ?? initialBooking);
-	const pathRequest = bookingGetPath(bookingId);
+	const pathRequest = adminBookingGetPath({ facilityId, id: bookingId });
 	const initialPath = await pathRequest.catch(() => undefined);
 	const path = $derived(pathRequest.current ?? initialPath);
 	const listHref = resolve(`/outlet/${page.params.slug}/${page.params.id}/admin/bookings`);
+	const returnUrl = resolve(`/outlet/${page.params.slug}/${page.params.id}/admin/bookings/${bookingId}`);
+	const customerPayUrl = $derived(path ? getBookingPayUrl(bookingId, path, booking.slotContractBookings?.length ?? 0) : undefined);
 	const slot = $derived(booking.slotContractBookings?.[0]?.slotContract?.slot);
 	const slotId = $derived(slot?.id ?? "");
 	let editing = $state(false);
@@ -36,10 +39,11 @@
 	const queryClient = useQueryClient();
 	let refreshing = $state(false);
 	let refreshError = $state("");
-	const busy = $derived(update.isPending || updateStatus.isPending || refreshing || !!refreshError);
+	let paymentBusy = $state(false);
+	const busy = $derived(update.isPending || updateStatus.isPending || paymentBusy || refreshing || !!refreshError);
 	let affectedDates: string[] = [];
 
-	async function refreshBooking() {
+	async function refreshBooking(refreshPayments = true) {
 		refreshing = true;
 		try {
 			const dates = [...new Set([...affectedDates, ...(slot ? [slot.startDatetime.slice(0, 10)] : [])])];
@@ -49,6 +53,7 @@
 				queryClient.invalidateQueries({ queryKey: ["admin-bookings", facilityId] }),
 				queryClient.invalidateQueries({ queryKey: ["admin-slots", facilityId] }),
 				queryClient.invalidateQueries({ queryKey: ["admin-booking-options", facilityId] }),
+				...(refreshPayments ? [queryClient.invalidateQueries({ queryKey: ["admin-booking-payments", facilityId, bookingId] })] : []),
 				...dates.flatMap((day) => {
 					const date = `${day}T00:00:00.000Z`;
 					return [adminSlotGetAll({ facilityId, params: { date } }).refresh(), slotGetAll({ facilityId, date }).refresh()];
@@ -99,7 +104,9 @@
 	<div class="flex flex-wrap items-start justify-between gap-4">
 		<PageHeading title={editing ? "Edit booking" : "Booking"} description={`Booking #${bookingId} · Facility management`} icon={BookIcon} />
 		<div class="flex flex-wrap gap-2">
-			<Button href={listHref} disabled={update.isPending || refreshing} variant="outline"><ChevronLeftIcon class="size-4" />Back to bookings</Button>
+			<Button href={listHref} disabled={update.isPending || paymentBusy || refreshing} variant="outline"
+				><ChevronLeftIcon class="size-4" />Back to bookings</Button
+			>
 			{#if !editing}
 				<Button
 					disabled={busy || !slotId}
@@ -123,6 +130,16 @@
 			<BookingStatusControl status={booking.bookingStatusId as BookingStatusEnum} disabled={busy || editing} onChange={changeStatus} />
 		{/snippet}
 	</BookingDetails>
+	<AdminBookingPayments
+		{facilityId}
+		{bookingId}
+		{booking}
+		{returnUrl}
+		{customerPayUrl}
+		disabled={busy || editing}
+		onrefresh={() => refreshBooking(false)}
+		onbusy={(value) => (paymentBusy = value)}
+	/>
 	{#if !slotId}
 		<p class="text-muted-foreground text-sm">This booking has no slot details and cannot be edited.</p>
 	{/if}

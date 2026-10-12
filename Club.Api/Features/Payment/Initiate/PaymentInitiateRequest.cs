@@ -2,15 +2,9 @@ using Club.Common.Enums;
 
 namespace Club.Features.Payment.Initiate;
 
-public class PaymentInitiateRequest
+public class PaymentInitiateRequest : Club.Features.Payment.Processing.PaymentCheckoutRequest
 {
     public int BookingId { get; set; }
-    public required string ProviderName { get; set; }
-    public decimal? Amount { get; set; }
-
-    // Optional recurring/subscription intent. When null the payment is a once-off charge (existing
-    // behaviour). When set, the selected provider sets up a recurring subscription if it supports it.
-    public PaymentInitiateRecurring? Recurring { get; set; }
 }
 
 public class PaymentInitiateRecurring

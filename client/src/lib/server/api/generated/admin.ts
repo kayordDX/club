@@ -9,6 +9,7 @@ import type {
 	AdminBookingCustomerDTO,
 	AdminBookingGetAllParams,
 	AdminBookingGetOptionsParams,
+	AdminBookingInitiatePaymentRequest,
 	AdminBookingOptionsDTO,
 	AdminBookingSearchCustomerParams,
 	AdminBookingUpdateRequest,
@@ -30,7 +31,10 @@ import type {
 	AdminVoucherUpdateRequest,
 	BookingCreateResponse,
 	BookingDTO,
+	BookingPathDTO,
+	BookingPaymentDTO,
 	PaginatedListOfAdminBookingDTO,
+	PaymentInitiateResponse,
 } from "./server.schemas";
 
 import { customServerInstance } from "../client";
@@ -505,6 +509,62 @@ export const adminBookingSearchCustomer = async (
 	options?: Parameters<typeof customServerInstance>[1]
 ): Promise<AdminBookingCustomerDTO> => {
 	return customServerInstance<AdminBookingCustomerDTO>(getAdminBookingSearchCustomerUrl(facilityId, params), {
+		...options,
+		method: "GET",
+	});
+};
+
+export const getAdminBookingInitiatePaymentUrl = (facilityId: number, id: number) => {
+	return `/admin/facility/${facilityId}/booking/${id}/payment/initiate`;
+};
+
+export const adminBookingInitiatePayment = async (
+	facilityId: number,
+	id: number,
+	adminBookingInitiatePaymentRequest: AdminBookingInitiatePaymentRequest,
+	options?: Parameters<typeof customServerInstance>[1]
+): Promise<PaymentInitiateResponse> => {
+	const getHeaders = (h?: NonNullable<RequestInit["headers"]>): Record<string, string | readonly string[]> => {
+		if (!h) return {};
+		if (h instanceof Headers) return Object.fromEntries(h.entries());
+		if (Symbol.iterator in h) {
+			return Object.fromEntries(Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]));
+		}
+		const headers: Record<string, string | readonly string[]> = {};
+		for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+			if (value !== undefined) headers[name] = value;
+		}
+		return headers;
+	};
+	return customServerInstance<PaymentInitiateResponse>(getAdminBookingInitiatePaymentUrl(facilityId, id), {
+		...options,
+		method: "POST",
+		headers: { "Content-Type": "application/json", ...getHeaders(options?.headers) },
+		body: JSON.stringify(adminBookingInitiatePaymentRequest),
+	});
+};
+
+export const getAdminBookingGetPaymentsUrl = (facilityId: number, id: number) => {
+	return `/admin/facility/${facilityId}/booking/${id}/payments`;
+};
+
+export const adminBookingGetPayments = async (
+	facilityId: number,
+	id: number,
+	options?: Parameters<typeof customServerInstance>[1]
+): Promise<BookingPaymentDTO> => {
+	return customServerInstance<BookingPaymentDTO>(getAdminBookingGetPaymentsUrl(facilityId, id), {
+		...options,
+		method: "GET",
+	});
+};
+
+export const getAdminBookingGetPathUrl = (facilityId: number, id: number) => {
+	return `/admin/facility/${facilityId}/booking/${id}/path`;
+};
+
+export const adminBookingGetPath = async (facilityId: number, id: number, options?: Parameters<typeof customServerInstance>[1]): Promise<BookingPathDTO> => {
+	return customServerInstance<BookingPathDTO>(getAdminBookingGetPathUrl(facilityId, id), {
 		...options,
 		method: "GET",
 	});

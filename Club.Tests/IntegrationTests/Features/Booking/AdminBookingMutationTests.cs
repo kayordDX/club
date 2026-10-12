@@ -109,7 +109,10 @@ public class AdminBookingMutationTests(AppFixture app)
             await AssertActionAsync(db, id, BookingActionKind.Edited);
             foreach (var path in new[] { $"/booking/{id}", $"/admin/facility/{facilityId}/booking/{id}" })
             {
-                var detail = await app.Client.GetAsync(path, Ct);
+                using var request = new HttpRequestMessage(HttpMethod.Get, path);
+                if (path.StartsWith("/booking/", StringComparison.Ordinal))
+                    request.Headers.Add("X-Test-User-Id", owner.Id.ToString());
+                var detail = await app.Client.SendAsync(request, Ct);
                 detail.StatusCode.ShouldBe(HttpStatusCode.OK);
                 var dto = (await detail.Content.ReadFromJsonAsync<BookingDTO>(Ct))!;
                 dto.SlotContractBookings.Select(x => x.Id).ShouldBe(dto.SlotContractBookings.Select(x => x.Id).Order());

@@ -1,5 +1,6 @@
 using Club.Common;
 using Club.Data;
+using Club.Features.Booking.Common;
 using Microsoft.EntityFrameworkCore;
 
 namespace Club.Features.Booking.GetPath;
@@ -22,23 +23,8 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingGetPathRequest, 
             return;
         }
 
-        var path = await _dbContext
-            .Booking.Where(b => b.Id == req.Id && b.FacilityId != null)
-            .Select(b => new BookingPathDTO
-            {
-                BookingId = b.Id,
-                OutletId = b.Facility!.OutletId,
-                OutletSlug = b.Facility.Outlet.Slug,
-                OutletName = b.Facility.Outlet.Name,
-                FacilityId = b.Facility.Id,
-                FacilityName = b.Facility.Name,
-                SlotId = b.SlotContractBookings.OrderBy(scb => scb.Id).Select(scb => (Guid?)scb.SlotContract.SlotId).FirstOrDefault(),
-                SlotStartDatetime = b
-                    .SlotContractBookings.OrderBy(scb => scb.Id)
-                    .Select(scb => (DateTime?)scb.SlotContract.Slot.StartDatetime)
-                    .FirstOrDefault(),
-            })
-            .FirstOrDefaultAsync(ct);
+        var userId = Helpers.GetCurrentUserId(HttpContext);
+        var path = await _dbContext.Booking.Where(b => b.Id == req.Id && b.UserId == userId && b.FacilityId != null).ProjectToPath().FirstOrDefaultAsync(ct);
 
         if (path == null)
         {

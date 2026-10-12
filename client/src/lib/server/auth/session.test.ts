@@ -77,8 +77,9 @@ describe("session cookie", () => {
 	it("fails closed when a chunk is tampered with", () => {
 		const cookies = fakeCookies();
 		writeSession(cookies, payload(), false);
-		// Corrupt the ciphertext.
-		cookies.set("sid", cookies.get("sid")!.slice(0, -2) + "ZZ", { path: "/" });
+		// Change a significant encoded byte; trailing base64 padding bits can decode identically.
+		const encrypted = cookies.get("sid")!;
+		cookies.set("sid", (encrypted[0] === "A" ? "B" : "A") + encrypted.slice(1), { path: "/" });
 		expect(readSession(cookies)).toBeUndefined();
 	});
 

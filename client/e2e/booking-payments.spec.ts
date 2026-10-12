@@ -78,8 +78,12 @@ test("only successful payments reduce the balance and remove the expiry countdow
 	await page.getByRole("button", { name: "Pay now" }).click();
 	await expect(page).toHaveURL(/\/payment\/success/);
 	await page.goto(payUrl);
-	await expect(page.getByLabel("Payment amount")).toHaveValue("300.00");
+	await expect(page.getByLabel("Payment amount")).toHaveValue("225.00");
 	await expect(page.getByRole("cell", { name: "Pending", exact: true })).toBeVisible();
+	const pending = await (await page.request.get(`${apiUrl}/_test/state`)).json();
+	expect(pending.amountPaid).toBe(0);
+	expect(pending.amountOutstanding).toBe(300);
+	expect(pending.amountAvailable).toBe(225);
 	await expect(page.getByText("Expires in", { exact: true })).toBeVisible();
 	await page.request.post(`${apiUrl}/_test/callback`, { data: { success: true } });
 	await page.getByRole("button", { name: "Refresh payments" }).click();
@@ -97,14 +101,18 @@ test("only successful payments reduce the balance and remove the expiry countdow
 	await expect(page.getByRole("cell", { name: "Failed", exact: true })).toBeVisible();
 });
 
-test("abandoned pending payments do not hide payment methods", async ({ page }) => {
+test("pending payments reserve the balance without counting as paid or allowing a duplicate checkout", async ({ page }) => {
 	await page.request.post(`${apiUrl}/_test/reset`, { data: { scenario: "reserved" } });
 	await authenticate(page);
 	await page.goto(payUrl);
-	await expect(page.getByLabel("Payment amount")).toHaveValue("300.00");
-	await page.getByRole("radio", { name: "Payfast" }).click();
-	await expect(page.getByRole("button", { name: "Pay now" })).toBeEnabled();
-	await expect(card(page, "Credit voucher").getByRole("button", { name: "Redeem voucher" })).toBeEnabled();
+	await expect(page.getByRole("cell", { name: "Pending", exact: true })).toBeVisible();
+	await expect(page.getByText("No outstanding balance is available to pay.")).toBeVisible();
+	await expect(page.getByRole("button", { name: "Pay now" })).toHaveCount(0);
+	await expect(card(page, "Credit voucher").getByRole("button", { name: "Redeem voucher" })).toBeDisabled();
+	const state = await (await page.request.get(`${apiUrl}/_test/state`)).json();
+	expect(state.amountPaid).toBe(0);
+	expect(state.amountOutstanding).toBe(300);
+	expect(state.amountAvailable).toBe(0);
 });
 
 test("stale selection rejection clears selection and prevents duplicate submissions", async ({ page }) => {

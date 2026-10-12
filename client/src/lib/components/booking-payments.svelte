@@ -1,22 +1,24 @@
 <script lang="ts">
 	import { browser } from "$app/env";
-	import { Alert, Button, Table } from "@kayord/ui";
+	import { Alert, Button } from "@kayord/ui";
 	import { createMutation, createQuery } from "@tanstack/svelte-query";
 	import { paymentGetBooking, paymentInitiate, paymentVoucher, paymentVouchers } from "$lib/api/remote/payment.remote";
-	import type { FacilityPaymentMethodsResponse, PaymentInitiateRequest, PaymentVoucherRequest } from "$lib/api";
-	import { formatCurrency, formatDateTime } from "$lib/booking/format";
+	import { BookingStatusEnum, type BookingDTO, type FacilityPaymentMethodsResponse, type PaymentInitiateRequest, type PaymentVoucherRequest } from "$lib/api";
+	import { rememberPaymentReturn } from "$lib/booking/payment-return-context";
 	import { paymentErrorMessage, paymentMessage, validatePaymentAmount } from "$lib/booking/payments";
 	import VoucherCard from "./voucher-card.svelte";
-	import PaymentAmountForm from "./payment-amount-form.svelte";
+	import BookingPaymentDetails from "./booking-payment-details.svelte";
 
 	let {
 		bookingId,
+		booking,
 		methods,
 		onrefresh,
 		onbusy,
 		oneditable,
 	}: {
 		bookingId: number;
+		booking: Pick<BookingDTO, "bookingStatusId" | "expiresAt">;
 		methods: FacilityPaymentMethodsResponse[];
 		onrefresh: () => Promise<void>;
 		onbusy: (_busy: boolean) => void;
@@ -27,11 +29,16 @@
 	let locked = $state(false);
 	let selectionVersion = $state(0);
 	let refreshError = $state("");
+	let now = $state(Date.now());
+	const checkoutAllowed = $derived(
+		booking.bookingStatusId === BookingStatusEnum.Confirmed || (booking.bookingStatusId === BookingStatusEnum.Pending && Date.parse(booking.expiresAt) > now)
+	);
 	const history = createQuery(() => ({
 		queryKey: ["booking-payments", bookingId],
 		retry: false,
 		enabled: browser,
 		queryFn: async () => {
+			now = Date.now();
 			const request = paymentGetBooking(bookingId);
 			try {
 				await Promise.all([request.refresh(), onrefresh()]);
@@ -73,7 +80,16 @@
 		}
 	}
 	async function pay(providerName: string, amount: number) {
-		if (unavailable || refreshError || !history.data || history.data.isPaid || validatePaymentAmount(String(amount), history.data.amountAvailable)) return;
+		now = Date.now();
+		if (
+			!checkoutAllowed ||
+			unavailable ||
+			refreshError ||
+			!history.data ||
+			history.data.isPaid ||
+			validatePaymentAmount(String(amount), history.data.amountAvailable)
+		)
+			return;
 		locked = true;
 		onbusy(true);
 		error = "";
@@ -81,12 +97,7 @@
 		let redirecting = false;
 		try {
 			const response = await initiate.mutateAsync({ bookingId, providerName, amount });
-			// Provider callbacks return only the transaction ID; retain its booking for the return page.
-			try {
-				sessionStorage.setItem(`payment-booking:${response.transactionId}`, String(bookingId));
-			} catch {
-				/* Do not interrupt provider redirects when storage is unavailable. */
-			}
+			rememberPaymentReturn(response.transactionId, bookingId);
 			await refresh();
 			if (!response.redirectUrl) throw new Error("No provider redirect was received.");
 			window.location.href = response.redirectUrl;
@@ -102,7 +113,9 @@
 		}
 	}
 	async function redeemVoucher(request: PaymentVoucherRequest) {
-		if (unavailable || refreshError || vouchers.isError || !history.data || history.data.isPaid || history.data.amountAvailable <= 0) return;
+		now = Date.now();
+		if (!checkoutAllowed || unavailable || refreshError || vouchers.isError || !history.data || history.data.isPaid || history.data.amountAvailable <= 0)
+			return;
 		locked = true;
 		onbusy(true);
 		error = "";
@@ -138,70 +151,32 @@
 		>
 		<Button variant="outline" onclick={refresh}>Retry</Button>
 	{:else if history.data}
-		<dl class="grid gap-3 sm:grid-cols-3">
-			<div>
-				<dt>Paid</dt>
-				<dd>{formatCurrency(history.data.amountPaid)}</dd>
-			</div>
-			<div>
-				<dt>Outstanding</dt>
-				<dd>{formatCurrency(history.data.amountOutstanding)}</dd>
-			</div>
-			<div>
-				<dt>Available to pay</dt>
-				<dd>{formatCurrency(history.data.amountAvailable)}</dd>
-			</div>
-		</dl>
-		<p class="text-muted-foreground text-sm">
-			Only successful payments reduce your outstanding balance. Pending or failed attempts do not count as paid; avoid completing multiple attempts for the same
-			balance.
-		</p>
-		<Button variant="outline" disabled={busy || history.isFetching} onclick={refresh}>Refresh payments</Button>
-		{#if history.data.isPaid}
-			<p role="status">Your booking is fully paid.</p>
-		{:else}
-			{#if history.data.amountPaid > 0}<p role="status">
-					Remaining balance: {formatCurrency(history.data.amountOutstanding)}. Pay the rest with another payment method.
-				</p>{/if}
-			{#if history.data.amountAvailable > 0}
-				{#key history.data.amountAvailable}
-					<PaymentAmountForm amountAvailable={history.data.amountAvailable} {methods} busy={unavailable || !!refreshError} onpay={pay} />
-				{/key}
-			{:else}<p>No outstanding balance is available to pay.</p>{/if}
-			<h3 class="font-semibold">Your vouchers</h3>
-			{#if vouchers.isPending}<p role="status">Loading vouchers...</p>
-			{:else if vouchers.isError}<p role="alert">Unable to load vouchers: {paymentErrorMessage(vouchers.error, "Refresh to try again.")}</p>
-				<Button variant="outline" onclick={() => vouchers.refetch()}>Retry vouchers</Button>
-			{:else if !vouchers.data?.length}<p>No vouchers available.</p>
-			{:else}<div class="grid gap-4 md:grid-cols-2">
-					{#each vouchers.data as voucher (`${voucher.grantId}:${selectionVersion}`)}<VoucherCard
-							{voucher}
-							{bookingId}
-							busy={unavailable}
-							disabled={history.data.amountAvailable <= 0 || !!refreshError}
-							onredeem={redeemVoucher}
-						/>{/each}
-				</div>{/if}
-		{/if}
-		<h3 class="font-semibold">Payment history</h3>
-		{#if !history.data.payments.length}<p>No payments yet.</p>
-		{:else}
-			<div class="overflow-x-auto">
-				<Table.Root
-					><Table.Header
-						><Table.Row
-							><Table.Head>Date</Table.Head><Table.Head>Method / provider</Table.Head><Table.Head>Status</Table.Head><Table.Head>Amount</Table.Head></Table.Row
-						></Table.Header
-					><Table.Body>
-						{#each history.data.payments as payment (payment.id)}<Table.Row
-								><Table.Cell>{formatDateTime(payment.paymentStatusDate)}</Table.Cell><Table.Cell
-									>{payment.paymentType} / {payment.providerName}
-									<div class="text-muted-foreground text-xs">{payment.transactionId}</div></Table.Cell
-								><Table.Cell>{payment.paymentStatus}</Table.Cell><Table.Cell>{formatCurrency(payment.amount)}</Table.Cell></Table.Row
-							>{/each}
-					</Table.Body></Table.Root
-				>
-			</div>
-		{/if}
+		<BookingPaymentDetails
+			balance={history.data}
+			{methods}
+			{busy}
+			checkoutDisabled={unavailable || !!refreshError}
+			refreshing={history.isFetching}
+			{checkoutAllowed}
+			onpay={pay}
+			onrefresh={refresh}
+		>
+			{#snippet customerOperations()}
+				<h3 class="font-semibold">Your vouchers</h3>
+				{#if vouchers.isPending}<p role="status">Loading vouchers...</p>
+				{:else if vouchers.isError}<p role="alert">Unable to load vouchers: {paymentErrorMessage(vouchers.error, "Refresh to try again.")}</p>
+					<Button variant="outline" onclick={() => vouchers.refetch()}>Retry vouchers</Button>
+				{:else if !vouchers.data?.length}<p>No vouchers available.</p>
+				{:else}<div class="grid gap-4 md:grid-cols-2">
+						{#each vouchers.data as voucher (`${voucher.grantId}:${selectionVersion}`)}<VoucherCard
+								{voucher}
+								{bookingId}
+								busy={unavailable}
+								disabled={history.data!.amountAvailable <= 0 || !!refreshError}
+								onredeem={redeemVoucher}
+							/>{/each}
+					</div>{/if}
+			{/snippet}
+		</BookingPaymentDetails>
 	{/if}
 </section>

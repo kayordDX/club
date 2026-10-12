@@ -37,7 +37,29 @@ public class PayfastProviderReturnTests
         Assert.Equal("http://localhost:5000/payment/result/payfast?merchantTransactionId=txn-123", response.FormFields!["return_url"]);
         Assert.Equal("txn-123", response.FormFields["m_payment_id"]);
         Assert.Equal(SandboxOptions.NotifyUrl, response.FormFields["notify_url"]);
-        Assert.Equal(SandboxOptions.CancelUrl, response.FormFields["cancel_url"]);
+        Assert.Equal(SandboxOptions.CancelUrl + "?transactionId=txn-123", response.FormFields["cancel_url"]);
+    }
+
+    [Fact]
+    public async Task ProcessPaymentAsync_CancellationPreservesConfiguredQueryAndFragment_AndEscapesTransaction()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Scheme = "https";
+        context.Request.Host = new HostString("club.example");
+        var options = PayfastTestHelpers.SandboxOptions();
+        options.CancelUrl = "https://club.example/payment/cancelled?source=provider#result";
+        var provider = PayfastTestHelpers.CreateProvider(context, options);
+        var response = await provider.ProcessPaymentAsync(
+            new PaymentRequest
+            {
+                Amount = 10m,
+                Currency = "ZAR",
+                TransactionId = "txn &123",
+            },
+            TestContext.Current.CancellationToken
+        );
+
+        Assert.Equal("https://club.example/payment/cancelled?source=provider&transactionId=txn%20%26123#result", response.FormFields!["cancel_url"]);
     }
 
     [Fact]

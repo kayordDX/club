@@ -9,6 +9,7 @@ import {
 	AdminBookingCreateBody,
 	AdminBookingGetAllQueryParams,
 	AdminBookingGetOptionsQueryParams,
+	AdminBookingInitiatePaymentBody,
 	AdminBookingSearchCustomerQueryParams,
 	AdminBookingUpdateBody,
 	AdminBookingUpdateStatusBody,
@@ -92,6 +93,16 @@ export const adminBookingGet = query(z.object({ facilityId: z.number().int(), id
 export const adminBookingSearchCustomer = query(
 	z.object({ facilityId: z.number().int(), params: AdminBookingSearchCustomerQueryParams }),
 	async ({ facilityId, params }) => api.adminBookingSearchCustomer(facilityId, params)
+);
+export const adminBookingInitiatePayment = command(
+	z.object({ facilityId: z.number().int(), id: z.number().int(), body: AdminBookingInitiatePaymentBody }),
+	async ({ facilityId, id, body }) => api.adminBookingInitiatePayment(facilityId, id, body)
+);
+export const adminBookingGetPayments = query(z.object({ facilityId: z.number().int(), id: z.number().int() }), async ({ facilityId, id }) =>
+	api.adminBookingGetPayments(facilityId, id)
+);
+export const adminBookingGetPath = query(z.object({ facilityId: z.number().int(), id: z.number().int() }), async ({ facilityId, id }) =>
+	api.adminBookingGetPath(facilityId, id)
 );
 export const adminBookingGetOptions = query(
 	z.object({ facilityId: z.number().int(), params: AdminBookingGetOptionsQueryParams }),

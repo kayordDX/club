@@ -57,9 +57,6 @@ public class VoucherPaymentTests(AppFixture app)
         (await app.Client.PostAsJsonAsync("/payment/voucher", request, cancellationToken: TestContext.Current.CancellationToken)).StatusCode.ShouldBe(
             HttpStatusCode.BadRequest
         );
-        await db
-            .Booking.Where(x => x.Id == booking.Id)
-            .ExecuteUpdateAsync(x => x.SetProperty(b => b.ExpiresAt, DateTime.UtcNow.AddMinutes(-1)), cancellationToken: TestContext.Current.CancellationToken);
         request.SlotContractBookingId = booking.SlotContractBookings.Last().Id;
         (await app.Client.PostAsJsonAsync("/payment/voucher", request, cancellationToken: TestContext.Current.CancellationToken)).StatusCode.ShouldBe(
             HttpStatusCode.OK
@@ -77,6 +74,40 @@ public class VoucherPaymentTests(AppFixture app)
         (await app.Client.PostAsJsonAsync("/payment/voucher", request, cancellationToken: TestContext.Current.CancellationToken)).StatusCode.ShouldBe(
             HttpStatusCode.BadRequest
         );
+    }
+
+    [Theory]
+    [InlineData(BookingStatusEnum.Confirmed, true)]
+    [InlineData(BookingStatusEnum.Pending, false)]
+    [InlineData(BookingStatusEnum.Cancelled, false)]
+    [InlineData(BookingStatusEnum.Expired, false)]
+    public async Task OwnerVoucherCheckout_UsesActiveReservationState_EvenAfterPartialPayment(BookingStatusEnum status, bool payable)
+    {
+        var ct = app.Context.CancellationToken;
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var (booking, grant) = await SetupAsync(db);
+        if (status == BookingStatusEnum.Confirmed)
+            await db
+                .Booking.Where(x => x.Id == booking.Id)
+                .ExecuteUpdateAsync(x => x.SetProperty(b => b.BookingStatusId, (int)status).SetProperty(b => b.ExpiresAt, DateTime.UtcNow.AddMinutes(-1)), ct);
+        var request = Request(booking, grant);
+        (await app.Client.PostAsJsonAsync("/payment/voucher", request, ct)).StatusCode.ShouldBe(HttpStatusCode.OK);
+        await db
+            .Booking.Where(x => x.Id == booking.Id)
+            .ExecuteUpdateAsync(x => x.SetProperty(b => b.BookingStatusId, (int)status).SetProperty(b => b.ExpiresAt, DateTime.UtcNow.AddMinutes(-1)), ct);
+        var vouchers = (await app.Client.GetFromJsonAsync<List<BookingVoucherDTO>>($"/payment/booking/{booking.Id}/vouchers", ct))!;
+        vouchers.Single(x => x.GrantId == grant.Id).IsEligible.ShouldBe(payable);
+        request.SlotContractBookingId = booking.SlotContractBookings.Last().Id;
+
+        var response = await app.Client.PostAsJsonAsync("/payment/voucher", request, ct);
+
+        response.StatusCode.ShouldBe(payable ? HttpStatusCode.OK : HttpStatusCode.BadRequest);
+        var after = await db.Booking.AsNoTracking().SingleAsync(x => x.Id == booking.Id, ct);
+        after.AmountPaid.ShouldBe(payable ? 200m : 100m);
+        after.AmountOutstanding.ShouldBe(payable ? 0m : 100m);
+        after.BookingStatusId.ShouldBe((int)status);
+        (await db.WalletVoucherGrant.AsNoTracking().SingleAsync(x => x.Id == grant.Id, ct)).AmountRemaining.ShouldBe(payable ? 0m : 1m);
     }
 
     [Fact]

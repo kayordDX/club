@@ -126,7 +126,12 @@ internal static class PaymentResultHandler
                 var configuration = httpContext.RequestServices.GetRequiredService<IConfiguration>();
                 var frontendBaseUrl = configuration["Payment:FrontendBaseUrl"] ?? "http://localhost:5173";
 
-                var queryParams = new Dictionary<string, string> { ["transactionId"] = result.TransactionId };
+                // Verification may not echo an ID. Keep the known stored association for navigation,
+                // without treating an unverified return as settlement.
+                var returnTransactionId = result.TransactionId;
+                if (!result.Success && (string.IsNullOrWhiteSpace(returnTransactionId) || returnTransactionId == "unknown") && payment is not null)
+                    returnTransactionId = payment.TransactionId;
+                var queryParams = new Dictionary<string, string> { ["transactionId"] = returnTransactionId };
 
                 if (!result.Success)
                 {
@@ -167,6 +172,9 @@ internal static class PaymentResultHandler
                 result?.TransactionId ?? transactionId
             );
 
+            // Persistence may have rolled back after mutating tracked entities. Logging must not
+            // accidentally save those rejected settlement changes outside the transaction.
+            dbContext.ChangeTracker.Clear();
             if (payment is not null)
             {
                 await paymentLogger.LogAsync(
@@ -183,7 +191,7 @@ internal static class PaymentResultHandler
 
             if (isGetRequest)
             {
-                await SendInvalidRequestAsync(httpContext, "Payment processing failed. Please try again.", isGetRequest: true, ct);
+                await SendInvalidRequestAsync(httpContext, "Payment processing failed. Please try again.", isGetRequest: true, ct, payment?.TransactionId);
                 return;
             }
 
@@ -349,7 +357,7 @@ internal static class PaymentResultHandler
         return extractedId ?? string.Empty;
     }
 
-    private static async Task SendInvalidRequestAsync(HttpContext context, string error, bool isGetRequest, CancellationToken ct)
+    private static async Task SendInvalidRequestAsync(HttpContext context, string error, bool isGetRequest, CancellationToken ct, string? transactionId = null)
     {
         if (isGetRequest)
         {
@@ -359,6 +367,8 @@ internal static class PaymentResultHandler
             var frontendBaseUrl = configuration["Payment:FrontendBaseUrl"] ?? "http://localhost:5173";
 
             var redirectUrl = $"{frontendBaseUrl.TrimEnd('/')}/payment/failure?error={Uri.EscapeDataString(error)}";
+            if (transactionId is not null)
+                redirectUrl += $"&transactionId={Uri.EscapeDataString(transactionId)}";
 
             context.Response.StatusCode = StatusCodes.Status302Found;
             context.Response.Headers.Location = redirectUrl;
