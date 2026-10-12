@@ -47,6 +47,12 @@
 	</Card.Header>
 	<Card.Content class="flex flex-wrap content-start items-center gap-2 p-2">
 		<div class="flex w-full flex-col gap-1.5">
+			{#if !slot.isEnabled}
+				<p class="text-muted-foreground">Slot unavailable</p>
+			{:else if available === 0}
+				<p class="text-muted-foreground">Fully booked</p>
+			{/if}
+			<p class="text-muted-foreground">Booked {slot.booked} of {slot.total} · {available} available</p>
 			<div class="flex grow flex-row items-center gap-1">
 				{#each Array(available), i (i)}
 					<StatusDot.Root variant="success" />
@@ -55,7 +61,7 @@
 					<StatusDot.Root variant="error" />
 				{/each}
 			</div>
-			{#each slot.bookings as booking (booking)}
+			{#each slot.bookings as booking (booking.bookingId)}
 				<div class="flex items-center justify-between gap-2 rounded-md border p-2">
 					<div class="flex min-w-0 items-center gap-2">
 						<span class="truncate font-medium">{booking.playerName ?? "—"}</span>
