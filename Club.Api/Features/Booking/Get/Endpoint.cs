@@ -41,6 +41,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<BookingGetRequest, Book
             }
         }
 
+        results.SlotContractBookings = results.SlotContractBookings.OrderBy(x => x.Id).ToList();
         await Send.OkAsync(results, ct);
     }
 }

@@ -9,6 +9,39 @@ let grants;
 let calls;
 let refreshFailed;
 let adminCreatedBooking;
+let updateFailed;
+const sourceSlotId = "00000000-0000-4000-8000-000000000001";
+const destinationSlotId = "00000000-0000-4000-8000-000000000002";
+const slotFor = (id) => ({
+	id,
+	startDatetime: id === destinationSlotId ? "2026-08-03T10:00:00Z" : "2026-08-02T10:00:00Z",
+	endDatetime: id === destinationSlotId ? "2026-08-03T11:00:00Z" : "2026-08-02T11:00:00Z",
+	maxBookings: 4,
+});
+function adminSlots(date) {
+	const id = date?.startsWith("2026-08-03") ? destinationSlotId : sourceSlotId;
+	return [
+		{
+			...slotFor(id),
+			resourceName: "Court A",
+			total: 4,
+			booked: (id === sourceSlotId ? 1 : 0) + (adminCreatedBooking?.body?.bookings[0]?.slotId === id ? adminCreatedBooking.body.bookings.length : 0),
+			isEnabled: true,
+			isAvailable: true,
+			bookings:
+				adminCreatedBooking?.body?.bookings[0]?.slotId === id
+					? [
+							{
+								bookingId: 44,
+								playerName: adminCreatedBooking.body.bookings[0].name,
+								bookingStatusId: adminCreatedBooking.body.bookingStatusId,
+								bookingStatusName: "Confirmed",
+							},
+						]
+					: [],
+		},
+	];
+}
 const grant = (id, name, kind, options = {}) => ({
 	grantId: `00000000-0000-4000-8000-00000000000${id}`,
 	voucherId: id,
@@ -31,6 +64,7 @@ function reset(name) {
 	calls = [];
 	refreshFailed = false;
 	adminCreatedBooking = null;
+	updateFailed = false;
 	grants = [
 		grant(1, "Round entitlement", 1, { targets: [{ slotContractBookingId: 9, name: "Player One", unitPrice: 100, unitsAvailable: 1 }] }),
 		grant(2, "Extra entitlement", 1, { isExtra: true, targets: [{ extraId: 5, name: "Cart", unitPrice: 50, unitsAvailable: 4 }] }),
@@ -95,7 +129,7 @@ const api = createServer(async (req, res) => {
 				}
 		return send(balance());
 	}
-	calls.push({ path, method: req.method, body, authorization: req.headers.authorization });
+	calls.push({ path, query: new URL(req.url, "http://127.0.0.1").search, method: req.method, body, authorization: req.headers.authorization });
 	if (!["Bearer payment-test-token", "Bearer customer-test-token"].includes(req.headers.authorization)) return send({ message: "Unauthorized" }, 401);
 	if (refreshFailed && path.startsWith("/payment/booking/")) return send({}, 503);
 	if (path === "/payment/booking/123/vouchers") return send(grants);
@@ -147,33 +181,9 @@ const api = createServer(async (req, res) => {
 			{ providerName: "other", type: "Other provider" },
 		]);
 	if (path === "/outlet/basic/test") return send({ name: "Test Club", facilities: [{ id: 1, name: "Test Course" }] });
-	if (path === "/account/role/1") return send(scenario === "admin-creation" ? [{ normalizedName: "MANAGER" }] : []);
+	if (path === "/account/role/1") return send(scenario.startsWith("admin-") ? [{ normalizedName: "MANAGER" }] : []);
 	if (path === "/slot/available") return send(true);
-	if (path === "/slot")
-		return send([
-			{
-				id: "00000000-0000-4000-8000-000000000001",
-				total: 4,
-				booked: 1,
-				isAvailable: true,
-				startDatetime: "2026-08-02T10:00:00Z",
-				endDatetime: "2026-08-02T11:00:00Z",
-			},
-		]);
-	if (path === "/admin/facility/1/slot")
-		return send([
-			{
-				id: "00000000-0000-4000-8000-000000000001",
-				resourceName: "Court A",
-				startDatetime: "2026-08-02T10:00:00Z",
-				endDatetime: "2026-08-02T11:00:00Z",
-				booked: adminCreatedBooking ? 2 : 1,
-				total: 4,
-				isEnabled: true,
-				isAvailable: true,
-				bookings: [],
-			},
-		]);
+	if (path === "/slot" || path === "/admin/facility/1/slot") return send(adminSlots(new URL(req.url, "http://127.0.0.1").searchParams.get("date")));
 	if (path === "/admin/facility/1/booking/customer/search" && new URL(req.url, "http://127.0.0.1").searchParams.get("query") !== "casey@example.test")
 		return send(undefined);
 	if (path === "/admin/facility/1/booking/customer/search")
@@ -184,65 +194,82 @@ const api = createServer(async (req, res) => {
 			email: "casey@example.test",
 			phoneNumber: "0821234567",
 		});
-	if (path === "/admin/facility/1/booking/options")
+	if (path === "/admin/facility/1/booking/options") {
+		const moved = new URL(req.url, "http://127.0.0.1").searchParams.get("slotId") === destinationSlotId;
 		return send({
 			contracts: [
 				{
-					id: 31,
-					slotId: "00000000-0000-4000-8000-000000000001",
+					id: moved ? 41 : 31,
+					slotId: moved ? destinationSlotId : sourceSlotId,
 					contractId: 9,
 					contractName: "Visitor",
-					price: 100,
+					price: moved ? 150 : 100,
 					validationId: null,
 					canPayLater: true,
 					description: "Standard",
 				},
 			],
-			extras: [{ id: 5, name: "Cart", price: 25, description: "Cart hire" }],
+			extras: moved ? [{ id: 6, name: "Destination Cart", price: 40 }] : [{ id: 5, name: "Cart", price: 25, description: "Cart hire" }],
 		});
+	}
 	if (path === "/admin/facility/1/booking" && req.method === "POST") {
 		adminCreatedBooking = { id: 44, body };
 		return send({ id: 44 });
 	}
-	if (path === "/admin/facility/1/booking/44")
+	if (path === "/admin/facility/1/booking/44" && req.method === "PUT") {
+		if (scenario === "admin-move-save-error" && !updateFailed) {
+			updateFailed = true;
+			return send({ errors: { generalErrors: ["Destination capacity changed. Retry or choose another slot."] } }, 400);
+		}
+		adminCreatedBooking.body = { ...adminCreatedBooking.body, ...body };
+		if (scenario === "admin-move-refresh-error") refreshFailed = true;
+		return send({});
+	}
+	if (path === "/admin/facility/1/booking/44") {
+		if (refreshFailed) return send({}, 503);
+		const players = adminCreatedBooking.body.bookings;
+		const moved = players[0].slotId === destinationSlotId;
 		return send({
 			id: 44,
-			bookingStatusId: adminCreatedBooking?.body?.bookingStatusId ?? 2,
+			userId: adminCreatedBooking.body.userId,
+			bookingStatusId: adminCreatedBooking.body.bookingStatusId ?? 2,
+			bookingStatus: { id: adminCreatedBooking.body.bookingStatusId ?? 2, name: "Confirmed" },
 			bookingStatusDate: "2026-08-02T09:00:00Z",
 			expiresAt: "2026-08-02T09:15:00Z",
 			isPaid: false,
 			amountPaid: 0,
-			amountOutstanding: 100,
+			amountOutstanding:
+				players.length * (moved ? 150 : 100) + adminCreatedBooking.body.extras.reduce((sum, extra) => sum + extra.amount * (extra.extraId === 5 ? 25 : 40), 0),
 			user: { firstName: "Casey", lastName: "Customer" },
-			slotContractBookings: [
-				{
-					id: 1,
-					slotContractId: 31,
-					bookingId: 44,
-					name: "Player One",
-					cellphone: "0821234567",
-					email: "player@example.test",
-					slotContract: {
-						id: 31,
-						slotId: "00000000-0000-4000-8000-000000000001",
-						contractId: 9,
-						contractName: "Visitor",
-						price: 100,
-						canPayLater: true,
-						slot: { id: "00000000-0000-4000-8000-000000000001", startDatetime: "2026-08-02T10:00:00Z", endDatetime: "2026-08-02T11:00:00Z" },
-					},
+			slotContractBookings: players.map((player, index) => ({
+				...player,
+				id: index + 1,
+				bookingId: 44,
+				slotContract: {
+					id: player.slotContractId,
+					slotId: player.slotId,
+					contractId: 9,
+					contractName: "Visitor",
+					price: moved ? 150 : 100,
+					canPayLater: true,
+					slot: slotFor(player.slotId),
 				},
-			],
-			extraBookings: [],
+			})),
+			extraBookings: adminCreatedBooking.body.extras.map((extra) => ({
+				...extra,
+				bookingId: 44,
+				extra: { id: extra.extraId, name: extra.extraId === 5 ? "Cart" : "Destination Cart", price: extra.extraId === 5 ? 25 : 40 },
+			})),
 		});
+	}
 	if (path === "/booking/44/path")
 		return send({
 			outletSlug: "test",
 			outletName: "Test Club",
 			facilityId: 1,
 			facilityName: "Test Course",
-			slotId: "00000000-0000-4000-8000-000000000001",
-			slotStartDatetime: "2026-08-02T10:00:00Z",
+			slotId: adminCreatedBooking.body.bookings[0].slotId,
+			slotStartDatetime: slotFor(adminCreatedBooking.body.bookings[0].slotId).startDatetime,
 		});
 	if (path === "/payment/voucher") {
 		await new Promise((resolve) => setTimeout(resolve, 300));

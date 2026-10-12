@@ -8,13 +8,11 @@
 	import { slotGetAll } from "$lib/api/remote/slot.remote";
 	import { bookingGetPath } from "$lib/api/remote/booking.remote";
 	import { statusLabel } from "$lib/booking/status";
-	import { formatDate } from "$lib/booking/format";
-	import { buildExtras, buildPlayers } from "$lib/booking/bookingForm";
-	import type { BookingFormSubmitHandler } from "$lib/booking/schema";
+	import type { BookingFormSubmitValues } from "$lib/booking/schema";
 	import PageHeading from "$lib/components/PageHeading.svelte";
 	import BookingDetails from "$lib/components/booking/booking-details.svelte";
 	import BookingStatusControl from "$lib/components/booking/booking-status-control.svelte";
-	import BookingDetailsForm from "$lib/components/booking/BookingDetailsForm.svelte";
+	import AdminBookingEditor from "$lib/components/booking/admin-booking-editor.svelte";
 	import { Alert, Button } from "@kayord/ui";
 	import { BookIcon, ChevronLeftIcon, PencilIcon } from "@lucide/svelte";
 
@@ -23,13 +21,12 @@
 	const request = adminBookingGet({ facilityId, id: bookingId });
 	const initialBooking = await request;
 	const booking = $derived(request.current ?? initialBooking);
-	const path = await bookingGetPath(bookingId).catch(() => undefined);
+	const pathRequest = bookingGetPath(bookingId);
+	const initialPath = await pathRequest.catch(() => undefined);
+	const path = $derived(pathRequest.current ?? initialPath);
 	const listHref = resolve(`/outlet/${page.params.slug}/${page.params.id}/admin/bookings`);
 	const slot = $derived(booking.slotContractBookings?.[0]?.slotContract?.slot);
 	const slotId = $derived(slot?.id ?? "");
-	const ownPlayerCount = $derived(
-		booking.bookingStatusId === BookingStatusEnum.Cancelled || booking.bookingStatusId === BookingStatusEnum.Expired ? 0 : booking.slotContractBookings.length
-	);
 	let editing = $state(false);
 	let saveError = $state("");
 	const update = createMutation(() => ({ mutationFn: (body: AdminBookingUpdateRequest) => adminBookingUpdate({ facilityId, id: bookingId, body }) }));
@@ -40,18 +37,26 @@
 	let refreshing = $state(false);
 	let refreshError = $state("");
 	const busy = $derived(update.isPending || updateStatus.isPending || refreshing || !!refreshError);
+	let affectedDates: string[] = [];
 
 	async function refreshBooking() {
 		refreshing = true;
 		try {
-			const date = slot ? new Date(slot.startDatetime.slice(0, 10)).toISOString() : undefined;
+			const dates = [...new Set([...affectedDates, ...(slot ? [slot.startDatetime.slice(0, 10)] : [])])];
 			const results = await Promise.allSettled([
 				request.refresh(),
+				pathRequest.refresh(),
 				queryClient.invalidateQueries({ queryKey: ["admin-bookings", facilityId] }),
-				...(date ? [adminSlotGetAll({ facilityId, params: { date } }).refresh(), slotGetAll({ facilityId, date }).refresh()] : []),
+				queryClient.invalidateQueries({ queryKey: ["admin-slots", facilityId] }),
+				queryClient.invalidateQueries({ queryKey: ["admin-booking-options", facilityId] }),
+				...dates.flatMap((day) => {
+					const date = `${day}T00:00:00.000Z`;
+					return [adminSlotGetAll({ facilityId, params: { date } }).refresh(), slotGetAll({ facilityId, date }).refresh()];
+				}),
 			]);
 			if (results.some((result) => result.status === "rejected")) throw new Error("Refresh failed");
 			refreshError = "";
+			affectedDates = [];
 		} catch {
 			refreshError = "Changes were saved, but current booking details or availability could not be refreshed. Refresh before making another change.";
 			throw new Error(refreshError);
@@ -66,13 +71,13 @@
 		toast.success(`Status changed to ${statusLabel(status)}`);
 	}
 
-	const handleSubmit: BookingFormSubmitHandler = async ({ players, extras }) => {
+	const handleSubmit = async ({ players, extras, slotId: destinationSlotId, date }: BookingFormSubmitValues & { slotId: string; date: string }) => {
 		if (busy) return;
 		saveError = "";
 		try {
 			await update.mutateAsync({
 				bookings: players.map((player) => ({
-					slotId,
+					slotId: destinationSlotId,
 					slotContractId: Number(player.contractId),
 					name: player.name,
 					cellphone: player.cellNo,
@@ -80,9 +85,10 @@
 				})),
 				extras: extras.map((extra) => ({ extraId: extra.id, amount: extra.amount })),
 			});
-			await refreshBooking();
+			affectedDates = [...new Set([...(slot ? [slot.startDatetime.slice(0, 10)] : []), date])];
 			editing = false;
 			toast.success("Booking updated");
+			await refreshBooking();
 		} catch (cause) {
 			saveError = cause instanceof Error ? cause.message : "Unable to save changes. Please try again.";
 		}
@@ -93,7 +99,7 @@
 	<div class="flex flex-wrap items-start justify-between gap-4">
 		<PageHeading title={editing ? "Edit booking" : "Booking"} description={`Booking #${bookingId} · Facility management`} icon={BookIcon} />
 		<div class="flex flex-wrap gap-2">
-			<Button href={listHref} variant="outline"><ChevronLeftIcon class="size-4" />Back to bookings</Button>
+			<Button href={listHref} disabled={update.isPending || refreshing} variant="outline"><ChevronLeftIcon class="size-4" />Back to bookings</Button>
 			{#if !editing}
 				<Button
 					disabled={busy || !slotId}
@@ -124,25 +130,6 @@
 		{#if saveError}
 			<Alert.Root variant="destructive"><Alert.Title>Changes not saved</Alert.Title><Alert.Description>{saveError}</Alert.Description></Alert.Root>
 		{/if}
-		<BookingDetailsForm
-			title="Edit booking details"
-			description="Update players and extras, then save your changes. You can edit bookings in any status."
-			submitLabel="Save changes"
-			isSubmitting={busy}
-			backHref={listHref}
-			backLabel="Back to bookings"
-			onCancel={() => (editing = false)}
-			showProfileShortcut={false}
-			{slotId}
-			{facilityId}
-			date={slot.startDatetime.slice(0, 10)}
-			dateLabel={formatDate(slot.startDatetime)}
-			slotStartDatetime={slot.startDatetime}
-			slotEndDatetime={slot.endDatetime}
-			initialPlayers={buildPlayers(booking)}
-			initialExtras={buildExtras(booking)}
-			{ownPlayerCount}
-			onSubmit={handleSubmit}
-		/>
+		<AdminBookingEditor {booking} {facilityId} backHref={listHref} {busy} onCancel={() => (editing = false)} onSave={handleSubmit} />
 	{/if}
 </div>

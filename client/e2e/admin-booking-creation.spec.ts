@@ -25,6 +25,42 @@ async function authenticate(page: Page, owner = false) {
 	]);
 }
 
+async function createForMove(page: Page, scenario = "admin-creation") {
+	await page.request.post(`${apiUrl}/_test/reset`, { data: { scenario } });
+	await authenticate(page);
+	await page.goto(scheduleUrl);
+	await page.getByRole("button", { name: "Create booking", exact: true }).click();
+	await page.getByLabel("Search customers").fill("casey@example.test");
+	await page.getByRole("button", { name: /Casey Customer.*casey@example.test/ }).click();
+	await page.getByLabel("Name").fill("Player One");
+	await page.getByLabel("Cell No").fill("0821234567");
+	await page.getByLabel("Email").fill("player@example.test");
+	await page.getByRole("button", { name: "Contract" }).click();
+	await page.getByRole("option", { name: /Visitor Standard - R 100.00/ }).click();
+	await page.getByRole("button", { name: "Add Extra" }).click();
+	await page.getByRole("dialog").getByText("Cart", { exact: true }).click();
+	await page.getByRole("button", { name: "Create booking", exact: true }).click();
+	await expect(page).toHaveURL(/\/admin\/bookings\/44$/);
+}
+
+async function selectDestination(page: Page) {
+	await page.getByRole("button", { name: "Edit booking", exact: true }).click();
+	await page.getByLabel("Name", { exact: true }).fill("Retained Draft");
+	await page.getByLabel("Cell No").fill("0839999999");
+	await page.getByRole("button", { name: "Next day" }).click();
+	await page.getByRole("button", { name: "Destination slot", exact: true }).click();
+	await page.getByRole("option", { name: /Court A/ }).click();
+	await expect(page.getByText("Correct selections before saving")).toBeVisible();
+	await expect(page.getByLabel("Name", { exact: true })).toHaveValue("Retained Draft");
+	await expect(page.getByLabel("Cell No")).toHaveValue("0839999999");
+	await expect(page.getByRole("button", { name: "Save changes" })).toBeDisabled();
+	await page.getByRole("button", { name: "Contract", exact: true }).click();
+	await page.getByRole("option", { name: /Visitor Standard - R 150.00/ }).click();
+	await expect(page.getByRole("button", { name: "Save changes" })).toBeDisabled();
+	await page.getByRole("button", { name: "Remove extra Cart" }).click();
+	await expect(page.getByLabel("Booking review").getByText("R 150,00")).toBeVisible();
+}
+
 test("an empty customer lookup cannot select an owner or create a booking", async ({ page }) => {
 	await page.request.post(`${apiUrl}/_test/reset`, { data: { scenario: "admin-creation" } });
 	await authenticate(page);
@@ -78,4 +114,67 @@ test("admin schedule creates a confirmed customer-owned booking and opens admin 
 		(call: { path: string; authorization: string }) => call.path === "/booking/user" && call.authorization === "Bearer customer-test-token"
 	);
 	expect(ownerCalls.length).toBeGreaterThan(0);
+});
+
+test("creation → move retains drafts, requires corrections, previews prices and refreshes both days", async ({ page }) => {
+	await createForMove(page);
+	await selectDestination(page);
+	await page.getByRole("button", { name: "Save changes" }).click();
+	await expect(page.getByRole("button", { name: "Edit booking", exact: true })).toBeEnabled();
+	await expect(page.getByText("Retained Draft", { exact: true })).toBeVisible();
+	const state = await (await page.request.get(`${apiUrl}/_test/state`)).json();
+	const update = state.calls.find((call: { method: string; path: string }) => call.method === "PUT" && call.path === "/admin/facility/1/booking/44");
+	expect(update.body).toEqual({
+		bookings: [
+			{ slotId: "00000000-0000-4000-8000-000000000002", slotContractId: 41, name: "Retained Draft", cellphone: "0839999999", email: "player@example.test" },
+		],
+		extras: [],
+	});
+	const afterSave = state.calls.slice(state.calls.indexOf(update) + 1);
+	for (const path of ["/admin/facility/1/slot", "/slot"]) {
+		for (const date of ["2026-08-02", "2026-08-03"]) {
+			expect(afterSave.some((call: { path: string; query: string }) => call.path === path && call.query.includes(date))).toBe(true);
+		}
+	}
+	const optionsCalls = state.calls.filter((call: { path: string }) => call.path === "/admin/facility/1/booking/options");
+	expect(optionsCalls.every((call: { query: string }) => call.query.includes("userId=00000000-0000-4000-8000-000000000099"))).toBe(true);
+	await page.goto("/outlet/test/1/admin/schedule?date=2026-08-03");
+	await expect(page.getByRole("link", { name: /#44/ })).toBeVisible();
+	await page.getByRole("link", { name: /#44/ }).click();
+	await expect(page).toHaveURL(/\/admin\/bookings\/44$/);
+});
+
+test("failed moves retain drafts for retry, while cancel discards them without saving", async ({ page }) => {
+	await createForMove(page, "admin-move-save-error");
+	await selectDestination(page);
+	await page.getByRole("button", { name: "Save changes" }).click();
+	await expect(page.getByText("Changes not saved", { exact: true })).toBeVisible();
+	await expect(page.getByLabel("Name", { exact: true })).toHaveValue("Retained Draft");
+	await expect(page.getByLabel("Booking review").getByText("R 150,00")).toBeVisible();
+	await page.getByRole("button", { name: "Save changes" }).click();
+	await expect(page.getByRole("button", { name: "Edit booking", exact: true })).toBeEnabled();
+	await page.getByRole("button", { name: "Edit booking", exact: true }).click();
+	await page.getByLabel("Name", { exact: true }).fill("Discard this draft");
+	await page.getByRole("button", { name: "Cancel", exact: true }).click();
+	await expect(page.getByText("Retained Draft", { exact: true })).toBeVisible();
+	await page.getByRole("button", { name: "Edit booking", exact: true }).click();
+	await expect(page.getByLabel("Name", { exact: true })).toHaveValue("Retained Draft");
+	const state = await (await page.request.get(`${apiUrl}/_test/state`)).json();
+	expect(state.calls.filter((call: { method: string }) => call.method === "PUT")).toHaveLength(2);
+	await expect(page.getByRole("link", { name: "Back to bookings", exact: true })).toHaveAttribute("href", "/outlet/test/1/admin/bookings");
+});
+
+test("a saved move with failed refresh blocks duplicate mutation and retries refresh only", async ({ page }) => {
+	await createForMove(page, "admin-move-refresh-error");
+	await selectDestination(page);
+	await page.getByRole("button", { name: "Save changes" }).click();
+	await expect(page.getByText("Refresh required", { exact: true })).toBeVisible();
+	await expect(page.getByRole("button", { name: "Edit booking", exact: true })).toBeDisabled();
+	await expect(page.getByRole("button", { name: "Save changes" })).toHaveCount(0);
+	await page.request.post(`${apiUrl}/_test/recover`);
+	await page.getByRole("button", { name: "Refresh booking", exact: true }).click();
+	await expect(page.getByRole("button", { name: "Edit booking", exact: true })).toBeEnabled();
+	await expect(page.getByText("Retained Draft", { exact: true })).toBeVisible();
+	const state = await (await page.request.get(`${apiUrl}/_test/state`)).json();
+	expect(state.calls.filter((call: { method: string }) => call.method === "PUT")).toHaveLength(1);
 });
