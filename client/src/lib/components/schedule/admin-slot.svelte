@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { Button, Card, Badge } from "@kayord/ui";
+	import { Button, Card, Badge, StatusDot } from "@kayord/ui";
 	import type { ResolvedPathname } from "$app/types";
-	import { ChevronRightIcon, CircleDotIcon, ClockIcon, PencilIcon } from "@lucide/svelte";
+	import { CircleDotIcon, CirclePlusIcon, ClockIcon, PencilIcon } from "@lucide/svelte";
 	import { type AdminSlotGetAllResponse } from "$lib/api";
 	import { statusBadgeVariant, statusLabel } from "$lib/booking/status";
 
@@ -47,8 +47,21 @@
 	</Card.Header>
 	<Card.Content class="flex flex-wrap content-start items-center gap-2 p-2">
 		<div class="flex w-full flex-col gap-1.5">
-			<div class="text-muted-foreground text-xs">Booked {slot.booked} of {slot.total} · {available} available</div>
-			{#each slot.bookings as booking (booking)}
+			{#if !slot.isEnabled}
+				<p class="text-muted-foreground">Slot unavailable</p>
+			{:else if available === 0}
+				<p class="text-muted-foreground">Fully booked</p>
+			{/if}
+			<p class="text-muted-foreground">Booked {slot.booked} of {slot.total} · {available} available</p>
+			<div class="flex grow flex-row items-center gap-1">
+				{#each Array(available), i (i)}
+					<StatusDot.Root variant="success" />
+				{/each}
+				{#each Array(slot.booked), i (i)}
+					<StatusDot.Root variant="error" />
+				{/each}
+			</div>
+			{#each slot.bookings as booking (booking.bookingId)}
 				<div class="flex items-center justify-between gap-2 rounded-md border p-2">
 					<div class="flex min-w-0 items-center gap-2">
 						<span class="truncate font-medium">{booking.playerName ?? "—"}</span>
@@ -63,13 +76,9 @@
 		<div class="flex w-full items-center justify-center py-1">
 			{#if available > 0 && slot.isEnabled}
 				<Button variant="outline" onclick={() => onCreateBooking(slot.id, selectedDate)}>
-					<ChevronRightIcon />
+					<CirclePlusIcon />
 					{adminContext ? "Create booking" : "Book"}
 				</Button>
-			{:else if available <= 0}
-				<span class="text-muted-foreground text-xs">Fully booked</span>
-			{:else}
-				<span class="text-muted-foreground text-xs">Slot unavailable</span>
 			{/if}
 		</div>
 	</Card.Content>

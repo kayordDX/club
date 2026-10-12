@@ -5,6 +5,7 @@
  * OpenAPI spec version: v1
  */
 import type {
+	AdminBookingAcceptPaymentRequest,
 	AdminBookingCreateRequest,
 	AdminBookingCustomerDTO,
 	AdminBookingGetAllParams,
@@ -1644,4 +1645,75 @@ export const adminBookingCreate = async (
 
 	const data: adminBookingCreateResponse["data"] = body ? JSON.parse(body) : {};
 	return { data, status: res.status, headers: res.headers } as adminBookingCreateResponse;
+};
+
+export type adminBookingAcceptPaymentResponse200 = {
+	data: BookingPaymentDTO;
+	status: 200;
+};
+
+export type adminBookingAcceptPaymentResponse400 = {
+	data: ErrorResponse;
+	status: 400;
+};
+
+export type adminBookingAcceptPaymentResponse401 = {
+	data: void;
+	status: 401;
+};
+
+export type adminBookingAcceptPaymentResponse403 = {
+	data: void;
+	status: 403;
+};
+
+export type adminBookingAcceptPaymentResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
+
+export type adminBookingAcceptPaymentResponseSuccess = adminBookingAcceptPaymentResponse200 & {
+	headers: Headers;
+};
+export type adminBookingAcceptPaymentResponseError = (
+	adminBookingAcceptPaymentResponse400 | adminBookingAcceptPaymentResponse401 | adminBookingAcceptPaymentResponse403 | adminBookingAcceptPaymentResponse500
+) & {
+	headers: Headers;
+};
+
+export type adminBookingAcceptPaymentResponse = adminBookingAcceptPaymentResponseSuccess | adminBookingAcceptPaymentResponseError;
+
+export const getAdminBookingAcceptPaymentUrl = (facilityId: number, id: number) => {
+	return `/admin/facility/${facilityId}/booking/${id}/payment/accept`;
+};
+
+export const adminBookingAcceptPayment = async (
+	facilityId: number,
+	id: number,
+	adminBookingAcceptPaymentRequest: AdminBookingAcceptPaymentRequest,
+	options?: RequestInit
+): Promise<adminBookingAcceptPaymentResponse> => {
+	const getHeaders = (h?: NonNullable<RequestInit["headers"]>): Record<string, string | readonly string[]> => {
+		if (!h) return {};
+		if (h instanceof Headers) return Object.fromEntries(h.entries());
+		if (Symbol.iterator in h) {
+			return Object.fromEntries(Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]));
+		}
+		const headers: Record<string, string | readonly string[]> = {};
+		for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+			if (value !== undefined) headers[name] = value;
+		}
+		return headers;
+	};
+	const res = await fetch(getAdminBookingAcceptPaymentUrl(facilityId, id), {
+		...options,
+		method: "POST",
+		headers: { "Content-Type": "application/json", ...getHeaders(options?.headers) },
+		body: JSON.stringify(adminBookingAcceptPaymentRequest),
+	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: adminBookingAcceptPaymentResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as adminBookingAcceptPaymentResponse;
 };

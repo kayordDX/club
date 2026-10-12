@@ -85,9 +85,13 @@ it("refreshes amounts, history, booking and eligibility after a partial voucher 
 	await expect.element(page.getByText(/Payment received. Remaining balance/)).toBeVisible();
 	await expect.element(page.getByText("Partial", { exact: true })).toBeVisible();
 	await expect.element(page.getByText("Not eligible: No eligible rounds remain.")).toBeVisible();
-	await expect.element(page.getByLabelText("Payment amount")).toHaveValue("100.00");
+	await expect.element(page.getByLabelText("Payment amount")).not.toBeInTheDocument();
 	expect(onrefresh.mock.calls.length).toBeGreaterThanOrEqual(2);
 	expect(api.redeem).toHaveBeenCalledExactlyOnceWith({ bookingId: 123, grantId: grant.grantId, slotContractBookingId: 9, quantity: 1 });
+	api.initiate.mockResolvedValue({ transactionId: "after-voucher", redirectUrl: "#after-voucher" });
+	await page.getByRole("radio", { name: "Payfast" }).click();
+	await page.getByRole("button", { name: "Pay now" }).click();
+	await vi.waitFor(() => expect(api.initiate).toHaveBeenCalledExactlyOnceWith({ bookingId: 123, providerName: "payfast", amount: 100 }));
 });
 
 it("clears rejected selections and allows deliberate reselection", async () => {
@@ -139,7 +143,7 @@ it("keeps payment methods visible after a partial payment with an abandoned pend
 	};
 	mount();
 	await expect.element(page.getByText("Pending", { exact: true })).toBeVisible();
-	await expect.element(page.getByLabelText("Payment amount")).toHaveValue("60.00");
+	await expect.element(page.getByLabelText("Payment amount")).not.toBeInTheDocument();
 	await page.getByRole("radio", { name: "Payfast" }).click();
 	await expect.element(page.getByRole("button", { name: "Pay now" })).toBeEnabled();
 });
@@ -179,9 +183,9 @@ it("retains customer checkout and transaction/booking return mapping for an acti
 	api.initiate.mockResolvedValue({ transactionId: "customer-tx", redirectUrl: "#customer-checkout" });
 	mount(BookingStatusEnum.Pending, "2999-01-01");
 	await page.getByRole("radio", { name: "Payfast" }).click();
-	await page.getByLabelText("Payment amount").fill("25");
+	await expect.element(page.getByLabelText("Payment amount")).not.toBeInTheDocument();
 	await page.getByRole("button", { name: "Pay now" }).click();
 	await vi.waitFor(() => expect(sessionStorage.getItem("payment-booking:customer-tx")).toBe("123"));
-	expect(api.initiate).toHaveBeenCalledExactlyOnceWith({ bookingId: 123, providerName: "payfast", amount: 25 });
+	expect(api.initiate).toHaveBeenCalledExactlyOnceWith({ bookingId: 123, providerName: "payfast", amount: 200 });
 	expect(JSON.parse(sessionStorage.getItem("payment-return:customer-tx")!)).toEqual({ transactionId: "customer-tx", bookingId: 123 });
 });

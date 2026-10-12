@@ -664,3 +664,33 @@ export const AdminBookingCreateBody = zod.object({
 export const AdminBookingCreateResponse = zod.object({
 	id: zod.int(),
 });
+
+export const AdminBookingAcceptPaymentParams = zod.object({
+	facilityId: zod.int(),
+	id: zod.int(),
+});
+
+export const AdminBookingAcceptPaymentBody = zod.object({
+	amount: zod.number().optional(),
+});
+
+export const AdminBookingAcceptPaymentResponse = zod.object({
+	bookingId: zod.int(),
+	amountPaid: zod.number(),
+	amountOutstanding: zod.number(),
+	amountAvailable: zod.number(),
+	isPaid: zod.boolean(),
+	payments: zod.array(
+		zod.object({
+			id: zod.int(),
+			transactionId: zod.string(),
+			amount: zod.number(),
+			paymentTypeId: zod.int(),
+			paymentType: zod.string(),
+			paymentStatusId: zod.int(),
+			paymentStatus: zod.string(),
+			providerName: zod.string(),
+			paymentStatusDate: zod.iso.datetime({ offset: true }),
+		})
+	),
+});

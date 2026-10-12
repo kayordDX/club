@@ -25,6 +25,7 @@
 		backLabel: string;
 		onCancel?: () => void;
 		showProfileShortcut?: boolean;
+		profileShortcutUser?: { name?: string | null; email?: string | null; phone_number?: string | null } | null;
 		/** Optional header content, e.g. a countdown timer. */
 		headerExtra?: Snippet;
 		/** Optional header content aligned to the right, e.g. a status badge. */
@@ -76,6 +77,7 @@
 		backLabel,
 		onCancel,
 		showProfileShortcut = true,
+		profileShortcutUser,
 		headerExtra,
 		statusExtra,
 		slotId,
@@ -274,7 +276,7 @@
 																variant="outline"
 																size="sm"
 																class="h-6 px-2 text-xs"
-																onclick={() => form.setFieldValue(`players[${index}]`, (current) => applyProfileToPlayer(current, user))}
+																onclick={() => form.setFieldValue(`players[${index}]`, (current) => applyProfileToPlayer(current, profileShortcutUser ?? user))}
 															>
 																Me
 															</Button>

@@ -369,6 +369,13 @@ async function handleRequest(req, res) {
 		selected.ineligibleReason = "Voucher already used for this booking.";
 		return send({ transactionId: payments.at(-1).transactionId, amount, paymentStatusId: paid === 300 ? 2 : 5, ...balance() });
 	}
+	if (path === "/admin/facility/1/booking/44/payment/accept") {
+		checkoutBookingId = 44;
+		if (body.amount <= 0 || body.amount > balance().amountAvailable) return send({ errors: { generalErrors: ["Invalid payment amount."] } }, 400);
+		paid += body.amount;
+		payments.push(payment(balance().isPaid ? "Completed" : "Partial", body.amount, "Admin received payment in the club"));
+		return send(balance());
+	}
 	if (path === "/payment/initiate" || path === "/admin/facility/1/booking/44/payment/initiate") {
 		checkoutBookingId = path.startsWith("/admin/") ? 44 : body.bookingId;
 		if (scenario === "provider-failure") return send({ errors: { generalErrors: ["Provider unavailable."] } }, 400);

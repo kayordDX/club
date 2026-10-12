@@ -14,7 +14,7 @@ const api = vi.hoisted(() => ({
 	remember: vi.fn(),
 }));
 vi.mock("$app/env", () => ({ browser: true, dev: true, building: false, version: "test" }));
-vi.mock("$lib/api/remote/admin.remote", () => ({ adminBookingGetPayments: api.history, adminBookingInitiatePayment: api.initiate }));
+vi.mock("$lib/api/remote/admin.remote", () => ({ adminBookingGetPayments: api.history, adminBookingAcceptPayment: api.initiate }));
 vi.mock("$lib/api/remote/facility.remote", () => ({ facilityPaymentMethods: api.methods }));
 vi.mock("$lib/api/remote/payment.remote", () => ({ paymentVouchers: api.vouchers, paymentVoucher: api.redeem, paymentGetBooking: api.customerHistory }));
 vi.mock("$lib/booking/payment-return-context", () => ({ rememberPaymentReturn: api.remember }));
@@ -39,9 +39,6 @@ function mount(status: BookingStatusEnum = BookingStatusEnum.Confirmed, expiresA
 		onbusy,
 	});
 	return { onrefresh, onbusy };
-}
-async function selectProvider() {
-	await page.getByRole("radio", { name: "Payfast" }).click();
 }
 beforeEach(() => {
 	vi.resetAllMocks();
@@ -108,19 +105,16 @@ it("shows authorised history and reservable amount without querying or redeeming
 	expect(api.redeem).not.toHaveBeenCalled();
 });
 
-it("starts partial supported checkout on Confirmed after the old hold date without changing status", async () => {
-	api.initiate.mockResolvedValue({ transactionId: "admin-tx", redirectUrl: "#admin-checkout" });
+it("accepts an in-club partial payment without choosing a provider or redirecting", async () => {
+	api.initiate.mockResolvedValue(balance);
 	const { onbusy, onrefresh } = mount();
-	await selectProvider();
+	await expect.element(page.getByRole("radio", { name: "Payfast" })).not.toBeInTheDocument();
 	await page.getByLabelText("Payment amount").fill("25.50");
-	await page.getByRole("button", { name: "Pay now" }).click();
-	await vi.waitFor(() =>
-		expect(api.remember).toHaveBeenCalledExactlyOnceWith("admin-tx", 123, { facilityId: 7, returnUrl: "/outlet/club/7/admin/bookings/123" })
-	);
-	expect(api.initiate).toHaveBeenCalledExactlyOnceWith({ facilityId: 7, id: 123, body: { providerName: "payfast", amount: 25.5 } });
-	expect(onbusy).toHaveBeenCalledWith(true);
+	await page.getByRole("button", { name: "Accept payment" }).click();
+	await vi.waitFor(() => expect(api.initiate).toHaveBeenCalledExactlyOnceWith({ facilityId: 7, id: 123, body: { amount: 25.5 } }));
+	await vi.waitFor(() => expect(onbusy).toHaveBeenLastCalledWith(false));
+	expect(api.remember).not.toHaveBeenCalled();
 	expect(onrefresh.mock.calls.length).toBeGreaterThanOrEqual(2);
-	expect(api.vouchers).not.toHaveBeenCalled();
 });
 
 it.each([BookingStatusEnum.Cancelled, BookingStatusEnum.Expired, BookingStatusEnum.Pending])(
@@ -152,8 +146,7 @@ it("does not duplicate a pending initiation and refreshes reservations after fai
 			})
 	);
 	const { onbusy } = mount();
-	await selectProvider();
-	await page.getByRole("button", { name: "Pay now" }).click();
+	await page.getByRole("button", { name: "Accept payment" }).click();
 	await expect.element(page.getByRole("button", { name: "Processing..." })).toBeDisabled();
 	await expect.element(page.getByRole("button", { name: "Refresh payments" })).toBeDisabled();
 	expect(api.initiate).toHaveBeenCalledTimes(1);
@@ -168,26 +161,13 @@ it("does not duplicate a pending initiation and refreshes reservations after fai
 	expect(api.initiate).toHaveBeenCalledTimes(1);
 });
 
-it("blocks uncertain checkout when browser return storage fails", async () => {
-	api.initiate.mockResolvedValue({ transactionId: "admin-tx", redirectUrl: "#should-not-redirect" });
-	api.remember.mockReturnValue(false);
-	const { onbusy } = mount();
-	await selectProvider();
-	await page.getByRole("button", { name: "Pay now" }).click();
-	await expect.element(page.getByText(/admin return could not be saved/)).toBeVisible();
-	await expect.element(page.getByLabelText("Payment amount")).toBeDisabled();
-	expect(onbusy).toHaveBeenLastCalledWith(false);
-	expect(api.initiate).toHaveBeenCalledTimes(1);
-});
-
 it("retries failed history refresh without resubmitting payment", async () => {
 	api.initiate.mockImplementation(async () => {
 		failHistory = true;
 		throw new Error("Connection lost");
 	});
 	const { onbusy } = mount();
-	await selectProvider();
-	await page.getByRole("button", { name: "Pay now" }).click();
+	await page.getByRole("button", { name: "Accept payment" }).click();
 	await expect.element(page.getByText(/Unable to refresh payment details/)).toBeVisible();
 	await expect.element(page.getByRole("button", { name: "Retry", exact: true })).toBeEnabled();
 	expect(onbusy).toHaveBeenLastCalledWith(false);
@@ -197,15 +177,11 @@ it("retries failed history refresh without resubmitting payment", async () => {
 	expect(api.initiate).toHaveBeenCalledTimes(1);
 });
 
-it("blocks checkout on method errors and recovers with a refresh", async () => {
+it("does not depend on online payment method configuration", async () => {
 	failMethods = true;
 	mount();
-	await expect.element(page.getByText(/Unable to load payment methods/)).toBeVisible();
-	expect(api.initiate).not.toHaveBeenCalled();
-	failMethods = false;
-	await page.getByRole("button", { name: "Refresh payments" }).click();
-	await selectProvider();
-	await expect.element(page.getByRole("button", { name: "Pay now" })).toBeEnabled();
+	await expect.element(page.getByRole("button", { name: "Accept payment" })).toBeEnabled();
+	expect(api.methods).not.toHaveBeenCalled();
 });
 
 it("refreshes balances and attempts after settlement", async () => {

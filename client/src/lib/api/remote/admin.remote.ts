@@ -6,6 +6,7 @@ import { query, command } from "$app/server";
 import { z } from "zod";
 import * as api from "$lib/server/api/generated/admin";
 import {
+	AdminBookingAcceptPaymentBody,
 	AdminBookingCreateBody,
 	AdminBookingGetAllQueryParams,
 	AdminBookingGetOptionsQueryParams,
@@ -114,4 +115,8 @@ export const adminBookingGetAll = query(
 );
 export const adminBookingCreate = command(z.object({ facilityId: z.number().int(), body: AdminBookingCreateBody }), async ({ facilityId, body }) =>
 	api.adminBookingCreate(facilityId, body)
+);
+export const adminBookingAcceptPayment = command(
+	z.object({ facilityId: z.number().int(), id: z.number().int(), body: AdminBookingAcceptPaymentBody }),
+	async ({ facilityId, id, body }) => api.adminBookingAcceptPayment(facilityId, id, body)
 );

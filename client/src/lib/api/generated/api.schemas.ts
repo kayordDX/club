@@ -1260,6 +1260,10 @@ export interface CredentialDisableRequest {
 	token: string;
 }
 
+export interface AdminBookingAcceptPaymentRequest {
+	amount?: number;
+}
+
 export type TestParams = {
 	name: string;
 };

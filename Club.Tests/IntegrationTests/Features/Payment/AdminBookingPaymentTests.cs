@@ -81,9 +81,29 @@ public class AdminBookingPaymentTests(AppFixture app)
                 amount = 40m,
             }
         );
-        checkout.StatusCode.ShouldBe(HttpStatusCode.OK, await checkout.Content.ReadAsStringAsync(Ct));
-        (await HistoryAsync(facilityId, id)).AmountAvailable.ShouldBe(60m);
+        checkout.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        (await HistoryAsync(facilityId, id)).AmountAvailable.ShouldBe(100m);
         (await ReadAsync(db, id)).UserId.ShouldBe(owner.Id);
+    }
+
+    [Fact]
+    public async Task AcceptPayment_RecordsInClubReceipt_AndRejectsOverpaymentAndCustomerAccess()
+    {
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var (slot, contract, facilityId) = await SetupAsync(db, scope.ServiceProvider);
+        var owner = await CustomerAsync(db);
+        var id = await CreateAsync(facilityId, owner.Id, slot, contract);
+        var path = $"/admin/facility/{facilityId}/booking/{id}/payment/accept";
+        (await RequestAsync(HttpMethod.Post, path, owner.Id, body: new { amount = 40m })).StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+        (await RequestAsync(HttpMethod.Post, path, body: new { amount = 40m })).StatusCode.ShouldBe(HttpStatusCode.OK);
+        var history = await HistoryAsync(facilityId, id);
+        history.AmountPaid.ShouldBe(40m);
+        history.AmountOutstanding.ShouldBe(60m);
+        history.Payments.Single().ProviderName.ShouldBe("Admin received payment in the club");
+        (await RequestAsync(HttpMethod.Post, path, body: new { amount = 61m })).StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        (await RequestAsync(HttpMethod.Post, path, body: new { amount = 60m })).StatusCode.ShouldBe(HttpStatusCode.OK);
+        (await HistoryAsync(facilityId, id)).IsPaid.ShouldBeTrue();
     }
 
     [Theory]
@@ -131,7 +151,7 @@ public class AdminBookingPaymentTests(AppFixture app)
             },
             Ct
         );
-        customer.StatusCode.ShouldBe(succeeds ? HttpStatusCode.OK : HttpStatusCode.BadRequest);
+        customer.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact]

@@ -10,11 +10,10 @@
 	import { adminBookingCreate, adminBookingGetOptions, adminBookingSearchCustomer, adminSlotGetAll } from "$lib/api/remote/admin.remote";
 	import { slotGetAll } from "$lib/api/remote/slot.remote";
 	import { createPlayers } from "$lib/booking/players";
-	import { statusLabel } from "$lib/booking/status";
 	import type { BookingFormSubmitHandler } from "$lib/booking/schema";
 	import BookingDetailsForm from "$lib/components/booking/BookingDetailsForm.svelte";
 	import PageHeading from "$lib/components/PageHeading.svelte";
-	import { Alert, Button, Card, Input, Select } from "@kayord/ui";
+	import { Alert, Button, Card, Input } from "@kayord/ui";
 	import { BookIcon, SearchIcon, UserRoundCheckIcon, XIcon } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
 
@@ -32,7 +31,6 @@
 	let customerSearchInput = $state("");
 	let customerSearch = $state("");
 	let selectedCustomer = $state.raw<AdminBookingCustomerDTO | null>(null);
-	let status = $state<BookingStatusEnum>(BookingStatusEnum.Confirmed);
 	let createError = $state("");
 	let createdBookingId = $state<number | null>(null);
 	let recoveryError = $state("");
@@ -105,7 +103,7 @@
 		try {
 			const result = await createBooking.mutateAsync({
 				userId: selectedCustomer.userId,
-				bookingStatusId: status,
+				bookingStatusId: BookingStatusEnum.Confirmed,
 				bookings: players.map((player) => ({
 					slotId,
 					slotContractId: Number(player.contractId),
@@ -219,17 +217,6 @@
 					><Button variant="outline" href={scheduleHref}>Back to schedule</Button><Button variant="outline" href={bookingsHref}>Back to bookings</Button>{/if}
 			</Alert.Root>
 		{:else if selectedCustomer}
-			<div class="flex flex-wrap items-center gap-3">
-				<label for="initial-status" class="font-medium">Initial status</label>
-				<Select.Root type="single" value={String(status)} onValueChange={(value) => (status = Number(value) as BookingStatusEnum)}>
-					<Select.Trigger id="initial-status" aria-label="Initial booking status">{statusLabel(status)}</Select.Trigger>
-					<Select.Content>
-						<Select.Item value={String(BookingStatusEnum.Confirmed)} label="Confirmed">Confirmed</Select.Item>
-						<Select.Item value={String(BookingStatusEnum.Pending)} label="Pending">Pending</Select.Item>
-					</Select.Content>
-				</Select.Root>
-				<span class="text-muted-foreground text-sm">Confirmed does not mean paid. Pending creates a temporary hold.</span>
-			</div>
 			{#if options.isError}<Alert.Root variant="destructive"
 					><Alert.Title>Booking options unavailable</Alert.Title><Alert.Description>{options.error.message}</Alert.Description></Alert.Root
 				>
@@ -245,7 +232,7 @@
 				{#key `${facilityId}:${slotId}:${date}:${slotCount}:${selectedCustomer.userId}:${JSON.stringify(options.data)}`}
 					<BookingDetailsForm
 						title="Booking details"
-						description={`Enter player details and extras for ${customerName}. Review the initial status and total before creating.`}
+						description={`Enter player details and extras for ${customerName}. Review the total before creating.`}
 						submitLabel="Create booking"
 						submittingLabel="Creating…"
 						isSubmitting={createBooking.isPending}
@@ -255,12 +242,25 @@
 						{facilityId}
 						{date}
 						dateLabel={date}
-						initialPlayers={createPlayers(slotCount)}
+						initialPlayers={createPlayers(slotCount).map((player, index) =>
+							index === 0
+								? {
+										...player,
+										name: [selectedCustomer?.firstName, selectedCustomer?.lastName].filter(Boolean).join(" "),
+										cellNo: selectedCustomer?.phoneNumber ?? "",
+										email: selectedCustomer?.email ?? "",
+									}
+								: player
+						)}
 						initialExtras={[]}
-						showProfileShortcut={false}
+						profileShortcutUser={{
+							name: [selectedCustomer.firstName, selectedCustomer.lastName].filter(Boolean).join(" "),
+							phone_number: selectedCustomer.phoneNumber,
+							email: selectedCustomer.email,
+						}}
 						availableContracts={options.data.contracts}
 						availableExtras={options.data.extras}
-						reviewStatus={statusLabel(status)}
+						reviewStatus="Confirmed"
 						onSubmit={handleSubmit}
 					/>
 				{/key}

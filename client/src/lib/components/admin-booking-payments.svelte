@@ -3,19 +3,17 @@
 	import type { ResolvedPathname } from "$app/types";
 	import { Alert, Button } from "@kayord/ui";
 	import { createMutation, createQuery } from "@tanstack/svelte-query";
-	import { adminBookingGetPayments, adminBookingInitiatePayment } from "$lib/api/remote/admin.remote";
-	import { facilityPaymentMethods } from "$lib/api/remote/facility.remote";
+	import { adminBookingGetPayments, adminBookingAcceptPayment } from "$lib/api/remote/admin.remote";
 	import type { BookingDTO } from "$lib/api";
 	import { isActiveReservation } from "$lib/booking/status";
 	import { paymentErrorMessage, validatePaymentAmount } from "$lib/booking/payments";
-	import { rememberPaymentReturn } from "$lib/booking/payment-return-context";
 	import BookingPaymentDetails from "./booking-payment-details.svelte";
 
 	let {
 		facilityId,
 		bookingId,
 		booking,
-		returnUrl,
+		returnUrl: _returnUrl,
 		customerPayUrl,
 		disabled = false,
 		onrefresh,
@@ -51,61 +49,38 @@
 		},
 		refetchInterval: locked ? false : 10000,
 	}));
-	const methods = createQuery(() => ({
-		queryKey: ["facility-payment-methods", facilityId],
-		retry: false,
-		enabled: browser,
-		queryFn: async () => {
-			const request = facilityPaymentMethods(facilityId);
-			await request.refresh();
-			return await request;
-		},
-	}));
 	const initiate = createMutation(() => ({
-		mutationFn: (body: { providerName: string; amount: number }) => adminBookingInitiatePayment({ facilityId, id: bookingId, body }),
+		mutationFn: (body: { amount: number }) => adminBookingAcceptPayment({ facilityId, id: bookingId, body }),
 	}));
 	const busy = $derived(locked || initiate.isPending);
-	const unavailable = $derived(
-		disabled || busy || history.isFetching || history.isError || methods.isFetching || methods.isError || needsReview || !!refreshError
-	);
+	const unavailable = $derived(disabled || busy || history.isFetching || history.isError || needsReview || !!refreshError);
 
 	async function refresh(manual = true) {
 		refreshError = "";
 		try {
-			await Promise.all([history.refetch({ throwOnError: true }), methods.refetch({ throwOnError: true })]);
+			await history.refetch({ throwOnError: true });
 			if (manual) needsReview = false;
 		} catch {
 			refreshError = "Unable to refresh payment details. Refresh before making another payment; do not resubmit an uncertain payment.";
 		}
 	}
 
-	async function pay(providerName: string, amount: number) {
+	async function pay(_providerName: string, amount: number) {
 		now = Date.now();
 		if (!checkoutAllowed || unavailable || !history.data || history.data.isPaid || validatePaymentAmount(String(amount), history.data.amountAvailable)) return;
 		locked = true;
 		onbusy(true);
 		error = "";
-		let redirecting = false;
 		try {
-			const response = await initiate.mutateAsync({ providerName, amount });
-			if (!rememberPaymentReturn(response.transactionId, bookingId, { facilityId, returnUrl })) {
-				throw new Error(
-					"Checkout was created, but the admin return could not be saved in this browser. Do not start another checkout; review payment history."
-				);
-			}
+			await initiate.mutateAsync({ amount });
 			await refresh(false);
-			if (!response.redirectUrl) throw new Error("Checkout was created, but no provider redirect was received.");
-			window.location.href = response.redirectUrl;
-			redirecting = true;
 		} catch (cause) {
 			needsReview = true;
-			error = `${paymentErrorMessage(cause, "Payment initiation failed.")} Check the payment history and refresh before trying again.`;
+			error = `${paymentErrorMessage(cause, "Accepting payment failed.")} Check the payment history and refresh before trying again.`;
 			await refresh(false);
 		} finally {
-			if (!redirecting) {
-				locked = false;
-				onbusy(false);
-			}
+			locked = false;
+			onbusy(false);
 		}
 	}
 
@@ -135,7 +110,7 @@
 		{#if copyError}<p role="alert">{copyError}</p>
 			{#if customerPayUrl}<a href={customerPayUrl}>Customer payment link (sign-in required)</a>{/if}{/if}
 	</div>
-	{#if error}<Alert.Root variant="destructive"><Alert.Title>Checkout needs review</Alert.Title><Alert.Description>{error}</Alert.Description></Alert.Root>{/if}
+	{#if error}<Alert.Root variant="destructive"><Alert.Title>Payment needs review</Alert.Title><Alert.Description>{error}</Alert.Description></Alert.Root>{/if}
 	{#if refreshError}<p role="alert">{refreshError}</p>{/if}
 	{#if history.isPending}
 		<p role="status">Loading payment details...</p>
@@ -146,14 +121,13 @@
 		>
 		<Button variant="outline" disabled={busy || history.isFetching} onclick={() => refresh()}>Retry</Button>
 	{:else if history.data}
-		{#if methods.isPending}<p role="status">Loading payment methods...</p>{/if}
-		{#if methods.isError}<p role="alert">Unable to load payment methods: {paymentErrorMessage(methods.error, "Refresh to try again.")}</p>{/if}
 		<BookingPaymentDetails
 			balance={history.data}
-			methods={methods.data ?? []}
+			methods={[]}
+			acceptInClub
 			{busy}
 			checkoutDisabled={unavailable}
-			refreshing={history.isFetching || methods.isFetching}
+			refreshing={history.isFetching}
 			{checkoutAllowed}
 			onpay={pay}
 			onrefresh={() => refresh()}

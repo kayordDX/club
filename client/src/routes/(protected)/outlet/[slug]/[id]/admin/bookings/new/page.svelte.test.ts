@@ -83,8 +83,10 @@ it("selects the existing customer, defaults to Confirmed, and fetches owner-auth
 	await new Promise((resolve) => setTimeout(resolve, 350));
 	await browserPage.getByRole("button", { name: /Casey Customer.*casey@example.test/ }).click();
 
-	await expect.element(browserPage.getByText("Casey Customer", { exact: true })).toBeVisible();
-	await expect.element(browserPage.getByRole("button", { name: "Initial booking status" })).toHaveTextContent("Confirmed");
+	await expect.element(browserPage.getByLabelText("Name")).toHaveValue("Casey Customer");
+	await expect.element(browserPage.getByLabelText("Cell No")).toHaveValue("0821234567");
+	await expect.element(browserPage.getByLabelText("Email")).toHaveValue("casey@example.test");
+	await expect.element(browserPage.getByRole("button", { name: "Me" })).toBeVisible();
 	await browserPage.getByRole("button", { name: "Contract" }).click();
 	await expect.element(browserPage.getByRole("option", { name: "Visitor Standard - R 100.00" })).toBeVisible();
 	const optionsQuery = mocks.options.find((item) => (item.queryKey as string[])[0] === "admin-booking-options");
@@ -95,7 +97,7 @@ it("selects the existing customer, defaults to Confirmed, and fetches owner-auth
 	expect(slotGetContracts).not.toHaveBeenCalled();
 });
 
-it("clears player drafts when the selected customer changes", async () => {
+it("prefills player details from each selected booking owner", async () => {
 	render(NewBookingPage);
 	await browserPage.getByLabelText("Search customers").fill("casey@example.test");
 	await new Promise((resolve) => setTimeout(resolve, 350));
@@ -107,32 +109,31 @@ it("clears player drafts when the selected customer changes", async () => {
 	await browserPage.getByLabelText("Search customers").fill("jordan@example.test");
 	await new Promise((resolve) => setTimeout(resolve, 350));
 	await browserPage.getByRole("button", { name: /Jordan Member.*jordan@example.test/ }).click();
-	await expect.element(browserPage.getByLabelText("Name")).toHaveValue("");
+	await expect.element(browserPage.getByLabelText("Name")).toHaveValue("Jordan Member");
+	await browserPage.getByRole("button", { name: "Me" }).click();
+	await expect.element(browserPage.getByLabelText("Email")).toHaveValue("jordan@example.test");
 });
 
-it("offers Pending, reviews the owner/status/total, and creates into admin booking details", async () => {
+it("always creates Confirmed bookings and reviews the owner and total", async () => {
 	render(NewBookingPage);
 	await browserPage.getByLabelText("Search customers").fill("casey@example.test");
 	await new Promise((resolve) => setTimeout(resolve, 350));
 	await browserPage.getByRole("button", { name: /Casey Customer.*casey@example.test/ }).click();
-	await browserPage.getByRole("button", { name: "Initial booking status" }).click();
-	await browserPage.getByRole("option", { name: "Pending", exact: true }).click();
-
 	await browserPage.getByLabelText("Name").fill("Player One");
 	await browserPage.getByLabelText("Cell No").fill("0821234567");
 	await browserPage.getByLabelText("Email").fill("player@example.test");
 	await browserPage.getByRole("button", { name: /Contract/ }).click();
 	await browserPage.getByRole("option", { name: /Visitor Standard - R 100.00/ }).click();
-	await expect.element(browserPage.getByLabelText("Booking review").getByText("Pending", { exact: true })).toBeVisible();
+	await expect.element(browserPage.getByLabelText("Booking review").getByText("Confirmed", { exact: true })).toBeVisible();
 	await expect.element(browserPage.getByLabelText("Booking review").getByText("R 100,00", { exact: true })).toBeVisible();
 
 	await browserPage.getByRole("button", { name: "Create booking" }).click();
 	await expect.element(browserPage.getByText("Booking #44 created")).toBeVisible();
 	const { BookingStatusEnum: Status } = await import("$lib/api");
-	expect(Status.Pending).toBe(BookingStatusEnum.Pending);
+	expect(Status.Confirmed).toBe(BookingStatusEnum.Confirmed);
 	expect(mocks.created).toHaveBeenCalledWith({
 		userId: "customer-user-id",
-		bookingStatusId: BookingStatusEnum.Pending,
+		bookingStatusId: BookingStatusEnum.Confirmed,
 		bookings: [{ slotId: "slot-1", slotContractId: 31, name: "Player One", cellphone: "0821234567", email: "player@example.test" }],
 		extras: [],
 	});

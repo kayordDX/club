@@ -83,7 +83,8 @@ test("admin schedule creates a confirmed customer-owned booking and opens admin 
 	await expect(page).toHaveURL(/\/admin\/bookings\/new\?/);
 	await page.getByLabel("Search customers").fill("casey@example.test");
 	await page.getByRole("button", { name: /Casey Customer.*casey@example.test/ }).click();
-	await expect(page.getByRole("button", { name: "Initial booking status" })).toHaveText("Confirmed");
+	await expect(page.getByRole("button", { name: "Initial booking status" })).toHaveCount(0);
+	await expect(page.getByLabel("Name")).toHaveValue("Casey Customer");
 	await page.getByLabel("Name").fill("Player One");
 	await page.getByLabel("Cell No").fill("0821234567");
 	await page.getByLabel("Email").fill("player@example.test");
@@ -145,7 +146,7 @@ test("creation → move retains drafts, requires corrections, previews prices an
 	await expect(page).toHaveURL(/\/admin\/bookings\/44$/);
 });
 
-test("schedule → select customer → Confirmed unpaid → edit/move → checkout → admin return", async ({ page }) => {
+test("schedule → select customer → Confirmed unpaid → edit/move → accept in-club payment", async ({ page }) => {
 	let phase = "creation";
 	const runtimeErrors: string[] = [];
 	page.on("pageerror", (error) => {
@@ -164,23 +165,18 @@ test("schedule → select customer → Confirmed unpaid → edit/move → checko
 	await expect(page.getByRole("button", { name: "Edit booking", exact: true })).toBeEnabled();
 	await expect(page.getByText("Retained Draft", { exact: true })).toBeVisible();
 	await expect(paymentRegion.getByLabel("Payment amount")).toHaveValue("150.00");
-	phase = "checkout";
-	await paymentRegion.getByRole("radio", { name: "Payfast" }).click();
+	phase = "accept payment";
+	await expect(paymentRegion.getByRole("radio", { name: "Payfast" })).toHaveCount(0);
 	await paymentRegion.getByLabel("Payment amount").fill("50");
-	await paymentRegion.getByRole("button", { name: "Pay now" }).click();
-	await expect(page).toHaveURL(/\/payment\/success\?transactionId=tx-1$/);
-	await page.request.post(`${apiUrl}/_test/callback`, { data: { success: true } });
-	await page.reload();
-	await expect(page.getByText(/Payment received\. Remaining balance/)).toContainText("100,00");
-	phase = "admin return";
-	await page.getByRole("link", { name: "Back to booking management" }).click();
+	await paymentRegion.getByRole("button", { name: "Accept payment" }).click();
+	await expect(paymentRegion.getByRole("cell", { name: /Admin received payment in the club/ })).toBeVisible();
 	await expect(page).toHaveURL(/\/admin\/bookings\/44$/);
 	await expect(page.getByText("Retained Draft", { exact: true })).toBeVisible();
 	await expect(paymentRegion.getByLabel("Payment amount")).toHaveValue("100.00");
 	await expect(paymentRegion.getByRole("cell", { name: "Partial", exact: true })).toBeVisible();
 	state = await (await page.request.get(`${apiUrl}/_test/state`)).json();
-	const checkout = state.calls.find((call: { path: string }) => call.path === "/admin/facility/1/booking/44/payment/initiate");
-	expect(checkout.body).toEqual({ providerName: "payfast", amount: 50 });
+	const checkout = state.calls.find((call: { path: string }) => call.path === "/admin/facility/1/booking/44/payment/accept");
+	expect(checkout.body).toEqual({ amount: 50 });
 	const latestDetails = await (
 		await page.request.get(`${apiUrl}/admin/facility/1/booking/44`, { headers: { authorization: "Bearer payment-test-token" } })
 	).json();
@@ -194,7 +190,8 @@ test("schedule → select customer → Confirmed unpaid → edit/move → checko
 	await authenticate(page, true);
 	await page.goto("/outlet/test/1/booking/44/pay");
 	await expect(page.getByText("Your booking is confirmed.", { exact: true })).toBeVisible();
-	await expect(paymentRegion.getByLabel("Payment amount")).toHaveValue("100.00");
+	await expect(paymentRegion.getByLabel("Payment amount")).toHaveCount(0);
+	await expect(paymentRegion.getByRole("radio", { name: "Payfast" })).toBeVisible();
 	await expect(paymentRegion.getByRole("cell", { name: "Partial", exact: true })).toBeVisible();
 	expect(runtimeErrors).toEqual([]);
 });

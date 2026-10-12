@@ -5,6 +5,7 @@
  * OpenAPI spec version: v1
  */
 import type {
+	AdminBookingAcceptPaymentRequest,
 	AdminBookingCreateRequest,
 	AdminBookingCustomerDTO,
 	AdminBookingGetAllParams,
@@ -646,5 +647,35 @@ export const adminBookingCreate = async (
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...getHeaders(options?.headers) },
 		body: JSON.stringify(adminBookingCreateRequest),
+	});
+};
+
+export const getAdminBookingAcceptPaymentUrl = (facilityId: number, id: number) => {
+	return `/admin/facility/${facilityId}/booking/${id}/payment/accept`;
+};
+
+export const adminBookingAcceptPayment = async (
+	facilityId: number,
+	id: number,
+	adminBookingAcceptPaymentRequest: AdminBookingAcceptPaymentRequest,
+	options?: Parameters<typeof customServerInstance>[1]
+): Promise<BookingPaymentDTO> => {
+	const getHeaders = (h?: NonNullable<RequestInit["headers"]>): Record<string, string | readonly string[]> => {
+		if (!h) return {};
+		if (h instanceof Headers) return Object.fromEntries(h.entries());
+		if (Symbol.iterator in h) {
+			return Object.fromEntries(Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]));
+		}
+		const headers: Record<string, string | readonly string[]> = {};
+		for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+			if (value !== undefined) headers[name] = value;
+		}
+		return headers;
+	};
+	return customServerInstance<BookingPaymentDTO>(getAdminBookingAcceptPaymentUrl(facilityId, id), {
+		...options,
+		method: "POST",
+		headers: { "Content-Type": "application/json", ...getHeaders(options?.headers) },
+		body: JSON.stringify(adminBookingAcceptPaymentRequest),
 	});
 };
