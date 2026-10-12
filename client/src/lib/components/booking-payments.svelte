@@ -78,14 +78,16 @@
 			oneditable(false);
 		}
 	}
-	async function pay(providerName: string, amount: number) {
+	async function pay(providerName: string, _amount: number) {
 		now = Date.now();
+		const amount = history.data?.amountOutstanding ?? 0;
 		if (
 			!checkoutAllowed ||
 			unavailable ||
 			refreshError ||
 			!history.data ||
 			history.data.isPaid ||
+			history.data.amountAvailable !== history.data.amountOutstanding ||
 			validatePaymentAmount(String(amount), history.data.amountAvailable)
 		)
 			return;

@@ -161,7 +161,7 @@ public class PaymentResultValidationTests(AppFixture app)
             {
                 BookingId = booking.Id,
                 ProviderName = "payfast",
-                Amount = 40m,
+                Amount = 100m,
             },
             cancellationToken: TestContext.Current.CancellationToken
         );
@@ -170,14 +170,14 @@ public class PaymentResultValidationTests(AppFixture app)
             .PaymentBooking.Where(x => x.BookingId == booking.Id)
             .Select(x => x.Payment)
             .SingleAsync(cancellationToken: TestContext.Current.CancellationToken);
-        payment.Amount.ShouldBe(40m);
+        payment.Amount.ShouldBe(100m);
         payment.FormActionUrl.ShouldNotBeNullOrWhiteSpace();
         payment.FormFieldsJson.ShouldNotBeNullOrWhiteSpace();
         var form = await app.Client.GetAsync($"/payment/form/payfast/{payment.TransactionId}", TestContext.Current.CancellationToken);
         form.StatusCode.ShouldBe(HttpStatusCode.OK);
         var html = await form.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         html.ShouldContain("https://sandbox.payfast.co.za/eng/process");
-        html.ShouldContain("name=\"amount\" value=\"40.00\"");
+        html.ShouldContain("name=\"amount\" value=\"100.00\"");
         html.ShouldContain("name=\"signature\"");
 
         await db
@@ -205,7 +205,7 @@ public class PaymentResultValidationTests(AppFixture app)
             cancellationToken: TestContext.Current.CancellationToken
         );
         tooMuch.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        (await tooMuch.Content.ReadAsStringAsync(TestContext.Current.CancellationToken)).ShouldContain("cannot exceed the outstanding balance of R100.00");
+        (await tooMuch.Content.ReadAsStringAsync(TestContext.Current.CancellationToken)).ShouldContain("Pay the full remaining balance");
         var remainder = await app.Client.PostAsJsonAsync(
             "/payment/initiate",
             new { BookingId = booking.Id, ProviderName = "payfast" },
@@ -217,7 +217,7 @@ public class PaymentResultValidationTests(AppFixture app)
             .Select(x => x.Payment.Amount)
             .ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
         payments.Count.ShouldBe(2);
-        payments.Sum().ShouldBe(140m);
+        payments.Sum().ShouldBe(200m);
         var fullyReserved = await app.Client.PostAsJsonAsync(
             "/payment/initiate",
             new

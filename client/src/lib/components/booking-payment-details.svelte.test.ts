@@ -34,7 +34,7 @@ const props = {
 };
 
 it("presents pending history and selects the unreserved amount without customer operations", async () => {
-	render(BookingPaymentDetails, props);
+	render(BookingPaymentDetails, { ...props, acceptInClub: true });
 	await expect.element(page.getByRole("cell", { name: "Pending", exact: true })).toBeVisible();
 	await expect.element(page.getByLabelText("Payment amount")).toHaveValue("35.00");
 	await expect.element(page.getByText("Your vouchers")).not.toBeInTheDocument();
@@ -50,7 +50,7 @@ it("shows history but no checkout controls for an inactive reservation", async (
 });
 
 it("blocks checkout and refresh while an operation is busy", async () => {
-	render(BookingPaymentDetails, { ...props, busy: true });
+	render(BookingPaymentDetails, { ...props, busy: true, acceptInClub: true });
 	await expect.element(page.getByRole("button", { name: "Refresh payments" })).toBeDisabled();
 	await expect.element(page.getByLabelText("Payment amount")).toBeDisabled();
 	await expect.element(page.getByRole("button", { name: "Processing..." })).toBeDisabled();

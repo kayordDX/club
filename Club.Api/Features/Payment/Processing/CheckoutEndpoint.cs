@@ -17,6 +17,7 @@ public abstract class CheckoutEndpoint<TRequest>(AppDbContext dbContext, IPaymen
     private readonly IPaymentFactory _paymentFactory = paymentFactory;
     private readonly PaymentLogger _paymentLogger = paymentLogger;
 
+    protected virtual bool RequireFullBalance => false;
     protected abstract int GetBookingId(TRequest req);
     protected abstract bool CanAccess(Entities.Booking booking, TRequest req);
 
@@ -62,6 +63,12 @@ public abstract class CheckoutEndpoint<TRequest>(AppDbContext dbContext, IPaymen
 
         var available = await BookingPayments.AvailableAsync(_dbContext, booking, ct);
         var amount = req.Amount ?? available;
+        if (RequireFullBalance && (amount != booking.AmountOutstanding || available != booking.AmountOutstanding))
+        {
+            AddError(x => x.Amount, "Pay the full remaining balance. Resolve pending payment attempts before starting another payment.");
+            await Send.ErrorsAsync(400, ct);
+            return;
+        }
         if (!BookingPayments.IsValidAmount(amount, available))
         {
             AddError(

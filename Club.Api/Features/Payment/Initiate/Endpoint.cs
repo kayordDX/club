@@ -14,6 +14,8 @@ public class Endpoint(AppDbContext db, IPaymentFactory factory, PaymentLogger pa
         Description(x => x.WithName("PaymentInitiate"));
     }
 
+    protected override bool RequireFullBalance => true;
+
     protected override int GetBookingId(PaymentInitiateRequest req) => req.BookingId;
 
     protected override bool CanAccess(Entities.Booking booking, PaymentInitiateRequest req) =>

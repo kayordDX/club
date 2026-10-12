@@ -3,23 +3,23 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Aspire.Hosting.Browsers" Version="13.6.0-preview.1.26479.8" />
-    <PackageVersion Include="Aspire.Hosting.JavaScript" Version="13.6.0" />
-    <PackageVersion Include="Aspire.Hosting.Keycloak" Version="13.6.0-preview.1.26479.8" />
+    <PackageVersion Include="Aspire.Hosting.Browsers" Version="13.6.1-preview.1.26506.6" />
+    <PackageVersion Include="Aspire.Hosting.JavaScript" Version="13.6.1" />
+    <PackageVersion Include="Aspire.Hosting.Keycloak" Version="13.6.1-preview.1.26506.6" />
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.10.0" />
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.10.0" />
-    <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.6.0" />
-    <PackageVersion Include="Aspire.Hosting.Redis" Version="13.6.0" />
+    <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.6.1" />
+    <PackageVersion Include="Aspire.Hosting.Redis" Version="13.6.1" />
     <PackageVersion Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
     <PackageVersion Include="AspNetCore.HealthChecks.System" Version="9.0.0" />
     <PackageVersion Include="AspNetCore.HealthChecks.Redis" Version="9.0.0" />
     <PackageVersion Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
-    <PackageVersion Include="AWSSDK.S3" Version="4.0.104.1" />
+    <PackageVersion Include="AWSSDK.S3" Version="4.0.104.2" />
     <PackageVersion Include="Duende.AccessTokenManagement" Version="4.2.0" />
     <PackageVersion Include="EFCore.NamingConventions" Version="10.0.1" />
     <PackageVersion Include="FastEndpoints" Version="8.3.0" />
     <PackageVersion Include="FastEndpoints.Swagger" Version="8.3.0" />
-    <PackageVersion Include="FluentValidation" Version="12.1.1" />
+    <PackageVersion Include="FluentValidation" Version="12.2.0" />
     <PackageVersion Include="Keycloak.AuthServices.Sdk" Version="3.0.0" />
     <PackageVersion Include="Keycloak.AuthServices.Sdk.Kiota" Version="26.5.6" />
     <PackageVersion Include="Keycloak.NETCore.Client" Version="2.0.0" />
@@ -43,15 +43,15 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.Process" Version="1.19.0-rc.1" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.19.0" />
     <PackageVersion Include="Riok.Mapperly" Version="4.3.1" />
-    <PackageVersion Include="Scalar.AspNetCore" Version="2.17.14" />
-    <PackageVersion Include="QueryKit" Version="1.15.0" />
+    <PackageVersion Include="Scalar.AspNetCore" Version="2.18.0" />
+    <PackageVersion Include="QueryKit" Version="1.16.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.12" />
     <!-- Testing Packages -->
     <PackageVersion Include="FastEndpoints.Testing" Version="8.3.0" />
-    <PackageVersion Include="xunit.v3.mtp-v2" Version="4.0.1" />
+    <PackageVersion Include="xunit.v3.mtp-v2" Version="4.0.2" />
     <PackageVersion Include="Shouldly" Version="4.3.0" />
-    <PackageVersion Include="Testcontainers" Version="4.15.0" />
-    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.15.0" />
-    <PackageVersion Include="Testcontainers.Redis" Version="4.15.0" />
+    <PackageVersion Include="Testcontainers" Version="4.16.0" />
+    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.16.0" />
+    <PackageVersion Include="Testcontainers.Redis" Version="4.16.0" />
   </ItemGroup>
 </Project>

@@ -5,19 +5,19 @@
       "source": "microsoft/aspire-skills",
       "sourceType": "github",
       "skillPath": "skills/aspire/SKILL.md",
-      "computedHash": "4dbe3320602a522ab7b34547091b8fbaaa07b0b7bff4c293400e7918463c3686"
+      "computedHash": "ddf3cfeec5fbf14cb04a1ab5cc6192dc85e71c722f9ec42fe2e2e44696144dc8"
     },
     "aspire-monitoring": {
       "source": "microsoft/aspire-skills",
       "sourceType": "github",
       "skillPath": "skills/aspire-monitoring/SKILL.md",
-      "computedHash": "1e4826d4647df16c0a147dc93f8250e8c44d756bf36ac5c1f8bf1283d99625ae"
+      "computedHash": "25db489c65a5881cec175cefcd179ed30222c553bd84588dbcfed57f3d9cbcf8"
     },
     "aspire-orchestration": {
       "source": "microsoft/aspire-skills",
       "sourceType": "github",
       "skillPath": "skills/aspire-orchestration/SKILL.md",
-      "computedHash": "a32ed6e897412fce309998a5c45f735210c6dda117fe22d3e3bb1025e4068ea6"
+      "computedHash": "3f3045be29a4442e5c0e5b22569038c27967ddf62ee3a44e411c06a0d4b27f47"
     },
     "svelte-code-writer": {
       "source": "sveltejs/ai-tools",
@@ -29,13 +29,13 @@
       "source": "sveltejs/ai-tools",
       "sourceType": "github",
       "skillPath": "plugins/claude/svelte/skills/svelte-core-bestpractices/SKILL.md",
-      "computedHash": "98b4ee346ac45e13740c9f3353b604d5c6e844c96cdc8867052fa961cbdb525d"
+      "computedHash": "3cd6c1f1a92b8bf52af8120e5cb3a93b5512f83b905fd902b895adafb7225456"
     },
     "tanstack-form": {
       "source": "exceptionless/exceptionless",
       "sourceType": "github",
       "skillPath": ".agents/skills/tanstack-form/SKILL.md",
-      "computedHash": "94bca380d19a669374c0ee33fef98209872db2af653cd6f791fcaf98eb51cd89"
+      "computedHash": "cff14979a0ebb4adb56b84b75b8b506939c592ad50eabb3799c5ae1f59b73362"
     }
   }
 }

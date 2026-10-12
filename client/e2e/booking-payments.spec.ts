@@ -28,7 +28,7 @@ async function open(page: Page, scenario: string) {
 	await page.request.post(`${apiUrl}/_test/reset`, { data: { scenario } });
 	await authenticate(page);
 	await page.goto(payUrl);
-	await expect(page.getByRole("region", { name: "Booking payments" }).getByLabel("Payment amount")).toBeVisible();
+	await expect(page.getByRole("region", { name: "Booking payments" }).getByText("Available to pay", { exact: true })).toBeVisible();
 }
 const card = (page: Page, name: string) => page.locator("form").filter({ has: page.getByText(name, { exact: true }) });
 
@@ -47,13 +47,13 @@ test("returned vouchers support round, extra quantity, discount and credit split
 	await card(page, "Round entitlement").getByLabel("Choose an eligible round").selectOption("9");
 	await card(page, "Round entitlement").getByRole("button", { name: "Redeem voucher" }).click();
 	await expect(page.getByText(/Payment received. Remaining balance/)).toBeVisible();
-	await expect(page.getByLabel("Payment amount")).toHaveValue("200.00");
+	await expect(page.getByText(/^Remaining balance:.*200,00/)).toBeVisible();
 	await card(page, "Extra entitlement").getByLabel("Choose an eligible extra").selectOption("5");
 	await card(page, "Extra entitlement").getByLabel("Quantity (maximum 2)").fill("2");
 	await card(page, "Extra entitlement").getByRole("button", { name: "Redeem voucher" }).click();
-	await expect(page.getByLabel("Payment amount")).toHaveValue("100.00");
+	await expect(page.getByText(/^Remaining balance:.*100,00/)).toBeVisible();
 	await card(page, "Capped discount").getByRole("button", { name: "Redeem voucher" }).click();
-	await expect(page.getByLabel("Payment amount")).toHaveValue("60.00");
+	await expect(page.getByText(/^Remaining balance:.*60,00/)).toBeVisible();
 	await card(page, "Credit voucher").getByRole("button", { name: "Redeem voucher" }).click();
 	await expect(page.getByRole("region", { name: "Booking payments" }).getByText("Your booking is fully paid.").last()).toBeVisible();
 	await expect(page.getByText("Your booking is confirmed.")).toBeVisible();
@@ -70,41 +70,24 @@ test("returned vouchers support round, extra quantity, discount and credit split
 	expect(runtimeErrors).toEqual([]);
 });
 
-test("only successful payments reduce the balance and partial Pending bookings retain their expiry countdown", async ({ page }) => {
-	const runtimeErrors: string[] = [];
-	page.on("pageerror", (error) => runtimeErrors.push(error.message));
+test("customers pay the full remaining balance and only successful settlement reduces it", async ({ page }) => {
 	await open(page, "split");
+	await expect(page.getByLabel("Payment amount")).toHaveCount(0);
 	await expect(page.getByText("Expires in", { exact: true })).toBeVisible();
 	await page.getByRole("radio", { name: "Payfast" }).click();
-	await page.getByLabel("Payment amount").fill("300.01");
-	await expect(page.getByRole("button", { name: "Pay now" })).toBeDisabled();
-	await expect(page.getByText(/You cannot pay more than the outstanding amount/)).toBeVisible();
-	await page.getByLabel("Payment amount").fill("75");
 	await page.getByRole("button", { name: "Pay now" }).click();
 	await expect(page).toHaveURL(/\/payment\/success/);
 	await page.goto(payUrl);
-	await expect(page.getByLabel("Payment amount")).toHaveValue("225.00");
 	await expect(page.getByRole("cell", { name: "Pending", exact: true })).toBeVisible();
+	await expect(page.getByRole("button", { name: "Pay now" })).toHaveCount(0);
 	const pending = await (await page.request.get(`${apiUrl}/_test/state`)).json();
 	expect(pending.amountPaid).toBe(0);
 	expect(pending.amountOutstanding).toBe(300);
-	expect(pending.amountAvailable).toBe(225);
-	await expect(page.getByText("Expires in", { exact: true })).toBeVisible();
+	expect(pending.amountAvailable).toBe(0);
 	await page.request.post(`${apiUrl}/_test/callback`, { data: { success: true } });
 	await page.getByRole("button", { name: "Refresh payments" }).click();
-	await expect(page.getByRole("cell", { name: "Partial", exact: true })).toBeVisible();
-	await expect(page.getByLabel("Payment amount")).toHaveValue("225.00");
-	await expect(page.getByText("Expires in", { exact: true })).toBeVisible();
-	await expect(page.getByText(/Remaining balance:.*Pay the rest/)).toBeVisible();
-	await page.getByRole("radio", { name: "Other provider" }).click();
-	await page.getByLabel("Payment amount").fill("25");
-	await page.getByRole("button", { name: "Pay now" }).click();
-	await expect(page).toHaveURL(/\/payment\/success/);
-	await page.request.post(`${apiUrl}/_test/callback`, { data: { success: false } });
-	await page.goto(payUrl);
-	await expect(page.getByLabel("Payment amount")).toHaveValue("225.00");
-	await expect(page.getByRole("cell", { name: "Failed", exact: true })).toBeVisible();
-	expect(runtimeErrors).toEqual([]);
+	await expect(page.getByRole("cell", { name: "Completed", exact: true })).toBeVisible();
+	await expect(page.getByText("This booking is fully paid.")).toBeVisible();
 });
 
 test("pending payments reserve the balance without counting as paid or allowing a duplicate checkout", async ({ page }) => {
@@ -112,7 +95,7 @@ test("pending payments reserve the balance without counting as paid or allowing 
 	await authenticate(page);
 	await page.goto(payUrl);
 	await expect(page.getByRole("cell", { name: "Pending", exact: true })).toBeVisible();
-	await expect(page.getByText("No outstanding balance is available to pay.")).toBeVisible();
+	await expect(page.getByText("A payment is pending. Resolve it before paying the full remaining balance.")).toBeVisible();
 	await expect(page.getByRole("button", { name: "Pay now" })).toHaveCount(0);
 	await expect(card(page, "Credit voucher").getByRole("button", { name: "Redeem voucher" })).toBeDisabled();
 	const state = await (await page.request.get(`${apiUrl}/_test/state`)).json();
@@ -142,7 +125,7 @@ test("failed refresh releases busy state and requires recovery before payment", 
 	await expect(page.getByRole("button", { name: "Retry", exact: true })).toBeEnabled();
 	await page.request.post(`${apiUrl}/_test/recover`);
 	await page.getByRole("button", { name: "Retry", exact: true }).click();
-	await expect(page.getByLabel("Payment amount")).toBeEnabled();
+	await expect(page.getByRole("radio", { name: "Payfast" })).toBeEnabled();
 });
 
 test("provider rejection is actionable and never adds payment history", async ({ page }) => {

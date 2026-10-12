@@ -58,7 +58,7 @@ vi.mock("$lib/api/remote/admin.remote", () => ({
 	adminBookingGetPath: () => Object.assign(Promise.resolve(undefined), { refresh: mocks.pathRefresh }),
 	adminBookingUpdate: vi.fn(),
 	adminBookingGetPayments: vi.fn(),
-	adminBookingInitiatePayment: vi.fn(),
+	adminBookingAcceptPayment: vi.fn(),
 	adminBookingUpdateStatus: mocks.change,
 	adminBookingGetOptions: vi.fn(() => ({ refresh: vi.fn().mockResolvedValue(undefined) })),
 	adminSlotGetAll: vi.fn(() => ({ refresh: mocks.adminSlots })),

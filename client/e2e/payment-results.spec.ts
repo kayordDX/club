@@ -11,9 +11,26 @@ async function openAdmin(page: Page, outcome = "success") {
 	await expect(payments(page).getByLabel("Payment amount")).toHaveValue("100.00");
 }
 async function checkout(page: Page, amount = "30") {
-	await payments(page).getByRole("radio", { name: "Payfast" }).click();
-	await payments(page).getByLabel("Payment amount").fill(amount);
-	await payments(page).getByRole("button", { name: "Pay now" }).click();
+	if (new URL(page.url()).pathname === adminUrl) {
+		// Exercise legacy admin provider returns without exposing online checkout in the admin UI.
+		const response = await page.request.post(`${paymentApiUrl}/admin/facility/1/booking/44/payment/initiate`, {
+			headers: { authorization: "Bearer payment-test-token" },
+			data: { providerName: "payfast", amount: Number(amount) },
+		});
+		const checkout = await response.json();
+		await page.evaluate(
+			({ transactionId, returnUrl }) => {
+				sessionStorage.setItem("payment-booking:" + transactionId, "44");
+				sessionStorage.setItem("payment-return:" + transactionId, JSON.stringify({ transactionId, bookingId: 44, admin: { facilityId: 1, returnUrl } }));
+			},
+			{ transactionId: checkout.transactionId, returnUrl: adminUrl }
+		);
+		await page.goto(checkout.redirectUrl);
+	} else {
+		await expect(payments(page).getByLabel("Payment amount")).toHaveCount(0);
+		await payments(page).getByRole("radio", { name: "Payfast" }).click();
+		await payments(page).getByRole("button", { name: "Pay now" }).click();
+	}
 	await expect(page).toHaveURL(/\/payment\/(success|failure|cancelled)\?transactionId=tx-\d+$/);
 }
 async function state(page: Page) {
@@ -55,7 +72,7 @@ test("customer payment hydration does not emit runtime errors", async ({ page })
 	await page.request.post(`${paymentApiUrl}/_test/reset`, { data: { scenario: "customer-success" } });
 	await authenticatePaymentSession(page);
 	await page.goto(customerUrl);
-	await expect(payments(page).getByLabel("Payment amount")).toHaveValue("300.00");
+	await expect(payments(page).getByLabel("Payment amount")).toHaveCount(0);
 	await expect(payments(page).getByRole("radio", { name: "Payfast" })).toBeVisible();
 	expect(runtimeErrors).toEqual([]);
 });
@@ -95,6 +112,7 @@ test("admin result refresh distinguishes partial settlement from fully paid", as
 	await expect(page.getByText(/Payment received\. Remaining balance/)).toContainText("70,00");
 	await expect(page.getByRole("link", { name: "Manage remaining balance" })).toHaveAttribute("href", adminUrl);
 	await page.getByRole("link", { name: "Back to booking management" }).click();
+	await expect(page).toHaveURL(adminUrl);
 	await checkout(page, "70");
 	await page.request.post(`${paymentApiUrl}/_test/callback`, { data: { success: true } });
 	await page.reload();
@@ -127,7 +145,8 @@ test("copied customer payment URL requires sign-in and only the owner can open i
 	}
 	await authenticatePaymentSession(page, "owner");
 	await page.goto(copied);
-	await expect(payments(page).getByLabel("Payment amount")).toHaveValue("100.00");
+	await expect(payments(page).getByLabel("Payment amount")).toHaveCount(0);
+	await expect(payments(page).getByRole("radio", { name: "Payfast" })).toBeVisible();
 	await expect(page.getByText("Your booking is confirmed.", { exact: true })).toBeVisible();
 	const current = await state(page);
 	expect(

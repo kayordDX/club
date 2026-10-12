@@ -15,6 +15,7 @@
 		onpay,
 		onrefresh,
 		customerOperations,
+		acceptInClub = false,
 	}: {
 		balance: BookingPaymentDTO;
 		methods: FacilityPaymentMethodsResponse[];
@@ -25,6 +26,7 @@
 		onpay: (_provider: string, _amount: number) => Promise<void>;
 		onrefresh: () => Promise<void>;
 		customerOperations?: Snippet;
+		acceptInClub?: boolean;
 	} = $props();
 </script>
 
@@ -53,20 +55,29 @@
 	<p role="status">This booking is inactive or its hold has expired. Restore the booking before checkout.</p>
 {:else}
 	{#if balance.amountPaid > 0}
-		<p role="status">Remaining balance: {formatCurrency(balance.amountOutstanding)}. Pay the rest with another payment method.</p>
+		<p role="status">Remaining balance: {formatCurrency(balance.amountOutstanding)}.</p>
 	{/if}
-	{#if balance.amountAvailable > 0}
-		{#if methods.length}
+	{@render customerOperations?.()}
+	{#if balance.amountAvailable > 0 && (acceptInClub || balance.amountAvailable === balance.amountOutstanding)}
+		{#if acceptInClub || methods.length}
 			{#key balance.amountAvailable}
-				<PaymentAmountForm amountAvailable={balance.amountAvailable} {methods} busy={busy || refreshing || checkoutDisabled} {onpay} />
+				<PaymentAmountForm
+					amountAvailable={balance.amountAvailable}
+					{methods}
+					{acceptInClub}
+					allowPartialAmount={acceptInClub}
+					busy={busy || refreshing || checkoutDisabled}
+					{onpay}
+				/>
 			{/key}
 		{:else}
 			<p>No provider payment methods are available.</p>
 		{/if}
+	{:else if !acceptInClub && balance.amountAvailable !== balance.amountOutstanding}
+		<p role="status">A payment is pending. Resolve it before paying the full remaining balance.</p>
 	{:else}
 		<p>No outstanding balance is available to pay.</p>
 	{/if}
-	{@render customerOperations?.()}
 {/if}
 <h3 class="font-semibold">Payment history</h3>
 {#if !balance.payments.length}
