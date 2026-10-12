@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 export default defineConfig({
 	testDir: "e2e",
 	testMatch: /(?:booking-payments|admin-booking-creation|payment-results)\.spec\.ts/,
+	globalTeardown: fileURLToPath(new URL("./e2e/fixtures/payment-teardown.ts", import.meta.url)),
 	workers: 1,
 	timeout: 60000,
 	expect: { timeout: 15000 },

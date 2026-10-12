@@ -1,3 +1,4 @@
+import type { EventEmitter } from "node:events";
 import { test, expect } from "./payment-test";
 import { paymentApiUrl } from "./payment-session";
 
@@ -46,6 +47,13 @@ test("fixture exception", async ({ request }, testInfo) => {
 	await completed(testInfo);
 });
 
+test("context shutdown exception", async ({ page, context }, testInfo) => {
+	await page.goto("/robots.txt");
+	// Inject at the lifecycle boundary rather than waiting for an error in the test body.
+	context.on("close", () => (page as unknown as EventEmitter).emit("pageerror", new Error("probe-context-close")));
+	await completed(testInfo);
+});
+
 test("warnings and handled negative responses", async ({ page, request }, testInfo) => {
 	await page.goto("/robots.txt");
 	await page.evaluate(() => {
@@ -54,5 +62,13 @@ test("warnings and handled negative responses", async ({ page, request }, testIn
 	});
 	const response = await request.get(`${paymentApiUrl}/booking/123`);
 	expect(response.status()).toBe(401);
+	await completed(testInfo);
+});
+
+test("server crash retains diagnostics", async ({ page, request }, testInfo) => {
+	await page.goto("/robots.txt");
+	const response = await request.post(`${paymentApiUrl}/_test/crash-vite`);
+	expect(response.ok()).toBe(true);
+	await page.waitForTimeout(100);
 	await completed(testInfo);
 });

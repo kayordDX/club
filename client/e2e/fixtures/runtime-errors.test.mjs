@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -14,12 +14,14 @@ test("runtime diagnostics fail otherwise-passing browser/fixture probes, not han
 			timeout: 150000,
 			env: { ...process.env, PLAYWRIGHT_JSON_OUTPUT_FILE: report, PAYMENT_PROBE_OUTPUT: join(directory, "artifacts") },
 		});
+		writeFileSync(join(directory, "runner-stdout.log"), result.stdout ?? "");
+		writeFileSync(join(directory, "runner-stderr.log"), result.stderr ?? "");
 		assert.equal(result.status, 1, result.stderr);
 		const json = JSON.parse(readFileSync(report, "utf8"));
 		assert.equal(json.errors.length, 0, JSON.stringify(json.errors));
 		const specs = json.suites.flatMap((suite) => suite.specs);
-		assert.equal(specs.length, 5);
-		const markers = ["probe-browser-exception", "probe-browser-rejection", "probe-extra-page", "API fixture"];
+		assert.equal(specs.length, 7);
+		const markers = ["probe-browser-exception", "probe-browser-rejection", "probe-extra-page", "API fixture", "probe-context-close"];
 		for (const [index, spec] of specs.entries()) {
 			const execution = spec.tests[0].results[0];
 			assert.ok(
@@ -33,10 +35,22 @@ test("runtime diagnostics fail otherwise-passing browser/fixture probes, not han
 				assert.ok(diagnostics, spec.title);
 				const body = diagnostics.body ? Buffer.from(diagnostics.body, "base64").toString() : readFileSync(diagnostics.path, "utf8");
 				assert.ok(body.includes(markers[index]), body);
-			} else {
+			} else if (index === markers.length) {
 				assert.equal(execution.status, "passed", spec.title);
+			} else {
+				assert.equal(execution.status, "failed", spec.title);
+				const diagnostics = execution.attachments.find((attachment) => attachment.name === "runtime-diagnostics");
+				assert.ok(diagnostics, spec.title);
+				const body = diagnostics.body ? Buffer.from(diagnostics.body, "base64").toString() : readFileSync(diagnostics.path, "utf8");
+				assert.match(body, /Vite exited unexpectedly/);
 			}
 		}
+	} catch (error) {
+		const retained = resolve("test-results/diagnostics");
+		mkdirSync(retained, { recursive: true });
+		cpSync(directory, retained, { recursive: true });
+		writeFileSync(join(retained, "verification-error.txt"), String(error));
+		throw error;
 	} finally {
 		rmSync(directory, { recursive: true, force: true });
 	}

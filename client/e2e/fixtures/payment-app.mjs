@@ -10,6 +10,8 @@ const diagnosticPath = join(diagnosticDirectory, "errors.jsonl");
 writeFileSync(diagnosticPath, "");
 const recordError = installErrorCapture(diagnosticPath, "API fixture");
 let diagnosticCursor = 0;
+let vite;
+let stopping = false;
 
 // Test-only backend: browser requests still pass through the real authenticated SvelteKit proxy.
 let scenario;
@@ -156,7 +158,12 @@ async function handleRequest(req, res) {
 		res.writeHead(200, { "content-type": "text/plain" });
 		return res.end("Sign in required");
 	}
+	if (path === "/_test/crash-vite") {
+		vite.kill("SIGKILL");
+		return send({ ok: true });
+	}
 	if (path === "/_test/errors") {
+		res.setHeader("x-payment-error-log", diagnosticPath);
 		const errors = readFileSync(diagnosticPath, "utf8")
 			.split("\n")
 			.filter(Boolean)
@@ -383,7 +390,7 @@ const api = createServer((req, res) => {
 	});
 });
 api.listen(5194, "127.0.0.1", () => {
-	const vite = spawn(
+	vite = spawn(
 		process.execPath,
 		["--import", "./e2e/fixtures/runtime-errors.mjs", "./node_modules/vite/bin/vite.js", "dev", "--host", "127.0.0.1", "--port", "5174", "--strictPort"],
 		{
@@ -400,6 +407,7 @@ api.listen(5194, "127.0.0.1", () => {
 		}
 	);
 	const stop = () => {
+		stopping = true;
 		vite.kill("SIGTERM");
 		api.close();
 	};
@@ -407,12 +415,16 @@ api.listen(5194, "127.0.0.1", () => {
 	process.on("SIGINT", stop);
 	vite.on("error", (error) => {
 		recordError(error.stack ?? error.message);
-		api.close();
 		process.exitCode = 1;
 	});
 	vite.on("exit", (code, signal) => {
-		api.close();
-		if (code && !signal) process.exitCode = code;
-		rmSync(diagnosticDirectory, { recursive: true, force: true });
+		if (!stopping) {
+			recordError(`Vite exited unexpectedly: code=${code}, signal=${signal}`);
+			process.exitCode = 1;
+		}
+		// Keep the diagnostics API and journal available after a Vite crash.
+	});
+	process.on("exit", () => {
+		if (stopping) rmSync(diagnosticDirectory, { recursive: true, force: true });
 	});
 });
