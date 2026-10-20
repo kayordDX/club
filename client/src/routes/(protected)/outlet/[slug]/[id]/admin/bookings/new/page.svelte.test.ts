@@ -86,7 +86,7 @@ it("selects the existing customer, defaults to Confirmed, and fetches owner-auth
 	await expect.element(browserPage.getByLabelText("Name")).toHaveValue("Casey Customer");
 	await expect.element(browserPage.getByLabelText("Cell No")).toHaveValue("0821234567");
 	await expect.element(browserPage.getByLabelText("Email")).toHaveValue("casey@example.test");
-	await expect.element(browserPage.getByRole("button", { name: "Me" })).toBeVisible();
+	await expect.element(browserPage.getByRole("button", { name: "Me", exact: true })).toBeVisible();
 	await browserPage.getByRole("button", { name: "Contract" }).click();
 	await expect.element(browserPage.getByRole("option", { name: "Visitor Standard - R 100.00" })).toBeVisible();
 	const optionsQuery = mocks.options.find((item) => (item.queryKey as string[])[0] === "admin-booking-options");
@@ -110,8 +110,56 @@ it("prefills player details from each selected booking owner", async () => {
 	await new Promise((resolve) => setTimeout(resolve, 350));
 	await browserPage.getByRole("button", { name: /Jordan Member.*jordan@example.test/ }).click();
 	await expect.element(browserPage.getByLabelText("Name")).toHaveValue("Jordan Member");
-	await browserPage.getByRole("button", { name: "Me" }).click();
+	await browserPage.getByRole("button", { name: "Me", exact: true }).click();
 	await expect.element(browserPage.getByLabelText("Email")).toHaveValue("jordan@example.test");
+});
+
+it("creates a guest booking without an account or contact details at public rates", async () => {
+	render(NewBookingPage);
+	await browserPage.getByRole("button", { name: "Guest", exact: true }).click();
+	await browserPage.getByRole("button", { name: "Use guest details" }).click();
+	expect(mocks.created).not.toHaveBeenCalled();
+	await browserPage.getByLabelText("Guest name", { exact: true }).fill("Walk-in Guest");
+	await browserPage.getByRole("button", { name: "Use guest details" }).click();
+	await expect.element(browserPage.getByLabelText("Name", { exact: true })).toHaveValue("Walk-in Guest");
+	await expect.element(browserPage.getByLabelText("Cell No (optional)", { exact: true })).toHaveValue("");
+	await expect.element(browserPage.getByLabelText("Email (optional)", { exact: true })).toHaveValue("");
+	await expect.element(browserPage.getByRole("button", { name: "Me", exact: true })).not.toBeInTheDocument();
+	const query = mocks.options.find((item) => (item.queryKey as string[])[0] === "admin-booking-options");
+	await (query?.queryFn as () => Promise<unknown>)();
+	const { adminBookingGetOptions } = await import("$lib/api/remote/admin.remote");
+	expect(adminBookingGetOptions).toHaveBeenCalledWith({ facilityId: 7, params: { slotId: "slot-1" } });
+	await browserPage.getByRole("button", { name: "Contract", exact: true }).click();
+	await browserPage.getByRole("option", { name: /Visitor Standard - R 100.00/ }).click();
+	await browserPage.getByRole("button", { name: "Create booking", exact: true }).click();
+	await expect.element(browserPage.getByText("Booking #44 created")).toBeVisible();
+	expect(mocks.created).toHaveBeenCalledWith({
+		guestName: "Walk-in Guest",
+		guestEmail: null,
+		guestPhone: null,
+		bookingStatusId: BookingStatusEnum.Confirmed,
+		bookings: [{ slotId: "slot-1", slotContractId: 31, name: "Walk-in Guest", cellphone: "", email: "" }],
+		extras: [],
+	});
+});
+
+it("retains guest details after a rejected booking and clears drafts when switching owner type", async () => {
+	mocks.created.mockRejectedValue(new Error("No places remaining"));
+	render(NewBookingPage);
+	await browserPage.getByRole("button", { name: "Guest", exact: true }).click();
+	await browserPage.getByLabelText("Guest name", { exact: true }).fill("Guest Owner");
+	await browserPage.getByLabelText("Guest email (optional)").fill("guest@example.test");
+	await browserPage.getByLabelText("Guest phone (optional)").fill("0821234567");
+	await browserPage.getByRole("button", { name: "Use guest details" }).click();
+	await expect.element(browserPage.getByLabelText("Email (optional)", { exact: true })).toHaveValue("guest@example.test");
+	await browserPage.getByRole("button", { name: "Contract", exact: true }).click();
+	await browserPage.getByRole("option", { name: /Visitor Standard - R 100.00/ }).click();
+	await browserPage.getByRole("button", { name: "Create booking", exact: true }).click();
+	await expect.element(browserPage.getByText("No places remaining")).toBeVisible();
+	await expect.element(browserPage.getByLabelText("Name", { exact: true })).toHaveValue("Guest Owner");
+	await browserPage.getByRole("button", { name: "Existing customer", exact: true }).click();
+	await expect.element(browserPage.getByLabelText("Search customers")).toBeVisible();
+	await expect.element(browserPage.getByLabelText("Name", { exact: true })).not.toBeInTheDocument();
 });
 
 it("always creates Confirmed bookings and reviews the owner and total", async () => {

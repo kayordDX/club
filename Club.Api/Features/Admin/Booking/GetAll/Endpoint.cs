@@ -38,7 +38,7 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<AdminBookingGetAllReque
                 SlotStartDatetime = b.SlotContractBookings.Min(scb => (DateTime?)scb.SlotContract.Slot.StartDatetime),
                 SlotEndDatetime = b.SlotContractBookings.Max(scb => (DateTime?)scb.SlotContract.Slot.EndDatetime),
                 UserId = b.UserId,
-                CustomerName = b.User != null ? b.User.FirstName + " " + b.User.LastName : null,
+                CustomerName = b.User != null ? b.User.FirstName + " " + b.User.LastName : b.GuestName,
                 FacilityName = b.Facility != null ? b.Facility.Name : null,
                 PlayerCount = b.SlotContractBookings.Count,
                 ExtraCount = b.ExtraBookings.Count,

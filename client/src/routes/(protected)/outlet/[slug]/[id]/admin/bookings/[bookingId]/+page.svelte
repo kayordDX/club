@@ -27,7 +27,7 @@
 	const path = $derived(pathRequest.current ?? initialPath);
 	const listHref = resolve(`/outlet/${page.params.slug}/${page.params.id}/admin/bookings`);
 	const returnUrl = resolve(`/outlet/${page.params.slug}/${page.params.id}/admin/bookings/${bookingId}`);
-	const customerPayUrl = $derived(path ? getBookingPayUrl(bookingId, path, booking.slotContractBookings?.length ?? 0) : undefined);
+	const customerPayUrl = $derived(path && booking.userId ? getBookingPayUrl(bookingId, path, booking.slotContractBookings?.length ?? 0) : undefined);
 	const slot = $derived(booking.slotContractBookings?.[0]?.slotContract?.slot);
 	const slotId = $derived(slot?.id ?? "");
 	let editing = $state(false);

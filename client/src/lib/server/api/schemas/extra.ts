@@ -320,6 +320,9 @@ export const ExtraGetFacilityResponseItem = zod.object({
 											zod.null(),
 										])
 										.optional(),
+									guestName: zod.string().nullish(),
+									guestEmail: zod.string().nullish(),
+									guestPhone: zod.string().nullish(),
 									isPaid: zod.boolean(),
 									amountOutstanding: zod.number(),
 									amountPaid: zod.number(),
@@ -643,6 +646,9 @@ export const ExtraGetFacilityResponseItem = zod.object({
 									zod.null(),
 								])
 								.optional(),
+							guestName: zod.string().nullish(),
+							guestEmail: zod.string().nullish(),
+							guestPhone: zod.string().nullish(),
 							isPaid: zod.boolean(),
 							amountOutstanding: zod.number(),
 							amountPaid: zod.number(),
