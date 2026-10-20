@@ -1,3 +1,4 @@
+using Club.Common;
 using Club.Data;
 using Club.Entities;
 using Club.Services;
@@ -84,7 +85,8 @@ public class Endpoint(AppDbContext dbContext, UserManager<User> userManager, ICu
             return;
         }
 
-        _dbContext.UserContract.Add(
+        var assignmentError = await ContractMemberAssignment.SaveAsync(
+            _dbContext,
             new UserContract
             {
                 ContractId = contract.Id,
@@ -95,10 +97,16 @@ public class Endpoint(AppDbContext dbContext, UserManager<User> userManager, ICu
                 EndDate = req.EndDate.Date,
                 Price = contract.Price,
                 IsActive = true,
-            }
+            },
+            Helpers.GetCurrentUserId(HttpContext),
+            ct
         );
-
-        await _dbContext.SaveChangesAsync(ct);
+        if (assignmentError is not null)
+        {
+            AddError(assignmentError);
+            await Send.ErrorsAsync(409, ct);
+            return;
+        }
         await Send.NoContentAsync(ct);
     }
 }

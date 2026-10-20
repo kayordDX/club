@@ -4,7 +4,7 @@ How vouchers work in the wallet. Vouchers are redeemable credits issued by **con
 
 For the **money** side of the wallet (ZAR balance, top-ups, transaction ledger), see [`Wallet.md`](./Wallet.md). This document covers vouchers only; the two tracks are independent but live on the same `Wallet`.
 
-> **Status:** the data model below is implemented (`Club.Api/Entities/`) and migrated. The runtime behaviour marked _(to build)_ is not yet wired.
+> **Status:** the data model is implemented and migrated. Admins can configure contract allowances and automatically issue them when assigning existing or newly created members.
 
 ---
 
@@ -41,7 +41,11 @@ Many-to-many link between a voucher and the facilities where it's valid.
 This is how **credit** is facility-scoped.
 
 ### `ContractVoucher` — what a contract grants (`Entities/ContractVoucher.cs`)
-`Contract × Voucher × Amount` (decimal). The `Amount` is interpreted by the voucher's `RedemptionKind`:
+`Contract × Voucher × Amount` (decimal). In **Admin → Contracts**, use a contract's **Manage vouchers** action to add/remove vouchers and set each allowance. Facility-valid and global vouchers are selectable. Save an empty list to remove all allowances.
+
+Only future member assignments use the saved allowances; existing grants are unchanged. No recurring issuance is scheduled by the contract's frequency. Benefits expire at the assigned membership's end date. Entitlements and discounts require positive whole amounts; credit accepts positive amounts with up to two decimal places.
+
+The `Amount` is interpreted by the voucher's `RedemptionKind`:
 
 | Kind | `Amount` means | Example |
 | --- | --- | --- |
@@ -55,7 +59,7 @@ Append-only ledger row created when a contract is activated. One row **per batch
 | Field | Meaning |
 | --- | --- |
 | `WalletId` | the member's wallet |
-| `UserContractId` | the contract activation that issued it (full audit trail) |
+| `WalletVoucherGrantAudit.SourceUserContractId` | the contract assignment that issued it (immutable audit provenance, not a grant FK) |
 | `VoucherId` | which voucher |
 | `AmountGranted` | original amount |
 | `AmountRemaining` | current spendable balance (drawn down on redemption) |
@@ -92,7 +96,7 @@ A **Discount** is a *price modifier* (it changes what's owed); Entitlement / Cre
 
 1. **Define** — admin creates `Voucher`(s) and scopes them to facilities via `VoucherFacility`.
 2. **Compose contract** — a `Contract` lists its `ContractVoucher` allowances (which vouchers, how much each). The contract itself is scoped to facilities via `ContractFacility`.
-3. **Activate** — a member buys the contract → a `UserContract` is created → the system **mints one `WalletVoucherGrant` per `ContractVoucher`** into the member's wallet: `Amount` → `AmountGranted` = `AmountRemaining`, and `ExpiryDate` from the contract terms. _(Minting is runtime behaviour to build on top of this schema.)_
+3. **Assign** — an admin assigns an existing or newly created member to a contract → a `UserContract` is created → the system **mints one `WalletVoucherGrant` per `ContractVoucher`** into the member's wallet: `Amount` → `AmountGranted` = `AmountRemaining`, and `ExpiryDate` from the membership end date. Membership, grants and issuance audits are committed atomically. A missing wallet is created; an inactive or non-ZAR wallet blocks issuance. Duplicate assignment does not issue again.
 4. **Hold** — grants live in the wallet, each with its own remaining balance and expiry.
 5. **Redeem** — at checkout, apply vouchers to booking lines (see waterfall). Each application decrements `AmountRemaining` and is recorded for audit.
 6. **Expire / refund** — a grant past its `ExpiryDate` is unspendable; a refund credits units/R back onto the grant.
@@ -157,7 +161,6 @@ Voucher (catalog) ──< VoucherFacility >── Facility
 
 The schema is in place; these are runtime pieces still to implement:
 
-- **Minting service** — create `WalletVoucherGrant` rows when a `UserContract` is created.
 - **`BookingVoucherApplication`** — audit table recording which grant funded which booking line, the amount applied, and the sequence (needed for refunds/reversals and reporting).
 - **Redemption logic** — the waterfall + `AmountRemaining` decrement at checkout.
 - **Expiry handling** — a job/rule marking grants unspendable past `ExpiryDate`.

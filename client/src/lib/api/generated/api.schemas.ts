@@ -1264,6 +1264,20 @@ export interface AdminBookingAcceptPaymentRequest {
 	amount?: number;
 }
 
+export interface AdminContractVoucherDTO {
+	voucherId: number;
+	amount: number;
+}
+
+export interface AdminContractSetVouchersRequest {
+	vouchers: AdminContractVoucherDTO[];
+}
+
+export interface AdminContractVouchersDTO {
+	vouchers: AdminContractVoucherDTO[];
+	availableVouchers: AdminVoucherDTO[];
+}
+
 export type TestParams = {
 	name: string;
 };
