@@ -2,6 +2,7 @@
 
 - [ ] Admin
   - [ ] Link vouchers to contract
-  - [ ] Assign vouchers to user
+  - [x] Send vouchers to user
+  - [ ] Allow guest bookings
 - [ ] Wallet
   - [ ] User to transfer or gift to other user

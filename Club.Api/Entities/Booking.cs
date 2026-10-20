@@ -10,6 +10,9 @@ public class Booking : AuditableEntity
     public required DateTime BookingStatusDate { get; set; }
     public Guid? UserId { get; set; }
     public User? User { get; set; }
+    public string? GuestName { get; set; }
+    public string? GuestEmail { get; set; }
+    public string? GuestPhone { get; set; }
     public bool IsPaid { get; set; }
     public decimal AmountOutstanding { get; set; }
     public decimal AmountPaid { get; set; }

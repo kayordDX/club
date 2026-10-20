@@ -53,9 +53,9 @@
 	const ownPlayerCount = $derived(active && destination.id === source.id ? initialPlayers.length : 0);
 	const options = createQuery(() => ({
 		queryKey: ["admin-booking-options", facilityId, destination.id, original.userId],
-		enabled: !!original.userId,
+		enabled: !!original.userId || !!original.guestName,
 		queryFn: async () => {
-			const result = adminBookingGetOptions({ facilityId, params: { slotId: destination.id, userId: original.userId! } });
+			const result = adminBookingGetOptions({ facilityId, params: { slotId: destination.id, ...(original.userId ? { userId: original.userId } : {}) } });
 			await result.refresh();
 			return await result;
 		},
@@ -136,6 +136,7 @@
 	backLabel="Back to bookings"
 	{onCancel}
 	showProfileShortcut={false}
+	optionalContactDetails={!original.userId && !!original.guestName}
 	slotId={destination.id}
 	{facilityId}
 	{date}

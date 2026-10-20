@@ -21,7 +21,7 @@
 	}: {
 		facilityId: number;
 		bookingId: number;
-		booking: Pick<BookingDTO, "bookingStatusId" | "expiresAt">;
+		booking: Pick<BookingDTO, "bookingStatusId" | "expiresAt"> & Partial<Pick<BookingDTO, "userId" | "guestName">>;
 		returnUrl: ResolvedPathname;
 		customerPayUrl?: ResolvedPathname;
 		disabled?: boolean;
@@ -103,13 +103,17 @@
 <section class="mt-6 space-y-5" aria-label="Booking payments">
 	<h2 class="text-lg font-semibold">Payments</h2>
 	<p class="text-muted-foreground text-sm">Confirmation reserves the booking; it does not record payment.</p>
-	<div class="space-y-2">
-		<Button variant="outline" disabled={!customerPayUrl || copying} onclick={copyCustomerUrl}>{copying ? "Copying..." : "Copy customer payment URL"}</Button>
-		<p class="text-muted-foreground text-sm">This is the existing authenticated customer link, not an anonymous or bearer payment link.</p>
-		{#if copyMessage}<p role="status">{copyMessage}</p>{/if}
-		{#if copyError}<p role="alert">{copyError}</p>
-			{#if customerPayUrl}<a href={customerPayUrl}>Customer payment link (sign-in required)</a>{/if}{/if}
-	</div>
+	{#if booking.guestName && !booking.userId}
+		<p class="text-muted-foreground text-sm">Guest booking: accept payment in the club. There is no customer account or self-service payment link.</p>
+	{:else}
+		<div class="space-y-2">
+			<Button variant="outline" disabled={!customerPayUrl || copying} onclick={copyCustomerUrl}>{copying ? "Copying..." : "Copy customer payment URL"}</Button>
+			<p class="text-muted-foreground text-sm">This is the existing authenticated customer link, not an anonymous or bearer payment link.</p>
+			{#if copyMessage}<p role="status">{copyMessage}</p>{/if}
+			{#if copyError}<p role="alert">{copyError}</p>
+				{#if customerPayUrl}<a href={customerPayUrl}>Customer payment link (sign-in required)</a>{/if}{/if}
+		</div>
+	{/if}
 	{#if error}<Alert.Root variant="destructive"><Alert.Title>Payment needs review</Alert.Title><Alert.Description>{error}</Alert.Description></Alert.Root>{/if}
 	{#if refreshError}<p role="alert">{refreshError}</p>{/if}
 	{#if history.isPending}

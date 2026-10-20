@@ -16,7 +16,7 @@ public static class BookingCreationMutation
     public static async Task<BookingCreationResult> CreateAsync(
         AppDbContext db,
         BookingCreateRequest request,
-        Guid ownerId,
+        Guid? ownerId,
         int statusId,
         BookingCreationPolicy policy,
         CancellationToken ct
@@ -50,6 +50,9 @@ public static class BookingCreationMutation
             AmountPaid = 0,
             ExpiresAt = now.AddMinutes(Math.Max(1, policy.PendingTimeoutMinutes)),
             UserId = ownerId,
+            GuestName = policy.GuestName,
+            GuestEmail = policy.GuestEmail,
+            GuestPhone = policy.GuestPhone,
         };
         await db.Booking.AddAsync(booking, ct);
         await db.SaveChangesAsync(ct);

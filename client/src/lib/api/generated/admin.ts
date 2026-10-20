@@ -1652,11 +1652,6 @@ export type adminBookingAcceptPaymentResponse200 = {
 	status: 200;
 };
 
-export type adminBookingAcceptPaymentResponse400 = {
-	data: ErrorResponse;
-	status: 400;
-};
-
 export type adminBookingAcceptPaymentResponse401 = {
 	data: void;
 	status: 401;
@@ -1676,7 +1671,7 @@ export type adminBookingAcceptPaymentResponseSuccess = adminBookingAcceptPayment
 	headers: Headers;
 };
 export type adminBookingAcceptPaymentResponseError = (
-	adminBookingAcceptPaymentResponse400 | adminBookingAcceptPaymentResponse401 | adminBookingAcceptPaymentResponse403 | adminBookingAcceptPaymentResponse500
+	adminBookingAcceptPaymentResponse401 | adminBookingAcceptPaymentResponse403 | adminBookingAcceptPaymentResponse500
 ) & {
 	headers: Headers;
 };

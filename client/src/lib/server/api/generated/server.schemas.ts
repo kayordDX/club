@@ -560,6 +560,12 @@ export interface Booking {
 	/** @nullable */
 	userId?: string | null;
 	user?: User | null;
+	/** @nullable */
+	guestName?: string | null;
+	/** @nullable */
+	guestEmail?: string | null;
+	/** @nullable */
+	guestPhone?: string | null;
 	isPaid: boolean;
 	amountOutstanding: number;
 	amountPaid: number;
@@ -937,6 +943,12 @@ export interface BookingDTO {
 	/** @nullable */
 	userId?: string | null;
 	user?: UserDTO | null;
+	/** @nullable */
+	guestName?: string | null;
+	/** @nullable */
+	guestEmail?: string | null;
+	/** @nullable */
+	guestPhone?: string | null;
 	isPaid: boolean;
 	amountOutstanding: number;
 	amountPaid: number;
@@ -1217,10 +1229,33 @@ export interface AdminBookingCreateRequest {
 	/** @minLength 1 */
 	bookings: BookingRequest[];
 	extras: BookingExtraRequest[];
-	/** @minLength 1 */
-	userId: string;
+	/** @nullable */
+	userId?: string | null;
+	/**
+	 * @minLength 0
+	 * @maxLength 200
+	 * @nullable
+	 */
+	guestName?: string | null;
+	/**
+	 * @minLength 0
+	 * @maxLength 256
+	 * @nullable
+	 * @pattern ^[^@]+@[^@]+$
+	 */
+	guestEmail?: string | null;
+	/**
+	 * @minLength 0
+	 * @maxLength 50
+	 * @nullable
+	 */
+	guestPhone?: string | null;
 	/** @nullable */
 	bookingStatusId?: number | null;
+}
+
+export interface AdminBookingAcceptPaymentRequest {
+	amount: number;
 }
 
 export interface AccountSyncRequest {
@@ -1258,10 +1293,6 @@ export interface AccountCredentialResponse {
 
 export interface CredentialDisableRequest {
 	token: string;
-}
-
-export interface AdminBookingAcceptPaymentRequest {
-	amount?: number;
 }
 
 export type TestParams = {
@@ -1333,7 +1364,10 @@ export type AdminBookingSearchCustomerParams = {
 
 export type AdminBookingGetOptionsParams = {
 	slotId: string;
-	userId: string;
+	/**
+	 * @nullable
+	 */
+	userId?: string | null;
 };
 
 export type AdminBookingGetAllParams = {

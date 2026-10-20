@@ -8,6 +8,9 @@ public class BookingDTO
     public required DateTime BookingStatusDate { get; set; }
     public Guid? UserId { get; set; }
     public UserDTO? User { get; set; }
+    public string? GuestName { get; set; }
+    public string? GuestEmail { get; set; }
+    public string? GuestPhone { get; set; }
     public bool IsPaid { get; set; }
     public decimal AmountOutstanding { get; set; }
     public decimal AmountPaid { get; set; }

@@ -24,17 +24,10 @@ public class Endpoint(AppDbContext dbContext, UserManager<User> userManager, ICu
 
     public override async Task HandleAsync(AdminBookingCreateRequest req, CancellationToken ct)
     {
-        if (req.UserId == Guid.Empty)
+        var owner = req.UserId.HasValue ? await dbContext.Users.FirstOrDefaultAsync(x => x.Id == req.UserId, ct) : null;
+        if (req.UserId.HasValue && owner is null)
         {
-            AddError(r => r.UserId, "A booking owner is required.");
-            await Send.ErrorsAsync(400, ct);
-            return;
-        }
-
-        var owner = await dbContext.Users.FirstOrDefaultAsync(x => x.Id == req.UserId, ct);
-        if (owner is null)
-        {
-            var keycloakUser = await keycloakService.GetUserAsync(req.UserId, ct);
+            var keycloakUser = await keycloakService.GetUserAsync(req.UserId!.Value, ct);
             if (keycloakUser is null)
             {
                 AddError(r => r.UserId, "Existing customer account not found.");
@@ -80,12 +73,15 @@ public class Endpoint(AppDbContext dbContext, UserManager<User> userManager, ICu
         var result = await BookingCreationMutation.CreateAsync(
             dbContext,
             request,
-            owner.Id,
+            owner?.Id,
             statusId,
             new BookingCreationPolicy
             {
                 ExpectedFacilityId = req.FacilityId,
                 ActingAdminId = actorId,
+                GuestName = req.GuestName?.Trim(),
+                GuestEmail = string.IsNullOrWhiteSpace(req.GuestEmail) ? null : req.GuestEmail.Trim(),
+                GuestPhone = string.IsNullOrWhiteSpace(req.GuestPhone) ? null : req.GuestPhone.Trim(),
                 PendingTimeoutMinutes = appConfig.Value.PendingTimeoutMinutes,
             },
             ct

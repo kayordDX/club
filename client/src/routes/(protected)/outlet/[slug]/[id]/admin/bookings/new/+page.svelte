@@ -12,6 +12,7 @@
 	import { createPlayers } from "$lib/booking/players";
 	import type { BookingFormSubmitHandler } from "$lib/booking/schema";
 	import BookingDetailsForm from "$lib/components/booking/BookingDetailsForm.svelte";
+	import GuestBookingOwner from "$lib/components/booking/guest-booking-owner.svelte";
 	import PageHeading from "$lib/components/PageHeading.svelte";
 	import { Alert, Button, Card, Input } from "@kayord/ui";
 	import { BookIcon, SearchIcon, UserRoundCheckIcon, XIcon } from "@lucide/svelte";
@@ -31,6 +32,22 @@
 	let customerSearchInput = $state("");
 	let customerSearch = $state("");
 	let selectedCustomer = $state.raw<AdminBookingCustomerDTO | null>(null);
+	let ownerMode = $state<"customer" | "guest">("customer");
+	let selectedGuest = $state.raw<{ guestName: string; guestEmail: string | null; guestPhone: string | null } | null>(null);
+	const hasOwner = $derived(Boolean(selectedCustomer || selectedGuest));
+	const ownerProfile = $derived(
+		selectedGuest
+			? {
+					name: selectedGuest.guestName,
+					email: selectedGuest.guestEmail,
+					phone_number: selectedGuest.guestPhone,
+				}
+			: {
+					name: [selectedCustomer?.firstName, selectedCustomer?.lastName].filter(Boolean).join(" "),
+					email: selectedCustomer?.email,
+					phone_number: selectedCustomer?.phoneNumber,
+				}
+	);
 	let createError = $state("");
 	let createdBookingId = $state<number | null>(null);
 	let recoveryError = $state("");
@@ -46,7 +63,7 @@
 
 	const customerLookup = createQuery(() => ({
 		queryKey: ["admin-booking-customer", facilityId, customerSearch],
-		enabled: customerSearch.length >= 3 && customerSearch.length <= 256 && facilityId > 0,
+		enabled: ownerMode === "customer" && customerSearch.length >= 3 && customerSearch.length <= 256 && facilityId > 0,
 		queryFn: async () => {
 			const result = adminBookingSearchCustomer({ facilityId, params: { query: customerSearch } });
 			await result.refresh();
@@ -54,10 +71,10 @@
 		},
 	}));
 	const options = createQuery(() => ({
-		queryKey: ["admin-booking-options", facilityId, slotId, selectedCustomer?.userId],
-		enabled: Boolean(slotId && selectedCustomer?.userId && facilityId > 0),
+		queryKey: ["admin-booking-options", facilityId, slotId, selectedCustomer?.userId ?? (selectedGuest ? "guest" : null)],
+		enabled: Boolean(slotId && hasOwner && facilityId > 0),
 		queryFn: async () => {
-			const result = adminBookingGetOptions({ facilityId, params: { slotId, userId: selectedCustomer!.userId } });
+			const result = adminBookingGetOptions({ facilityId, params: { slotId, ...(selectedCustomer ? { userId: selectedCustomer.userId } : {}) } });
 			await result.refresh();
 			return await result;
 		},
@@ -73,7 +90,7 @@
 					selectedCustomer.email ||
 					selectedCustomer.phoneNumber ||
 					"Selected customer"
-			: ""
+			: (selectedGuest?.guestName ?? "")
 	);
 
 	function chooseCustomer() {
@@ -85,6 +102,14 @@
 	function clearCustomer() {
 		if (createBooking.isPending || createdBookingId !== null) return;
 		selectedCustomer = null;
+		selectedGuest = null;
+	}
+
+	function changeOwnerMode(mode: "customer" | "guest") {
+		if (createBooking.isPending || createdBookingId !== null) return;
+		clearCustomer();
+		ownerMode = mode;
+		createError = "";
 	}
 
 	async function openCreatedBooking() {
@@ -98,11 +123,11 @@
 	}
 
 	const handleSubmit: BookingFormSubmitHandler = async ({ players, extras }: BookingFormSubmitValues) => {
-		if (!selectedCustomer || !options.data || createBooking.isPending || createdBookingId !== null) return;
+		if (!hasOwner || !options.data || createBooking.isPending || createdBookingId !== null) return;
 		createError = "";
 		try {
 			const result = await createBooking.mutateAsync({
-				userId: selectedCustomer.userId,
+				...(selectedGuest ?? { userId: selectedCustomer!.userId }),
 				bookingStatusId: BookingStatusEnum.Confirmed,
 				bookings: players.map((player) => ({
 					slotId,
@@ -144,7 +169,7 @@
 
 <div class="m-4 space-y-6">
 	<div class="flex flex-wrap items-start justify-between gap-4">
-		<PageHeading title="Create booking" description="Create a booking for an existing customer." icon={BookIcon} />
+		<PageHeading title="Create booking" description="Create a booking for an existing customer or a guest." icon={BookIcon} />
 		<div class="flex gap-2">
 			<Button href={scheduleHref} variant="outline">Back to schedule</Button><Button href={bookingsHref} variant="outline">Back to bookings</Button>
 		</div>
@@ -162,7 +187,38 @@
 				><Card.Title>Booking owner</Card.Title><Card.Description>Search by the customer's registered email or phone number.</Card.Description></Card.Header
 			>
 			<Card.Content class="space-y-4">
-				{#if selectedCustomer}
+				<div class="flex gap-2" role="group" aria-label="Booking owner type">
+					<Button
+						variant={ownerMode === "customer" ? "default" : "outline"}
+						aria-pressed={ownerMode === "customer"}
+						disabled={createBooking.isPending || createdBookingId !== null}
+						onclick={() => changeOwnerMode("customer")}>Existing customer</Button
+					>
+					<Button
+						variant={ownerMode === "guest" ? "default" : "outline"}
+						aria-pressed={ownerMode === "guest"}
+						disabled={createBooking.isPending || createdBookingId !== null}
+						onclick={() => changeOwnerMode("guest")}>Guest</Button
+					>
+				</div>
+				{#if selectedGuest}
+					<div class="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-4">
+						<div>
+							<span class="font-medium">{selectedGuest.guestName}</span><span class="text-muted-foreground ml-2"
+								>Guest · {selectedGuest.guestEmail ?? selectedGuest.guestPhone ?? "No contact details"}</span
+							>
+						</div>
+						<Button variant="outline" size="sm" onclick={clearCustomer} disabled={createBooking.isPending || createdBookingId !== null}>Change guest</Button>
+					</div>
+				{:else if ownerMode === "guest"}
+					<p class="text-muted-foreground text-sm">No account is created. Guests can use public rates only; admins manage their booking and payment.</p>
+					<GuestBookingOwner
+						onselect={(guest) => {
+							selectedGuest = guest;
+							createError = "";
+						}}
+					/>
+				{:else if selectedCustomer}
 					<div class="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-4">
 						<div class="flex items-center gap-2">
 							<UserRoundCheckIcon class="size-4" /><span class="font-medium">{customerName}</span><span class="text-muted-foreground"
@@ -216,7 +272,7 @@
 						>Open booking details</Button
 					><Button variant="outline" href={scheduleHref}>Back to schedule</Button><Button variant="outline" href={bookingsHref}>Back to bookings</Button>{/if}
 			</Alert.Root>
-		{:else if selectedCustomer}
+		{:else if hasOwner}
 			{#if options.isError}<Alert.Root variant="destructive"
 					><Alert.Title>Booking options unavailable</Alert.Title><Alert.Description>{options.error.message}</Alert.Description></Alert.Root
 				>
@@ -229,7 +285,7 @@
 				{#if createError}<Alert.Root variant="destructive"
 						><Alert.Title>Booking not created</Alert.Title><Alert.Description>{createError}</Alert.Description></Alert.Root
 					>{/if}
-				{#key `${facilityId}:${slotId}:${date}:${slotCount}:${selectedCustomer.userId}:${JSON.stringify(options.data)}`}
+				{#key `${facilityId}:${slotId}:${date}:${slotCount}:${selectedCustomer?.userId ?? JSON.stringify(selectedGuest)}:${JSON.stringify(options.data)}`}
 					<BookingDetailsForm
 						title="Booking details"
 						description={`Enter player details and extras for ${customerName}. Review the total before creating.`}
@@ -246,18 +302,16 @@
 							index === 0
 								? {
 										...player,
-										name: [selectedCustomer?.firstName, selectedCustomer?.lastName].filter(Boolean).join(" "),
-										cellNo: selectedCustomer?.phoneNumber ?? "",
-										email: selectedCustomer?.email ?? "",
+										name: ownerProfile.name,
+										cellNo: ownerProfile.phone_number ?? "",
+										email: ownerProfile.email ?? "",
 									}
 								: player
 						)}
 						initialExtras={[]}
-						profileShortcutUser={{
-							name: [selectedCustomer.firstName, selectedCustomer.lastName].filter(Boolean).join(" "),
-							phone_number: selectedCustomer.phoneNumber,
-							email: selectedCustomer.email,
-						}}
+						profileShortcutUser={ownerProfile}
+						showProfileShortcut={!selectedGuest}
+						optionalContactDetails={!!selectedGuest}
 						availableContracts={options.data.contracts}
 						availableExtras={options.data.extras}
 						reviewStatus="Confirmed"

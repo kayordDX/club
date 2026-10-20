@@ -64,6 +64,21 @@ namespace Club.Data.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("facility_id");
 
+                    b.Property<string>("GuestEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("guest_email");
+
+                    b.Property<string>("GuestName")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("guest_name");
+
+                    b.Property<string>("GuestPhone")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("guest_phone");
+
                     b.Property<bool>("IsPaid")
                         .HasColumnType("boolean")
                         .HasColumnName("is_paid");

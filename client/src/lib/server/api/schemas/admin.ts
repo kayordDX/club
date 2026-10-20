@@ -421,6 +421,9 @@ export const AdminBookingGetResponse = zod.object({
 			zod.null(),
 		])
 		.optional(),
+	guestName: zod.string().nullish(),
+	guestEmail: zod.string().nullish(),
+	guestPhone: zod.string().nullish(),
 	isPaid: zod.boolean(),
 	amountOutstanding: zod.number(),
 	amountPaid: zod.number(),
@@ -571,7 +574,7 @@ export const AdminBookingGetOptionsParams = zod.object({
 
 export const AdminBookingGetOptionsQueryParams = zod.object({
 	slotId: zod.string(),
-	userId: zod.string(),
+	userId: zod.string().nullish(),
 });
 
 export const AdminBookingGetOptionsResponse = zod.object({
@@ -639,6 +642,16 @@ export const AdminBookingCreateParams = zod.object({
 	facilityId: zod.int(),
 });
 
+export const adminBookingCreateBodyGuestNameMin = 0;
+export const adminBookingCreateBodyGuestNameMax = 200;
+
+export const adminBookingCreateBodyGuestEmailMin = 0;
+export const adminBookingCreateBodyGuestEmailMax = 256;
+
+export const adminBookingCreateBodyGuestEmailRegExp = new RegExp("^[^@]+@[^@]+$");
+export const adminBookingCreateBodyGuestPhoneMin = 0;
+export const adminBookingCreateBodyGuestPhoneMax = 50;
+
 export const AdminBookingCreateBody = zod.object({
 	bookings: zod
 		.array(
@@ -657,7 +670,15 @@ export const AdminBookingCreateBody = zod.object({
 			amount: zod.int(),
 		})
 	),
-	userId: zod.string().min(1),
+	userId: zod.string().nullish(),
+	guestName: zod.string().min(adminBookingCreateBodyGuestNameMin).max(adminBookingCreateBodyGuestNameMax).nullish(),
+	guestEmail: zod
+		.email()
+		.min(adminBookingCreateBodyGuestEmailMin)
+		.max(adminBookingCreateBodyGuestEmailMax)
+		.regex(adminBookingCreateBodyGuestEmailRegExp)
+		.nullish(),
+	guestPhone: zod.string().min(adminBookingCreateBodyGuestPhoneMin).max(adminBookingCreateBodyGuestPhoneMax).nullish(),
 	bookingStatusId: zod.int().nullish(),
 });
 
@@ -671,7 +692,7 @@ export const AdminBookingAcceptPaymentParams = zod.object({
 });
 
 export const AdminBookingAcceptPaymentBody = zod.object({
-	amount: zod.number().optional(),
+	amount: zod.number(),
 });
 
 export const AdminBookingAcceptPaymentResponse = zod.object({

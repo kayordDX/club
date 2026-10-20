@@ -7,7 +7,7 @@
 	import { applyFirstPlayerContract, applyProfileToPlayer, type PlayerDraft } from "$lib/booking/players";
 	import { formatCurrency, formatTime } from "$lib/booking/format";
 	import { getSelectedExtrasTotal } from "$lib/booking/pricing";
-	import { playersSchema, type BookingExtraOption, type Players, type BookingFormSubmitHandler, type SelectedExtra } from "$lib/booking/schema";
+	import { getPlayersSchema, type BookingExtraOption, type Players, type BookingFormSubmitHandler, type SelectedExtra } from "$lib/booking/schema";
 	import { createAppForm, Form } from "$lib/components/Form";
 	import Extras from "$lib/components/booking/Extras.svelte";
 	import { Alert, Badge, Button, Card } from "@kayord/ui";
@@ -25,6 +25,7 @@
 		backLabel: string;
 		onCancel?: () => void;
 		showProfileShortcut?: boolean;
+		optionalContactDetails?: boolean;
 		profileShortcutUser?: { name?: string | null; email?: string | null; phone_number?: string | null } | null;
 		/** Optional header content, e.g. a countdown timer. */
 		headerExtra?: Snippet;
@@ -77,6 +78,7 @@
 		backLabel,
 		onCancel,
 		showProfileShortcut = true,
+		optionalContactDetails = false,
 		profileShortcutUser,
 		headerExtra,
 		statusExtra,
@@ -129,7 +131,7 @@
 			players: initialPlayers,
 		} satisfies Players,
 		validators: {
-			onChange: playersSchema,
+			onChange: getPlayersSchema(optionalContactDetails),
 		},
 		onSubmit: async ({ value }) => {
 			if (optionsLoading || incompatiblePlayers.length || incompatibleExtras.length || overCapacity) return;
@@ -308,12 +310,12 @@
 													</form.AppField>
 													<form.AppField name={`players[${index}].cellNo`}>
 														{#snippet children(field)}
-															<field.Input label="Cell No" placeholder="e.g. 082 123 4567" />
+															<field.Input label={optionalContactDetails ? "Cell No (optional)" : "Cell No"} placeholder="e.g. 082 123 4567" />
 														{/snippet}
 													</form.AppField>
 													<form.AppField name={`players[${index}].email`}>
 														{#snippet children(field)}
-															<field.Input label="Email" type="text" placeholder="player@email.com" />
+															<field.Input label={optionalContactDetails ? "Email (optional)" : "Email"} type="text" placeholder="player@email.com" />
 														{/snippet}
 													</form.AppField>
 												</div>

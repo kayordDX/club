@@ -38,6 +38,17 @@ it("shows the shared booking summary using the effective status", async () => {
 	await expect.element(page.getByText("Unpaid", { exact: true })).toBeVisible();
 });
 
+it("shows the guest owner and contact details without a user account", async () => {
+	render(BookingDetails, {
+		booking: { ...booking, user: null, userId: null, guestName: "Walk-in Guest", guestEmail: "guest@example.com", guestPhone: "0821234567" },
+		path,
+	});
+	await expect.element(page.getByText("Walk-in Guest (Guest)", { exact: true })).toBeVisible();
+	await expect.element(page.getByText("guest@example.com", { exact: true })).toBeVisible();
+	await expect.element(page.getByText("0821234567", { exact: true })).toBeVisible();
+	await expect.element(page.getByText("Test Customer", { exact: true })).not.toBeInTheDocument();
+});
+
 it("handles older bookings without slot data", async () => {
 	render(BookingDetails, { booking });
 	await expect.element(page.getByText("No players booked.")).toBeVisible();

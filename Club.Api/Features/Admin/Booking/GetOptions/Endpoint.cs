@@ -29,8 +29,8 @@ public class Endpoint(AppDbContext dbContext, ICustomKeycloakService keycloakSer
             return;
         }
 
-        var ownerExistsLocally = await dbContext.Users.AnyAsync(x => x.Id == req.UserId, ct);
-        if (!ownerExistsLocally && await keycloakService.GetUserAsync(req.UserId, ct) is null)
+        var ownerExistsLocally = req.UserId.HasValue && await dbContext.Users.AnyAsync(x => x.Id == req.UserId, ct);
+        if (req.UserId.HasValue && !ownerExistsLocally && await keycloakService.GetUserAsync(req.UserId.Value, ct) is null)
         {
             await Send.NotFoundAsync(ct);
             return;

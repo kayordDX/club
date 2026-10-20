@@ -19,7 +19,22 @@ export const playersSchema = z.object({
 	players: z.array(playerSchema).refine((arr) => arr.length > 0, "At least one player is required"),
 });
 
+export const guestPlayersSchema = z.object({
+	players: z
+		.array(
+			playerSchema.extend({
+				cellNo: z.union([playerSchema.shape.cellNo, z.literal("")]),
+				email: z.union([playerSchema.shape.email, z.literal("")]),
+			})
+		)
+		.min(1, "At least one player is required"),
+});
+
 export type Players = z.infer<typeof playersSchema>;
+
+export function getPlayersSchema(optionalContactDetails: boolean): z.ZodType<Players, Players> {
+	return optionalContactDetails ? guestPlayersSchema : playersSchema;
+}
 
 /** Player drafts after running through the shared player schema. */
 export type PlayerValues = Players["players"];
