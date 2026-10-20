@@ -18,6 +18,7 @@ import {
 	AdminContractCreateBody,
 	AdminContractCreateMemberBody,
 	AdminContractSearchMemberQueryParams,
+	AdminContractSetVouchersBody,
 	AdminContractUpdateBody,
 	AdminContractUpdateMemberBody,
 	AdminSlotGetAllQueryParams,
@@ -60,6 +61,13 @@ export const adminContractGet = query(z.object({ facilityId: z.number().int(), i
 );
 export const adminContractDelete = command(z.object({ facilityId: z.number().int(), id: z.number().int() }), async ({ facilityId, id }) =>
 	api.adminContractDelete(facilityId, id)
+);
+export const adminContractSetVouchers = command(
+	z.object({ facilityId: z.number().int(), id: z.number().int(), body: AdminContractSetVouchersBody }),
+	async ({ facilityId, id, body }) => api.adminContractSetVouchers(facilityId, id, body)
+);
+export const adminContractGetVouchers = query(z.object({ facilityId: z.number().int(), id: z.number().int() }), async ({ facilityId, id }) =>
+	api.adminContractGetVouchers(facilityId, id)
 );
 export const adminContractSearchMember = query(
 	z.object({ facilityId: z.number().int(), id: z.number().int(), params: AdminContractSearchMemberQueryParams }),

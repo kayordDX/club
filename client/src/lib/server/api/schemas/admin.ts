@@ -245,6 +245,61 @@ export const AdminContractDeleteParams = zod.object({
 
 export const AdminContractDeleteResponse = zod.void();
 
+export const AdminContractSetVouchersParams = zod.object({
+	facilityId: zod.int(),
+	id: zod.int(),
+});
+
+export const AdminContractSetVouchersBody = zod.object({
+	vouchers: zod.array(
+		zod.object({
+			voucherId: zod.int(),
+			amount: zod.number(),
+		})
+	),
+});
+
+export const AdminContractSetVouchersResponse = zod.void();
+
+export const AdminContractGetVouchersParams = zod.object({
+	facilityId: zod.int(),
+	id: zod.int(),
+});
+
+export const AdminContractGetVouchersResponse = zod.object({
+	vouchers: zod.array(
+		zod.object({
+			voucherId: zod.int(),
+			amount: zod.number(),
+		})
+	),
+	availableVouchers: zod.array(
+		zod.object({
+			id: zod.int(),
+			name: zod.string(),
+			description: zod.string(),
+			isExtra: zod.boolean(),
+			redemptionKind: zod.enum({
+				Entitlement: 1,
+				Credit: 2,
+				Discount: 3,
+			}),
+			discountMode: zod
+				.union([
+					zod.enum({
+						Percentage: 1,
+						FixedAmount: 2,
+					}),
+					zod.null(),
+				])
+				.optional(),
+			discountValue: zod.number().nullish(),
+			maxDiscountAmount: zod.number().nullish(),
+			isInUse: zod.boolean(),
+		})
+	),
+});
+
 export const AdminContractSearchMemberParams = zod.object({
 	facilityId: zod.int(),
 	id: zod.int(),

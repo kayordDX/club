@@ -167,21 +167,27 @@ export const ExtraGetFacilityResponseItem = zod.object({
 									user: zod
 										.union([
 											zod.object({
-												id: zod.string(),
-												userName: zod.string().nullish(),
-												normalizedUserName: zod.string().nullish(),
-												email: zod.string().nullish(),
-												normalizedEmail: zod.string().nullish(),
-												emailConfirmed: zod.boolean(),
-												passwordHash: zod.string().nullish(),
-												securityStamp: zod.string().nullish(),
-												concurrencyStamp: zod.string().nullish(),
-												phoneNumber: zod.string().nullish(),
-												phoneNumberConfirmed: zod.boolean(),
-												twoFactorEnabled: zod.boolean(),
-												lockoutEnd: zod.iso.datetime({ offset: true }).nullish(),
-												lockoutEnabled: zod.boolean(),
-												accessFailedCount: zod.int(),
+												id: zod.string().describe("Gets or sets the primary key for this user."),
+												userName: zod.string().nullish().describe("Gets or sets the user name for this user."),
+												normalizedUserName: zod.string().nullish().describe("Gets or sets the normalized user name for this user."),
+												email: zod.string().nullish().describe("Gets or sets the email address for this user."),
+												normalizedEmail: zod.string().nullish().describe("Gets or sets the normalized email address for this user."),
+												emailConfirmed: zod.boolean().describe("Gets or sets a flag indicating if a user has confirmed their email address."),
+												passwordHash: zod.string().nullish().describe("Gets or sets a salted and hashed representation of the password for this user."),
+												securityStamp: zod
+													.string()
+													.nullish()
+													.describe("A random value that must change whenever a users credentials change (password changed, login removed)"),
+												concurrencyStamp: zod.string().nullish().describe("A random value that must change whenever a user is persisted to the store"),
+												phoneNumber: zod.string().nullish().describe("Gets or sets a telephone number for the user."),
+												phoneNumberConfirmed: zod.boolean().describe("Gets or sets a flag indicating if a user has confirmed their telephone address."),
+												twoFactorEnabled: zod.boolean().describe("Gets or sets a flag indicating if two factor authentication is enabled for this user."),
+												lockoutEnd: zod.iso
+													.datetime({ offset: true })
+													.nullish()
+													.describe("Gets or sets the date and time, in UTC, when any user lockout ends."),
+												lockoutEnabled: zod.boolean().describe("Gets or sets a flag indicating if the user could be locked out."),
+												accessFailedCount: zod.int().describe("Gets or sets the number of failed login attempts for the current user."),
 												firstName: zod.string(),
 												lastName: zod.string(),
 												picture: zod.string().nullish(),
@@ -225,16 +231,16 @@ export const ExtraGetFacilityResponseItem = zod.object({
 												),
 												userRoles: zod.array(
 													zod.object({
-														userId: zod.string(),
-														roleId: zod.string(),
+														userId: zod.string().describe("Gets or sets the primary key of the user that is linked to a role."),
+														roleId: zod.string().describe("Gets or sets the primary key of the role that is linked to the user."),
 														id: zod.int(),
 														facilityId: zod.int().nullish(),
 														facility: zod.union([zod.unknown(), zod.null()]).optional(),
 														role: zod.object({
-															id: zod.string(),
-															name: zod.string().nullish(),
-															normalizedName: zod.string().nullish(),
-															concurrencyStamp: zod.string().nullish(),
+															id: zod.string().describe("Gets or sets the primary key for this role."),
+															name: zod.string().nullish().describe("Gets or sets the name for this role."),
+															normalizedName: zod.string().nullish().describe("Gets or sets the normalized name for this role."),
+															concurrencyStamp: zod.string().nullish().describe("A random value that should change whenever a role is persisted to the store"),
 														}),
 													})
 												),
@@ -493,21 +499,24 @@ export const ExtraGetFacilityResponseItem = zod.object({
 							user: zod
 								.union([
 									zod.object({
-										id: zod.string(),
-										userName: zod.string().nullish(),
-										normalizedUserName: zod.string().nullish(),
-										email: zod.string().nullish(),
-										normalizedEmail: zod.string().nullish(),
-										emailConfirmed: zod.boolean(),
-										passwordHash: zod.string().nullish(),
-										securityStamp: zod.string().nullish(),
-										concurrencyStamp: zod.string().nullish(),
-										phoneNumber: zod.string().nullish(),
-										phoneNumberConfirmed: zod.boolean(),
-										twoFactorEnabled: zod.boolean(),
-										lockoutEnd: zod.iso.datetime({ offset: true }).nullish(),
-										lockoutEnabled: zod.boolean(),
-										accessFailedCount: zod.int(),
+										id: zod.string().describe("Gets or sets the primary key for this user."),
+										userName: zod.string().nullish().describe("Gets or sets the user name for this user."),
+										normalizedUserName: zod.string().nullish().describe("Gets or sets the normalized user name for this user."),
+										email: zod.string().nullish().describe("Gets or sets the email address for this user."),
+										normalizedEmail: zod.string().nullish().describe("Gets or sets the normalized email address for this user."),
+										emailConfirmed: zod.boolean().describe("Gets or sets a flag indicating if a user has confirmed their email address."),
+										passwordHash: zod.string().nullish().describe("Gets or sets a salted and hashed representation of the password for this user."),
+										securityStamp: zod
+											.string()
+											.nullish()
+											.describe("A random value that must change whenever a users credentials change (password changed, login removed)"),
+										concurrencyStamp: zod.string().nullish().describe("A random value that must change whenever a user is persisted to the store"),
+										phoneNumber: zod.string().nullish().describe("Gets or sets a telephone number for the user."),
+										phoneNumberConfirmed: zod.boolean().describe("Gets or sets a flag indicating if a user has confirmed their telephone address."),
+										twoFactorEnabled: zod.boolean().describe("Gets or sets a flag indicating if two factor authentication is enabled for this user."),
+										lockoutEnd: zod.iso.datetime({ offset: true }).nullish().describe("Gets or sets the date and time, in UTC, when any user lockout ends."),
+										lockoutEnabled: zod.boolean().describe("Gets or sets a flag indicating if the user could be locked out."),
+										accessFailedCount: zod.int().describe("Gets or sets the number of failed login attempts for the current user."),
 										firstName: zod.string(),
 										lastName: zod.string(),
 										picture: zod.string().nullish(),
@@ -551,16 +560,16 @@ export const ExtraGetFacilityResponseItem = zod.object({
 										),
 										userRoles: zod.array(
 											zod.object({
-												userId: zod.string(),
-												roleId: zod.string(),
+												userId: zod.string().describe("Gets or sets the primary key of the user that is linked to a role."),
+												roleId: zod.string().describe("Gets or sets the primary key of the role that is linked to the user."),
 												id: zod.int(),
 												facilityId: zod.int().nullish(),
 												facility: zod.union([zod.unknown(), zod.null()]).optional(),
 												role: zod.object({
-													id: zod.string(),
-													name: zod.string().nullish(),
-													normalizedName: zod.string().nullish(),
-													concurrencyStamp: zod.string().nullish(),
+													id: zod.string().describe("Gets or sets the primary key for this role."),
+													name: zod.string().nullish().describe("Gets or sets the name for this role."),
+													normalizedName: zod.string().nullish().describe("Gets or sets the normalized name for this role."),
+													concurrencyStamp: zod.string().nullish().describe("A random value that should change whenever a role is persisted to the store"),
 												}),
 											})
 										),

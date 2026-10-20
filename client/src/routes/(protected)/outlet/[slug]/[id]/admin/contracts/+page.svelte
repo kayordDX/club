@@ -3,6 +3,8 @@
 	import { goto } from "$app/navigation";
 	import { resolve } from "$app/paths";
 	import PageHeading from "$lib/components/PageHeading.svelte";
+	import AdminContractVouchers from "$lib/components/admin-contract-vouchers.svelte";
+	import { adminContractGetVouchers, adminContractSetVouchers } from "$lib/api/remote/admin.remote";
 	import { adminContractCreate, adminContractDelete, adminContractGetAll, adminContractUpdate } from "$lib/api/remote/admin.remote";
 	import type { AdminContractDTO } from "$lib/api";
 	import { formatCurrency } from "$lib/booking/format";
@@ -11,7 +13,7 @@
 	import { DataTable, createShadTable, renderSnippet, type DataTableFeatures } from "@kayord/ui/data-table";
 	import { Calendar as DatePickerCalendar } from "@kayord/ui/calendar";
 	import { Actions, AlertDialog, Badge, Button, Checkbox, Dialog, Field, Input, Label, Popover } from "@kayord/ui";
-	import { CalendarIcon, PencilIcon, PlusIcon, ScrollTextIcon, Trash2Icon, UsersIcon } from "@lucide/svelte";
+	import { CalendarIcon, PencilIcon, PlusIcon, ScrollTextIcon, Trash2Icon, UsersIcon, TicketIcon } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
 
 	const facilityId = $derived(Number(page.params.id) || 0);
@@ -23,6 +25,10 @@
 	let dialogOpen = $state(false);
 	let editing = $state<AdminContractDTO | null>(null);
 	let isSaving = $state(false);
+
+	let voucherTarget = $state<AdminContractDTO | null>(null);
+	let isSavingVouchers = $state(false);
+	const voucherDetails = $derived(voucherTarget ? adminContractGetVouchers({ facilityId, id: voucherTarget.id }) : null);
 
 	// Delete confirmation state.
 	let deleteTarget = $state<AdminContractDTO | null>(null);
@@ -182,6 +188,7 @@
 	<Actions
 		actions={[
 			{ icon: UsersIcon, text: "Manage members", action: () => manageMembers(contract) },
+			{ icon: TicketIcon, text: "Manage vouchers", action: () => (voucherTarget = contract) },
 			{ icon: PencilIcon, text: "Edit", action: () => openEdit(contract) },
 			{ icon: Trash2Icon, text: "Delete", action: () => (deleteTarget = contract) },
 		]}
@@ -279,6 +286,43 @@
 				<Button type="submit" disabled={isSaving}>{isSaving ? "Saving..." : editing ? "Save changes" : "Create"}</Button>
 			</Dialog.Footer>
 		</form>
+	</Dialog.Content>
+</Dialog.Root>
+
+<Dialog.Root
+	open={voucherTarget !== null}
+	onOpenChange={(open) => {
+		if (!open && !isSavingVouchers) voucherTarget = null;
+	}}
+>
+	<Dialog.Content class="max-h-[85vh] overflow-y-auto sm:max-w-lg">
+		<Dialog.Header>
+			<Dialog.Title>Vouchers for {voucherTarget?.name}</Dialog.Title>
+			<Dialog.Description>Choose the vouchers and amounts included with this contract.</Dialog.Description>
+		</Dialog.Header>
+		{#if voucherDetails?.error}
+			<p role="alert" class="text-destructive text-sm">Unable to load contract vouchers.</p>
+			<Button variant="outline" onclick={() => voucherDetails?.refresh()}>Retry</Button>
+		{:else if voucherDetails?.current && voucherTarget}
+			<AdminContractVouchers
+				details={voucherDetails.current}
+				oncancel={() => (voucherTarget = null)}
+				onsave={async (vouchers) => {
+					if (!voucherTarget || isSavingVouchers) return;
+					isSavingVouchers = true;
+					try {
+						await adminContractSetVouchers({ facilityId, id: voucherTarget.id, body: { vouchers } });
+						await voucherDetails?.refresh();
+						toast.success("Contract vouchers saved");
+						voucherTarget = null;
+					} finally {
+						isSavingVouchers = false;
+					}
+				}}
+			/>
+		{:else}
+			<p role="status" class="text-muted-foreground text-sm">Loading vouchers…</p>
+		{/if}
 	</Dialog.Content>
 </Dialog.Root>
 
