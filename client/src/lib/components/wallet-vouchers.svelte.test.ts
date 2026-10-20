@@ -4,9 +4,9 @@ import { page } from "vitest/browser";
 import Harness from "./testing/wallet-vouchers-harness.svelte";
 import { VoucherDiscountMode, VoucherRedemptionKind, type WalletVoucherDTO } from "$lib/api/generated";
 
-const api = vi.hoisted(() => ({ vouchers: vi.fn() }));
+const api = vi.hoisted(() => ({ vouchers: vi.fn(), transfer: vi.fn() }));
 vi.mock("$app/env", () => ({ browser: true, dev: true, building: false, version: "test" }));
-vi.mock("$lib/api/remote/wallet.remote", () => ({ walletVouchers: api.vouchers }));
+vi.mock("$lib/api/remote/wallet.remote", () => ({ walletVouchers: api.vouchers, walletTransfer: api.transfer }));
 const grant: WalletVoucherDTO = {
 	grantId: "grant-1",
 	voucherId: 1,
@@ -23,6 +23,7 @@ const grant: WalletVoucherDTO = {
 	expiryDate: "2099-01-01T00:00:00Z",
 	currency: "ZAR",
 	isWalletActive: true,
+	canTransfer: true,
 };
 function respond(grants: WalletVoucherDTO[]) {
 	api.vouchers.mockImplementation(() => Object.assign(Promise.resolve(grants), { refresh: vi.fn().mockResolvedValue(undefined) }));
@@ -100,6 +101,51 @@ it("does not imply unrestricted use when a voucher has no eligible facilities or
 	render(Harness);
 	await expect.element(page.getByText("No eligible facilities", { exact: true })).toBeVisible();
 	await expect.element(page.getByText("Extras: No eligible extras", { exact: true })).toBeVisible();
+});
+
+it("gifts a grant and removes it from the sender's wallet after refreshing", async () => {
+	respond([grant]);
+	api.transfer.mockImplementation(async () => {
+		respond([]);
+	});
+	render(Harness);
+	await page.getByRole("button", { name: "Send voucher", exact: true }).click();
+	await expect.element(page.getByRole("dialog")).toBeVisible();
+	await expect.element(page.getByText(/cannot gift it again/)).toBeVisible();
+	await expect.element(page.getByLabelText("Expiry date")).not.toBeInTheDocument();
+	await page.getByLabelText("Recipient email or phone").fill("recipient@example.com");
+	await page.getByRole("dialog").getByRole("button", { name: "Send voucher", exact: true }).click();
+	await expect.element(page.getByText("Voucher sent successfully.")).toBeVisible();
+	await expect.element(page.getByText("No vouchers yet")).toBeVisible();
+	expect(api.transfer).toHaveBeenCalledExactlyOnceWith({ grantId: grant.grantId, body: { recipient: "recipient@example.com" } });
+});
+
+it("keeps the recipient and dialog open on rejection and allows retry", async () => {
+	respond([grant]);
+	api.transfer.mockRejectedValueOnce(new Error("No user found with that email address or phone number."));
+	render(Harness);
+	await page.getByRole("button", { name: "Send voucher", exact: true }).click();
+	await page.getByLabelText("Recipient email or phone").fill("recipient@example.com");
+	await page.getByRole("dialog").getByRole("button", { name: "Send voucher", exact: true }).click();
+	await expect.element(page.getByText("No user found with that email address or phone number.", { exact: true })).toBeVisible();
+	await expect.element(page.getByLabelText("Recipient email or phone")).toHaveValue("recipient@example.com");
+	api.transfer.mockImplementation(async () => {
+		respond([]);
+	});
+	await page.getByRole("dialog").getByRole("button", { name: "Send voucher", exact: true }).click();
+	await expect.element(page.getByText("Voucher sent successfully.")).toBeVisible();
+});
+
+it("does not offer gifting for received or unavailable vouchers", async () => {
+	respond([
+		{ ...grant, canTransfer: false },
+		{ ...grant, grantId: "expired", expiryDate: "2020-01-01T00:00:00Z" },
+		{ ...grant, grantId: "used", amountRemaining: 0 },
+		{ ...grant, grantId: "inactive", isWalletActive: false },
+	]);
+	render(Harness);
+	await expect.element(page.getByText("Member rounds", { exact: true })).toBeVisible();
+	await expect.element(page.getByRole("button", { name: "Send voucher", exact: true })).not.toBeInTheDocument();
 });
 
 it("shows an empty state instead of mock balances or transactions", async () => {

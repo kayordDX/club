@@ -1886,6 +1886,10 @@ namespace Club.Data.Migrations
                         .HasColumnType("character varying(1000)")
                         .HasColumnName("reason");
 
+                    b.Property<Guid?>("RecipientUserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("recipient_user_id");
+
                     b.Property<string>("Reference")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)")
@@ -1913,18 +1917,19 @@ namespace Club.Data.Migrations
                     b.HasIndex("SourceUserContractId")
                         .HasDatabaseName("ix_wallet_voucher_grant_audit_source_user_contract_id");
 
-                    b.HasIndex("WalletVoucherGrantId")
+                    b.HasIndex("WalletVoucherGrantId", "Action")
                         .IsUnique()
-                        .HasDatabaseName("ix_wallet_voucher_grant_audit_wallet_voucher_grant_id")
-                        .HasFilter("action = 1");
+                        .HasDatabaseName("ix_wallet_voucher_grant_audit_wallet_voucher_grant_id_action");
 
                     b.ToTable("wallet_voucher_grant_audit", null, t =>
                         {
-                            t.HasCheckConstraint("ck_wallet_voucher_grant_audit_action", "action = 1");
+                            t.HasCheckConstraint("ck_wallet_voucher_grant_audit_action", "action BETWEEN 1 AND 2");
 
                             t.HasCheckConstraint("ck_wallet_voucher_grant_audit_contract", "(source_type = 1) = (source_user_contract_id IS NOT NULL)");
 
                             t.HasCheckConstraint("ck_wallet_voucher_grant_audit_source", "source_type BETWEEN 1 AND 5");
+
+                            t.HasCheckConstraint("ck_wallet_voucher_grant_audit_transfer", "action <> 2 OR (assigning_user_id IS NOT NULL AND recipient_user_id IS NOT NULL AND assigning_user_id <> recipient_user_id AND source_type = 4)");
                         });
                 });
 

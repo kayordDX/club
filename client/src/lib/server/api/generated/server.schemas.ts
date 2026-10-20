@@ -54,6 +54,11 @@ export interface WalletVoucherDTO {
 	expiryDate: string;
 	currency: string;
 	isWalletActive: boolean;
+	canTransfer: boolean;
+}
+
+export interface WalletTransferRequest {
+	recipient: string;
 }
 
 export interface TestResponse {

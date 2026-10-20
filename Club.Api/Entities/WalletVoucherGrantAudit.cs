@@ -13,6 +13,7 @@ public class WalletVoucherGrantAudit
 
     // Immutable identifiers, deliberately not FKs: source deletion must not rewrite history.
     public Guid? AssigningUserId { get; set; }
+    public Guid? RecipientUserId { get; set; }
     public int? SourceUserContractId { get; set; }
     public string? Reason { get; set; }
     public string? Reference { get; set; }

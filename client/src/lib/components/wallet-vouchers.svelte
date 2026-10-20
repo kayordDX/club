@@ -1,14 +1,32 @@
 <script lang="ts">
 	import { browser } from "$app/env";
-	import { Alert, Badge, Button, Card } from "@kayord/ui";
+	import { Alert, Badge, Button, Card, Dialog } from "@kayord/ui";
 	import { TicketIcon } from "@lucide/svelte";
-	import { createQuery } from "@tanstack/svelte-query";
+	import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
 	import { onMount } from "svelte";
-	import { walletVouchers } from "$lib/api/remote/wallet.remote";
-	import { VoucherDiscountMode, VoucherRedemptionKind } from "$lib/api/generated";
+	import { walletTransfer, walletVouchers } from "$lib/api/remote/wallet.remote";
+	import { VoucherDiscountMode, VoucherRedemptionKind, type WalletVoucherDTO } from "$lib/api/generated";
 	import { formatCurrency, formatDate } from "$lib/booking/format";
 	import { groupVouchers, voucherStatus } from "$lib/wallet/vouchers";
 
+	import VoucherSend from "$lib/components/voucher-send.svelte";
+
+	let sendTarget = $state.raw<WalletVoucherDTO>();
+	let transferComplete = $state(false);
+	const queryClient = useQueryClient();
+	const transfer = createMutation(() => ({
+		mutationFn: (variables: { grantId: string; body: { recipient: string } }) => walletTransfer(variables),
+		onSuccess: async () => {
+			await query.refetch();
+			await queryClient.invalidateQueries({ queryKey: ["booking-vouchers"] });
+		},
+	}));
+	async function sendVoucher(body: { recipient: string }) {
+		if (!sendTarget || transfer.isPending) return;
+		await transfer.mutateAsync({ grantId: sendTarget.grantId, body });
+		sendTarget = undefined;
+		transferComplete = true;
+	}
 	let now = $state(Date.now());
 	onMount(() => {
 		const timer = setInterval(() => (now = Date.now()), 60000);
@@ -32,6 +50,7 @@
 		<h2 id="vouchers-heading" class="text-xl font-semibold">My vouchers</h2>
 		<Button variant="outline" size="sm" disabled={query.isFetching} onclick={() => query.refetch()}>Refresh</Button>
 	</div>
+	{#if transferComplete}<p role="status" class="mb-4 text-sm">Voucher sent successfully.</p>{/if}
 	{#if query.isPending}
 		<p role="status" class="text-muted-foreground">Loading your vouchers...</p>
 	{:else if query.isError}
@@ -113,6 +132,16 @@
 										<Badge variant={voucherStatus(grant, now) === "Available" ? "default" : "secondary"}>{voucherStatus(grant, now)}</Badge>
 									</div>
 									<p class="text-muted-foreground">Valid from {formatDate(grant.grantedAt)} · Expires {formatDate(grant.expiryDate)}</p>
+									{#if grant.canTransfer && grant.isWalletActive && grant.amountRemaining > 0 && new Date(grant.expiryDate).getTime() > now}
+										<Button
+											variant="outline"
+											size="sm"
+											onclick={() => {
+												sendTarget = grant;
+												transferComplete = false;
+											}}>Send voucher</Button
+										>
+									{/if}
 								</li>
 							{/each}
 						</ul>
@@ -122,3 +151,15 @@
 		</div>
 	{/if}
 </section>
+
+<Dialog.Root open={sendTarget !== undefined} onOpenChange={(open) => !open && !transfer.isPending && (sendTarget = undefined)}>
+	<Dialog.Content class="sm:max-w-lg" showCloseButton={!transfer.isPending}>
+		<Dialog.Header>
+			<Dialog.Title>Send voucher</Dialog.Title>
+			<Dialog.Description>Send {sendTarget?.name} to an email address or phone number.</Dialog.Description>
+		</Dialog.Header>
+		{#if sendTarget}
+			<VoucherSend grant={sendTarget} onsend={sendVoucher} oncancel={() => (sendTarget = undefined)} />
+		{/if}
+	</Dialog.Content>
+</Dialog.Root>
