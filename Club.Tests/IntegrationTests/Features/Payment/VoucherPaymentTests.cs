@@ -469,6 +469,72 @@ public class VoucherPaymentTests(AppFixture app)
         );
     }
 
+    [Fact]
+    public async Task GiftedVoucher_CanBeRedeemedByRecipient_ButCannotBeGiftedAgain()
+    {
+        var ct = app.Context.CancellationToken;
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var (booking, grant) = await SetupAsync(db);
+        var recipient = new User
+        {
+            Id = Guid.NewGuid(),
+            UserName = Guid.NewGuid().ToString(),
+            Email = $"{Guid.NewGuid()}@example.com",
+            FirstName = "Gift",
+            LastName = "Recipient",
+        };
+        db.Users.Add(recipient);
+        booking.UserId = recipient.Id;
+        await db.SaveChangesAsync(ct);
+        (await app.Client.PostAsJsonAsync($"/wallet/vouchers/{grant.Id}/transfer", new { recipient = recipient.Email }, ct)).StatusCode.ShouldBe(
+            HttpStatusCode.NoContent
+        );
+        using var payment = new HttpRequestMessage(HttpMethod.Post, "/payment/voucher") { Content = JsonContent.Create(Request(booking, grant)) };
+        payment.Headers.Add("X-Test-User-Id", recipient.Id.ToString());
+        using var response = await app.Client.SendAsync(payment, ct);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        (await db.WalletVoucherGrant.AsNoTracking().SingleAsync(x => x.Id == grant.Id, ct)).AmountRemaining.ShouldBe(1m);
+        using var regift = new HttpRequestMessage(HttpMethod.Post, $"/wallet/vouchers/{grant.Id}/transfer")
+        {
+            Content = JsonContent.Create(new { recipient = "test@example.com" }),
+        };
+        regift.Headers.Add("X-Test-User-Id", recipient.Id.ToString());
+        (await app.Client.SendAsync(regift, ct)).StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task ConcurrentTransferAndRedemption_PreserveOwnershipAndRemainingBalance()
+    {
+        var ct = app.Context.CancellationToken;
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var (booking, grant) = await SetupAsync(db);
+        var recipient = new User
+        {
+            Id = Guid.NewGuid(),
+            UserName = Guid.NewGuid().ToString(),
+            Email = $"{Guid.NewGuid()}@example.com",
+            FirstName = "Gift",
+            LastName = "Recipient",
+        };
+        db.Users.Add(recipient);
+        await db.SaveChangesAsync(ct);
+        var payment = app.Client.PostAsJsonAsync("/payment/voucher", Request(booking, grant), ct);
+        var transfer = app.Client.PostAsJsonAsync($"/wallet/vouchers/{grant.Id}/transfer", new { recipient = recipient.Email }, ct);
+        await Task.WhenAll(payment, transfer);
+        transfer.Result.StatusCode.ShouldBe(HttpStatusCode.NoContent);
+        payment.Result.StatusCode.ShouldBeOneOf(HttpStatusCode.OK, HttpStatusCode.NotFound);
+        var redeemed = payment.Result.StatusCode == HttpStatusCode.OK;
+        var after = await db.WalletVoucherGrant.AsNoTracking().Include(x => x.Wallet).SingleAsync(x => x.Id == grant.Id, ct);
+        after.Wallet.UserId.ShouldBe(recipient.Id);
+        after.AmountRemaining.ShouldBe(redeemed ? 1m : 2m);
+        (await db.PaymentVoucher.CountAsync(x => x.WalletVoucherGrantId == grant.Id, ct)).ShouldBe(redeemed ? 1 : 0);
+        (await db.WalletVoucherGrantAudit.CountAsync(x => x.WalletVoucherGrantId == grant.Id && x.Action == WalletVoucherGrantAction.Transferred, ct)).ShouldBe(
+            1
+        );
+    }
+
     private async Task AssignManagerAsync(AppDbContext db, int facilityId)
     {
         var role = await db.Roles.SingleAsync(x => x.NormalizedName == "MANAGER", app.Context.CancellationToken);
@@ -499,7 +565,7 @@ public class VoucherPaymentTests(AppFixture app)
         int? cap = null
     )
     {
-        var user = await db.Users.SingleAsync(x => x.Id == TestClaims.UserIdGuid);
+        var user = await db.Users.SingleAsync(x => x.Id == TestClaims.UserIdGuid, app.Context.CancellationToken);
         var facilityType = new FacilityType { Name = $"Golf-{Guid.NewGuid()}" };
         var outlet = new Outlet
         {
@@ -543,7 +609,7 @@ public class VoucherPaymentTests(AppFixture app)
             AmountOutstanding = 200,
             SlotContractBookings = [new SlotContractBooking { SlotContract = slotContract }, new SlotContractBooking { SlotContract = slotContract }],
         };
-        var wallet = await db.Wallet.SingleOrDefaultAsync(x => x.UserId == user.Id);
+        var wallet = await db.Wallet.SingleOrDefaultAsync(x => x.UserId == user.Id, app.Context.CancellationToken);
         if (wallet is null)
             wallet = new Wallet
             {
@@ -584,7 +650,7 @@ public class VoucherPaymentTests(AppFixture app)
             }
         );
         db.VoucherFacility.Add(new VoucherFacility { Voucher = voucher, Facility = facility });
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(app.Context.CancellationToken);
         return (booking, grant);
     }
 }

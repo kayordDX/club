@@ -1,4 +1,5 @@
 using Club.Common;
+using Club.Common.Enums;
 using Club.Data;
 using Club.DTO;
 using Microsoft.EntityFrameworkCore;
@@ -52,6 +53,12 @@ public class Endpoint(AppDbContext db) : EndpointWithoutRequest<List<WalletVouch
                 ExpiryDate = x.ExpiryDate,
                 Currency = x.Wallet.Currency,
                 IsWalletActive = x.Wallet.IsActive,
+                CanTransfer =
+                    x.Wallet.IsActive
+                    && x.Wallet.Currency == "ZAR"
+                    && x.AmountRemaining > 0
+                    && x.ExpiryDate > DateTime.UtcNow
+                    && !db.WalletVoucherGrantAudit.Any(a => a.WalletVoucherGrantId == x.Id && a.Action == WalletVoucherGrantAction.Transferred),
             })
             .ToListAsync(ct);
 

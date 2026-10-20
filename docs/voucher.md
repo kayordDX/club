@@ -153,6 +153,16 @@ Voucher (catalog) ──< VoucherFacility >── Facility
 
 ---
 
+## Wallet gifting (implemented)
+
+Wallet owners can send a grant to an existing user by exact email address (case-insensitive) or stored phone number. The wallet and admin send screens share the same recipient form.
+
+- `POST /wallet/vouchers/{GrantId}/transfer` moves the existing grant, including its entire remaining balance, to the recipient's active ZAR wallet (created automatically if needed). Amounts, validity dates, voucher definition and redemption history are preserved.
+- Only the authenticated owner can send it. Self-transfers, ambiguous/unknown recipients, inactive or incompatible wallets, expired and exhausted grants are rejected. Future-valid grants retain their original start date.
+- A grant can be gifted only once. The recipient can redeem it normally but cannot send it again.
+- Ownership and the append-only `WalletVoucherGrantAudit` transfer entry commit atomically. `AssigningUserId` identifies the sender, `RecipientUserId` identifies the recipient, and the original issuance audit remains unchanged. A unique `(WalletVoucherGrantId, Action)` index prevents a second transfer audit.
+- Transfers lock the same grant row as voucher payments, serializing concurrent transfers and redemption. Voucher gifting never changes the money ledger.
+
 ## Open / to build
 
 The schema is in place; these are runtime pieces still to implement:

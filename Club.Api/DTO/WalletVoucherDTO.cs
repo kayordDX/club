@@ -22,4 +22,5 @@ public class WalletVoucherDTO
     public DateTime ExpiryDate { get; set; }
     public required string Currency { get; set; }
     public bool IsWalletActive { get; set; }
+    public bool CanTransfer { get; set; }
 }

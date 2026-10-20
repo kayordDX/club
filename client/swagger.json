@@ -50,6 +50,59 @@
 				]
 			}
 		},
+		"/wallet/vouchers/{grantId}/transfer": {
+			"post": {
+				"tags": ["Wallet"],
+				"operationId": "WalletTransfer",
+				"parameters": [
+					{
+						"name": "grantId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "guid"
+						}
+					}
+				],
+				"requestBody": {
+					"x-name": "WalletTransferRequest",
+					"description": "",
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/WalletTransferRequest"
+							}
+						}
+					},
+					"required": true,
+					"x-position": 1
+				},
+				"responses": {
+					"500": {
+						"description": "Server Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/InternalErrorResponse"
+								}
+							}
+						}
+					},
+					"204": {
+						"description": "No Content"
+					},
+					"401": {
+						"description": "Unauthorized"
+					}
+				},
+				"security": [
+					{
+						"Keycloak": []
+					}
+				]
+			}
+		},
 		"/test/another": {
 			"get": {
 				"tags": ["Test"],
@@ -3564,7 +3617,8 @@
 					"amountRemaining",
 					"grantedAt",
 					"expiryDate",
-					"isWalletActive"
+					"isWalletActive",
+					"canTransfer"
 				],
 				"properties": {
 					"grantId": {
@@ -3644,6 +3698,9 @@
 					},
 					"isWalletActive": {
 						"type": "boolean"
+					},
+					"canTransfer": {
+						"type": "boolean"
 					}
 				}
 			},
@@ -3658,6 +3715,16 @@
 				"description": "",
 				"x-enumNames": ["Percentage", "FixedAmount"],
 				"enum": [1, 2]
+			},
+			"WalletTransferRequest": {
+				"type": "object",
+				"additionalProperties": false,
+				"required": ["recipient"],
+				"properties": {
+					"recipient": {
+						"type": "string"
+					}
+				}
 			},
 			"TestResponse": {
 				"type": "object",

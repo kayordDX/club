@@ -19,6 +19,7 @@ const grant: WalletVoucherDTO = {
 	expiryDate: "2026-11-01T00:00:00Z",
 	currency: "ZAR",
 	isWalletActive: true,
+	canTransfer: true,
 };
 
 describe("voucher availability", () => {
