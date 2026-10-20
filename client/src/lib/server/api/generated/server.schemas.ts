@@ -54,6 +54,11 @@ export interface WalletVoucherDTO {
 	expiryDate: string;
 	currency: string;
 	isWalletActive: boolean;
+	canTransfer: boolean;
+}
+
+export interface WalletTransferRequest {
+	recipient: string;
 }
 
 export interface TestResponse {
@@ -406,17 +411,29 @@ export interface UserContract {
 }
 
 export interface Role {
+	/** Gets or sets the primary key for this role. */
 	id: string;
-	/** @nullable */
+	/**
+	 * Gets or sets the name for this role.
+	 * @nullable
+	 */
 	name?: string | null;
-	/** @nullable */
+	/**
+	 * Gets or sets the normalized name for this role.
+	 * @nullable
+	 */
 	normalizedName?: string | null;
-	/** @nullable */
+	/**
+	 * A random value that should change whenever a role is persisted to the store
+	 * @nullable
+	 */
 	concurrencyStamp?: string | null;
 }
 
 export interface UserRole {
+	/** Gets or sets the primary key of the user that is linked to a role. */
 	userId: string;
+	/** Gets or sets the primary key of the role that is linked to the user. */
 	roleId: string;
 	id: number;
 	/** @nullable */
@@ -492,29 +509,62 @@ export interface Wallet {
 }
 
 export interface User {
+	/** Gets or sets the primary key for this user. */
 	id: string;
-	/** @nullable */
+	/**
+	 * Gets or sets the user name for this user.
+	 * @nullable
+	 */
 	userName?: string | null;
-	/** @nullable */
+	/**
+	 * Gets or sets the normalized user name for this user.
+	 * @nullable
+	 */
 	normalizedUserName?: string | null;
-	/** @nullable */
+	/**
+	 * Gets or sets the email address for this user.
+	 * @nullable
+	 */
 	email?: string | null;
-	/** @nullable */
+	/**
+	 * Gets or sets the normalized email address for this user.
+	 * @nullable
+	 */
 	normalizedEmail?: string | null;
+	/** Gets or sets a flag indicating if a user has confirmed their email address. */
 	emailConfirmed: boolean;
-	/** @nullable */
+	/**
+	 * Gets or sets a salted and hashed representation of the password for this user.
+	 * @nullable
+	 */
 	passwordHash?: string | null;
-	/** @nullable */
+	/**
+	 * A random value that must change whenever a users credentials change (password changed, login removed)
+	 * @nullable
+	 */
 	securityStamp?: string | null;
-	/** @nullable */
+	/**
+	 * A random value that must change whenever a user is persisted to the store
+	 * @nullable
+	 */
 	concurrencyStamp?: string | null;
-	/** @nullable */
+	/**
+	 * Gets or sets a telephone number for the user.
+	 * @nullable
+	 */
 	phoneNumber?: string | null;
+	/** Gets or sets a flag indicating if a user has confirmed their telephone address. */
 	phoneNumberConfirmed: boolean;
+	/** Gets or sets a flag indicating if two factor authentication is enabled for this user. */
 	twoFactorEnabled: boolean;
-	/** @nullable */
+	/**
+	 * Gets or sets the date and time, in UTC, when any user lockout ends.
+	 * @nullable
+	 */
 	lockoutEnd?: string | null;
+	/** Gets or sets a flag indicating if the user could be locked out. */
 	lockoutEnabled: boolean;
+	/** Gets or sets the number of failed login attempts for the current user. */
 	accessFailedCount: number;
 	firstName: string;
 	lastName: string;
@@ -560,6 +610,12 @@ export interface Booking {
 	/** @nullable */
 	userId?: string | null;
 	user?: User | null;
+	/** @nullable */
+	guestName?: string | null;
+	/** @nullable */
+	guestEmail?: string | null;
+	/** @nullable */
+	guestPhone?: string | null;
 	isPaid: boolean;
 	amountOutstanding: number;
 	amountPaid: number;
@@ -937,6 +993,12 @@ export interface BookingDTO {
 	/** @nullable */
 	userId?: string | null;
 	user?: UserDTO | null;
+	/** @nullable */
+	guestName?: string | null;
+	/** @nullable */
+	guestEmail?: string | null;
+	/** @nullable */
+	guestPhone?: string | null;
 	isPaid: boolean;
 	amountOutstanding: number;
 	amountPaid: number;
@@ -1065,6 +1127,15 @@ export interface AdminContractUpdateRequest {
 	isPublic: boolean;
 }
 
+export interface AdminContractVoucherDTO {
+	voucherId: number;
+	amount: number;
+}
+
+export interface AdminContractSetVouchersRequest {
+	vouchers: AdminContractVoucherDTO[];
+}
+
 export interface AdminMemberSearchResultDTO {
 	userId: string;
 	/** @nullable */
@@ -1076,6 +1147,11 @@ export interface AdminMemberSearchResultDTO {
 	/** @nullable */
 	phoneNumber?: string | null;
 	isExistingMember: boolean;
+}
+
+export interface AdminContractVouchersDTO {
+	vouchers: AdminContractVoucherDTO[];
+	availableVouchers: AdminVoucherDTO[];
 }
 
 export interface AdminContractMemberDTO {
@@ -1217,10 +1293,33 @@ export interface AdminBookingCreateRequest {
 	/** @minLength 1 */
 	bookings: BookingRequest[];
 	extras: BookingExtraRequest[];
-	/** @minLength 1 */
-	userId: string;
+	/** @nullable */
+	userId?: string | null;
+	/**
+	 * @minLength 0
+	 * @maxLength 200
+	 * @nullable
+	 */
+	guestName?: string | null;
+	/**
+	 * @minLength 0
+	 * @maxLength 256
+	 * @nullable
+	 * @pattern ^[^@]+@[^@]+$
+	 */
+	guestEmail?: string | null;
+	/**
+	 * @minLength 0
+	 * @maxLength 50
+	 * @nullable
+	 */
+	guestPhone?: string | null;
 	/** @nullable */
 	bookingStatusId?: number | null;
+}
+
+export interface AdminBookingAcceptPaymentRequest {
+	amount: number;
 }
 
 export interface AccountSyncRequest {
@@ -1258,24 +1357,6 @@ export interface AccountCredentialResponse {
 
 export interface CredentialDisableRequest {
 	token: string;
-}
-
-export interface AdminBookingAcceptPaymentRequest {
-	amount?: number;
-}
-
-export interface AdminContractVoucherDTO {
-	voucherId: number;
-	amount: number;
-}
-
-export interface AdminContractSetVouchersRequest {
-	vouchers: AdminContractVoucherDTO[];
-}
-
-export interface AdminContractVouchersDTO {
-	vouchers: AdminContractVoucherDTO[];
-	availableVouchers: AdminVoucherDTO[];
 }
 
 export type TestParams = {
@@ -1347,7 +1428,10 @@ export type AdminBookingSearchCustomerParams = {
 
 export type AdminBookingGetOptionsParams = {
 	slotId: string;
-	userId: string;
+	/**
+	 * @nullable
+	 */
+	userId?: string | null;
 };
 
 export type AdminBookingGetAllParams = {

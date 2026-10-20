@@ -276,6 +276,51 @@ export const adminContractDelete = async (facilityId: number, id: number, option
 	});
 };
 
+export const getAdminContractSetVouchersUrl = (facilityId: number, id: number) => {
+	return `/admin/facility/${facilityId}/contract/${id}/vouchers`;
+};
+
+export const adminContractSetVouchers = async (
+	facilityId: number,
+	id: number,
+	adminContractSetVouchersRequest: AdminContractSetVouchersRequest,
+	options?: Parameters<typeof customServerInstance>[1]
+): Promise<void> => {
+	const getHeaders = (h?: NonNullable<RequestInit["headers"]>): Record<string, string | readonly string[]> => {
+		if (!h) return {};
+		if (h instanceof Headers) return Object.fromEntries(h.entries());
+		if (Symbol.iterator in h) {
+			return Object.fromEntries(Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]));
+		}
+		const headers: Record<string, string | readonly string[]> = {};
+		for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+			if (value !== undefined) headers[name] = value;
+		}
+		return headers;
+	};
+	return customServerInstance<void>(getAdminContractSetVouchersUrl(facilityId, id), {
+		...options,
+		method: "PUT",
+		headers: { "Content-Type": "application/json", ...getHeaders(options?.headers) },
+		body: JSON.stringify(adminContractSetVouchersRequest),
+	});
+};
+
+export const getAdminContractGetVouchersUrl = (facilityId: number, id: number) => {
+	return `/admin/facility/${facilityId}/contract/${id}/vouchers`;
+};
+
+export const adminContractGetVouchers = async (
+	facilityId: number,
+	id: number,
+	options?: Parameters<typeof customServerInstance>[1]
+): Promise<AdminContractVouchersDTO> => {
+	return customServerInstance<AdminContractVouchersDTO>(getAdminContractGetVouchersUrl(facilityId, id), {
+		...options,
+		method: "GET",
+	});
+};
+
 export const getAdminContractSearchMemberUrl = (facilityId: number, id: number, params: AdminContractSearchMemberParams) => {
 	const normalizedParams = new URLSearchParams();
 
@@ -679,50 +724,5 @@ export const adminBookingAcceptPayment = async (
 		method: "POST",
 		headers: { "Content-Type": "application/json", ...getHeaders(options?.headers) },
 		body: JSON.stringify(adminBookingAcceptPaymentRequest),
-	});
-};
-
-export const getAdminContractSetVouchersUrl = (facilityId: number, id: number) => {
-	return `/admin/facility/${facilityId}/contract/${id}/vouchers`;
-};
-
-export const adminContractSetVouchers = async (
-	facilityId: number,
-	id: number,
-	adminContractSetVouchersRequest: AdminContractSetVouchersRequest,
-	options?: Parameters<typeof customServerInstance>[1]
-): Promise<void> => {
-	const getHeaders = (h?: NonNullable<RequestInit["headers"]>): Record<string, string | readonly string[]> => {
-		if (!h) return {};
-		if (h instanceof Headers) return Object.fromEntries(h.entries());
-		if (Symbol.iterator in h) {
-			return Object.fromEntries(Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]));
-		}
-		const headers: Record<string, string | readonly string[]> = {};
-		for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
-			if (value !== undefined) headers[name] = value;
-		}
-		return headers;
-	};
-	return customServerInstance<void>(getAdminContractSetVouchersUrl(facilityId, id), {
-		...options,
-		method: "PUT",
-		headers: { "Content-Type": "application/json", ...getHeaders(options?.headers) },
-		body: JSON.stringify(adminContractSetVouchersRequest),
-	});
-};
-
-export const getAdminContractGetVouchersUrl = (facilityId: number, id: number) => {
-	return `/admin/facility/${facilityId}/contract/${id}/vouchers`;
-};
-
-export const adminContractGetVouchers = async (
-	facilityId: number,
-	id: number,
-	options?: Parameters<typeof customServerInstance>[1]
-): Promise<AdminContractVouchersDTO> => {
-	return customServerInstance<AdminContractVouchersDTO>(getAdminContractGetVouchersUrl(facilityId, id), {
-		...options,
-		method: "GET",
 	});
 };

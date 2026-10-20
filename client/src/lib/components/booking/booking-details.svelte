@@ -65,8 +65,16 @@
 				</div>
 				<div>
 					<dt class="text-muted-foreground">Booked by</dt>
-					<dd>{booking.user ? `${booking.user.firstName} ${booking.user.lastName}` : "—"}</dd>
+					<dd>{booking.user ? `${booking.user.firstName} ${booking.user.lastName}` : booking.guestName ? `${booking.guestName} (Guest)` : "—"}</dd>
 				</div>
+				{#if booking.guestEmail}<div>
+						<dt class="text-muted-foreground">Guest email</dt>
+						<dd>{booking.guestEmail}</dd>
+					</div>{/if}
+				{#if booking.guestPhone}<div>
+						<dt class="text-muted-foreground">Guest phone</dt>
+						<dd>{booking.guestPhone}</dd>
+					</div>{/if}
 			</dl>
 		</Card.Content>
 	</Card.Root>

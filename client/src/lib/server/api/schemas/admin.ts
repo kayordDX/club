@@ -245,6 +245,61 @@ export const AdminContractDeleteParams = zod.object({
 
 export const AdminContractDeleteResponse = zod.void();
 
+export const AdminContractSetVouchersParams = zod.object({
+	facilityId: zod.int(),
+	id: zod.int(),
+});
+
+export const AdminContractSetVouchersBody = zod.object({
+	vouchers: zod.array(
+		zod.object({
+			voucherId: zod.int(),
+			amount: zod.number(),
+		})
+	),
+});
+
+export const AdminContractSetVouchersResponse = zod.void();
+
+export const AdminContractGetVouchersParams = zod.object({
+	facilityId: zod.int(),
+	id: zod.int(),
+});
+
+export const AdminContractGetVouchersResponse = zod.object({
+	vouchers: zod.array(
+		zod.object({
+			voucherId: zod.int(),
+			amount: zod.number(),
+		})
+	),
+	availableVouchers: zod.array(
+		zod.object({
+			id: zod.int(),
+			name: zod.string(),
+			description: zod.string(),
+			isExtra: zod.boolean(),
+			redemptionKind: zod.enum({
+				Entitlement: 1,
+				Credit: 2,
+				Discount: 3,
+			}),
+			discountMode: zod
+				.union([
+					zod.enum({
+						Percentage: 1,
+						FixedAmount: 2,
+					}),
+					zod.null(),
+				])
+				.optional(),
+			discountValue: zod.number().nullish(),
+			maxDiscountAmount: zod.number().nullish(),
+			isInUse: zod.boolean(),
+		})
+	),
+});
+
 export const AdminContractSearchMemberParams = zod.object({
 	facilityId: zod.int(),
 	id: zod.int(),
@@ -421,6 +476,9 @@ export const AdminBookingGetResponse = zod.object({
 			zod.null(),
 		])
 		.optional(),
+	guestName: zod.string().nullish(),
+	guestEmail: zod.string().nullish(),
+	guestPhone: zod.string().nullish(),
 	isPaid: zod.boolean(),
 	amountOutstanding: zod.number(),
 	amountPaid: zod.number(),
@@ -571,7 +629,7 @@ export const AdminBookingGetOptionsParams = zod.object({
 
 export const AdminBookingGetOptionsQueryParams = zod.object({
 	slotId: zod.string(),
-	userId: zod.string(),
+	userId: zod.string().nullish(),
 });
 
 export const AdminBookingGetOptionsResponse = zod.object({
@@ -639,6 +697,16 @@ export const AdminBookingCreateParams = zod.object({
 	facilityId: zod.int(),
 });
 
+export const adminBookingCreateBodyGuestNameMin = 0;
+export const adminBookingCreateBodyGuestNameMax = 200;
+
+export const adminBookingCreateBodyGuestEmailMin = 0;
+export const adminBookingCreateBodyGuestEmailMax = 256;
+
+export const adminBookingCreateBodyGuestEmailRegExp = new RegExp("^[^@]+@[^@]+$");
+export const adminBookingCreateBodyGuestPhoneMin = 0;
+export const adminBookingCreateBodyGuestPhoneMax = 50;
+
 export const AdminBookingCreateBody = zod.object({
 	bookings: zod
 		.array(
@@ -657,7 +725,15 @@ export const AdminBookingCreateBody = zod.object({
 			amount: zod.int(),
 		})
 	),
-	userId: zod.string().min(1),
+	userId: zod.string().nullish(),
+	guestName: zod.string().min(adminBookingCreateBodyGuestNameMin).max(adminBookingCreateBodyGuestNameMax).nullish(),
+	guestEmail: zod
+		.email()
+		.min(adminBookingCreateBodyGuestEmailMin)
+		.max(adminBookingCreateBodyGuestEmailMax)
+		.regex(adminBookingCreateBodyGuestEmailRegExp)
+		.nullish(),
+	guestPhone: zod.string().min(adminBookingCreateBodyGuestPhoneMin).max(adminBookingCreateBodyGuestPhoneMax).nullish(),
 	bookingStatusId: zod.int().nullish(),
 });
 
@@ -671,7 +747,7 @@ export const AdminBookingAcceptPaymentParams = zod.object({
 });
 
 export const AdminBookingAcceptPaymentBody = zod.object({
-	amount: zod.number().optional(),
+	amount: zod.number(),
 });
 
 export const AdminBookingAcceptPaymentResponse = zod.object({
@@ -691,61 +767,6 @@ export const AdminBookingAcceptPaymentResponse = zod.object({
 			paymentStatus: zod.string(),
 			providerName: zod.string(),
 			paymentStatusDate: zod.iso.datetime({ offset: true }),
-		})
-	),
-});
-
-export const AdminContractSetVouchersParams = zod.object({
-	facilityId: zod.int(),
-	id: zod.int(),
-});
-
-export const AdminContractSetVouchersBody = zod.object({
-	vouchers: zod.array(
-		zod.object({
-			voucherId: zod.int(),
-			amount: zod.number(),
-		})
-	),
-});
-
-export const AdminContractSetVouchersResponse = zod.void();
-
-export const AdminContractGetVouchersParams = zod.object({
-	facilityId: zod.int(),
-	id: zod.int(),
-});
-
-export const AdminContractGetVouchersResponse = zod.object({
-	vouchers: zod.array(
-		zod.object({
-			voucherId: zod.int(),
-			amount: zod.number(),
-		})
-	),
-	availableVouchers: zod.array(
-		zod.object({
-			id: zod.int(),
-			name: zod.string(),
-			description: zod.string(),
-			isExtra: zod.boolean(),
-			redemptionKind: zod.enum({
-				Entitlement: 1,
-				Credit: 2,
-				Discount: 3,
-			}),
-			discountMode: zod
-				.union([
-					zod.enum({
-						Percentage: 1,
-						FixedAmount: 2,
-					}),
-					zod.null(),
-				])
-				.optional(),
-			discountValue: zod.number().nullish(),
-			maxDiscountAmount: zod.number().nullish(),
-			isInUse: zod.boolean(),
 		})
 	),
 });

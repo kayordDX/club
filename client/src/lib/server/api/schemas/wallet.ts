@@ -37,5 +37,16 @@ export const WalletVouchersResponseItem = zod.object({
 	expiryDate: zod.iso.datetime({ offset: true }),
 	currency: zod.string(),
 	isWalletActive: zod.boolean(),
+	canTransfer: zod.boolean(),
 });
 export const WalletVouchersResponse = zod.array(WalletVouchersResponseItem);
+
+export const WalletTransferParams = zod.object({
+	grantId: zod.string(),
+});
+
+export const WalletTransferBody = zod.object({
+	recipient: zod.string(),
+});
+
+export const WalletTransferResponse = zod.void();

@@ -5,5 +5,9 @@
 import { query, command } from "$app/server";
 import { z } from "zod";
 import * as api from "$lib/server/api/generated/wallet";
+import { WalletTransferBody } from "$lib/server/api/schemas/wallet";
 
 export const walletVouchers = query(async () => api.walletVouchers());
+export const walletTransfer = command(z.object({ grantId: z.string(), body: WalletTransferBody }), async ({ grantId, body }) =>
+	api.walletTransfer(grantId, body)
+);

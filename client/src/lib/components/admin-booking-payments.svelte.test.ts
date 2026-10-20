@@ -105,6 +105,21 @@ it("shows authorised history and reservable amount without querying or redeeming
 	expect(api.redeem).not.toHaveBeenCalled();
 });
 
+it("allows admins to receive guest payments without offering an authenticated customer payment link", async () => {
+	render(Harness, {
+		facilityId: 7,
+		bookingId: 123,
+		booking: { bookingStatusId: BookingStatusEnum.Confirmed, expiresAt: "2999-01-01", userId: null, guestName: "Walk-in Guest" },
+		returnUrl: "/outlet/club/7/admin/bookings/123",
+		onrefresh: vi.fn().mockResolvedValue(undefined),
+		onbusy: vi.fn(),
+	});
+	await expect.element(page.getByText(/Guest booking: accept payment in the club/)).toBeVisible();
+	await expect.element(page.getByRole("button", { name: "Copy customer payment URL" })).not.toBeInTheDocument();
+	await page.getByRole("button", { name: "Accept payment" }).click();
+	await vi.waitFor(() => expect(api.initiate).toHaveBeenCalledExactlyOnceWith({ facilityId: 7, id: 123, body: { amount: 100 } }));
+});
+
 it("accepts an in-club partial payment without choosing a provider or redirecting", async () => {
 	api.initiate.mockResolvedValue(balance);
 	const { onbusy, onrefresh } = mount();

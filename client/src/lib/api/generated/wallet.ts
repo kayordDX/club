@@ -4,7 +4,7 @@
  * Club.Api
  * OpenAPI spec version: v1
  */
-import type { InternalErrorResponse, WalletVoucherDTO } from "./api.schemas";
+import type { InternalErrorResponse, WalletTransferRequest, WalletVoucherDTO } from "./api.schemas";
 
 export type walletVouchersResponse200 = {
 	data: WalletVoucherDTO[];
@@ -44,4 +44,58 @@ export const walletVouchers = async (options?: RequestInit): Promise<walletVouch
 
 	const data: walletVouchersResponse["data"] = body ? JSON.parse(body) : {};
 	return { data, status: res.status, headers: res.headers } as walletVouchersResponse;
+};
+
+export type walletTransferResponse204 = {
+	data: void;
+	status: 204;
+};
+
+export type walletTransferResponse401 = {
+	data: void;
+	status: 401;
+};
+
+export type walletTransferResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
+
+export type walletTransferResponseSuccess = walletTransferResponse204 & {
+	headers: Headers;
+};
+export type walletTransferResponseError = (walletTransferResponse401 | walletTransferResponse500) & {
+	headers: Headers;
+};
+
+export type walletTransferResponse = walletTransferResponseSuccess | walletTransferResponseError;
+
+export const getWalletTransferUrl = (grantId: string) => {
+	return `/wallet/vouchers/${grantId}/transfer`;
+};
+
+export const walletTransfer = async (grantId: string, walletTransferRequest: WalletTransferRequest, options?: RequestInit): Promise<walletTransferResponse> => {
+	const getHeaders = (h?: NonNullable<RequestInit["headers"]>): Record<string, string | readonly string[]> => {
+		if (!h) return {};
+		if (h instanceof Headers) return Object.fromEntries(h.entries());
+		if (Symbol.iterator in h) {
+			return Object.fromEntries(Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]));
+		}
+		const headers: Record<string, string | readonly string[]> = {};
+		for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+			if (value !== undefined) headers[name] = value;
+		}
+		return headers;
+	};
+	const res = await fetch(getWalletTransferUrl(grantId), {
+		...options,
+		method: "POST",
+		headers: { "Content-Type": "application/json", ...getHeaders(options?.headers) },
+		body: JSON.stringify(walletTransferRequest),
+	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: walletTransferResponse["data"] = body ? JSON.parse(body) : undefined;
+	return { data, status: res.status, headers: res.headers } as walletTransferResponse;
 };

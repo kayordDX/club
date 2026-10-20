@@ -400,6 +400,155 @@ public class AdminBookingCreationTests(AppFixture app)
         (await db.BookingAction.CountAsync(x => x.Booking.FacilityId == facilityId, ct)).ShouldBe(1);
     }
 
+    [Fact]
+    public async Task GuestBooking_HasGuestOwnerWithoutAccount_AndSupportsAdminDetailsEditingAndPaymentOnly()
+    {
+        var ct = app.Context.CancellationToken;
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var (slot, contract, facilityId) = await AdminBookingTests.CreateBookingSetup(db);
+        await AdminBookingTests.AssignManagerRole(db, facilityId);
+        var keycloak = scope.ServiceProvider.GetRequiredService<FakeCustomKeycloakService>();
+        var usersBefore = await db.Users.CountAsync(ct);
+        var createsBefore = keycloak.CreateUserCalls;
+        var body = new
+        {
+            guestName = "  Guest Owner  ",
+            guestEmail = "guest@example.com",
+            guestPhone = "0821234567",
+            bookings = new[]
+            {
+                new
+                {
+                    slotId = slot.Id,
+                    slotContractId = contract.Id,
+                    name = "Guest Player",
+                },
+            },
+            extras = Array.Empty<object>(),
+        };
+        var response = await PostAsync($"/admin/facility/{facilityId}/booking", body, ct);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        using var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync(ct));
+        var id = payload.RootElement.GetProperty("id").GetInt32();
+        var booking = await db.Booking.AsNoTracking().SingleAsync(x => x.Id == id, ct);
+        booking.UserId.ShouldBeNull();
+        booking.GuestName.ShouldBe("Guest Owner");
+        booking.GuestEmail.ShouldBe(body.guestEmail);
+        booking.GuestPhone.ShouldBe(body.guestPhone);
+        booking.BookingStatusId.ShouldBe((int)BookingStatusEnum.Confirmed);
+        booking.AmountOutstanding.ShouldBe(contract.Price);
+        (await db.BookingAction.SingleAsync(x => x.BookingId == id, ct)).ActingAdminId.ShouldBe(TestClaims.UserIdGuid);
+        (await db.Users.CountAsync(ct)).ShouldBe(usersBefore);
+        keycloak.CreateUserCalls.ShouldBe(createsBefore);
+
+        var details = await app.Client.GetAsync($"/admin/facility/{facilityId}/booking/{id}", ct);
+        details.StatusCode.ShouldBe(HttpStatusCode.OK);
+        (await details.Content.ReadAsStringAsync(ct)).ShouldContain("\"guestName\":\"Guest Owner\"");
+        var list = await app.Client.GetAsync($"/admin/facility/{facilityId}/booking?limit=100", ct);
+        (await list.Content.ReadAsStringAsync(ct)).ShouldContain("\"customerName\":\"Guest Owner\"");
+        var options = await app.Client.GetAsync($"/admin/facility/{facilityId}/booking/options?slotId={slot.Id}", ct);
+        options.StatusCode.ShouldBe(HttpStatusCode.OK);
+        using var optionJson = JsonDocument.Parse(await options.Content.ReadAsStringAsync(ct));
+        optionJson.RootElement.GetProperty("contracts").EnumerateArray().Any(x => x.GetProperty("id").GetInt32() == contract.Id).ShouldBeTrue();
+
+        using var edit = new HttpRequestMessage(HttpMethod.Put, $"/admin/facility/{facilityId}/booking/{id}") { Content = JsonContent.Create(body) };
+        (await app.Client.SendAsync(edit, ct)).StatusCode.ShouldBe(HttpStatusCode.NoContent);
+        foreach (var path in new[] { $"/booking/{id}", $"/booking/{id}/path", $"/payment/booking/{id}", $"/payment/booking/{id}/vouchers" })
+            (await GetAsAsync(TestClaims.UserIdGuid, path, ct)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        (await PostAsync("/payment/initiate", new { bookingId = id, providerName = "payfast" }, ct)).StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        var payment = await PostAsync($"/admin/facility/{facilityId}/booking/{id}/payment/accept", new { amount = contract.Price }, ct);
+        payment.StatusCode.ShouldBe(HttpStatusCode.OK);
+        (await db.Booking.AsNoTracking().SingleAsync(x => x.Id == id, ct)).IsPaid.ShouldBeTrue();
+    }
+
+    [Theory]
+    [InlineData("missing")]
+    [InlineData("blank")]
+    [InlineData("both")]
+    [InlineData("invalid-email")]
+    [InlineData("empty-user")]
+    [InlineData("long-name")]
+    public async Task GuestBooking_RejectsInvalidOrAmbiguousOwnerWithoutWrites(string scenario)
+    {
+        var ct = app.Context.CancellationToken;
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var (slot, contract, facilityId) = await AdminBookingTests.CreateBookingSetup(db);
+        await AdminBookingTests.AssignManagerRole(db, facilityId);
+        var response = await PostAsync(
+            $"/admin/facility/{facilityId}/booking",
+            new
+            {
+                userId = scenario == "both" ? (Guid?)TestClaims.UserIdGuid
+                : scenario == "empty-user" ? Guid.Empty
+                : null,
+                guestName = scenario == "missing" ? null
+                : scenario == "blank" ? "  "
+                : scenario == "long-name" ? new string('x', 201)
+                : "Guest",
+                guestEmail = scenario == "invalid-email" ? "not-an-email" : null,
+                bookings = new[]
+                {
+                    new
+                    {
+                        slotId = slot.Id,
+                        slotContractId = contract.Id,
+                        name = "Guest",
+                    },
+                },
+                extras = Array.Empty<object>(),
+            },
+            ct
+        );
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        (await db.Booking.AnyAsync(x => x.FacilityId == facilityId, ct)).ShouldBeFalse();
+        (await db.BookingAction.AnyAsync(x => x.Booking.FacilityId == facilityId, ct)).ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task GuestBooking_RejectsMemberRatesAndOtherFacilityAccess_AndAllowsNameOnly()
+    {
+        var ct = app.Context.CancellationToken;
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var (slot, contract, facilityId) = await AdminBookingTests.CreateBookingSetup(db);
+        await AdminBookingTests.AssignManagerRole(db, facilityId);
+        contract.Contract.IsPublic = false;
+        await db.SaveChangesAsync(ct);
+        var body = new
+        {
+            guestName = "Walk-in Guest",
+            bookings = new[]
+            {
+                new
+                {
+                    slotId = slot.Id,
+                    slotContractId = contract.Id,
+                    name = "Guest",
+                },
+            },
+            extras = Array.Empty<object>(),
+        };
+        var options = await app.Client.GetAsync($"/admin/facility/{facilityId}/booking/options?slotId={slot.Id}", ct);
+        options.StatusCode.ShouldBe(HttpStatusCode.OK);
+        using var optionJson = JsonDocument.Parse(await options.Content.ReadAsStringAsync(ct));
+        optionJson.RootElement.GetProperty("contracts").GetArrayLength().ShouldBe(0);
+        (await PostAsync($"/admin/facility/{facilityId}/booking", body, ct)).StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        (await db.Booking.AnyAsync(x => x.FacilityId == facilityId, ct)).ShouldBeFalse();
+        contract.Contract.IsPublic = true;
+        await db.SaveChangesAsync(ct);
+        var (_, _, otherFacilityId) = await AdminBookingTests.CreateBookingSetup(db);
+        (await PostAsync($"/admin/facility/{otherFacilityId}/booking", body, ct)).StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+        var nonManager = await CreateCustomerAsync(db, ct);
+        (await SendAsAsync(nonManager.Id, HttpMethod.Post, $"/admin/facility/{facilityId}/booking", body, ct)).StatusCode.ShouldBe(HttpStatusCode.Forbidden);
+        (await PostAsync($"/admin/facility/{facilityId}/booking", body, ct)).StatusCode.ShouldBe(HttpStatusCode.OK);
+        var booking = await db.Booking.AsNoTracking().SingleAsync(x => x.FacilityId == facilityId, ct);
+        booking.UserId.ShouldBeNull();
+        booking.GuestEmail.ShouldBeNull();
+        booking.GuestPhone.ShouldBeNull();
+    }
+
     private async Task<User> CreateCustomerAsync(AppDbContext db, CancellationToken ct)
     {
         var id = Guid.NewGuid();

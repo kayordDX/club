@@ -676,6 +676,119 @@ export const adminContractDelete = async (facilityId: number, id: number, option
 	return { data, status: res.status, headers: res.headers } as adminContractDeleteResponse;
 };
 
+export type adminContractSetVouchersResponse204 = {
+	data: void;
+	status: 204;
+};
+
+export type adminContractSetVouchersResponse401 = {
+	data: void;
+	status: 401;
+};
+
+export type adminContractSetVouchersResponse403 = {
+	data: void;
+	status: 403;
+};
+
+export type adminContractSetVouchersResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
+
+export type adminContractSetVouchersResponseSuccess = adminContractSetVouchersResponse204 & {
+	headers: Headers;
+};
+export type adminContractSetVouchersResponseError = (
+	adminContractSetVouchersResponse401 | adminContractSetVouchersResponse403 | adminContractSetVouchersResponse500
+) & {
+	headers: Headers;
+};
+
+export type adminContractSetVouchersResponse = adminContractSetVouchersResponseSuccess | adminContractSetVouchersResponseError;
+
+export const getAdminContractSetVouchersUrl = (facilityId: number, id: number) => {
+	return `/admin/facility/${facilityId}/contract/${id}/vouchers`;
+};
+
+export const adminContractSetVouchers = async (
+	facilityId: number,
+	id: number,
+	adminContractSetVouchersRequest: AdminContractSetVouchersRequest,
+	options?: RequestInit
+): Promise<adminContractSetVouchersResponse> => {
+	const getHeaders = (h?: NonNullable<RequestInit["headers"]>): Record<string, string | readonly string[]> => {
+		if (!h) return {};
+		if (h instanceof Headers) return Object.fromEntries(h.entries());
+		if (Symbol.iterator in h) {
+			return Object.fromEntries(Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]));
+		}
+		const headers: Record<string, string | readonly string[]> = {};
+		for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+			if (value !== undefined) headers[name] = value;
+		}
+		return headers;
+	};
+	const res = await fetch(getAdminContractSetVouchersUrl(facilityId, id), {
+		...options,
+		method: "PUT",
+		headers: { "Content-Type": "application/json", ...getHeaders(options?.headers) },
+		body: JSON.stringify(adminContractSetVouchersRequest),
+	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: adminContractSetVouchersResponse["data"] = body ? JSON.parse(body) : undefined;
+	return { data, status: res.status, headers: res.headers } as adminContractSetVouchersResponse;
+};
+
+export type adminContractGetVouchersResponse200 = {
+	data: AdminContractVouchersDTO;
+	status: 200;
+};
+
+export type adminContractGetVouchersResponse401 = {
+	data: void;
+	status: 401;
+};
+
+export type adminContractGetVouchersResponse403 = {
+	data: void;
+	status: 403;
+};
+
+export type adminContractGetVouchersResponse500 = {
+	data: InternalErrorResponse;
+	status: 500;
+};
+
+export type adminContractGetVouchersResponseSuccess = adminContractGetVouchersResponse200 & {
+	headers: Headers;
+};
+export type adminContractGetVouchersResponseError = (
+	adminContractGetVouchersResponse401 | adminContractGetVouchersResponse403 | adminContractGetVouchersResponse500
+) & {
+	headers: Headers;
+};
+
+export type adminContractGetVouchersResponse = adminContractGetVouchersResponseSuccess | adminContractGetVouchersResponseError;
+
+export const getAdminContractGetVouchersUrl = (facilityId: number, id: number) => {
+	return `/admin/facility/${facilityId}/contract/${id}/vouchers`;
+};
+
+export const adminContractGetVouchers = async (facilityId: number, id: number, options?: RequestInit): Promise<adminContractGetVouchersResponse> => {
+	const res = await fetch(getAdminContractGetVouchersUrl(facilityId, id), {
+		...options,
+		method: "GET",
+	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: adminContractGetVouchersResponse["data"] = body ? JSON.parse(body) : {};
+	return { data, status: res.status, headers: res.headers } as adminContractGetVouchersResponse;
+};
+
 export type adminContractSearchMemberResponse200 = {
 	data: AdminMemberSearchResultDTO;
 	status: 200;
@@ -1654,11 +1767,6 @@ export type adminBookingAcceptPaymentResponse200 = {
 	status: 200;
 };
 
-export type adminBookingAcceptPaymentResponse400 = {
-	data: ErrorResponse;
-	status: 400;
-};
-
 export type adminBookingAcceptPaymentResponse401 = {
 	data: void;
 	status: 401;
@@ -1678,7 +1786,7 @@ export type adminBookingAcceptPaymentResponseSuccess = adminBookingAcceptPayment
 	headers: Headers;
 };
 export type adminBookingAcceptPaymentResponseError = (
-	adminBookingAcceptPaymentResponse400 | adminBookingAcceptPaymentResponse401 | adminBookingAcceptPaymentResponse403 | adminBookingAcceptPaymentResponse500
+	adminBookingAcceptPaymentResponse401 | adminBookingAcceptPaymentResponse403 | adminBookingAcceptPaymentResponse500
 ) & {
 	headers: Headers;
 };
@@ -1718,117 +1826,4 @@ export const adminBookingAcceptPayment = async (
 
 	const data: adminBookingAcceptPaymentResponse["data"] = body ? JSON.parse(body) : {};
 	return { data, status: res.status, headers: res.headers } as adminBookingAcceptPaymentResponse;
-};
-
-export type adminContractSetVouchersResponse204 = {
-	data: void;
-	status: 204;
-};
-
-export type adminContractSetVouchersResponse401 = {
-	data: void;
-	status: 401;
-};
-
-export type adminContractSetVouchersResponse403 = {
-	data: void;
-	status: 403;
-};
-
-export type adminContractSetVouchersResponse500 = {
-	data: InternalErrorResponse;
-	status: 500;
-};
-
-export type adminContractSetVouchersResponseSuccess = adminContractSetVouchersResponse204 & {
-	headers: Headers;
-};
-export type adminContractSetVouchersResponseError = (
-	adminContractSetVouchersResponse401 | adminContractSetVouchersResponse403 | adminContractSetVouchersResponse500
-) & {
-	headers: Headers;
-};
-
-export type adminContractSetVouchersResponse = adminContractSetVouchersResponseSuccess | adminContractSetVouchersResponseError;
-
-export const getAdminContractSetVouchersUrl = (facilityId: number, id: number) => {
-	return `/admin/facility/${facilityId}/contract/${id}/vouchers`;
-};
-
-export const adminContractSetVouchers = async (
-	facilityId: number,
-	id: number,
-	adminContractSetVouchersRequest: AdminContractSetVouchersRequest,
-	options?: RequestInit
-): Promise<adminContractSetVouchersResponse> => {
-	const getHeaders = (h?: NonNullable<RequestInit["headers"]>): Record<string, string | readonly string[]> => {
-		if (!h) return {};
-		if (h instanceof Headers) return Object.fromEntries(h.entries());
-		if (Symbol.iterator in h) {
-			return Object.fromEntries(Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]));
-		}
-		const headers: Record<string, string | readonly string[]> = {};
-		for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
-			if (value !== undefined) headers[name] = value;
-		}
-		return headers;
-	};
-	const res = await fetch(getAdminContractSetVouchersUrl(facilityId, id), {
-		...options,
-		method: "PUT",
-		headers: { "Content-Type": "application/json", ...getHeaders(options?.headers) },
-		body: JSON.stringify(adminContractSetVouchersRequest),
-	});
-
-	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-	const data: adminContractSetVouchersResponse["data"] = body ? JSON.parse(body) : undefined;
-	return { data, status: res.status, headers: res.headers } as adminContractSetVouchersResponse;
-};
-
-export type adminContractGetVouchersResponse200 = {
-	data: AdminContractVouchersDTO;
-	status: 200;
-};
-
-export type adminContractGetVouchersResponse401 = {
-	data: void;
-	status: 401;
-};
-
-export type adminContractGetVouchersResponse403 = {
-	data: void;
-	status: 403;
-};
-
-export type adminContractGetVouchersResponse500 = {
-	data: InternalErrorResponse;
-	status: 500;
-};
-
-export type adminContractGetVouchersResponseSuccess = adminContractGetVouchersResponse200 & {
-	headers: Headers;
-};
-export type adminContractGetVouchersResponseError = (
-	adminContractGetVouchersResponse401 | adminContractGetVouchersResponse403 | adminContractGetVouchersResponse500
-) & {
-	headers: Headers;
-};
-
-export type adminContractGetVouchersResponse = adminContractGetVouchersResponseSuccess | adminContractGetVouchersResponseError;
-
-export const getAdminContractGetVouchersUrl = (facilityId: number, id: number) => {
-	return `/admin/facility/${facilityId}/contract/${id}/vouchers`;
-};
-
-export const adminContractGetVouchers = async (facilityId: number, id: number, options?: RequestInit): Promise<adminContractGetVouchersResponse> => {
-	const res = await fetch(getAdminContractGetVouchersUrl(facilityId, id), {
-		...options,
-		method: "GET",
-	});
-
-	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-	const data: adminContractGetVouchersResponse["data"] = body ? JSON.parse(body) : {};
-	return { data, status: res.status, headers: res.headers } as adminContractGetVouchersResponse;
 };
