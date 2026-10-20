@@ -5,7 +5,7 @@
 	import type { ColumnDef, PaginationState, SortingState } from "@tanstack/svelte-table";
 	import { DataTable, createShadTable, renderSnippet, type DataTableFeatures } from "@kayord/ui/data-table";
 	import { Alert, AlertDialog, Badge, Button, Dialog, DropdownMenu, Input } from "@kayord/ui";
-	import { EllipsisVerticalIcon, PencilIcon, PlusIcon, SearchIcon, TicketIcon, Trash2Icon } from "@lucide/svelte";
+	import { EllipsisVerticalIcon, PencilIcon, PlusIcon, SearchIcon, SendIcon, TicketIcon, Trash2Icon } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
 	import { VoucherDiscountMode, VoucherRedemptionKind, type AdminVoucherCreateRequest, type AdminVoucherDTO, type AdminVoucherIssueRequest } from "$lib/api";
 	import { adminVoucherCreate, adminVoucherDelete, adminVoucherGetAll, adminVoucherIssue, adminVoucherUpdate } from "$lib/api/remote/admin.remote";
@@ -154,9 +154,9 @@
 				</Button>
 			{/snippet}
 		</DropdownMenu.Trigger>
-		<DropdownMenu.Content>
+		<DropdownMenu.Content class="w-35">
 			<DropdownMenu.Item onclick={() => openEdit(voucher)}><PencilIcon class="size-4" />Edit</DropdownMenu.Item>
-			<DropdownMenu.Item onclick={() => (sendTarget = voucher)}>Send voucher</DropdownMenu.Item>
+			<DropdownMenu.Item onclick={() => (sendTarget = voucher)}><SendIcon class="size-4" /> Send voucher</DropdownMenu.Item>
 			<DropdownMenu.Item disabled={voucher.isInUse} onclick={() => openDelete(voucher)}><Trash2Icon class="size-4" />Delete</DropdownMenu.Item>
 		</DropdownMenu.Content>
 	</DropdownMenu.Root>
