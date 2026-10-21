@@ -15,8 +15,8 @@
 
 	let slotCount = $state(1);
 	let slotContractEnabled = $state(false);
-	const available = $derived(slot.total - slot.booked);
-	const isUnavailable = $derived(available <= 0 || slot.isEnabled === false);
+	const available = $derived(Math.max(0, slot.total - slot.booked));
+	const isUnavailable = $derived(available <= 0 || !slot.isEnabled || !slot.isAvailable);
 
 	const formatTime = (datetime?: string | undefined | null) => {
 		if (!datetime) return "";
@@ -28,18 +28,18 @@
 	};
 </script>
 
-<Card.Root class={["w-full gap-0 p-0", isUnavailable && "pointer-events-none opacity-50"]} aria-disabled={isUnavailable}>
-	<Card.Header class="bg-muted/50 p-2 ">
-		<div class="flex items-center justify-start gap-4">
+<Card.Root class={["w-full min-w-0 gap-0 p-0", isUnavailable && "opacity-60"]} aria-disabled={isUnavailable}>
+	<Card.Header class="bg-muted/40 border-b p-4">
+		<div class="flex flex-wrap items-center justify-between gap-2">
 			<div class="flex items-center gap-1">
 				<ClockIcon class="text-muted-foreground size-4" />
-				<div class="font-bold">
+				<div class="text-base font-semibold tabular-nums">
 					{formatTime(slot.startDatetime)}
 					<span class="text-muted-foreground">-</span>
 					{formatTime(slot.endDatetime)}
 				</div>
 			</div>
-			<div class="flex items-center gap-1">
+			<div class="bg-background flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs">
 				<CircleDotIcon class="text-muted-foreground size-4" />
 				<div class="font-bold">
 					{slot.resourceName}
@@ -47,43 +47,72 @@
 			</div>
 		</div>
 	</Card.Header>
-	<Card.Content class="flex flex-wrap content-start gap-2 p-2">
-		{#if slot.total > 1}
-			{@const booked = slot.booked}
-			<div class="flex flex-col gap-1">
-				<div class="text-muted-foreground text-xs">Slots</div>
-				<div class="mb-1.5 flex grow flex-row items-center gap-1">
+	<Card.Content class="flex flex-wrap items-end justify-between gap-4 p-4">
+		<div class="flex w-full items-center justify-between gap-2">
+			<p class="text-muted-foreground text-xs">
+				{!slot.isEnabled
+					? "Slot unavailable"
+					: available === 0
+						? "Fully booked"
+						: !slot.isAvailable
+							? "Slot unavailable"
+							: `${available} of ${slot.total} available`}
+			</p>
+			{#if slot.total > 1}
+				<div class="flex flex-wrap items-center gap-1" aria-hidden="true">
 					{#each Array(available), i (i)}
 						<StatusDot.Root variant="success" />
 					{/each}
-					{#each Array(booked), i (i)}
+					{#each Array(slot.booked), i (i)}
 						<StatusDot.Root variant="error" />
 					{/each}
 				</div>
-			</div>
-		{/if}
+			{/if}
+		</div>
 
 		{#if slot.total > 1}
 			<div class="flex flex-col gap-1">
 				<div class="text-muted-foreground text-xs">Players</div>
 				<div class="flex items-center gap-1">
-					<Button size="icon" variant="outline" class="size-7" onclick={() => slotCount--} disabled={slotCount <= 1}>
+					<Button
+						size="icon"
+						variant="outline"
+						class="size-8"
+						aria-label="Fewer players"
+						onclick={() => slotCount--}
+						disabled={isUnavailable || slotCount <= 1}
+					>
 						<MinusIcon class="size-3" />
 					</Button>
-					<Input class="h-7 w-10 p-0 text-center" bind:value={slotCount} />
-					<Button size="icon" variant="outline" class="size-7" onclick={() => slotCount++} disabled={slotCount >= available}>
+					<Input
+						type="number"
+						min={1}
+						max={available}
+						aria-label="Number of players"
+						disabled={isUnavailable}
+						class="h-8 w-12 p-0 text-center"
+						bind:value={slotCount}
+					/>
+					<Button
+						size="icon"
+						variant="outline"
+						class="size-8"
+						aria-label="More players"
+						onclick={() => slotCount++}
+						disabled={isUnavailable || slotCount >= available}
+					>
 						<PlusIcon class="size-3" />
 					</Button>
 				</div>
 			</div>
 		{/if}
-		<div class="flex h-full flex-col items-center justify-center gap-2">
+		<div class="ml-auto flex flex-col items-center justify-center gap-2">
 			<div class="flex flex-col gap-1">
 				<div class="text-muted-foreground text-center text-xs">Price</div>
 				<Popover.Root bind:open={slotContractEnabled}>
 					<Popover.Trigger>
 						{#snippet child({ props })}
-							<Button {...props} variant="ghost" size="icon" class="size-8">
+							<Button {...props} variant="ghost" size="icon" class="size-8" aria-label="View prices">
 								<CircleQuestionMark class="text-primary size-4" />
 							</Button>
 						{/snippet}
@@ -119,8 +148,11 @@
 		</div>
 		<div class="flex justify-end gap-2">
 			<div class="flex flex-col gap-1">
-				<div class="text-muted-foreground text-center text-xs">Action</div>
-				<Button variant="outline" onclick={() => onBook(slot.id, slotCount, selectedDate)} disabled={available <= 0}>
+				<div class="text-muted-foreground text-center text-xs">Booking</div>
+				<Button
+					onclick={() => onBook(slot.id, slotCount, selectedDate)}
+					disabled={isUnavailable || !Number.isInteger(slotCount) || slotCount < 1 || slotCount > available}
+				>
 					<ChevronRightIcon /> Book
 				</Button>
 			</div>

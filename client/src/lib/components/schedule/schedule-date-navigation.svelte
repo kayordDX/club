@@ -26,7 +26,7 @@
 		<Popover.Root bind:open={datePickerOpen}>
 			<Popover.Trigger>
 				{#snippet child({ props })}
-					<Button variant="outline" class="w-70 justify-start text-start font-normal" aria-label="Select date" {...props}>
+					<Button variant="outline" class="justify-start text-start font-normal sm:w-70" aria-label="Select date" {...props}>
 						<CalendarIcon class="me-2 size-4" />
 						{formatter.format(value.toDate(getLocalTimeZone()))}
 					</Button>
