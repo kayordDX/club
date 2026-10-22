@@ -2,8 +2,8 @@
 	import { Button, Card, Badge, StatusDot } from "@kayord/ui";
 	import type { ResolvedPathname } from "$app/types";
 	import { CircleDotIcon, CirclePlusIcon, ClockIcon, PencilIcon } from "@lucide/svelte";
-	import { type AdminSlotGetAllResponse } from "$lib/api";
-	import { statusBadgeVariant, statusLabel } from "$lib/booking/status";
+	import { type AdminSlotGetAllResponse } from "#lib/api/index.js";
+	import { statusBadgeVariant, statusLabel } from "#lib/booking/status.js";
 
 	type SlotCreationAction = (..._args: [string, string]) => void;
 	type Props = {

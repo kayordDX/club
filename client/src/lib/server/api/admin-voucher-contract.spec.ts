@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { VoucherDiscountMode, VoucherRedemptionKind } from "$lib/api";
+import { VoucherDiscountMode, VoucherRedemptionKind } from "#lib/api/index.js";
 import { AdminVoucherCreateBody, AdminVoucherIssueBody, AdminVoucherUpdateBody } from "./schemas/admin";
 
 describe("admin voucher issue remote contract", () => {

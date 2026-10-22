@@ -1,11 +1,11 @@
-// GENERATED from swagger.json by tools/gen-remote.mjs — do not edit manually.
+// GENERATED from swagger.json by scripts/gen-remote.mjs — do not edit manually.
 // Remote functions (query/command) wrapping the orval-generated server transport.
 // Validation schemas come from orval's zod client output.
 
 import { query, command } from "$app/server";
 import { z } from "zod";
-import * as api from "$lib/server/api/generated/payment";
-import { PaymentCheckoutBody, PaymentInitiateBody, PaymentVoucherBody } from "$lib/server/api/schemas/payment";
+import * as api from "#lib/server/api/generated/payment.js";
+import { PaymentCheckoutBody, PaymentInitiateBody, PaymentVoucherBody } from "#lib/server/api/schemas/payment.js";
 
 export const paymentVouchers = query(z.number().int(), async (bookingId) => api.paymentVouchers(bookingId));
 export const paymentVoucher = command(PaymentVoucherBody, async (body) => api.paymentVoucher(body));

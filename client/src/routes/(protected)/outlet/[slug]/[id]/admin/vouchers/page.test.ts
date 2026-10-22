@@ -1,15 +1,15 @@
 import { render } from "svelte/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import VouchersPage from "./+page.svelte";
-import { VoucherDiscountMode, VoucherRedemptionKind, type AdminVoucherDTO } from "$lib/api";
+import { VoucherDiscountMode, VoucherRedemptionKind, type AdminVoucherDTO } from "#lib/api/index.js";
 
 const mocks = vi.hoisted(() => ({
 	query: { isPending: false, isError: false, isFetching: false, data: [] as unknown[], refetch: vi.fn() },
 	invalidateQueries: vi.fn(),
 }));
-vi.mock("$app/environment", () => ({ browser: false }));
+vi.mock("$app/env", () => ({ browser: false }));
 vi.mock("$app/state", () => ({ page: { params: { slug: "test-club", id: "7" } } }));
-vi.mock("$lib/api/remote/admin.remote", () => ({
+vi.mock("#lib/api/remote/admin.remote.js", () => ({
 	adminVoucherGetAll: vi.fn(),
 	adminVoucherCreate: vi.fn(),
 	adminVoucherUpdate: vi.fn(),
@@ -26,7 +26,7 @@ vi.mock("@tanstack/svelte-query", () => ({
 }));
 
 import { createQuery } from "@tanstack/svelte-query";
-import { adminVoucherGetAll } from "$lib/api/remote/admin.remote";
+import { adminVoucherGetAll } from "#lib/api/remote/admin.remote.js";
 
 beforeEach(() => {
 	mocks.query.isPending = false;

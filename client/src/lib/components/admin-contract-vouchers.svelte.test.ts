@@ -2,7 +2,7 @@ import { expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { page } from "vitest/browser";
 import AdminContractVouchers from "./admin-contract-vouchers.svelte";
-import { VoucherRedemptionKind, type AdminContractVouchersDTO } from "$lib/api/generated/api.schemas";
+import { VoucherRedemptionKind, type AdminContractVouchersDTO } from "#lib/api/generated/api.schemas.js";
 
 const details: AdminContractVouchersDTO = {
 	vouchers: [{ voucherId: 1, amount: 10 }],
@@ -50,7 +50,7 @@ it("validates positive whole units and credit precision", async () => {
 	for (const amount of ["", "0", "-2", "1.5"]) {
 		await page.getByLabelText("Number of units").fill(amount);
 		await page.getByRole("button", { name: "Save vouchers" }).click();
-		await expect.element(page.getByRole("alert")).toHaveTextContent("Enter positive whole units/uses");
+		await expect.poll(() => page.getByRole("alert").element().textContent?.replaceAll("\u00a0", " ")).toContain("Enter positive whole units/uses");
 	}
 	await page.getByLabelText("Voucher 1", { exact: true }).click();
 	await page.getByRole("option", { name: "Golf credit", exact: true }).click();
@@ -77,7 +77,7 @@ it("preserves input on rejection and prevents duplicate submission", async () =>
 	await expect.element(page.getByRole("button", { name: "Cancel" })).toBeDisabled();
 	await expect.element(page.getByLabelText("Number of units")).toBeDisabled();
 	rejectSave(new Error("Server rejection"));
-	await expect.element(page.getByRole("alert")).toHaveTextContent("Unable to save contract vouchers");
+	await expect.poll(() => page.getByRole("alert").element().textContent?.replaceAll("\u00a0", " ")).toContain("Unable to save contract vouchers");
 	await expect.element(page.getByLabelText("Number of units")).toHaveValue("7");
 	await page.getByRole("button", { name: "Save vouchers" }).click();
 	expect(onsave).toHaveBeenCalledTimes(2);

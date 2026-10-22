@@ -3,17 +3,17 @@
 	import { resolve } from "$app/paths";
 	import { toast } from "svelte-sonner";
 	import { createMutation, useQueryClient } from "@tanstack/svelte-query";
-	import { BookingStatusEnum, type AdminBookingUpdateRequest } from "$lib/api";
-	import { adminBookingGet, adminBookingGetPath, adminBookingUpdate, adminBookingUpdateStatus, adminSlotGetAll } from "$lib/api/remote/admin.remote";
-	import { slotGetAll } from "$lib/api/remote/slot.remote";
-	import { statusLabel } from "$lib/booking/status";
-	import { getBookingPayUrl } from "$lib/booking/payUrl";
-	import type { BookingFormSubmitValues } from "$lib/booking/schema";
-	import PageHeading from "$lib/components/PageHeading.svelte";
-	import BookingDetails from "$lib/components/booking/booking-details.svelte";
-	import BookingStatusControl from "$lib/components/booking/booking-status-control.svelte";
-	import AdminBookingEditor from "$lib/components/booking/admin-booking-editor.svelte";
-	import AdminBookingPayments from "$lib/components/admin-booking-payments.svelte";
+	import { BookingStatusEnum, type AdminBookingUpdateRequest } from "#lib/api/index.js";
+	import { adminBookingGet, adminBookingGetPath, adminBookingUpdate, adminBookingUpdateStatus, adminSlotGetAll } from "#lib/api/remote/admin.remote.js";
+	import { slotGetAll } from "#lib/api/remote/slot.remote.js";
+	import { statusLabel } from "#lib/booking/status.js";
+	import { getBookingPayUrl } from "#lib/booking/payUrl.js";
+	import type { BookingFormSubmitValues } from "#lib/booking/schema.js";
+	import PageHeading from "#lib/components/PageHeading.svelte";
+	import BookingDetails from "#lib/components/booking/booking-details.svelte";
+	import BookingStatusControl from "#lib/components/booking/booking-status-control.svelte";
+	import AdminBookingEditor from "#lib/components/booking/admin-booking-editor.svelte";
+	import AdminBookingPayments from "#lib/components/admin-booking-payments.svelte";
 	import { Alert, Button } from "@kayord/ui";
 	import { BookIcon, ChevronLeftIcon, PencilIcon } from "@lucide/svelte";
 
@@ -25,9 +25,11 @@
 	const pathRequest = adminBookingGetPath({ facilityId, id: bookingId });
 	const initialPath = await pathRequest.catch(() => undefined);
 	const path = $derived(pathRequest.current ?? initialPath);
-	const listHref = resolve(`/outlet/${page.params.slug}/${page.params.id}/admin/bookings`);
-	const returnUrl = resolve(`/outlet/${page.params.slug}/${page.params.id}/admin/bookings/${bookingId}`);
+	const listHref = resolve(`outlet/${page.params.slug}/${page.params.id}/admin/bookings`);
+	const returnUrl = resolve(`outlet/${page.params.slug}/${page.params.id}/admin/bookings/${bookingId}`);
+
 	const customerPayUrl = $derived(path && booking.userId ? getBookingPayUrl(bookingId, path, booking.slotContractBookings?.length ?? 0) : undefined);
+
 	const slot = $derived(booking.slotContractBookings?.[0]?.slotContract?.slot);
 	const slotId = $derived(slot?.id ?? "");
 	let editing = $state(false);
@@ -47,6 +49,7 @@
 		refreshing = true;
 		try {
 			const dates = [...new Set([...affectedDates, ...(slot ? [slot.startDatetime.slice(0, 10)] : [])])];
+
 			const results = await Promise.allSettled([
 				request.refresh(),
 				pathRequest.refresh(),
@@ -54,6 +57,7 @@
 				queryClient.invalidateQueries({ queryKey: ["admin-slots", facilityId] }),
 				queryClient.invalidateQueries({ queryKey: ["admin-booking-options", facilityId] }),
 				...(refreshPayments ? [queryClient.invalidateQueries({ queryKey: ["admin-booking-payments", facilityId, bookingId] })] : []),
+
 				...dates.flatMap((day) => {
 					const date = `${day}T00:00:00.000Z`;
 					return [adminSlotGetAll({ facilityId, params: { date } }).refresh(), slotGetAll({ facilityId, date }).refresh()];
@@ -90,7 +94,9 @@
 				})),
 				extras: extras.map((extra) => ({ extraId: extra.id, amount: extra.amount })),
 			});
+
 			affectedDates = [...new Set([...(slot ? [slot.startDatetime.slice(0, 10)] : []), date])];
+
 			editing = false;
 			toast.success("Booking updated");
 			await refreshBooking();
@@ -125,6 +131,7 @@
 			<Button disabled={refreshing} onclick={() => refreshBooking().catch(() => undefined)}>Refresh booking</Button>
 		</Alert.Root>
 	{/if}
+
 	<BookingDetails {booking} {path} showPlayers={!editing}>
 		{#snippet statusActions()}
 			<BookingStatusControl status={booking.bookingStatusId as BookingStatusEnum} disabled={busy || editing} onChange={changeStatus} />
@@ -147,6 +154,7 @@
 		{#if saveError}
 			<Alert.Root variant="destructive"><Alert.Title>Changes not saved</Alert.Title><Alert.Description>{saveError}</Alert.Description></Alert.Root>
 		{/if}
+
 		<AdminBookingEditor {booking} {facilityId} backHref={listHref} {busy} onCancel={() => (editing = false)} onSave={handleSubmit} />
 	{/if}
 </div>

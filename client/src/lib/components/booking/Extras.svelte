@@ -2,8 +2,8 @@
 	import { Button, Card, Command, Table } from "@kayord/ui";
 	import { CirclePlusIcon, TrashIcon } from "@lucide/svelte";
 
-	import { extraGetFacility } from "$lib/api/remote/extra.remote";
-	import type { BookingExtraOption, SelectedExtra } from "$lib/booking/schema";
+	import { extraGetFacility } from "#lib/api/remote/extra.remote.js";
+	import type { BookingExtraOption, SelectedExtra } from "#lib/booking/schema.js";
 	import ExtrasAmount from "./ExtrasAmount.svelte";
 
 	let open = $state(false);

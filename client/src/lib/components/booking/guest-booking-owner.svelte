@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button } from "@kayord/ui";
-	import { createAppForm } from "$lib/components/Form";
+	import { createAppForm } from "#lib/components/Form/index.js";
 	import { z } from "zod";
 
 	let { onselect }: { onselect: (_guest: { guestName: string; guestEmail: string | null; guestPhone: string | null }) => void } = $props();

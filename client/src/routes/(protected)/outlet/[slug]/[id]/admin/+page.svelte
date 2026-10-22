@@ -5,9 +5,7 @@
 	import { Loader } from "@kayord/ui";
 
 	$effect(() => {
-		goto(resolve(`/outlet/${page.params.slug}/${page.params.id}/admin/bookings`), {
-			replaceState: true,
-		});
+		goto(resolve(`outlet/${page.params.slug}/${page.params.id}/admin/bookings`), { replace: true });
 	});
 </script>
 

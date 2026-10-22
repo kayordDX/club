@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button, Input, Popover, StatusDot, Table } from "@kayord/ui";
-	import { type SlotGetAllResponse } from "$lib/api";
-	import { slotGetContracts } from "$lib/api/remote/slot.remote";
+	import { type SlotGetAllResponse } from "#lib/api/index.js";
+	import { slotGetContracts } from "#lib/api/remote/slot.remote.js";
 	import { Card } from "@kayord/ui";
 	import { ChevronRightIcon, CircleDotIcon, CircleQuestionMark, ClockIcon, MinusIcon, PlusIcon } from "@lucide/svelte";
 

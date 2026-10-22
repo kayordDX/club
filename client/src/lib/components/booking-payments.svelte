@@ -2,11 +2,11 @@
 	import { browser } from "$app/env";
 	import { Alert, Button } from "@kayord/ui";
 	import { createMutation, createQuery } from "@tanstack/svelte-query";
-	import { paymentGetBooking, paymentInitiate, paymentVoucher, paymentVouchers } from "$lib/api/remote/payment.remote";
-	import type { BookingDTO, FacilityPaymentMethodsResponse, PaymentInitiateRequest, PaymentVoucherRequest } from "$lib/api";
-	import { isActiveReservation } from "$lib/booking/status";
-	import { rememberPaymentReturn } from "$lib/booking/payment-return-context";
-	import { paymentErrorMessage, paymentMessage, validatePaymentAmount } from "$lib/booking/payments";
+	import { paymentGetBooking, paymentInitiate, paymentVoucher, paymentVouchers } from "#lib/api/remote/payment.remote.js";
+	import type { BookingDTO, FacilityPaymentMethodsResponse, PaymentInitiateRequest, PaymentVoucherRequest } from "#lib/api/index.js";
+	import { isActiveReservation } from "#lib/booking/status.js";
+	import { rememberPaymentReturn } from "#lib/booking/payment-return-context.js";
+	import { paymentErrorMessage, paymentMessage, validatePaymentAmount } from "#lib/booking/payments.js";
 	import VoucherCard from "./voucher-card.svelte";
 	import BookingPaymentDetails from "./booking-payment-details.svelte";
 

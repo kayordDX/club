@@ -3,10 +3,10 @@
 	import type { ResolvedPathname } from "$app/types";
 	import { Alert, Button } from "@kayord/ui";
 	import { createMutation, createQuery } from "@tanstack/svelte-query";
-	import { adminBookingGetPayments, adminBookingAcceptPayment } from "$lib/api/remote/admin.remote";
-	import type { BookingDTO } from "$lib/api";
-	import { isActiveReservation } from "$lib/booking/status";
-	import { paymentErrorMessage, validatePaymentAmount } from "$lib/booking/payments";
+	import { adminBookingGetPayments, adminBookingAcceptPayment } from "#lib/api/remote/admin.remote.js";
+	import type { BookingDTO } from "#lib/api/index.js";
+	import { isActiveReservation } from "#lib/booking/status.js";
+	import { paymentErrorMessage, validatePaymentAmount } from "#lib/booking/payments.js";
 	import BookingPaymentDetails from "./booking-payment-details.svelte";
 
 	let {

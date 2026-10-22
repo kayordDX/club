@@ -1,4 +1,4 @@
-import { VoucherRedemptionKind, type BookingVoucherDTO, type PaymentVoucherRequest, type VoucherTargetDTO } from "$lib/api";
+import { VoucherRedemptionKind, type BookingVoucherDTO, type PaymentVoucherRequest, type VoucherTargetDTO } from "#lib/api/index.js";
 import { formatCurrency } from "./format";
 
 export function paymentErrorMessage(cause: unknown, fallback: string): string {

@@ -1,10 +1,10 @@
-// GENERATED from swagger.json by tools/gen-remote.mjs — do not edit manually.
+// GENERATED from swagger.json by scripts/gen-remote.mjs — do not edit manually.
 // Remote functions (query/command) wrapping the orval-generated server transport.
 // Validation schemas come from orval's zod client output.
 
 import { query, command } from "$app/server";
 import { z } from "zod";
-import * as api from "$lib/server/api/generated/admin";
+import * as api from "#lib/server/api/generated/admin.js";
 import {
 	AdminBookingAcceptPaymentBody,
 	AdminBookingCreateBody,
@@ -25,7 +25,7 @@ import {
 	AdminVoucherCreateBody,
 	AdminVoucherIssueBody,
 	AdminVoucherUpdateBody,
-} from "$lib/server/api/schemas/admin";
+} from "#lib/server/api/schemas/admin.js";
 
 export const adminVoucherUpdate = command(
 	z.object({ facilityId: z.number().int(), id: z.number().int(), body: AdminVoucherUpdateBody }),

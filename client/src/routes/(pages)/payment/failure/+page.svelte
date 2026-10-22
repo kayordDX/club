@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from "$app/state";
-	import PaymentResultCard from "$lib/components/payment-result-card.svelte";
+	import PaymentResultCard from "#lib/components/payment-result-card.svelte";
 
 	const transactionId = $derived(page.url.searchParams.get("transactionId") ?? "");
 	const requestedBookingId = $derived(page.url.searchParams.has("bookingId") ? Number(page.url.searchParams.get("bookingId")) : undefined);

@@ -67,7 +67,7 @@ test("server preload captures caught errors and uncaught exceptions without hidi
 				resolve("e2e/fixtures/runtime-errors.mjs"),
 				"--input-type=module",
 				"-e",
-				'console.warn("allowed warning"); console.error(new Error("probe-caught-server")); throw new Error("probe-uncaught-server");',
+				'console.warn("allowed warning"); console.error("\\u001b[31m403 GET /expected-denial\\u001b[0m"); console.error(new Error("probe-caught-server")); throw new Error("probe-uncaught-server");',
 			],
 			{ encoding: "utf8", env: { ...process.env, PAYMENT_ERROR_LOG: log } }
 		);

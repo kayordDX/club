@@ -2,7 +2,7 @@ import { expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { page } from "vitest/browser";
 import AdminVoucherForm from "./admin-voucher-form.svelte";
-import { VoucherDiscountMode, VoucherRedemptionKind, type AdminVoucherDTO } from "$lib/api/generated/api.schemas";
+import { VoucherDiscountMode, VoucherRedemptionKind, type AdminVoucherDTO } from "#lib/api/generated/api.schemas.js";
 
 const existingVoucher: AdminVoucherDTO = {
 	id: 5,

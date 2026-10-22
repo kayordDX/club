@@ -2,12 +2,12 @@
 	import { page } from "$app/state";
 	import { goto } from "$app/navigation";
 	import { resolve } from "$app/paths";
-	import PageHeading from "$lib/components/PageHeading.svelte";
-	import AdminContractVouchers from "$lib/components/admin-contract-vouchers.svelte";
-	import { adminContractGetVouchers, adminContractSetVouchers } from "$lib/api/remote/admin.remote";
-	import { adminContractCreate, adminContractDelete, adminContractGetAll, adminContractUpdate } from "$lib/api/remote/admin.remote";
-	import type { AdminContractDTO } from "$lib/api";
-	import { formatCurrency } from "$lib/booking/format";
+	import PageHeading from "#lib/components/PageHeading.svelte";
+	import AdminContractVouchers from "#lib/components/admin-contract-vouchers.svelte";
+	import { adminContractGetVouchers, adminContractSetVouchers } from "#lib/api/remote/admin.remote.js";
+	import { adminContractCreate, adminContractDelete, adminContractGetAll, adminContractUpdate } from "#lib/api/remote/admin.remote.js";
+	import type { AdminContractDTO } from "#lib/api/index.js";
+	import { formatCurrency } from "#lib/booking/format.js";
 	import { type ColumnDef } from "@tanstack/svelte-table";
 	import { type CalendarDate, DateFormatter, getLocalTimeZone, parseDate, today } from "@internationalized/date";
 	import { DataTable, createShadTable, renderSnippet, type DataTableFeatures } from "@kayord/ui/data-table";
@@ -35,7 +35,7 @@
 	let isDeleting = $state(false);
 
 	const manageMembers = (contract: AdminContractDTO) => {
-		goto(resolve(`/outlet/${page.params.slug}/${facilityId}/admin/contracts/${contract.id}/members`));
+		goto(resolve(`outlet/${page.params.slug}/${facilityId}/admin/contracts/${contract.id}/members`));
 	};
 
 	type FormState = {
@@ -187,10 +187,29 @@
 {#snippet actionsCell(contract: AdminContractDTO)}
 	<Actions
 		actions={[
-			{ icon: UsersIcon, text: "Manage members", action: () => manageMembers(contract) },
-			{ icon: TicketIcon, text: "Manage vouchers", action: () => (voucherTarget = contract) },
-			{ icon: PencilIcon, text: "Edit", action: () => openEdit(contract) },
-			{ icon: Trash2Icon, text: "Delete", action: () => (deleteTarget = contract) },
+			{
+				icon: UsersIcon,
+				text: "Manage members",
+				action: () => manageMembers(contract),
+			},
+
+			{
+				icon: TicketIcon,
+				text: "Manage vouchers",
+				action: () => (voucherTarget = contract),
+			},
+
+			{
+				icon: PencilIcon,
+				text: "Edit",
+				action: () => openEdit(contract),
+			},
+
+			{
+				icon: Trash2Icon,
+				text: "Delete",
+				action: () => (deleteTarget = contract),
+			},
 		]}
 	/>
 {/snippet}
@@ -283,6 +302,7 @@
 
 			<Dialog.Footer>
 				<Button type="button" variant="outline" onclick={() => (dialogOpen = false)} disabled={isSaving}>Cancel</Button>
+
 				<Button type="submit" disabled={isSaving}>{isSaving ? "Saving..." : editing ? "Save changes" : "Create"}</Button>
 			</Dialog.Footer>
 		</form>

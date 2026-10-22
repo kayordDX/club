@@ -1,5 +1,5 @@
 <script lang="ts">
-	import AuthCheck from "$lib/components/check/AuthCheck.svelte";
+	import AuthCheck from "#lib/components/check/AuthCheck.svelte";
 	let { children } = $props();
 </script>
 

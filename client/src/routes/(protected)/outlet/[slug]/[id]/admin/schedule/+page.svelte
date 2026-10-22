@@ -5,11 +5,11 @@
 	import { getLocalTimeZone, parseDate, today } from "@internationalized/date";
 	import { Button, Skeleton } from "@kayord/ui";
 	import { BookIcon } from "@lucide/svelte";
-	import { adminSlotGetAll } from "$lib/api/remote/admin.remote";
-	import { openAdminBookingCreation } from "$lib/booking/admin-creation-navigation";
-	import PageBoundary from "$lib/components/PageBoundary.svelte";
-	import ScheduleDateNavigation from "$lib/components/schedule/schedule-date-navigation.svelte";
-	import Slots from "$lib/components/schedule/slots.svelte";
+	import { adminSlotGetAll } from "#lib/api/remote/admin.remote.js";
+	import { openAdminBookingCreation } from "#lib/booking/admin-creation-navigation.js";
+	import PageBoundary from "#lib/components/PageBoundary.svelte";
+	import ScheduleDateNavigation from "#lib/components/schedule/schedule-date-navigation.svelte";
+	import Slots from "#lib/components/schedule/slots.svelte";
 
 	const facilityId = $derived(Number(page.params.id) || 0);
 	const params = useSearchParams(createSearchParamsSchema({ date: { type: "string", default: today(getLocalTimeZone()).toString() } }), { noScroll: true });
@@ -20,8 +20,15 @@
 			return today(getLocalTimeZone());
 		}
 	});
-	const request = $derived(adminSlotGetAll({ facilityId, params: { date: selectedDate.toDate("UTC").toISOString() } }));
-	const bookingsHref = $derived(resolve(`/outlet/${page.params.slug}/${page.params.id}/admin/bookings`));
+
+	const request = $derived(
+		adminSlotGetAll({
+			facilityId,
+			params: { date: selectedDate.toDate("UTC").toISOString() },
+		})
+	);
+
+	const bookingsHref = $derived(resolve(`outlet/${page.params.slug}/${page.params.id}/admin/bookings`));
 
 	const createBooking = (slotId: string, date: string) =>
 		openAdminBookingCreation({

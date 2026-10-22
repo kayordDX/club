@@ -2,13 +2,13 @@ import { beforeEach, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { page } from "vitest/browser";
 import PaymentResultCard from "./testing/payment-result-harness.svelte";
-import { rememberPaymentReturn } from "$lib/booking/payment-return-context";
-import { formatCurrency } from "$lib/booking/format";
+import { rememberPaymentReturn } from "#lib/booking/payment-return-context.js";
+import { formatCurrency } from "#lib/booking/format.js";
 
 const api = vi.hoisted(() => ({ admin: vi.fn(), customer: vi.fn(), booking: vi.fn(), path: vi.fn() }));
-vi.mock("$lib/api/remote/admin.remote", () => ({ adminBookingGetPayments: api.admin }));
-vi.mock("$lib/api/remote/payment.remote", () => ({ paymentGetBooking: api.customer }));
-vi.mock("$lib/api/remote/booking.remote", () => ({ bookingGet: api.booking, bookingGetPath: api.path }));
+vi.mock("#lib/api/remote/admin.remote.js", () => ({ adminBookingGetPayments: api.admin }));
+vi.mock("#lib/api/remote/payment.remote.js", () => ({ paymentGetBooking: api.customer }));
+vi.mock("#lib/api/remote/booking.remote.js", () => ({ bookingGet: api.booking, bookingGetPath: api.path }));
 function remote<T>(value: T) {
 	return Object.assign(Promise.resolve(value), { refresh: () => Promise.resolve() });
 }
@@ -39,7 +39,14 @@ beforeEach(() => {
 });
 it("shows remaining balance and another payment method after partial success", async () => {
 	render(PaymentResultCard, { balance, payUrl: "/bookings" });
-	await expect.element(page.getByText(/Payment received\. Remaining balance/)).toHaveTextContent(formatCurrency(150).replaceAll("\u00a0", " "));
+	await expect
+		.poll(() =>
+			page
+				.getByText(/Payment received\. Remaining balance/)
+				.element()
+				.textContent?.replaceAll("\u00a0", " ")
+		)
+		.toContain(formatCurrency(150).replaceAll("\u00a0", " "));
 	await expect.element(page.getByRole("link", { name: "Pay remaining balance / choose another method" })).toBeVisible();
 	await expect.element(page.getByText("Booking fully paid", { exact: true })).not.toBeInTheDocument();
 });
@@ -74,7 +81,7 @@ it.each(["missing transaction", "different booking", "denied"] as const)("does n
 		api.admin.mockImplementation(() => Object.assign(Promise.resolve(associated), { refresh: () => Promise.reject(new Error("Forbidden")) }));
 	else api.admin.mockImplementation(() => remote(reason === "different booking" ? { ...associated, bookingId: 2 } : balance));
 	render(PaymentResultCard, { transactionId: "tx", lookup: true });
-	await expect.element(page.getByRole("alert")).toHaveTextContent(/Unable to verify this payment and booking/);
+	await expect.poll(() => page.getByRole("alert").element().textContent?.replaceAll("\u00a0", " ")).toContain("Unable to verify this payment and booking");
 	await expect.element(page.getByRole("link", { name: "Back to booking management" })).not.toBeInTheDocument();
 	await expect.element(page.getByRole("link", { name: "Manage remaining balance" })).not.toBeInTheDocument();
 	expect(api.customer).not.toHaveBeenCalled();

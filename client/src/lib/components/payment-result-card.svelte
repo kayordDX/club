@@ -5,13 +5,13 @@
 	import { Button, Card } from "@kayord/ui";
 	import { CircleSlashIcon, CircleXIcon } from "@lucide/svelte";
 	import { createQuery } from "@tanstack/svelte-query";
-	import type { BookingPaymentDTO } from "$lib/api";
-	import { adminBookingGetPayments } from "$lib/api/remote/admin.remote";
-	import { paymentGetBooking } from "$lib/api/remote/payment.remote";
-	import { bookingGet, bookingGetPath } from "$lib/api/remote/booking.remote";
-	import { getBookingPayUrl } from "$lib/booking/payUrl";
-	import { paymentMessage } from "$lib/booking/payments";
-	import { getPaymentReturn, matchesPaymentReturn, type PaymentReturnContext } from "$lib/booking/payment-return-context";
+	import type { BookingPaymentDTO } from "#lib/api/index.js";
+	import { adminBookingGetPayments } from "#lib/api/remote/admin.remote.js";
+	import { paymentGetBooking } from "#lib/api/remote/payment.remote.js";
+	import { bookingGet, bookingGetPath } from "#lib/api/remote/booking.remote.js";
+	import { getBookingPayUrl } from "#lib/booking/payUrl.js";
+	import { paymentMessage } from "#lib/booking/payments.js";
+	import { getPaymentReturn, matchesPaymentReturn, type PaymentReturnContext } from "#lib/booking/payment-return-context.js";
 
 	let {
 		balance,
@@ -96,8 +96,9 @@
 		{:else if outcome === "success" && currentBalance && !currentBalance.isPaid && currentPayUrl}
 			<Button href={currentPayUrl}>{adminReturn ? "Manage remaining balance" : "Pay remaining balance / choose another method"}</Button>
 		{/if}
-		<Button href={adminReturn ?? resolve("/bookings")} variant="outline"
-			>{adminReturn ? "Back to booking management" : outcome === "success" ? "View My Bookings" : "Back to Bookings"}</Button
-		>
+
+		<Button href={adminReturn ?? resolve("bookings")} variant="outline">
+			{adminReturn ? "Back to booking management" : outcome === "success" ? "View My Bookings" : "Back to Bookings"}
+		</Button>
 	</Card.Content>
 </Card.Root>

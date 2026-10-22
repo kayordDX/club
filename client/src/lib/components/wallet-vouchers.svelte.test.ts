@@ -2,11 +2,11 @@ import { beforeEach, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { page } from "vitest/browser";
 import Harness from "./testing/wallet-vouchers-harness.svelte";
-import { VoucherDiscountMode, VoucherRedemptionKind, type WalletVoucherDTO } from "$lib/api/generated";
+import { VoucherDiscountMode, VoucherRedemptionKind, type WalletVoucherDTO } from "#lib/api/generated/index.js";
 
 const api = vi.hoisted(() => ({ vouchers: vi.fn(), transfer: vi.fn() }));
 vi.mock("$app/env", () => ({ browser: true, dev: true, building: false, version: "test" }));
-vi.mock("$lib/api/remote/wallet.remote", () => ({ walletVouchers: api.vouchers, walletTransfer: api.transfer }));
+vi.mock("#lib/api/remote/wallet.remote.js", () => ({ walletVouchers: api.vouchers, walletTransfer: api.transfer }));
 const grant: WalletVoucherDTO = {
 	grantId: "grant-1",
 	voucherId: 1,

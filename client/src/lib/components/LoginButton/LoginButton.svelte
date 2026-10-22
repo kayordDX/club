@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button } from "@kayord/ui";
 	import { page } from "$app/state";
-	import { useUser } from "$lib/auth";
+	import { useUser } from "#lib/auth.js";
 
 	let { returnUrl }: { returnUrl?: string } = $props();
 

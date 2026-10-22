@@ -3,25 +3,25 @@
 	import { resolve } from "$app/paths";
 	import { goto } from "$app/navigation";
 
-	import { BookingStatusEnum } from "$lib/api";
-	import { bookingGet, bookingGetPath, bookingUpdate, bookingGetUser } from "$lib/api/remote/booking.remote";
-	import { getBookingPayUrl } from "$lib/booking/payUrl";
-	import { formatDate } from "$lib/booking/format";
-	import BookingBreadcrumbs from "$lib/components/BookingBreadcrumbs.svelte";
-	import BookingDetailsForm from "$lib/components/booking/BookingDetailsForm.svelte";
-	import CountdownTimer from "$lib/components/CountdownTimer.svelte";
-	import PageHeading from "$lib/components/PageHeading.svelte";
+	import { BookingStatusEnum } from "#lib/api/index.js";
+	import { bookingGet, bookingGetPath, bookingUpdate, bookingGetUser } from "#lib/api/remote/booking.remote.js";
+	import { getBookingPayUrl } from "#lib/booking/payUrl.js";
+	import { formatDate } from "#lib/booking/format.js";
+	import BookingBreadcrumbs from "#lib/components/BookingBreadcrumbs.svelte";
+	import BookingDetailsForm from "#lib/components/booking/BookingDetailsForm.svelte";
+	import CountdownTimer from "#lib/components/CountdownTimer.svelte";
+	import PageHeading from "#lib/components/PageHeading.svelte";
 	import { Alert, Badge, Button } from "@kayord/ui";
 	import { ChevronLeftIcon, PencilIcon } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
-	import { buildExtras, buildPlayers } from "$lib/booking/bookingForm";
+	import { buildExtras, buildPlayers } from "#lib/booking/bookingForm.js";
 
 	const bookingId = Number(page.params.id) || 0;
 	const booking = await bookingGet(bookingId);
 	const path = await bookingGetPath(bookingId);
 
 	const isPending = booking.bookingStatus?.id === BookingStatusEnum.Pending;
-	const bookingHref = resolve(`/bookings/${bookingId}`);
+	const bookingHref = resolve(`bookings/${bookingId}`);
 
 	const slotId = booking.slotContractBookings?.[0]?.slotContract?.slotId ?? "";
 	const slotStartDatetime = booking.slotContractBookings?.[0]?.slotContract?.slot?.startDatetime ?? null;

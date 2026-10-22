@@ -1,7 +1,7 @@
 import { redirect } from "@sveltejs/kit";
 import { APP_URL } from "$app/env/private";
-import { createPkce, getAuthorizationUrl, randomNonce, randomState } from "$lib/server/auth/oidc";
-import { setPendingLogin } from "$lib/server/auth/session";
+import { createPkce, getAuthorizationUrl, randomNonce, randomState } from "#lib/server/auth/oidc.js";
+import { setPendingLogin } from "#lib/server/auth/session.js";
 
 const SECURE = APP_URL.startsWith("https");
 
@@ -14,5 +14,5 @@ export async function GET({ url, cookies }) {
 	const nonce = randomNonce();
 
 	setPendingLogin(cookies, { state, nonce, verifier, next }, SECURE);
-	throw redirect(303, await getAuthorizationUrl(state, challenge, { nonce, kcAction: action }));
+	throw redirect(303, await getAuthorizationUrl(state, challenge, { nonce, kcAction: action }), { external: true });
 }

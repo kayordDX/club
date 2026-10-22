@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Markdown } from "$lib/components/Markdown";
+	import { Markdown } from "#lib/components/Markdown/index.js";
 	import { Textarea } from "@kayord/ui";
 
 	let source = $state(`yrdy`);

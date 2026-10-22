@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { AccountSessionResponse } from "$lib/api";
-	import { accountSessionRevoke } from "$lib/api/remote/account.remote";
+	import type { AccountSessionResponse } from "#lib/api/index.js";
+	import { accountSessionRevoke } from "#lib/api/remote/account.remote.js";
 	import { Button, Card, Tooltip } from "@kayord/ui";
 	import { ClockCheckIcon, NetworkIcon, ShieldXIcon, TimerIcon } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";

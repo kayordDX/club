@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
-	import type { FacilityBasicDTO } from "$lib/api";
-	import FacilityIcon from "$lib/components/Icons/FacilityIcon.svelte";
+	import type { FacilityBasicDTO } from "#lib/api/index.js";
+	import FacilityIcon from "#lib/components/Icons/FacilityIcon.svelte";
 	import { Badge, Card } from "@kayord/ui";
 
 	type Props = {
@@ -12,7 +12,7 @@
 	let { facility }: Props = $props();
 </script>
 
-<a href={resolve(`/outlet/${page.params.slug}/${facility.id}`)}>
+<a href={resolve(`outlet/${page.params.slug}/${facility.id}`)}>
 	<Card.Root class="flex flex-row items-center p-2">
 		<div class="bg-background flex size-10 items-center justify-center rounded-md">
 			<FacilityIcon typeId={facility.facilityTypeId} />

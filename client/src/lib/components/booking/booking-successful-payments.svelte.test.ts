@@ -1,13 +1,13 @@
 import { beforeEach, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { page } from "vitest/browser";
-import type { BookingPaymentDTO, PaymentDTO } from "$lib/api";
-import { formatCurrency, formatDateTime } from "$lib/booking/format";
+import type { BookingPaymentDTO, PaymentDTO } from "#lib/api/index.js";
+import { formatCurrency, formatDateTime } from "#lib/booking/format.js";
 import Harness from "../testing/booking-successful-payments-harness.svelte";
 
 const api = vi.hoisted(() => ({ history: vi.fn() }));
 vi.mock("$app/env", () => ({ browser: true, dev: true, building: false, version: "test" }));
-vi.mock("$lib/api/remote/payment.remote", () => ({ paymentGetBooking: api.history }));
+vi.mock("#lib/api/remote/payment.remote.js", () => ({ paymentGetBooking: api.history }));
 
 function payment(id: number, paymentStatusId: number, amount: number): PaymentDTO {
 	return {

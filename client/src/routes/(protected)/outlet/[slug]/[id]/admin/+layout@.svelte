@@ -1,11 +1,11 @@
 <script lang="ts">
-	import RoleCheck from "$lib/components/check/RoleCheck.svelte";
-	import AuthCheck from "$lib/components/check/AuthCheck.svelte";
+	import RoleCheck from "#lib/components/check/RoleCheck.svelte";
+	import AuthCheck from "#lib/components/check/AuthCheck.svelte";
 	import { Sidebar } from "@kayord/ui";
 	import AdminSidebar from "./AdminSidebar.svelte";
-	import Header from "$lib/components/Header/Header.svelte";
-	import PageBoundary from "$lib/components/PageBoundary.svelte";
-	import { setRolesContext } from "$lib/auth";
+	import Header from "#lib/components/Header/Header.svelte";
+	import PageBoundary from "#lib/components/PageBoundary.svelte";
+	import { setRolesContext } from "#lib/auth.js";
 
 	let { data, children } = $props();
 	// The @ reset detaches this layout from the outlet layout, so re-publish

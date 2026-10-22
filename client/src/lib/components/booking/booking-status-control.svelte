@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { BOOKING_STATUS_OPTIONS, statusLabel } from "$lib/booking/status";
-	import { BookingStatusEnum } from "$lib/api";
+	import { BOOKING_STATUS_OPTIONS, statusLabel } from "#lib/booking/status.js";
+	import { BookingStatusEnum } from "#lib/api/index.js";
 	import { Alert, Button, Dialog, Select } from "@kayord/ui";
 
 	let {

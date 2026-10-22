@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { BookingStatusEnum } from "$lib/api";
+import { BookingStatusEnum } from "#lib/api/index.js";
 import { isActiveReservation } from "./status";
 
 const now = Date.parse("2026-10-12T12:00:00Z");

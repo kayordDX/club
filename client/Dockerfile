@@ -37,8 +37,8 @@ COPY --from=build /app/build ./build
 COPY package.json ./
 
 ENV NODE_ENV=production
-# adapter-node binds to HOST:PORT. ORIGIN should be set at deploy time to the
-# public URL (e.g. https://club.example.com) so the server can validate requests.
+# adapter-node binds to HOST:PORT. Behind a trusted reverse proxy, configure
+# PROTOCOL_HEADER/HOST_HEADER for the public URL; SvelteKit 3 ignores ORIGIN.
 ENV HOST=0.0.0.0
 ENV PORT=3000
 EXPOSE 3000

@@ -1,4 +1,4 @@
-import { BookingStatusEnum, type BookingDTO } from "$lib/api";
+import { BookingStatusEnum, type BookingDTO } from "#lib/api/index.js";
 import type { BadgeVariant } from "@kayord/ui";
 
 export const BOOKING_STATUS_OPTIONS = [

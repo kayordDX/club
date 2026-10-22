@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
 	import { Button, Table } from "@kayord/ui";
-	import type { BookingPaymentDTO, FacilityPaymentMethodsResponse } from "$lib/api";
-	import { formatCurrency, formatDateTime } from "$lib/booking/format";
+	import type { BookingPaymentDTO, FacilityPaymentMethodsResponse } from "#lib/api/index.js";
+	import { formatCurrency, formatDateTime } from "#lib/booking/format.js";
 	import PaymentAmountForm from "./payment-amount-form.svelte";
 
 	let {

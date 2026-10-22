@@ -1,6 +1,6 @@
 <script lang="ts">
-	import OutletBreadcrumbs from "$lib/components/OutletBreadcrumbs.svelte";
-	import { setRolesContext } from "$lib/auth";
+	import OutletBreadcrumbs from "#lib/components/OutletBreadcrumbs.svelte";
+	import { setRolesContext } from "#lib/auth.js";
 
 	let { data, children } = $props();
 	// svelte-ignore state_referenced_locally

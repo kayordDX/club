@@ -1,8 +1,8 @@
 <script lang="ts">
 	import Search from "./Search.svelte";
-	import { outletGetAll } from "$lib/api/remote/outlet.remote";
+	import { outletGetAll } from "#lib/api/remote/outlet.remote.js";
 	import Outlet from "./Outlet.svelte";
-	import LoginButton from "$lib/components/LoginButton/LoginButton.svelte";
+	import LoginButton from "#lib/components/LoginButton/LoginButton.svelte";
 	import { Skeleton } from "@kayord/ui";
 
 	let searchTerm = $state("");

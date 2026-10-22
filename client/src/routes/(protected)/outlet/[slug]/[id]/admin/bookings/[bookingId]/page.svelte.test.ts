@@ -1,10 +1,10 @@
 import { beforeEach, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { page } from "vitest/browser";
-import { BookingStatusEnum, type BookingDTO } from "$lib/api";
+import { BookingStatusEnum, type BookingDTO } from "#lib/api/index.js";
 import BookingPage from "./+page.svelte";
-import { adminSlotGetAll } from "$lib/api/remote/admin.remote";
-import { slotGetAll } from "$lib/api/remote/slot.remote";
+import { adminSlotGetAll } from "#lib/api/remote/admin.remote.js";
+import { slotGetAll } from "#lib/api/remote/slot.remote.js";
 
 const mocks = vi.hoisted(() => ({
 	change: vi.fn(),
@@ -53,7 +53,7 @@ vi.mock("@tanstack/svelte-query", () => ({
 	createQuery: () => ({ data: undefined, isFetching: false, isPending: false, isError: false, refetch: vi.fn() }),
 	useQueryClient: () => ({ invalidateQueries: mocks.invalidate }),
 }));
-vi.mock("$lib/api/remote/admin.remote", () => ({
+vi.mock("#lib/api/remote/admin.remote.js", () => ({
 	adminBookingGet: () => Object.assign(Promise.resolve(booking), { refresh: mocks.refresh }),
 	adminBookingGetPath: () => Object.assign(Promise.resolve(undefined), { refresh: mocks.pathRefresh }),
 	adminBookingUpdate: vi.fn(),
@@ -63,8 +63,8 @@ vi.mock("$lib/api/remote/admin.remote", () => ({
 	adminBookingGetOptions: vi.fn(() => ({ refresh: vi.fn().mockResolvedValue(undefined) })),
 	adminSlotGetAll: vi.fn(() => ({ refresh: mocks.adminSlots })),
 }));
-vi.mock("$lib/api/remote/facility.remote", () => ({ facilityPaymentMethods: vi.fn() }));
-vi.mock("$lib/api/remote/slot.remote", () => ({ slotGetAll: vi.fn(() => ({ refresh: mocks.publicSlots })), slotGetContracts: vi.fn() }));
+vi.mock("#lib/api/remote/facility.remote.js", () => ({ facilityPaymentMethods: vi.fn() }));
+vi.mock("#lib/api/remote/slot.remote.js", () => ({ slotGetAll: vi.fn(() => ({ refresh: mocks.publicSlots })), slotGetContracts: vi.fn() }));
 
 beforeEach(() => {
 	vi.clearAllMocks();

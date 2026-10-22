@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ResolvedPathname } from "$app/types";
-import type { BookingPaymentDTO } from "$lib/api";
+import type { BookingPaymentDTO } from "#lib/api/index.js";
 import { getPaymentReturn, matchesPaymentReturn, rememberPaymentReturn } from "./payment-return-context";
 
 const admin = { facilityId: 1, returnUrl: "/outlet/test/1/admin/bookings/44" as ResolvedPathname };

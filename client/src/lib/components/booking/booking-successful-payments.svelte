@@ -2,8 +2,8 @@
 	import { browser } from "$app/env";
 	import { createQuery } from "@tanstack/svelte-query";
 	import { Button, Card, Table } from "@kayord/ui";
-	import { paymentGetBooking } from "$lib/api/remote/payment.remote";
-	import { formatCurrency, formatDateTime } from "$lib/booking/format";
+	import { paymentGetBooking } from "#lib/api/remote/payment.remote.js";
+	import { formatCurrency, formatDateTime } from "#lib/booking/format.js";
 
 	let { bookingId }: { bookingId: number } = $props();
 	const history = createQuery(() => ({

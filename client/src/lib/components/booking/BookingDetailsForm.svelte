@@ -2,14 +2,14 @@
 	import type { ResolvedPathname } from "$app/types";
 	import { untrack, type Snippet } from "svelte";
 
-	import { slotGetAll, slotGetContracts } from "$lib/api/remote/slot.remote";
-	import { useUser } from "$lib/auth";
-	import { applyFirstPlayerContract, applyProfileToPlayer, type PlayerDraft } from "$lib/booking/players";
-	import { formatCurrency, formatTime } from "$lib/booking/format";
-	import { getSelectedExtrasTotal } from "$lib/booking/pricing";
-	import { getPlayersSchema, type BookingExtraOption, type Players, type BookingFormSubmitHandler, type SelectedExtra } from "$lib/booking/schema";
-	import { createAppForm, Form } from "$lib/components/Form";
-	import Extras from "$lib/components/booking/Extras.svelte";
+	import { slotGetAll, slotGetContracts } from "#lib/api/remote/slot.remote.js";
+	import { useUser } from "#lib/auth.js";
+	import { applyFirstPlayerContract, applyProfileToPlayer, type PlayerDraft } from "#lib/booking/players.js";
+	import { formatCurrency, formatTime } from "#lib/booking/format.js";
+	import { getSelectedExtrasTotal } from "#lib/booking/pricing.js";
+	import { getPlayersSchema, type BookingExtraOption, type Players, type BookingFormSubmitHandler, type SelectedExtra } from "#lib/booking/schema.js";
+	import { createAppForm, Form } from "#lib/components/Form/index.js";
+	import Extras from "#lib/components/booking/Extras.svelte";
 	import { Alert, Badge, Button, Card } from "@kayord/ui";
 	import { CalendarDaysIcon, ChevronLeftIcon, Clock3Icon, CreditCardIcon, PlusIcon, Trash2Icon, UserRoundIcon } from "@lucide/svelte";
 

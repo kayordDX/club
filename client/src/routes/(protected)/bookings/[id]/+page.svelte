@@ -2,18 +2,18 @@
 	import { BookIcon, PencilIcon } from "@lucide/svelte";
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
-	import PageHeading from "$lib/components/PageHeading.svelte";
-	import BookingDetails from "$lib/components/booking/booking-details.svelte";
-	import BookingSuccessfulPayments from "$lib/components/booking/booking-successful-payments.svelte";
-	import { BookingStatusEnum, type BookingPathDTO } from "$lib/api";
-	import { bookingGet, bookingGetPath } from "$lib/api/remote/booking.remote";
+	import PageHeading from "#lib/components/PageHeading.svelte";
+	import BookingDetails from "#lib/components/booking/booking-details.svelte";
+	import BookingSuccessfulPayments from "#lib/components/booking/booking-successful-payments.svelte";
+	import { BookingStatusEnum, type BookingPathDTO } from "#lib/api/index.js";
+	import { bookingGet, bookingGetPath } from "#lib/api/remote/booking.remote.js";
 	import { Button } from "@kayord/ui";
 
 	const bookingId = Number(page.params.id) || 0;
 	const booking = await bookingGet(bookingId);
 	// Older cancelled bookings may no longer have slot data.
 	const path: BookingPathDTO | undefined = await bookingGetPath(bookingId).catch(() => undefined);
-	const editHref = resolve(`/bookings/${bookingId}/edit`);
+	const editHref = resolve(`bookings/${bookingId}/edit`);
 	const canEdit = booking.bookingStatusId === BookingStatusEnum.Pending;
 </script>
 

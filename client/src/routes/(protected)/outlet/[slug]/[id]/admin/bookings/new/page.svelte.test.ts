@@ -1,7 +1,7 @@
 import { beforeEach, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { page as browserPage } from "vitest/browser";
-import { BookingStatusEnum } from "$lib/api";
+import { BookingStatusEnum } from "#lib/api/index.js";
 import NewBookingPage from "./+page.svelte";
 
 const mocks = vi.hoisted(() => ({
@@ -27,7 +27,7 @@ vi.mock("$app/paths", () => ({
 	asset: (path: string) => path,
 }));
 vi.mock("$app/navigation", () => ({ goto: vi.fn() }));
-vi.mock("$lib/auth", () => ({ useUser: () => null }));
+vi.mock("#lib/auth.js", () => ({ useUser: () => null }));
 vi.mock("svelte-sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock("@tanstack/svelte-query", () => ({
 	createQuery: (factory: () => Record<string, unknown>) => {
@@ -57,17 +57,17 @@ vi.mock("@tanstack/svelte-query", () => ({
 	createMutation: () => ({ mutateAsync: mocks.created, isPending: false }),
 	useQueryClient: () => ({ invalidateQueries: mocks.invalidate }),
 }));
-vi.mock("$lib/api/remote/admin.remote", () => ({
+vi.mock("#lib/api/remote/admin.remote.js", () => ({
 	adminBookingCreate: vi.fn(),
 	adminBookingGetOptions: vi.fn(() => ({ refresh: vi.fn().mockResolvedValue(undefined) })),
 	adminBookingSearchCustomer: vi.fn(() => ({ refresh: vi.fn().mockResolvedValue(undefined) })),
 	adminSlotGetAll: vi.fn(() => ({ refresh: vi.fn().mockResolvedValue(undefined) })),
 }));
-vi.mock("$lib/api/remote/slot.remote", () => ({
+vi.mock("#lib/api/remote/slot.remote.js", () => ({
 	slotGetAll: vi.fn(() => Promise.resolve([{ id: "slot-1", total: 4, booked: 1, startDatetime: "2026-08-02T10:00:00Z", endDatetime: "2026-08-02T11:00:00Z" }])),
 	slotGetContracts: vi.fn(),
 }));
-vi.mock("$lib/api/remote/extra.remote", () => ({ extraGetFacility: vi.fn() }));
+vi.mock("#lib/api/remote/extra.remote.js", () => ({ extraGetFacility: vi.fn() }));
 
 beforeEach(() => {
 	vi.clearAllMocks();
@@ -91,8 +91,8 @@ it("selects the existing customer, defaults to Confirmed, and fetches owner-auth
 	await expect.element(browserPage.getByRole("option", { name: "Visitor Standard - R 100.00" })).toBeVisible();
 	const optionsQuery = mocks.options.find((item) => (item.queryKey as string[])[0] === "admin-booking-options");
 	await (optionsQuery?.queryFn as () => Promise<unknown>)();
-	const { adminBookingGetOptions } = await import("$lib/api/remote/admin.remote");
-	const { slotGetContracts } = await import("$lib/api/remote/slot.remote");
+	const { adminBookingGetOptions } = await import("#lib/api/remote/admin.remote.js");
+	const { slotGetContracts } = await import("#lib/api/remote/slot.remote.js");
 	expect(adminBookingGetOptions).toHaveBeenCalledWith({ facilityId: 7, params: { slotId: "slot-1", userId: "customer-user-id" } });
 	expect(slotGetContracts).not.toHaveBeenCalled();
 });
@@ -127,7 +127,7 @@ it("creates a guest booking without an account or contact details at public rate
 	await expect.element(browserPage.getByRole("button", { name: "Me", exact: true })).not.toBeInTheDocument();
 	const query = mocks.options.find((item) => (item.queryKey as string[])[0] === "admin-booking-options");
 	await (query?.queryFn as () => Promise<unknown>)();
-	const { adminBookingGetOptions } = await import("$lib/api/remote/admin.remote");
+	const { adminBookingGetOptions } = await import("#lib/api/remote/admin.remote.js");
 	expect(adminBookingGetOptions).toHaveBeenCalledWith({ facilityId: 7, params: { slotId: "slot-1" } });
 	await browserPage.getByRole("button", { name: "Contract", exact: true }).click();
 	await browserPage.getByRole("option", { name: /Visitor Standard - R 100.00/ }).click();
@@ -177,7 +177,7 @@ it("always creates Confirmed bookings and reviews the owner and total", async ()
 
 	await browserPage.getByRole("button", { name: "Create booking" }).click();
 	await expect.element(browserPage.getByText("Booking #44 created")).toBeVisible();
-	const { BookingStatusEnum: Status } = await import("$lib/api");
+	const { BookingStatusEnum: Status } = await import("#lib/api/index.js");
 	expect(Status.Confirmed).toBe(BookingStatusEnum.Confirmed);
 	expect(mocks.created).toHaveBeenCalledWith({
 		userId: "customer-user-id",

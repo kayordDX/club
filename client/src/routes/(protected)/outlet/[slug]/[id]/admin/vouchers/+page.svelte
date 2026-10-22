@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { browser } from "$app/environment";
+	import { browser } from "$app/env";
 	import { page } from "$app/state";
 	import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
 	import type { ColumnDef, PaginationState, SortingState } from "@tanstack/svelte-table";
@@ -7,12 +7,18 @@
 	import { Alert, AlertDialog, Badge, Button, Dialog, DropdownMenu, Input } from "@kayord/ui";
 	import { EllipsisVerticalIcon, PencilIcon, PlusIcon, SearchIcon, SendIcon, TicketIcon, Trash2Icon } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
-	import { VoucherDiscountMode, VoucherRedemptionKind, type AdminVoucherCreateRequest, type AdminVoucherDTO, type AdminVoucherIssueRequest } from "$lib/api";
-	import { adminVoucherCreate, adminVoucherDelete, adminVoucherGetAll, adminVoucherIssue, adminVoucherUpdate } from "$lib/api/remote/admin.remote";
-	import AdminVoucherForm from "$lib/components/admin-voucher-form.svelte";
-	import AdminVoucherSend from "$lib/components/admin-voucher-send.svelte";
-	import PageHeading from "$lib/components/PageHeading.svelte";
-	import { formatCurrency } from "$lib/booking/format";
+	import {
+		VoucherDiscountMode,
+		VoucherRedemptionKind,
+		type AdminVoucherCreateRequest,
+		type AdminVoucherDTO,
+		type AdminVoucherIssueRequest,
+	} from "#lib/api/index.js";
+	import { adminVoucherCreate, adminVoucherDelete, adminVoucherGetAll, adminVoucherIssue, adminVoucherUpdate } from "#lib/api/remote/admin.remote.js";
+	import AdminVoucherForm from "#lib/components/admin-voucher-form.svelte";
+	import AdminVoucherSend from "#lib/components/admin-voucher-send.svelte";
+	import PageHeading from "#lib/components/PageHeading.svelte";
+	import { formatCurrency } from "#lib/booking/format.js";
 
 	const facilityId = $derived(Number(page.params.id) || 0);
 	const queryClient = useQueryClient();
@@ -104,9 +110,25 @@
 	const data = $derived(vouchers.data ?? []);
 	const columns: ColumnDef<DataTableFeatures, AdminVoucherDTO>[] = [
 		{ header: "Name", accessorKey: "name" },
-		{ header: "Description", accessorKey: "description", maxSize: 140, meta: { className: "overflow-hidden text-ellipsis" } },
-		{ header: "Type", id: "kind", accessorFn: (voucher) => kindLabels[voucher.redemptionKind] },
-		{ header: "Applies to", id: "target", accessorFn: (voucher) => (voucher.isExtra ? "Extras only" : "Rounds only") },
+		{
+			header: "Description",
+			accessorKey: "description",
+			maxSize: 140,
+			meta: { className: "overflow-hidden text-ellipsis" },
+		},
+
+		{
+			header: "Type",
+			id: "kind",
+			accessorFn: (voucher) => kindLabels[voucher.redemptionKind],
+		},
+
+		{
+			header: "Applies to",
+			id: "target",
+			accessorFn: (voucher) => (voucher.isExtra ? "Extras only" : "Rounds only"),
+		},
+
 		{
 			header: "Discount",
 			id: "discount",
@@ -156,7 +178,8 @@
 		</DropdownMenu.Trigger>
 		<DropdownMenu.Content class="w-35">
 			<DropdownMenu.Item onclick={() => openEdit(voucher)}><PencilIcon class="size-4" />Edit</DropdownMenu.Item>
-			<DropdownMenu.Item onclick={() => (sendTarget = voucher)}><SendIcon class="size-4" /> Send voucher</DropdownMenu.Item>
+			<DropdownMenu.Item onclick={() => (sendTarget = voucher)}><SendIcon class="size-4" />Send voucher</DropdownMenu.Item>
+
 			<DropdownMenu.Item disabled={voucher.isInUse} onclick={() => openDelete(voucher)}><Trash2Icon class="size-4" />Delete</DropdownMenu.Item>
 		</DropdownMenu.Content>
 	</DropdownMenu.Root>
@@ -226,7 +249,8 @@
 					await issueVoucher.mutateAsync(body);
 				}}
 				oncancel={() => (sendTarget = undefined)}
-			/>{/if}
+			/>
+		{/if}
 	</Dialog.Content>
 </Dialog.Root>
 

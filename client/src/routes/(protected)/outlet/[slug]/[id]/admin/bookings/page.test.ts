@@ -2,10 +2,10 @@ import { render } from "svelte/server";
 import { describe, expect, it, vi } from "vitest";
 import BookingsPage from "./+page.svelte";
 
-vi.mock("$app/environment", () => ({ browser: false }));
+vi.mock("$app/env", () => ({ browser: false }));
 vi.mock("$app/state", () => ({ page: { params: { slug: "ruimsig-country-club", id: "1" } } }));
 vi.mock("$app/paths", () => ({ resolve: (path: string) => path }));
-vi.mock("$lib/api/remote/admin.remote", () => ({ adminBookingGetAll: vi.fn() }));
+vi.mock("#lib/api/remote/admin.remote.js", () => ({ adminBookingGetAll: vi.fn() }));
 vi.mock("@tanstack/svelte-query", () => ({
 	createQuery: vi.fn((options: () => unknown) => {
 		// Query options are evaluated during SSR even when the query is disabled.
@@ -15,7 +15,7 @@ vi.mock("@tanstack/svelte-query", () => ({
 }));
 
 import { createQuery } from "@tanstack/svelte-query";
-import { adminBookingGetAll } from "$lib/api/remote/admin.remote";
+import { adminBookingGetAll } from "#lib/api/remote/admin.remote.js";
 
 describe("admin bookings SSR", () => {
 	it("initializes pagination and sorting before evaluating query options", () => {

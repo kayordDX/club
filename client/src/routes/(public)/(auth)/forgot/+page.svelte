@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { Button, Card, Loader } from "@kayord/ui";
-	import LogoButton from "$lib/components/LogoButton.svelte";
+	import LogoButton from "#lib/components/LogoButton.svelte";
 	import { z } from "zod";
-	import { Form, createAppForm } from "$lib/components/Form";
+	import { Form, createAppForm } from "#lib/components/Form/index.js";
 
 	const schema = z.object({
 		email: z.email(),

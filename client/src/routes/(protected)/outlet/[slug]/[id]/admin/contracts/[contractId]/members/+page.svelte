@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from "$app/state";
 	import { resolve } from "$app/paths";
-	import PageHeading from "$lib/components/PageHeading.svelte";
+	import PageHeading from "#lib/components/PageHeading.svelte";
 	import {
 		adminContractAddMember,
 		adminContractCreateMember,
@@ -9,10 +9,10 @@
 		adminContractGetMembers,
 		adminContractSearchMember,
 		adminContractUpdateMember,
-	} from "$lib/api/remote/admin.remote";
-	import { adminContractRemoveMember } from "$lib/api/remote/admin.remote";
-	import type { AdminContractMemberDTO, AdminMemberSearchResultDTO } from "$lib/api";
-	import { formatDate } from "$lib/booking/format";
+	} from "#lib/api/remote/admin.remote.js";
+	import { adminContractRemoveMember } from "#lib/api/remote/admin.remote.js";
+	import type { AdminContractMemberDTO, AdminMemberSearchResultDTO } from "#lib/api/index.js";
+	import { formatDate } from "#lib/booking/format.js";
 	import { type ColumnDef } from "@tanstack/svelte-table";
 	import { type CalendarDate, DateFormatter, getLocalTimeZone, parseDate, today } from "@internationalized/date";
 	import { DataTable, createShadTable, renderSnippet, type DataTableFeatures } from "@kayord/ui/data-table";
@@ -25,7 +25,7 @@
 	const contractId = $derived(Number(page.params.contractId) || 0);
 	const slug = $derived(page.params.slug ?? "");
 
-	const contractsBackHref = $derived(resolve(`/outlet/${slug}/${facilityId}/admin/contracts`));
+	const contractsBackHref = $derived(resolve(`outlet/${slug}/${facilityId}/admin/contracts`));
 
 	// Reuse the contracts query to show which contract these members belong to.
 	const contracts = $derived(adminContractGetAll(facilityId));
@@ -214,7 +214,13 @@
 			id: "name",
 			cell: (item) => `${item.row.original.firstName} ${item.row.original.lastName}`,
 		},
-		{ header: "Email", accessorKey: "email", cell: (item) => item.row.original.email ?? "—" },
+
+		{
+			header: "Email",
+			accessorKey: "email",
+			cell: (item) => item.row.original.email ?? "—",
+		},
+
 		{
 			header: "Period",
 			id: "period",
@@ -249,8 +255,17 @@
 {#snippet actionsCell(member: AdminContractMemberDTO)}
 	<Actions
 		actions={[
-			{ icon: PencilIcon, text: "Edit end date", action: () => openEdit(member) },
-			{ icon: Trash2Icon, text: "Remove", action: () => (removeTarget = member) },
+			{
+				icon: PencilIcon,
+				text: "Edit end date",
+				action: () => openEdit(member),
+			},
+
+			{
+				icon: Trash2Icon,
+				text: "Remove",
+				action: () => (removeTarget = member),
+			},
 		]}
 	/>
 {/snippet}
@@ -326,10 +341,7 @@
 		{:else if hasSearched && !searchResult && !showCreate}
 			<div class="mt-2 flex flex-col gap-3 rounded-md border p-4">
 				<p class="text-muted-foreground text-sm">No user found for “{searchInput}”.</p>
-				<Button variant="outline" onclick={() => (showCreate = true)}>
-					<PlusIcon class="size-4" />
-					Create a new profile
-				</Button>
+				<Button variant="outline" onclick={() => (showCreate = true)}><PlusIcon class="size-4" />Create a new profile</Button>
 			</div>
 		{/if}
 
@@ -357,6 +369,7 @@
 				<p class="text-muted-foreground text-xs">The new member receives an email to set their password and verify their account through Keycloak.</p>
 				<div class="flex justify-end gap-2">
 					<Button type="button" variant="outline" onclick={() => (showCreate = false)} disabled={isCreating}>Back</Button>
+
 					<Button type="submit" disabled={isCreating}>{isCreating ? "Creating..." : "Create & add"}</Button>
 				</div>
 			</form>
@@ -396,6 +409,7 @@
 			</Field.Field>
 			<Dialog.Footer>
 				<Button type="button" variant="outline" onclick={() => (editTarget = null)} disabled={isUpdating}>Cancel</Button>
+
 				<Button type="submit" disabled={isUpdating}>{isUpdating ? "Saving..." : "Save"}</Button>
 			</Dialog.Footer>
 		</form>

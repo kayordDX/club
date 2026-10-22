@@ -1,5 +1,5 @@
 import type { ResolvedPathname } from "$app/types";
-import type { BookingPaymentDTO } from "$lib/api";
+import type { BookingPaymentDTO } from "#lib/api/index.js";
 
 export type AdminPaymentReturn = { facilityId: number; returnUrl: ResolvedPathname };
 export type PaymentReturnContext = {

@@ -4,9 +4,9 @@
 	import { page } from "$app/state";
 	import type { ResolvedPathname } from "$app/types";
 
-	import { bookingCreate } from "$lib/api/remote/booking.remote";
-	import { createPlayers } from "$lib/booking/players";
-	import BookingDetailsForm from "$lib/components/booking/BookingDetailsForm.svelte";
+	import { bookingCreate } from "#lib/api/remote/booking.remote.js";
+	import { createPlayers } from "#lib/booking/players.js";
+	import BookingDetailsForm from "#lib/components/booking/BookingDetailsForm.svelte";
 	import { Button, Card, Empty } from "@kayord/ui";
 	import { ChevronLeftIcon } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
@@ -17,7 +17,7 @@
 	const slotCount = Math.max(1, Number(page.url.searchParams.get("slotCount")) || 1);
 	const selectedDate = page.url.searchParams.get("date") ?? "";
 	const facilityHref = (
-		selectedDate ? `${resolve(`/outlet/${slug}/${facilityId}`)}?date=${selectedDate}` : resolve(`/outlet/${slug}/${facilityId}`)
+		selectedDate ? `${resolve(`outlet/${slug}/${facilityId}`)}?date=${selectedDate}` : resolve(`outlet/${slug}/${facilityId}`)
 	) as ResolvedPathname;
 
 	let isSubmitting = $state(false);
@@ -54,7 +54,7 @@
 				date: selectedDate,
 			});
 			toast.info("Created booking");
-			await goto(`${resolve(`/outlet/${slug}/${facilityId}/booking/${bookingResponse.id}/pay`)}?${paymentParams.toString()}` as ResolvedPathname);
+			await goto(`${resolve(`outlet/${slug}/${facilityId}/booking/${bookingResponse.id}/pay`)}?${paymentParams.toString()}` as ResolvedPathname);
 		} catch {
 			toast.error("Failed to create booking. Please try again.");
 		} finally {

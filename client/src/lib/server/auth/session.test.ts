@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { randomBytes } from "node:crypto";
 import type { Cookies } from "@sveltejs/kit";
 import { consumePendingLogin, readSession, setPendingLogin, writeSession, clearSession } from "./session";
@@ -20,6 +20,7 @@ function fakeCookies(): Cookies {
 		delete(name) {
 			store.delete(name);
 		},
+		parse: vi.fn(),
 		serialize() {
 			return "";
 		},

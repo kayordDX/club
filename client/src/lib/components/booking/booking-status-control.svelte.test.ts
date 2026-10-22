@@ -1,7 +1,7 @@
 import { expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { page } from "vitest/browser";
-import { BookingStatusEnum } from "$lib/api";
+import { BookingStatusEnum } from "#lib/api/index.js";
 import BookingStatusControl from "./booking-status-control.svelte";
 
 async function chooseStatus(name: string) {

@@ -2,7 +2,7 @@
 	import type { Snippet } from "svelte";
 	import { Alert } from "@kayord/ui";
 	import { CircleAlertIcon } from "@lucide/svelte";
-	import { useRoles } from "$lib/auth";
+	import { useRoles } from "#lib/auth.js";
 
 	interface Props {
 		children?: Snippet;

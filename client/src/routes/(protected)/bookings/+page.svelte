@@ -1,16 +1,16 @@
 <script lang="ts">
-	import PageHeading from "$lib/components/PageHeading.svelte";
+	import PageHeading from "#lib/components/PageHeading.svelte";
 	import { BookIcon, PencilIcon, SearchIcon } from "@lucide/svelte";
-	import { BookingStatusEnum, type BookingSummaryDTO, type PaginatedListOfBookingSummaryDTO } from "$lib/api";
-	import { bookingGetUser } from "$lib/api/remote/booking.remote";
+	import { BookingStatusEnum, type BookingSummaryDTO, type PaginatedListOfBookingSummaryDTO } from "#lib/api/index.js";
+	import { bookingGetUser } from "#lib/api/remote/booking.remote.js";
 	import { type ColumnDef, type PaginationState, type SortingState } from "@tanstack/svelte-table";
 	import { DataTable, createShadTable, renderSnippet, type DataTableFeatures } from "@kayord/ui/data-table";
 	import { Actions, Badge, Input, Select } from "@kayord/ui";
 	import { goto } from "$app/navigation";
 	import { resolve } from "$app/paths";
-	import { BOOKING_STATUS_OPTIONS, statusBadgeVariant, statusLabel } from "$lib/booking/status";
-	import { formatCurrency, formatDate, formatTime } from "$lib/booking/format";
-	import { buildBookingFilters, sortingToQueryKitSorts } from "$lib/booking/querykit";
+	import { BOOKING_STATUS_OPTIONS, statusBadgeVariant, statusLabel } from "#lib/booking/status.js";
+	import { formatCurrency, formatDate, formatTime } from "#lib/booking/format.js";
+	import { buildBookingFilters, sortingToQueryKitSorts } from "#lib/booking/querykit.js";
 
 	// let pagination: PaginationState = $state({ pageIndex: 0, pageSize: 10 });
 	// let sorting: SortingState = $state([{ id: "slotStartDatetime", desc: true }]);
@@ -120,11 +120,11 @@
 	});
 
 	const openBooking = (bookingId: number) => {
-		goto(resolve(`/bookings/${bookingId}`));
+		goto(resolve(`bookings/${bookingId}`));
 	};
 
 	const openEditBooking = (bookingId: number) => {
-		goto(resolve(`/bookings/${bookingId}/edit`));
+		goto(resolve(`bookings/${bookingId}/edit`));
 	};
 </script>
 
@@ -159,6 +159,7 @@
 
 <div class="m-4">
 	<PageHeading title="Bookings" description="My Bookings" icon={BookIcon} />
+
 	<DataTable {table} {isLoading} noDataMessage="No bookings">
 		{#snippet leftToolbar()}
 			<div class="flex items-center gap-2">

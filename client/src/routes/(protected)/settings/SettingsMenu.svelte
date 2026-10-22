@@ -7,12 +7,12 @@
 	const menuItems = [
 		{
 			title: "Profile",
-			url: "/settings/profile",
+			url: "settings/profile",
 			icon: UserIcon,
 		},
 		{
 			title: "Session",
-			url: "/settings/session",
+			url: "settings/session",
 			icon: ShieldIcon,
 			isActive: true,
 		},

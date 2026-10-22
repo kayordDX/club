@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from "$app/state";
-	import { outletGetBasic } from "$lib/api/remote/outlet.remote";
+	import { outletGetBasic } from "#lib/api/remote/outlet.remote.js";
 	import { Button } from "@kayord/ui";
 	import Facility from "./Facility.svelte";
 	import FacilityFilter from "./FacilityFilter.svelte";
@@ -22,9 +22,7 @@
 				<h3 class="text-muted-foreground mb-6">Select facility to continue with your booking.</h3>
 			</div>
 			<div>
-				<Button href={resolve(`/outlet/${page.params.slug}/info`)} variant="outline">
-					<Building2Icon /> Outlet
-				</Button>
+				<Button href={resolve(`outlet/${page.params.slug}/info`)} variant="outline"><Building2Icon />Outlet</Button>
 			</div>
 		</div>
 

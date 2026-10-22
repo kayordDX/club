@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { buildExtras, buildPlayers } from "$lib/booking/bookingForm";
+import { buildExtras, buildPlayers } from "#lib/booking/bookingForm.js";
 
 const booking = {
 	id: 1,

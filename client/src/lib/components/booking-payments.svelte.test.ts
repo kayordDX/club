@@ -2,11 +2,11 @@ import { beforeEach, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { page } from "vitest/browser";
 import Harness from "./testing/booking-payments-harness.svelte";
-import { BookingStatusEnum, VoucherRedemptionKind, type BookingPaymentDTO, type BookingVoucherDTO } from "$lib/api";
+import { BookingStatusEnum, VoucherRedemptionKind, type BookingPaymentDTO, type BookingVoucherDTO } from "#lib/api/index.js";
 
 const api = vi.hoisted(() => ({ history: vi.fn(), vouchers: vi.fn(), redeem: vi.fn(), initiate: vi.fn() }));
 vi.mock("$app/env", () => ({ browser: true, dev: true, building: false, version: "test" }));
-vi.mock("$lib/api/remote/payment.remote", () => ({
+vi.mock("#lib/api/remote/payment.remote.js", () => ({
 	paymentGetBooking: api.history,
 	paymentVouchers: api.vouchers,
 	paymentVoucher: api.redeem,

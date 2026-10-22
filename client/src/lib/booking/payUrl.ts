@@ -1,5 +1,5 @@
 import type { ResolvedPathname } from "$app/types";
-import type { BookingPathDTO } from "$lib/api";
+import type { BookingPathDTO } from "#lib/api/index.js";
 
 /**
  * Builds the pay page URL for a booking using the outlet/facility path resolved

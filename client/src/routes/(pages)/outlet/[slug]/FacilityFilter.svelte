@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { FacilityBasicDTO } from "$lib/api";
+	import type { FacilityBasicDTO } from "#lib/api/index.js";
 	import { Badge, ToggleGroup } from "@kayord/ui";
-	import FacilityIcon from "$lib/components/Icons/FacilityIcon.svelte";
+	import FacilityIcon from "#lib/components/Icons/FacilityIcon.svelte";
 	import { Grid2x2Icon } from "@lucide/svelte";
 
 	type Props = {
