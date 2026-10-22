@@ -22,6 +22,8 @@ public class FunctionJob(AppDbContext dbContext)
     [TickerFunction("ClearExpiredBookings", "0 * * * * *")]
     public async Task ClearExpiredBookings(CancellationToken ct)
     {
+        // Expiry releases capacity through ReservationRules.ActiveReservations, not by deleting players.
+        // Keep slot/contract links: booking dates, player details and restoration depend on them (#94).
         await _dbContext.Database.ExecuteSqlAsync(
             $"""
                 WITH expired AS (
