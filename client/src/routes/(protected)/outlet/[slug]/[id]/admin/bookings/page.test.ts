@@ -2,7 +2,7 @@ import { render } from "svelte/server";
 import { describe, expect, it, vi } from "vitest";
 import BookingsPage from "./+page.svelte";
 
-vi.mock("$app/environment", () => ({ browser: false }));
+vi.mock("$app/env", () => ({ browser: false }));
 vi.mock("$app/state", () => ({ page: { params: { slug: "ruimsig-country-club", id: "1" } } }));
 vi.mock("$app/paths", () => ({ resolve: (path: string) => path }));
 vi.mock("#lib/api/remote/admin.remote.js", () => ({ adminBookingGetAll: vi.fn() }));

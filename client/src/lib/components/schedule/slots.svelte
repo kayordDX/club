@@ -43,7 +43,7 @@
 	<div class="bg-muted/30 flex flex-wrap items-center gap-3 rounded-xl border p-2">
 		<FunnelIcon class="text-muted-foreground size-4" />
 		<div class="h-5">
-			<Separator orientation="vertical" />
+			<Separator orientation="vertical" class="h-full" />
 		</div>
 		{#if resources.length > 1}
 			<div class="flex flex-wrap items-center gap-2" role="group" aria-label="Filter by tee, court or lane">
@@ -67,7 +67,7 @@
 				{/each}
 			</div>
 			<div class="h-5">
-				<Separator orientation="vertical" />
+				<Separator orientation="vertical" class="h-full" />
 			</div>
 		{/if}
 

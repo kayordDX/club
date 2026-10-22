@@ -5,7 +5,7 @@ import Harness from "./voucher-page-harness.svelte";
 import { VoucherRedemptionKind, type AdminVoucherDTO } from "#lib/api/index.js";
 
 const api = vi.hoisted(() => ({ list: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), issue: vi.fn() }));
-vi.mock("$app/environment", () => ({ browser: true, dev: true, building: false, version: "test" }));
+vi.mock("$app/env", () => ({ browser: true, dev: true, building: false, version: "test" }));
 vi.mock("$app/state", () => ({ page: { params: { id: "7", slug: "test-club" } } }));
 vi.mock("#lib/api/remote/admin.remote.js", () => ({
 	adminVoucherGetAll: api.list,
