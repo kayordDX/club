@@ -1,7 +1,7 @@
 import { expect, it } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { page } from "vitest/browser";
-import type { BookingDTO, BookingPathDTO } from "$lib/api";
+import type { BookingDTO, BookingPathDTO } from "#lib/api/index.js";
 import BookingDetails from "./booking-details.svelte";
 
 const booking: BookingDTO = {

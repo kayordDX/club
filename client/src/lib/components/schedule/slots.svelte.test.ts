@@ -2,11 +2,11 @@ import { afterEach, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { page } from "vitest/browser";
 import type { ResolvedPathname } from "$app/types";
-import type { AdminSlotGetAllResponse } from "$lib/api";
+import type { AdminSlotGetAllResponse } from "#lib/api/index.js";
 import "../../../layout.css";
 import Slots from "./slots.svelte";
 
-vi.mock("$lib/api/remote/slot.remote", () => ({ slotGetContracts: vi.fn() }));
+vi.mock("#lib/api/remote/slot.remote.js", () => ({ slotGetContracts: vi.fn() }));
 
 const onBook = vi.fn();
 const onCreateBooking = vi.fn();

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { VoucherRedemptionKind, type WalletVoucherDTO } from "$lib/api/generated";
+import { VoucherRedemptionKind, type WalletVoucherDTO } from "#lib/api/generated/index.js";
 import { groupVouchers, voucherStatus } from "./vouchers";
 
 const now = Date.parse("2026-10-01T00:00:00Z");

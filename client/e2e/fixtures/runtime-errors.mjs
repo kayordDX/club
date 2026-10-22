@@ -1,5 +1,5 @@
 import { appendFileSync } from "node:fs";
-import { format } from "node:util";
+import { format, stripVTControlCharacters } from "node:util";
 
 export function installErrorCapture(path, source) {
 	const record = (message) => {
@@ -7,7 +7,10 @@ export function installErrorCapture(path, source) {
 	};
 	const original = console.error;
 	console.error = (...args) => {
-		record(format(...args));
+		const message = format(...args);
+		// Kit 3 logs denied SSR requests even when the application handles them.
+		// Keep these on stderr, but do not classify bare HTTP 403 summaries as crashes.
+		if (!(source === "SvelteKit/Vite" && /^403 (GET|HEAD) \/[^\n]*$/.test(stripVTControlCharacters(message).trim()))) record(message);
 		original(...args);
 	};
 	process.on("uncaughtExceptionMonitor", (error) => record(error.stack ?? error.message));

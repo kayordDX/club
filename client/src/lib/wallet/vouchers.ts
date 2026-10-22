@@ -1,4 +1,4 @@
-import { VoucherRedemptionKind, type WalletVoucherDTO } from "$lib/api/generated";
+import { VoucherRedemptionKind, type WalletVoucherDTO } from "#lib/api/generated/index.js";
 
 export function voucherStatus(voucher: WalletVoucherDTO, now: number): string {
 	if (voucher.amountRemaining <= 0) return "Used up";

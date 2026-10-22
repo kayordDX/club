@@ -1,6 +1,6 @@
 <script lang="ts">
-	import BookingDetailsForm from "$lib/components/booking/BookingDetailsForm.svelte";
-	import type { BookingFormSubmitHandler } from "$lib/booking/schema";
+	import BookingDetailsForm from "#lib/components/booking/BookingDetailsForm.svelte";
+	import type { BookingFormSubmitHandler } from "#lib/booking/schema.js";
 	import type { ResolvedPathname } from "$app/types";
 	let { onSubmit, legacy = false, inactive = false }: { onSubmit: BookingFormSubmitHandler; legacy?: boolean; inactive?: boolean } = $props();
 	let moved = $state(false);

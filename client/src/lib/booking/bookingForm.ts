@@ -1,6 +1,6 @@
-import type { BookingDTO } from "$lib/api";
-import type { PlayerDraft } from "$lib/booking/players";
-import type { SelectedExtra } from "$lib/booking/schema";
+import type { BookingDTO } from "#lib/api/index.js";
+import type { PlayerDraft } from "#lib/booking/players.js";
+import type { SelectedExtra } from "#lib/booking/schema.js";
 
 export type PlayerFormValues = PlayerDraft;
 

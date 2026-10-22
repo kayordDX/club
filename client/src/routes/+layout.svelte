@@ -1,10 +1,10 @@
 <script lang="ts">
 	import "../layout.css";
-	import favicon from "$lib/assets/favicon.svg";
+	import favicon from "#lib/assets/favicon.svg";
 	import { ModeWatcher } from "mode-watcher";
 	import { Toaster, toast } from "svelte-sonner";
-	import { setUserContext } from "$lib/auth";
-	import PageBoundary from "$lib/components/PageBoundary.svelte";
+	import { setUserContext } from "#lib/auth.js";
+	import PageBoundary from "#lib/components/PageBoundary.svelte";
 	import { Tooltip } from "@kayord/ui";
 	import { QueryClient, QueryClientProvider } from "@tanstack/svelte-query";
 	const queryClient = new QueryClient();

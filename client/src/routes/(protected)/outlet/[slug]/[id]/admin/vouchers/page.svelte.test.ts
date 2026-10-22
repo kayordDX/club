@@ -2,12 +2,12 @@ import { beforeEach, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { page } from "vitest/browser";
 import Harness from "./voucher-page-harness.svelte";
-import { VoucherRedemptionKind, type AdminVoucherDTO } from "$lib/api";
+import { VoucherRedemptionKind, type AdminVoucherDTO } from "#lib/api/index.js";
 
 const api = vi.hoisted(() => ({ list: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), issue: vi.fn() }));
 vi.mock("$app/environment", () => ({ browser: true, dev: true, building: false, version: "test" }));
 vi.mock("$app/state", () => ({ page: { params: { id: "7", slug: "test-club" } } }));
-vi.mock("$lib/api/remote/admin.remote", () => ({
+vi.mock("#lib/api/remote/admin.remote.js", () => ({
 	adminVoucherGetAll: api.list,
 	adminVoucherCreate: api.create,
 	adminVoucherUpdate: api.update,
@@ -55,7 +55,7 @@ it("displays a sortable paginated grid and resets pagination when searching", as
 	await expect.element(page.getByRole("cell", { name: "Voucher 12", exact: true })).not.toBeInTheDocument();
 	await page.getByLabelText("Search vouchers").fill("");
 	await page.getByRole("button", { name: "Sort by name", exact: true }).click();
-	await expect.element(page.getByRole("row").nth(1)).toHaveTextContent("Voucher 12");
+	await expect.poll(() => page.getByRole("row").nth(1).element().textContent?.replaceAll("\u00a0", " ")).toContain("Voucher 12");
 });
 
 it("creates a voucher from the grid toolbar and refreshes the rows", async () => {
@@ -149,7 +149,7 @@ it("keeps a failed deletion open for retry without losing the voucher", async ()
 	await page.getByRole("button", { name: "Actions for Free round" }).click();
 	await page.getByRole("menuitem", { name: "Delete", exact: true }).click();
 	await page.getByRole("button", { name: "Delete", exact: true }).click();
-	await expect.element(page.getByRole("alert")).toHaveTextContent(/Unable to delete this voucher/);
+	await expect.poll(() => page.getByRole("alert").element().textContent?.replaceAll("\u00a0", " ")).toContain("Unable to delete this voucher");
 	await expect.element(page.getByRole("alertdialog")).toBeVisible();
 	await page.getByRole("button", { name: "Delete", exact: true }).click();
 	await expect.element(page.getByText("No vouchers yet")).toBeVisible();

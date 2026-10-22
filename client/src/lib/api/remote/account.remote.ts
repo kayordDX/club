@@ -1,11 +1,11 @@
-// GENERATED from swagger.json by tools/gen-remote.mjs — do not edit manually.
+// GENERATED from swagger.json by scripts/gen-remote.mjs — do not edit manually.
 // Remote functions (query/command) wrapping the orval-generated server transport.
 // Validation schemas come from orval's zod client output.
 
 import { query, command } from "$app/server";
 import { z } from "zod";
-import * as api from "$lib/server/api/generated/account";
-import { AccountCredentialDisableBody, AccountSessionRevokeBody, AccountSyncBody } from "$lib/server/api/schemas/account";
+import * as api from "#lib/server/api/generated/account.js";
+import { AccountCredentialDisableBody, AccountSessionRevokeBody, AccountSyncBody } from "#lib/server/api/schemas/account.js";
 
 export const accountSync = command(AccountSyncBody, async (body) => api.accountSync(body));
 export const accountSession = query(async () => api.accountSession());

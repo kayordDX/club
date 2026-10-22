@@ -1,5 +1,5 @@
 import type { LayoutServerLoad } from "./$types";
-import { getFacilityRoles } from "$lib/server/auth/roles";
+import { getFacilityRoles } from "#lib/server/auth/roles.js";
 
 // The admin layout resets to the root layout (@), so it does not inherit the
 // [id] layout's roles. Fetch them here for RoleCheck.

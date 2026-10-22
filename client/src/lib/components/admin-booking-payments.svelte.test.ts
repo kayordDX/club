@@ -1,7 +1,7 @@
 import { beforeEach, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { page } from "vitest/browser";
-import { BookingStatusEnum, type BookingPaymentDTO } from "$lib/api";
+import { BookingStatusEnum, type BookingPaymentDTO } from "#lib/api/index.js";
 import Harness from "./testing/admin-booking-payments-harness.svelte";
 
 const api = vi.hoisted(() => ({
@@ -14,10 +14,10 @@ const api = vi.hoisted(() => ({
 	remember: vi.fn(),
 }));
 vi.mock("$app/env", () => ({ browser: true, dev: true, building: false, version: "test" }));
-vi.mock("$lib/api/remote/admin.remote", () => ({ adminBookingGetPayments: api.history, adminBookingAcceptPayment: api.initiate }));
-vi.mock("$lib/api/remote/facility.remote", () => ({ facilityPaymentMethods: api.methods }));
-vi.mock("$lib/api/remote/payment.remote", () => ({ paymentVouchers: api.vouchers, paymentVoucher: api.redeem, paymentGetBooking: api.customerHistory }));
-vi.mock("$lib/booking/payment-return-context", () => ({ rememberPaymentReturn: api.remember }));
+vi.mock("#lib/api/remote/admin.remote.js", () => ({ adminBookingGetPayments: api.history, adminBookingAcceptPayment: api.initiate }));
+vi.mock("#lib/api/remote/facility.remote.js", () => ({ facilityPaymentMethods: api.methods }));
+vi.mock("#lib/api/remote/payment.remote.js", () => ({ paymentVouchers: api.vouchers, paymentVoucher: api.redeem, paymentGetBooking: api.customerHistory }));
+vi.mock("#lib/booking/payment-return-context.js", () => ({ rememberPaymentReturn: api.remember }));
 
 let balance: BookingPaymentDTO;
 let failHistory: boolean;

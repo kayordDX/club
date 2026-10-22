@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { Card, Badge, Avatar, Separator, Button, Item } from "@kayord/ui";
 	import { BuildingIcon, CalendarDays, MailIcon, PhoneIcon, TicketIcon } from "@lucide/svelte";
-	import { facilityGet } from "$lib/api/remote/facility.remote";
-	import { outletGet } from "$lib/api/remote/outlet.remote";
+	import { facilityGet } from "#lib/api/remote/facility.remote.js";
+	import { outletGet } from "#lib/api/remote/outlet.remote.js";
 	import { page } from "$app/state";
 	import { resolve } from "$app/paths";
-	import { Markdown } from "$lib/components/Markdown";
-	import { Tags } from "$lib/components/Tags";
+	import { Markdown } from "#lib/components/Markdown/index.js";
+	import { Tags } from "#lib/components/Tags/index.js";
 </script>
 
 <svelte:boundary>
@@ -41,10 +41,7 @@
 				</div>
 			</Card.Content>
 			<Card.Footer class="flex flex-col items-start gap-2">
-				<Button href={resolve(`/outlet/${page.params.slug}/info`)} variant="outline">
-					<BuildingIcon />
-					Outlet
-				</Button>
+				<Button href={resolve(`outlet/${page.params.slug}/info`)} variant="outline"><BuildingIcon />Outlet</Button>
 			</Card.Footer>
 		</Card.Root>
 
@@ -56,10 +53,7 @@
 				</Card.Description>
 			</Card.Header>
 			<Card.Footer>
-				<Button href={resolve(`/outlet/${page.params.slug}/${page.params.id}`)}>
-					<TicketIcon />
-					Book Now
-				</Button>
+				<Button href={resolve(`outlet/${page.params.slug}/${page.params.id}`)}><TicketIcon />Book Now</Button>
 			</Card.Footer>
 		</Card.Root>
 

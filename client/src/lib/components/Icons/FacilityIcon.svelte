@@ -1,6 +1,6 @@
 <script lang="ts">
-	import GolfIcon from "$lib/svg/icons/GolfIcon.svelte";
-	import TennisBallIcon from "$lib/svg/icons/TennisBallIcon.svelte";
+	import GolfIcon from "#lib/svg/icons/GolfIcon.svelte";
+	import TennisBallIcon from "#lib/svg/icons/TennisBallIcon.svelte";
 	import { cn } from "@kayord/ui/utils";
 	import { CircleSmallIcon } from "@lucide/svelte";
 

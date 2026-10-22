@@ -24,9 +24,9 @@ vi.mock("runed/kit", () => ({
 	createSearchParamsSchema: () => ({}),
 	useSearchParams: () => ({ date: "2026-08-02" }),
 }));
-vi.mock("$lib/auth", () => ({ hasRoles: () => mocks.isManager, useUser: () => ({ name: "Signed-in user" }) }));
+vi.mock("#lib/auth", () => ({ hasRoles: () => mocks.isManager, useUser: () => ({ name: "Signed-in user" }) }));
 vi.mock("svelte-sonner", () => ({ toast: { error: mocks.error } }));
-vi.mock("$lib/api/remote/admin.remote", () => ({
+vi.mock("#lib/api/remote/admin.remote.js", () => ({
 	adminSlotGetAll: () =>
 		Object.assign(
 			Promise.resolve([
@@ -45,7 +45,7 @@ vi.mock("$lib/api/remote/admin.remote", () => ({
 			{ loading: false, refresh: mocks.refresh }
 		),
 }));
-vi.mock("$lib/api/remote/slot.remote", () => ({
+vi.mock("#lib/api/remote/slot.remote.js", () => ({
 	slotAvailable: mocks.available,
 	slotGetContracts: vi.fn(),
 	slotGetAll: () =>

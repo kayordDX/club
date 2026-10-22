@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
-	import LogoButton from "$lib/components/LogoButton.svelte";
+	import LogoButton from "#lib/components/LogoButton.svelte";
 	import { Collapsible, Sidebar } from "@kayord/ui";
 	import { BookIcon, BuildingIcon, CalendarDaysIcon, ChevronLeftIcon, ChevronRightIcon, CreditCardIcon, StoreIcon } from "@lucide/svelte";
 
@@ -9,16 +9,16 @@
 	const id = $derived(page.params.id ?? "");
 	const pathname = $derived(page.url.pathname);
 
-	const facilityHref = $derived(resolve(`/outlet/${slug}/${id}`));
-	const bookingsHref = $derived(resolve(`/outlet/${slug}/${id}/admin/bookings`));
-	const scheduleHref = $derived(resolve(`/outlet/${slug}/${id}/admin/schedule`));
-	const paymentsHref = $derived(resolve(`/outlet/${slug}/${id}/admin/payments`));
-	const outletHref = $derived(resolve(`/outlet/${slug}/${id}/admin/outlet`));
-	const outletRulesHref = $derived(resolve(`/outlet/${slug}/${id}/admin/outlet/rules`));
-	const facilityAdminHref = $derived(resolve(`/outlet/${slug}/${id}/admin/facility`));
-	const facilityRulesHref = $derived(resolve(`/outlet/${slug}/${id}/admin/facility/rules`));
-	const facilityContractsHref = $derived(resolve(`/outlet/${slug}/${id}/admin/contracts`));
-	const facilityVouchersHref = $derived(resolve(`/outlet/${slug}/${id}/admin/vouchers`));
+	const facilityHref = $derived(resolve(`outlet/${slug}/${id}`));
+	const bookingsHref = $derived(resolve(`outlet/${slug}/${id}/admin/bookings`));
+	const scheduleHref = $derived(resolve(`outlet/${slug}/${id}/admin/schedule`));
+	const paymentsHref = $derived(resolve(`outlet/${slug}/${id}/admin/payments`));
+	const outletHref = $derived(resolve(`outlet/${slug}/${id}/admin/outlet`));
+	const outletRulesHref = $derived(resolve(`outlet/${slug}/${id}/admin/outlet/rules`));
+	const facilityAdminHref = $derived(resolve(`outlet/${slug}/${id}/admin/facility`));
+	const facilityRulesHref = $derived(resolve(`outlet/${slug}/${id}/admin/facility/rules`));
+	const facilityContractsHref = $derived(resolve(`outlet/${slug}/${id}/admin/contracts`));
+	const facilityVouchersHref = $derived(resolve(`outlet/${slug}/${id}/admin/vouchers`));
 
 	const within = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 

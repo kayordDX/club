@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { Button, Checkbox, Label, Select } from "@kayord/ui";
-	import { createAppForm } from "$lib/components/Form";
-	import type { AdminVoucherCreateRequest, AdminVoucherDTO } from "$lib/api/generated/api.schemas";
-	import { VoucherDiscountMode, VoucherRedemptionKind } from "$lib/api/generated/api.schemas";
+	import { createAppForm } from "#lib/components/Form/index.js";
+	import type { AdminVoucherCreateRequest, AdminVoucherDTO } from "#lib/api/generated/api.schemas.js";
+	import { VoucherDiscountMode, VoucherRedemptionKind } from "#lib/api/generated/api.schemas.js";
 
 	let {
 		voucher,

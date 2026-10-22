@@ -4,9 +4,9 @@
 	import { page } from "$app/state";
 	import { resolve } from "$app/paths";
 	import { Building2Icon, BuildingIcon, MailIcon, MapPinIcon, PhoneIcon } from "@lucide/svelte";
-	import { outletGet } from "$lib/api/remote/outlet.remote";
-	import { Markdown } from "$lib/components/Markdown";
-	import { Tags } from "$lib/components/Tags";
+	import { outletGet } from "#lib/api/remote/outlet.remote.js";
+	import { Markdown } from "#lib/components/Markdown/index.js";
+	import { Tags } from "#lib/components/Tags/index.js";
 </script>
 
 <svelte:boundary>
@@ -25,9 +25,7 @@
 				<Tags tags={o.tags ?? ""} />
 			</div>
 			<div class="shrink-0">
-				<Button href={resolve(`/outlet/${page.params.slug}`)} variant="outline">
-					<Building2Icon /> Choose Facility
-				</Button>
+				<Button href={resolve(`outlet/${page.params.slug}`)} variant="outline"><Building2Icon />Choose Facility</Button>
 			</div>
 		</div>
 

@@ -2,7 +2,7 @@ import { SESSION_SECRET } from "$app/env/private";
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
 import { deflateRawSync, inflateRawSync } from "node:zlib";
 import type { Cookies } from "@sveltejs/kit";
-import type { SessionUser } from "$lib/types";
+import type { SessionUser } from "#lib/types.js";
 import type { OidcProfile, OidcTokens } from "./oidc";
 import { PKCE_COOKIE, SESSION_COOKIE } from "./oidc";
 

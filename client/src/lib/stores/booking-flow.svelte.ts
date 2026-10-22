@@ -1,4 +1,4 @@
-import type { SlotGetContractsResponse } from "$lib/api";
+import type { SlotGetContractsResponse } from "#lib/api/index.js";
 
 export type BookingPaymentMethod = "credit-card" | "pay-later";
 

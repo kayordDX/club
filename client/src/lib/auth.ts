@@ -1,5 +1,5 @@
 import { getContext, setContext } from "svelte";
-import type { SessionUser } from "$lib/types";
+import type { SessionUser } from "#lib/types.js";
 
 const USER_KEY = Symbol("session-user");
 const ROLES_KEY = Symbol("facility-roles");

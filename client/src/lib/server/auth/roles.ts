@@ -1,6 +1,6 @@
 import type { Cookies } from "@sveltejs/kit";
 import { APP_URL } from "$app/env/private";
-import { accountRole } from "$lib/server/api/generated/account";
+import { accountRole } from "#lib/server/api/generated/account.js";
 import { readSession, writeSession } from "./session";
 
 // Facility roles are stable and change rarely (manager assigns them), so cache

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button } from "@kayord/ui";
 	import { LogOutIcon } from "@lucide/svelte";
-	import { useUser } from "$lib/auth";
+	import { useUser } from "#lib/auth.js";
 
 	const user = useUser();
 </script>

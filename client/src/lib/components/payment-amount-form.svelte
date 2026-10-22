@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { Button, ToggleGroup } from "@kayord/ui";
-	import { createAppForm } from "$lib/components/Form";
-	import type { FacilityPaymentMethodsResponse } from "$lib/api";
-	import { validatePaymentAmount } from "$lib/booking/payments";
+	import { createAppForm } from "#lib/components/Form/index.js";
+	import type { FacilityPaymentMethodsResponse } from "#lib/api/index.js";
+	import { validatePaymentAmount } from "#lib/booking/payments.js";
 
 	let {
 		amountAvailable,

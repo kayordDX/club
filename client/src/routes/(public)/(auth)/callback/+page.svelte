@@ -6,7 +6,7 @@
 	import { resolve } from "$app/paths";
 
 	onMount(() => {
-		goto(resolve("/"));
+		goto(resolve(""));
 	});
 </script>
 

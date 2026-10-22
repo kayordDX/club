@@ -1,6 +1,6 @@
 <script lang="ts">
-	import PageHeading from "$lib/components/PageHeading.svelte";
-	import WalletVouchers from "$lib/components/wallet-vouchers.svelte";
+	import PageHeading from "#lib/components/PageHeading.svelte";
+	import WalletVouchers from "#lib/components/wallet-vouchers.svelte";
 	import { WalletIcon } from "@lucide/svelte";
 </script>
 

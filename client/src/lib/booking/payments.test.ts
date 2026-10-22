@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { formatCurrency } from "./format";
 import { validatePaymentAmount, voucherRequest, paymentMessage, paymentErrorMessage } from "./payments";
-import { VoucherRedemptionKind, type BookingVoucherDTO } from "$lib/api";
+import { VoucherRedemptionKind, type BookingVoucherDTO } from "#lib/api/index.js";
 
 const voucher: BookingVoucherDTO = {
 	grantId: "grant-1",

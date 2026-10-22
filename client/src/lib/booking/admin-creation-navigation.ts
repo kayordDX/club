@@ -1,6 +1,6 @@
 import { goto } from "$app/navigation";
 import { resolve } from "$app/paths";
-import { slotAvailable } from "$lib/api/remote/slot.remote";
+import { slotAvailable } from "#lib/api/remote/slot.remote.js";
 import { toast } from "svelte-sonner";
 
 type AdminSlotCreationContext = {

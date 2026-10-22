@@ -1,5 +1,5 @@
 import type { LayoutServerLoad } from "./$types";
-import { getFacilityRoles } from "$lib/server/auth/roles";
+import { getFacilityRoles } from "#lib/server/auth/roles.js";
 
 // The public facility page renders role-gated actions (e.g. the Admin button),
 // so publish the signed-in user's roles for this facility into context.

@@ -2,8 +2,8 @@
 	import { Button, Field, Input, Select } from "@kayord/ui";
 	import { PlusIcon, Trash2Icon } from "@lucide/svelte";
 	import { z } from "zod";
-	import { createAppForm } from "$lib/components/Form";
-	import { VoucherRedemptionKind, type AdminContractVoucherDTO, type AdminContractVouchersDTO } from "$lib/api/generated/api.schemas";
+	import { createAppForm } from "#lib/components/Form/index.js";
+	import { VoucherRedemptionKind, type AdminContractVoucherDTO, type AdminContractVouchersDTO } from "#lib/api/generated/api.schemas.js";
 
 	let {
 		details,

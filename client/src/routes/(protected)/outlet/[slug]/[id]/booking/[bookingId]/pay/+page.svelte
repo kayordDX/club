@@ -4,13 +4,13 @@
 
 	import { Badge, Button, Card, Table } from "@kayord/ui";
 	import { CalendarDaysIcon, ChevronLeftIcon, Clock3Icon, MapPinIcon, StoreIcon, UserRoundIcon } from "@lucide/svelte";
-	import { BookingStatusEnum } from "$lib/api";
-	import { bookingGet, bookingGetPath, bookingUpdateStatus } from "$lib/api/remote/booking.remote";
-	import { facilityPaymentMethods } from "$lib/api/remote/facility.remote";
-	import BookingPayments from "$lib/components/booking-payments.svelte";
-	import BookingExtras from "$lib/components/BookingExtras.svelte";
-	import { formatCurrency, formatDate, formatTime } from "$lib/booking/format";
-	import CountdownTimer from "$lib/components/CountdownTimer.svelte";
+	import { BookingStatusEnum } from "#lib/api/index.js";
+	import { bookingGet, bookingGetPath, bookingUpdateStatus } from "#lib/api/remote/booking.remote.js";
+	import { facilityPaymentMethods } from "#lib/api/remote/facility.remote.js";
+	import BookingPayments from "#lib/components/booking-payments.svelte";
+	import BookingExtras from "#lib/components/BookingExtras.svelte";
+	import { formatCurrency, formatDate, formatTime } from "#lib/booking/format.js";
+	import CountdownTimer from "#lib/components/CountdownTimer.svelte";
 	import { toast } from "svelte-sonner";
 	import { goto } from "$app/navigation";
 	import { canReturnToBasket, getBasketUrl } from "./navigation";
@@ -53,7 +53,7 @@
 			if (basketUrl) {
 				goto(basketUrl);
 			} else {
-				goto(resolve(`/outlet/${slug}/${facilityId}`));
+				goto(resolve(`outlet/${slug}/${facilityId}`));
 			}
 		} catch (error) {
 			console.error("Failed to cancel booking:", error);
@@ -62,7 +62,7 @@
 	};
 
 	const goToEditBooking = () => {
-		goto(resolve(`/bookings/${bookingId}/edit`));
+		goto(resolve(`bookings/${bookingId}/edit`));
 	};
 </script>
 
@@ -191,7 +191,10 @@
 					</div>
 				</Card.Root>
 
-				{#if extras.length}<BookingExtras {extras} />{/if}
+				{#if extras.length}
+					<BookingExtras {extras} />
+				{/if}
+
 				<BookingPayments
 					{bookingId}
 					{booking}

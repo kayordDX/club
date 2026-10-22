@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { accountSession, accountSessionRevokeAll } from "$lib/api/remote/account.remote";
+	import { accountSession, accountSessionRevokeAll } from "#lib/api/remote/account.remote.js";
 	import { ShieldBanIcon, ShieldIcon } from "@lucide/svelte";
-	import PageHeading from "$lib/components/PageHeading.svelte";
+	import PageHeading from "#lib/components/PageHeading.svelte";
 	import Session from "./Session.svelte";
 	import { Button } from "@kayord/ui";
 	import { toast } from "svelte-sonner";

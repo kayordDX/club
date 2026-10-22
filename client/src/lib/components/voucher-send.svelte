@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button } from "@kayord/ui";
-	import { createAppForm } from "$lib/components/Form";
-	import { VoucherRedemptionKind, type AdminVoucherDTO, type AdminVoucherIssueRequest, type WalletVoucherDTO } from "$lib/api";
+	import { createAppForm } from "#lib/components/Form/index.js";
+	import { VoucherRedemptionKind, type AdminVoucherDTO, type AdminVoucherIssueRequest, type WalletVoucherDTO } from "#lib/api/index.js";
 
 	type Props = { oncancel: () => void } & (
 		| { voucher: AdminVoucherDTO; grant?: never; onsend: (_body: AdminVoucherIssueRequest) => Promise<void> }

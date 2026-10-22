@@ -3,7 +3,7 @@ import type { Cookies } from "@sveltejs/kit";
 import { readSession, writeSession } from "./session";
 import type { SessionPayload } from "./session";
 import { getFacilityRoles } from "./roles";
-import { accountRole } from "$lib/server/api/generated/account";
+import { accountRole } from "#lib/server/api/generated/account.js";
 
 vi.mock("$app/env/private", () => ({
 	APP_URL: "http://localhost:5173",
@@ -12,7 +12,7 @@ vi.mock("$app/env/private", () => ({
 	SESSION_SECRET: "",
 }));
 
-vi.mock("$lib/server/api/generated/account", () => ({
+vi.mock("#lib/server/api/generated/account.js", () => ({
 	accountRole: vi.fn(),
 }));
 
@@ -34,6 +34,7 @@ function fakeCookies(): Cookies {
 		delete(name) {
 			store.delete(name);
 		},
+		parse: vi.fn(),
 		serialize() {
 			return "";
 		},

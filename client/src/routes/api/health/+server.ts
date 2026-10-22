@@ -1,5 +1,3 @@
-import { json } from "@sveltejs/kit";
-
 export function GET() {
-	return json({ status: "ok", timestamp: new Date().toISOString() });
+	return Response.json({ status: "ok", timestamp: new Date().toISOString() });
 }

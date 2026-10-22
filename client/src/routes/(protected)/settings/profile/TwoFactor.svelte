@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { accountCredentialDisable, accountCredentialDisableToken } from "$lib/api/remote/account.remote";
-	import { createAppForm, FieldError, Form, isInvalid } from "$lib/components/Form";
-	import { getError } from "$lib/types";
+	import { accountCredentialDisable, accountCredentialDisableToken } from "#lib/api/remote/account.remote.js";
+	import { createAppForm, FieldError, Form, isInvalid } from "#lib/components/Form/index.js";
+	import { getError } from "#lib/types.js";
 	import { Button, Dialog, Field, InputOTP, Item } from "@kayord/ui";
 	import { CircleCheckIcon } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";

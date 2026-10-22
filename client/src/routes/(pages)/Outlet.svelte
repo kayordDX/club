@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from "$app/paths";
-	import type { Outlet } from "$lib/api";
+	import type { Outlet } from "#lib/api/index.js";
 	import { Badge, Button, Card } from "@kayord/ui";
 	import { ClockIcon, MapPinIcon, StarIcon } from "@lucide/svelte";
 
@@ -11,7 +11,7 @@
 	let { outlet }: Props = $props();
 </script>
 
-<a href={resolve(`/outlet/${outlet.slug}`)} class="group" data-testid={`outlet-${outlet.id}`}>
+<a href={resolve(`outlet/${outlet.slug}`)} class="group" data-testid={`outlet-${outlet.id}`}>
 	<Card.Root class="flex w-full cursor-pointer pt-0 transition-all duration-200 hover:shadow-lg">
 		<div class="relative aspect-video overflow-hidden rounded-t-lg">
 			<img src="https://ruimsigcc.co.za/wp-content/uploads/2024/08/image0031.jpg" alt={outlet.name} class="h-full w-full object-cover" />

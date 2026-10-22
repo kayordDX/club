@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { Button, Card, Input, Label } from "@kayord/ui";
-	import { VoucherDiscountMode, VoucherRedemptionKind, type BookingVoucherDTO, type PaymentVoucherRequest } from "$lib/api";
-	import { formatCurrency, formatDate } from "$lib/booking/format";
-	import { voucherRequest } from "$lib/booking/payments";
-	import { createAppForm } from "$lib/components/Form";
+	import { VoucherDiscountMode, VoucherRedemptionKind, type BookingVoucherDTO, type PaymentVoucherRequest } from "#lib/api/index.js";
+	import { formatCurrency, formatDate } from "#lib/booking/format.js";
+	import { voucherRequest } from "#lib/booking/payments.js";
+	import { createAppForm } from "#lib/components/Form/index.js";
 
 	let {
 		voucher,

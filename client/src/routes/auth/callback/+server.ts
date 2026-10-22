@@ -1,7 +1,7 @@
 import { redirect } from "@sveltejs/kit";
 import { API_URL, APP_URL } from "$app/env/private";
-import { exchangeCode, getUserinfo, profileFromClaims } from "$lib/server/auth/oidc";
-import { consumePendingLogin, toSessionUser, writeSession } from "$lib/server/auth/session";
+import { exchangeCode, getUserinfo, profileFromClaims } from "#lib/server/auth/oidc.js";
+import { consumePendingLogin, toSessionUser, writeSession } from "#lib/server/auth/session.js";
 
 const SECURE = APP_URL.startsWith("https");
 

@@ -7,14 +7,14 @@
 	import type { ResolvedPathname } from "$app/types";
 	import { resolve } from "$app/paths";
 	import { createSearchParamsSchema, useSearchParams } from "runed/kit";
-	import { slotAvailable, slotGetAll } from "$lib/api/remote/slot.remote";
+	import { slotAvailable, slotGetAll } from "#lib/api/remote/slot.remote.js";
 	import { toast } from "svelte-sonner";
-	import { adminSlotGetAll } from "$lib/api/remote/admin.remote";
-	import { hasRoles, useUser } from "$lib/auth";
-	import { openAdminBookingCreation } from "$lib/booking/admin-creation-navigation";
-	import Slots from "$lib/components/schedule/slots.svelte";
-	import ScheduleDateNavigation from "$lib/components/schedule/schedule-date-navigation.svelte";
-	import PageBoundary from "$lib/components/PageBoundary.svelte";
+	import { adminSlotGetAll } from "#lib/api/remote/admin.remote.js";
+	import { hasRoles, useUser } from "#lib/auth.js";
+	import { openAdminBookingCreation } from "#lib/booking/admin-creation-navigation.js";
+	import Slots from "#lib/components/schedule/slots.svelte";
+	import ScheduleDateNavigation from "#lib/components/schedule/schedule-date-navigation.svelte";
+	import PageBoundary from "#lib/components/PageBoundary.svelte";
 
 	const searchParamsSchema = createSearchParamsSchema({
 		date: { type: "string", default: today(getLocalTimeZone()).toString() },
@@ -80,14 +80,13 @@
 
 <div class="flex flex-wrap items-center justify-between gap-3 px-1 py-3">
 	<ScheduleDateNavigation {value} onChange={(date) => (params.date = date)} />
+
 	<div class="flex items-center gap-2">
 		{#if hasRoles("MANAGER")}
-			<Button variant="destructive" href={resolve(`/outlet/${page.params.slug}/${page.params.id}/admin`)}>
-				<UserCogIcon />
-				Admin
-			</Button>
+			<Button variant="destructive" href={resolve(`outlet/${page.params.slug}/${page.params.id}/admin`)}><UserCogIcon />Admin</Button>
 		{/if}
-		<Button href={resolve(`/outlet/${page.params.slug}/${page.params.id}/facility`)}>
+
+		<Button href={resolve(`outlet/${page.params.slug}/${page.params.id}/facility`)}>
 			<BuildingIcon />
 			<span class="hidden sm:inline"> Facility </span>
 		</Button>

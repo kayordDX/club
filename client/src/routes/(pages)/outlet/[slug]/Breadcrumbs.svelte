@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from "$app/state";
-	import { outletGetBasic } from "$lib/api/remote/outlet.remote";
+	import { outletGetBasic } from "#lib/api/remote/outlet.remote.js";
 	import { Breadcrumb } from "@kayord/ui";
 	import { HouseIcon } from "@lucide/svelte";
 </script>

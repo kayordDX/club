@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
-	import { networkInformation } from "$lib/stores/network.svelte";
-	import { getInitials } from "$lib/util";
+	import { networkInformation } from "#lib/stores/network.svelte.js";
+	import { getInitials } from "#lib/util.js";
 	import { Avatar, DropdownMenu } from "@kayord/ui";
 	import { LogOutIcon, WalletIcon, SettingsIcon, BookIcon } from "@lucide/svelte";
-	import { useUser } from "$lib/auth";
+	import { useUser } from "#lib/auth.js";
 	import { LoginButton } from "../LoginButton";
 	import { resolve } from "$app/paths";
 
@@ -33,15 +33,9 @@
 			<DropdownMenu.Label>{user.name}</DropdownMenu.Label>
 			<DropdownMenu.Separator />
 			<DropdownMenu.Group>
-				<DropdownMenu.Item onclick={() => goto(resolve("/bookings"))}>
-					<BookIcon />Bookings
-				</DropdownMenu.Item>
-				<DropdownMenu.Item onclick={() => goto(resolve("/settings/profile"))}>
-					<SettingsIcon />Settings
-				</DropdownMenu.Item>
-				<DropdownMenu.Item onclick={() => goto(resolve("/wallet"))}>
-					<WalletIcon />Wallet
-				</DropdownMenu.Item>
+				<DropdownMenu.Item onclick={() => goto(resolve("bookings"))}><BookIcon />Bookings</DropdownMenu.Item>
+				<DropdownMenu.Item onclick={() => goto(resolve("settings/profile"))}><SettingsIcon />Settings</DropdownMenu.Item>
+				<DropdownMenu.Item onclick={() => goto(resolve("wallet"))}><WalletIcon />Wallet</DropdownMenu.Item>
 			</DropdownMenu.Group>
 			<DropdownMenu.Separator />
 			<DropdownMenu.Item onclick={logout}>

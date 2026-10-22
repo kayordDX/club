@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
-	import { BookingStatusEnum, type BookingDTO, type BookingPathDTO } from "$lib/api";
-	import { formatCurrency, formatDate, formatDateTime, formatTime } from "$lib/booking/format";
-	import { statusBadgeVariant, statusLabel } from "$lib/booking/status";
-	import BookingPlayers from "$lib/components/BookingPlayers.svelte";
-	import BookingExtras from "$lib/components/BookingExtras.svelte";
+	import { BookingStatusEnum, type BookingDTO, type BookingPathDTO } from "#lib/api/index.js";
+	import { formatCurrency, formatDate, formatDateTime, formatTime } from "#lib/booking/format.js";
+	import { statusBadgeVariant, statusLabel } from "#lib/booking/status.js";
+	import BookingPlayers from "#lib/components/BookingPlayers.svelte";
+	import BookingExtras from "#lib/components/BookingExtras.svelte";
 	import { Badge, Card } from "@kayord/ui";
 
 	let {

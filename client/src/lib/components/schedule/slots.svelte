@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button, Empty, Select, Separator } from "@kayord/ui";
 	import type { ResolvedPathname } from "$app/types";
-	import { type SlotGetAllResponse, type AdminSlotGetAllResponse } from "$lib/api";
+	import { type SlotGetAllResponse, type AdminSlotGetAllResponse } from "#lib/api/index.js";
 	import { FunnelIcon, TicketXIcon } from "@lucide/svelte";
 	import Slot from "./public-slot.svelte";
 	import AdminSlot from "./admin-slot.svelte";

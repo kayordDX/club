@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { SlotContractBookingDTO } from "$lib/api";
+	import type { SlotContractBookingDTO } from "#lib/api/index.js";
 	import { Card, Table } from "@kayord/ui";
 
 	type Props = {

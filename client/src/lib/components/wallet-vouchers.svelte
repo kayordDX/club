@@ -4,12 +4,12 @@
 	import { TicketIcon } from "@lucide/svelte";
 	import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
 	import { onMount } from "svelte";
-	import { walletTransfer, walletVouchers } from "$lib/api/remote/wallet.remote";
-	import { VoucherDiscountMode, VoucherRedemptionKind, type WalletVoucherDTO } from "$lib/api/generated";
-	import { formatCurrency, formatDate } from "$lib/booking/format";
-	import { groupVouchers, voucherStatus } from "$lib/wallet/vouchers";
+	import { walletTransfer, walletVouchers } from "#lib/api/remote/wallet.remote.js";
+	import { VoucherDiscountMode, VoucherRedemptionKind, type WalletVoucherDTO } from "#lib/api/generated/index.js";
+	import { formatCurrency, formatDate } from "#lib/booking/format.js";
+	import { groupVouchers, voucherStatus } from "#lib/wallet/vouchers.js";
 
-	import VoucherSend from "$lib/components/voucher-send.svelte";
+	import VoucherSend from "#lib/components/voucher-send.svelte";
 
 	let sendTarget = $state.raw<WalletVoucherDTO>();
 	let transferComplete = $state(false);

@@ -15,7 +15,7 @@ type BookingNavigationData = {
 type BasketNavigationOptions = {
 	slug: string;
 	facilityId: number;
-	searchParams: URLSearchParams;
+	searchParams: Pick<URLSearchParams, "get">;
 	booking?: BookingNavigationData | null;
 };
 

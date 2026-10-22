@@ -3,14 +3,14 @@
 	import type { ResolvedPathname } from "$app/types";
 	import { parseDate } from "@internationalized/date";
 	import { createQuery } from "@tanstack/svelte-query";
-	import { BookingStatusEnum, type BookingDTO } from "$lib/api";
-	import { adminBookingGetOptions, adminSlotGetAll } from "$lib/api/remote/admin.remote";
-	import { buildExtras, buildPlayers } from "$lib/booking/bookingForm";
-	import { formatDate, formatTime } from "$lib/booking/format";
-	import { statusLabel } from "$lib/booking/status";
-	import type { BookingFormSubmitValues } from "$lib/booking/schema";
+	import { BookingStatusEnum, type BookingDTO } from "#lib/api/index.js";
+	import { adminBookingGetOptions, adminSlotGetAll } from "#lib/api/remote/admin.remote.js";
+	import { buildExtras, buildPlayers } from "#lib/booking/bookingForm.js";
+	import { formatDate, formatTime } from "#lib/booking/format.js";
+	import { statusLabel } from "#lib/booking/status.js";
+	import type { BookingFormSubmitValues } from "#lib/booking/schema.js";
 	import BookingDetailsForm from "./BookingDetailsForm.svelte";
-	import ScheduleDateNavigation from "$lib/components/schedule/schedule-date-navigation.svelte";
+	import ScheduleDateNavigation from "#lib/components/schedule/schedule-date-navigation.svelte";
 	import { Alert, Button, Card, Select } from "@kayord/ui";
 
 	let {

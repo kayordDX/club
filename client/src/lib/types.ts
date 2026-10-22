@@ -1,4 +1,4 @@
-import type { ErrorResponse, InternalErrorResponse } from "$lib/api";
+import type { ErrorResponse, InternalErrorResponse } from "#lib/api/index.js";
 
 export interface APIError {
 	type: string;

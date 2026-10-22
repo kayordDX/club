@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import Page from "./+page.svelte";
 
-vi.mock("$lib/api/remote/outlet.remote", () => ({
+vi.mock("#lib/api/remote/outlet.remote.js", () => ({
 	outletGetAll: () => Promise.resolve({ items: [], pageNumber: 1, totalPages: 0, totalCount: 0, hasPreviousPage: false, hasNextPage: false }),
 }));
 

@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { UserIcon } from "@lucide/svelte";
-	import PageHeading from "$lib/components/PageHeading.svelte";
+	import PageHeading from "#lib/components/PageHeading.svelte";
 	import { Avatar, Button, Card, Item, Table } from "@kayord/ui";
-	import { useUser } from "$lib/auth";
-	import { getInitials } from "$lib/util";
-	import { accountCredential } from "$lib/api/remote/account.remote";
+	import { useUser } from "#lib/auth.js";
+	import { getInitials } from "#lib/util.js";
+	import { accountCredential } from "#lib/api/remote/account.remote.js";
 	import TwoFactor from "./TwoFactor.svelte";
 
 	const user = useUser();

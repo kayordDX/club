@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { Card } from "@kayord/ui";
 	import { page } from "$app/state";
-	import LogoButton from "$lib/components/LogoButton.svelte";
-	import LogoutButton from "$lib/components/LogoutButton/LogoutButton.svelte";
-	import LoginButton from "$lib/components/LoginButton/LoginButton.svelte";
-	import { useUser } from "$lib/auth";
+	import LogoButton from "#lib/components/LogoButton.svelte";
+	import LogoutButton from "#lib/components/LogoutButton/LogoutButton.svelte";
+	import LoginButton from "#lib/components/LoginButton/LoginButton.svelte";
+	import { useUser } from "#lib/auth.js";
 
 	const user = useUser();
 	const redirect = page.url.searchParams.get("redirect") ?? undefined;

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { ExtraBookingDTO } from "$lib/api";
-	import { formatCurrency } from "$lib/booking/format";
+	import type { ExtraBookingDTO } from "#lib/api/index.js";
+	import { formatCurrency } from "#lib/booking/format.js";
 	import { Card, Table } from "@kayord/ui";
 
 	type Props = {

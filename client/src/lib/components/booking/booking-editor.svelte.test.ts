@@ -1,11 +1,11 @@
 import { expect, it, vi } from "vitest";
 import { page } from "vitest/browser";
 import { render } from "vitest-browser-svelte";
-import Harness from "$lib/components/testing/booking-editor-harness.svelte";
+import Harness from "#lib/components/testing/booking-editor-harness.svelte";
 
-vi.mock("$lib/auth", () => ({ useUser: () => ({ name: "Acting Admin" }) }));
-vi.mock("$lib/api/remote/slot.remote", () => ({ slotGetAll: vi.fn(), slotGetContracts: vi.fn() }));
-vi.mock("$lib/api/remote/extra.remote", () => ({ extraGetFacility: vi.fn() }));
+vi.mock("#lib/auth", () => ({ useUser: () => ({ name: "Acting Admin" }) }));
+vi.mock("#lib/api/remote/slot.remote.js", () => ({ slotGetAll: vi.fn(), slotGetContracts: vi.fn() }));
+vi.mock("#lib/api/remote/extra.remote.js", () => ({ extraGetFacility: vi.fn() }));
 
 it("retains drafts on destination changes, requires explicit corrections and previews destination prices", async () => {
 	const save = vi.fn().mockResolvedValue(undefined);

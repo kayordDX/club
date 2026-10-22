@@ -2,7 +2,7 @@
 	import { afterNavigate } from "$app/navigation";
 	import { Alert, Badge, Button } from "@kayord/ui";
 	import { CircleAlertIcon, FrownIcon } from "@lucide/svelte";
-	import { type HttpError } from "@sveltejs/kit";
+	import { isHttpError } from "@sveltejs/kit";
 	import type { Snippet } from "svelte";
 
 	type Props = {
@@ -14,7 +14,9 @@
 	// svelte-ignore non_reactive_update
 	let resetBoundary: (() => void) | undefined;
 
-	afterNavigate(() => {
+	afterNavigate(({ shallow, type }) => {
+		if (shallow && type === "goto") return;
+
 		resetBoundary?.();
 	});
 </script>
@@ -22,6 +24,7 @@
 <svelte:boundary>
 	{#snippet failed(error, reset)}
 		{@const _ = resetBoundary = reset}
+		{@const details = isHttpError(error) ? { ...error.body, status: error.status } : (error as App.Error | undefined)}
 		<div class="p-4">
 			<Alert.Root variant="destructive">
 				<CircleAlertIcon class="animate-pulse" />
@@ -30,9 +33,9 @@
 					<FrownIcon class="size-4" />
 				</Alert.Title>
 				<Alert.Description>
-					<Badge variant="destructive">{(error as HttpError).status}</Badge>
+					<Badge variant="destructive">{details?.status ?? 500}</Badge>
 					<p class="border-l-destructive mt-4 border-l-2 pl-2">
-						{(error as HttpError).body.message}
+						{details?.message ?? "An unexpected error occurred."}
 					</p>
 
 					<Button onclick={reset} variant="destructive">Try Again</Button>

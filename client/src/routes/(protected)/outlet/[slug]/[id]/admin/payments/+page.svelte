@@ -1,5 +1,5 @@
 <script lang="ts">
-	import PageHeading from "$lib/components/PageHeading.svelte";
+	import PageHeading from "#lib/components/PageHeading.svelte";
 	import { Alert } from "@kayord/ui";
 	import { CreditCardIcon } from "@lucide/svelte";
 </script>

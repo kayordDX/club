@@ -1,14 +1,14 @@
 <script lang="ts">
-	import { browser } from "$app/environment";
+	import { browser } from "$app/env";
 	import { createQuery } from "@tanstack/svelte-query";
 	import { resolve } from "$app/paths";
 	import { page } from "$app/state";
-	import PageHeading from "$lib/components/PageHeading.svelte";
-	import { adminBookingGetAll } from "$lib/api/remote/admin.remote";
-	import type { AdminBookingDTO } from "$lib/api";
-	import { BOOKING_STATUS_OPTIONS, statusBadgeVariant, statusLabel } from "$lib/booking/status";
-	import { buildBookingFilters, sortingToQueryKitSorts } from "$lib/booking/querykit";
-	import { formatCurrency, formatDate, formatTime } from "$lib/booking/format";
+	import PageHeading from "#lib/components/PageHeading.svelte";
+	import { adminBookingGetAll } from "#lib/api/remote/admin.remote.js";
+	import type { AdminBookingDTO } from "#lib/api/index.js";
+	import { BOOKING_STATUS_OPTIONS, statusBadgeVariant, statusLabel } from "#lib/booking/status.js";
+	import { buildBookingFilters, sortingToQueryKitSorts } from "#lib/booking/querykit.js";
+	import { formatCurrency, formatDate, formatTime } from "#lib/booking/format.js";
 	import { type ColumnDef, type PaginationState, type SortingState } from "@tanstack/svelte-table";
 	import { DataTable, createShadTable, renderSnippet, type DataTableFeatures } from "@kayord/ui/data-table";
 	import { Alert, Badge, Button, Card, Input, Select } from "@kayord/ui";
@@ -116,7 +116,7 @@
 
 {#snippet manageCell(booking: AdminBookingDTO)}
 	<Button
-		href={resolve(`/outlet/${page.params.slug}/${page.params.id}/admin/bookings/${booking.id}`)}
+		href={resolve(`outlet/${page.params.slug}/${page.params.id}/admin/bookings/${booking.id}`)}
 		variant="outline"
 		size="sm"
 		aria-label={`Manage booking #${booking.id}`}
@@ -128,7 +128,8 @@
 <div class="m-4 space-y-6">
 	<div class="flex flex-wrap items-start justify-between gap-4">
 		<PageHeading title="Bookings" description="View and manage bookings for this facility." icon={BookIcon} />
-		<Button href={resolve(`/outlet/${page.params.slug}/${page.params.id}/admin/schedule`)} variant="outline"
+
+		<Button href={resolve(`outlet/${page.params.slug}/${page.params.id}/admin/schedule`)} variant="outline"
 			><CalendarDaysIcon class="size-4" />Daily schedule</Button
 		>
 	</div>

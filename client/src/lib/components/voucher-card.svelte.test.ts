@@ -2,7 +2,7 @@ import { expect, it, vi } from "vitest";
 import { render } from "vitest-browser-svelte";
 import { page } from "vitest/browser";
 import VoucherCard from "./voucher-card.svelte";
-import { VoucherDiscountMode, VoucherRedemptionKind, type BookingVoucherDTO } from "$lib/api";
+import { VoucherDiscountMode, VoucherRedemptionKind, type BookingVoucherDTO } from "#lib/api/index.js";
 
 const voucher: BookingVoucherDTO = {
 	grantId: "grant-1",
