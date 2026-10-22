@@ -78,7 +78,7 @@
 		});
 </script>
 
-<div class="flex items-center gap-2 px-1">
+<div class="flex flex-wrap items-center justify-between gap-3 px-1 py-3">
 	<ScheduleDateNavigation {value} onChange={(date) => (params.date = date)} />
 	<div class="flex items-center gap-2">
 		{#if hasRoles("MANAGER")}
@@ -96,7 +96,7 @@
 <div class="px-1">
 	<PageBoundary>
 		{#if slots.loading}
-			<div class="flex flex-col gap-2">
+			<div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
 				<Skeleton class="h-25 w-full" />
 				<Skeleton class="h-25 w-full" />
 				<Skeleton class="h-25 w-full" />

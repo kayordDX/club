@@ -28,24 +28,24 @@
 	};
 </script>
 
-<Card.Root class={["w-full gap-0 p-0", !slot.isEnabled && "opacity-60"]}>
-	<Card.Header class="bg-muted/50 p-2">
-		<div class="flex items-center justify-start gap-4">
+<Card.Root class={["w-full min-w-0 gap-0 p-0", !slot.isEnabled && "opacity-60"]}>
+	<Card.Header class="bg-muted/40 border-b p-4">
+		<div class="flex flex-wrap items-center justify-between gap-2">
 			<div class="flex items-center gap-1">
 				<ClockIcon class="text-muted-foreground size-4" />
-				<div class="font-bold">
+				<div class="text-base font-semibold tabular-nums">
 					{formatTime(slot.startDatetime)}
 					<span class="text-muted-foreground">-</span>
 					{formatTime(slot.endDatetime)}
 				</div>
 			</div>
-			<div class="flex items-center gap-1">
+			<div class="bg-background flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs">
 				<CircleDotIcon class="text-muted-foreground size-4" />
 				<div class="font-bold">{slot.resourceName}</div>
 			</div>
 		</div>
 	</Card.Header>
-	<Card.Content class="flex flex-wrap content-start items-center gap-2 p-2">
+	<Card.Content class="flex flex-wrap content-start items-center gap-4 p-4">
 		<div class="flex w-full flex-col gap-1.5">
 			{#if !slot.isEnabled}
 				<p class="text-muted-foreground">Slot unavailable</p>
@@ -73,7 +73,7 @@
 				</div>
 			{/each}
 		</div>
-		<div class="flex w-full items-center justify-center py-1">
+		<div class="flex w-full items-center justify-end">
 			{#if available > 0 && slot.isEnabled}
 				<Button variant="outline" onclick={() => onCreateBooking(slot.id, selectedDate)}>
 					<CirclePlusIcon />
