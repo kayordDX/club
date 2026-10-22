@@ -85,6 +85,80 @@ it("handles an empty day and a single unnamed resource without redundant filters
 	await expect.element(page.getByRole("button", { name: "Book", exact: true })).toBeEnabled();
 });
 
+it("filters available slots on a single resource and restores unavailable cards", async () => {
+	await render(Slots, {
+		...props,
+		slots: [
+			makeSlot("open", "1st"),
+			makeSlot("full", "1st", { booked: 4 }),
+			makeSlot("disabled", "1st", { isEnabled: false }),
+			makeSlot("unavailable", "1st", { isAvailable: false }),
+		],
+	});
+	await page.getByRole("button", { name: "Filter by availability" }).click();
+	await page.getByRole("option", { name: "Available only", exact: true }).click();
+	await expect.element(page.getByRole("status")).toHaveTextContent("1 time slot · 1 available");
+	await page.getByRole("button", { name: "Book", exact: true }).click();
+	expect(onBook).toHaveBeenCalledWith("open", 1, "2026-08-04");
+	await page.getByRole("button", { name: "Filter by availability" }).click();
+	await page.getByRole("option", { name: "All slots", exact: true }).click();
+	await expect.element(page.getByRole("status")).toHaveTextContent("4 time slots · 1 available");
+});
+
+it("combines minimum free spaces with resource filters for managers", async () => {
+	await render(Slots, {
+		...props,
+		isAdmin: true,
+		adminContext: true,
+		slots: [makeSlot("group", "1st", { booked: 0 }), makeSlot("partial", "1st"), makeSlot("other-tee", "10th", { booked: 0 })],
+	});
+	await page.getByRole("button", { name: "1st", exact: true }).click();
+	await page.getByRole("button", { name: "Filter by availability" }).click();
+	await page.getByRole("option", { name: "4+ spaces available", exact: true }).click();
+	await expect.element(page.getByRole("status")).toHaveTextContent("1 time slot · 1st · 1 available");
+	await page.getByRole("button", { name: "Create booking", exact: true }).click();
+	expect(onCreateBooking).toHaveBeenCalledWith("group", "2026-08-04");
+});
+
+it("shows an empty state when another day cannot accommodate the requested group", async () => {
+	const screen = await render(Slots, props);
+	await page.getByRole("button", { name: "Filter by availability" }).click();
+	await page.getByRole("option", { name: "4+ spaces available", exact: true }).click();
+	await expect.element(page.getByText("No Slots Available", { exact: true })).toBeVisible();
+	await expect.element(page.getByRole("button", { name: "Book", exact: true })).not.toBeInTheDocument();
+	await screen.rerender({ slots: [makeSlot("court", "Court 1", { total: 1, booked: 0 })] });
+	await expect.element(page.getByRole("status")).toHaveTextContent("0 time slots · 0 available");
+	await page.getByRole("button", { name: "Filter by availability" }).click();
+	await page.getByRole("option", { name: "Available only", exact: true }).click();
+	await expect.element(page.getByRole("status")).toHaveTextContent("1 time slot · 1 available");
+});
+
+it("shows availability without counts for single-capacity slots", async () => {
+	const screen = await render(Slots, { ...props, slots: [makeSlot("single", "Court 1", { total: 1, booked: 0 })] });
+	await expect.element(page.getByText("Available", { exact: true })).toBeVisible();
+	await expect.element(page.getByText("1 of 1 available", { exact: true })).not.toBeInTheDocument();
+	for (const overrides of [{ booked: 1 }, { isEnabled: false }, { isAvailable: false }]) {
+		await screen.rerender({ slots: [makeSlot("single", "Court 1", { total: 1, booked: 0, ...overrides })] });
+		await expect.element(page.getByText("Unavailable", { exact: true })).toBeVisible();
+		await expect.element(page.getByRole("button", { name: "Book", exact: true })).toBeDisabled();
+	}
+});
+
+it("keeps the price label, price trigger and booking action in one compact row", async () => {
+	await page.viewport(375, 800);
+	const { container } = await render(Slots, { ...props, slots: [makeSlot("compact", "1st")] });
+	const priceLabel = Array.from(container.querySelectorAll("div")).find((element) => element.textContent === "Price")!;
+	const priceTrigger = container.querySelector<HTMLButtonElement>('button[aria-label="View prices"]')!;
+	const bookButton = Array.from(container.querySelectorAll("button")).find((button) => button.textContent?.trim() === "Book")!;
+	const centerY = (element: Element) => {
+		const rect = element.getBoundingClientRect();
+		return rect.top + rect.height / 2;
+	};
+	expect(Math.abs(centerY(priceLabel) - centerY(priceTrigger))).toBeLessThanOrEqual(1);
+	expect(Math.abs(centerY(priceTrigger) - centerY(bookButton))).toBeLessThanOrEqual(1);
+	await expect.element(page.getByText("Booking", { exact: true })).not.toBeInTheDocument();
+});
+
 it("places compact cards side by side on desktop and stacks them without overflow on mobile", async () => {
 	await page.viewport(1280, 800);
 	const { container } = await render(Slots, props);

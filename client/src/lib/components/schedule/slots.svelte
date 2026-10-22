@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { Button, Empty } from "@kayord/ui";
+	import { Button, Empty, Select, Separator } from "@kayord/ui";
 	import type { ResolvedPathname } from "$app/types";
 	import { type SlotGetAllResponse, type AdminSlotGetAllResponse } from "$lib/api";
-	import { SlidersHorizontalIcon, TicketXIcon } from "@lucide/svelte";
+	import { FunnelIcon, TicketXIcon } from "@lucide/svelte";
 	import Slot from "./public-slot.svelte";
 	import AdminSlot from "./admin-slot.svelte";
 
@@ -19,23 +19,34 @@
 
 	let { slots, selectedDate, isAdmin = false, adminContext = false, onCreateBooking, onPublicBook, bookingHref }: Props = $props();
 	let selectedResource = $state<string | null>(null);
+	let minimumAvailable = $state("0");
+
+	const maxCapacity = $derived(slots.reduce((max, slot) => Math.max(max, slot.total), 1));
+	const availabilityLabel = (minimum: number) => (minimum === 1 ? "Available only" : `${minimum}+ spaces available`);
+	const isBookable = (slot: SlotGetAllResponse | AdminSlotGetAllResponse) => slot.isAvailable && slot.isEnabled && slot.total > slot.booked;
 
 	const resourceName = (slot: SlotGetAllResponse | AdminSlotGetAllResponse) => slot.resourceName?.trim() || "Other";
 	const resources = $derived([...new Set(slots.map(resourceName))].sort((a, b) => a.localeCompare(b, undefined, { numeric: true })));
 	// A different day or facility may no longer offer the selected resource.
 	const activeResource = $derived(selectedResource !== null && resources.includes(selectedResource) ? selectedResource : null);
-	const filteredSlots = $derived(activeResource === null ? slots : slots.filter((slot) => resourceName(slot) === activeResource));
-	const availableSlots = $derived(filteredSlots.filter((slot) => slot.isAvailable && slot.isEnabled && slot.total > slot.booked));
+	const filteredSlots = $derived(
+		slots.filter(
+			(slot) =>
+				(activeResource === null || resourceName(slot) === activeResource) &&
+				(Number(minimumAvailable) === 0 || (isBookable(slot) && slot.total - slot.booked >= Number(minimumAvailable)))
+		)
+	);
+	const availableSlots = $derived(filteredSlots.filter(isBookable));
 </script>
 
 <div class="space-y-4">
-	{#if resources.length > 1}
-		<div class="bg-muted/30 space-y-3 rounded-xl border p-4">
-			<div class="flex items-center gap-2 text-sm font-medium">
-				<SlidersHorizontalIcon class="text-muted-foreground size-4" />
-				Tee, court or lane
-			</div>
-			<div class="flex flex-wrap gap-2" role="group" aria-label="Filter by tee, court or lane">
+	<div class="bg-muted/30 flex flex-wrap items-center gap-3 rounded-xl border p-2">
+		<FunnelIcon class="text-muted-foreground size-4" />
+		<div class="h-5">
+			<Separator orientation="vertical" />
+		</div>
+		{#if resources.length > 1}
+			<div class="flex flex-wrap items-center gap-2" role="group" aria-label="Filter by tee, court or lane">
 				<Button
 					size="sm"
 					variant={activeResource === null ? "default" : "outline"}
@@ -55,8 +66,23 @@
 					</Button>
 				{/each}
 			</div>
-		</div>
-	{/if}
+			<div class="h-5">
+				<Separator orientation="vertical" />
+			</div>
+		{/if}
+
+		<Select.Root type="single" bind:value={minimumAvailable}>
+			<Select.Trigger aria-label="Filter by availability">
+				{minimumAvailable === "0" ? "All slots" : availabilityLabel(Number(minimumAvailable))}
+			</Select.Trigger>
+			<Select.Content>
+				<Select.Item value="0" label="All slots" />
+				{#each Array.from({ length: maxCapacity }, (_, i) => i + 1) as minimum (minimum)}
+					<Select.Item value={String(minimum)} label={availabilityLabel(minimum)} />
+				{/each}
+			</Select.Content>
+		</Select.Root>
+	</div>
 
 	<p class="text-muted-foreground text-sm" role="status">
 		{filteredSlots.length}
@@ -69,12 +95,12 @@
 			<Empty.Header>
 				<Empty.Media variant="icon"><TicketXIcon /></Empty.Media>
 				<Empty.Title>No Slots Available</Empty.Title>
-				<Empty.Description>Try another date{resources.length > 1 ? " or choose a different tee, court or lane" : ""}.</Empty.Description>
+				<Empty.Description>Try another date or adjust the filters.</Empty.Description>
 			</Empty.Header>
 		</Empty.Root>
 	{/if}
 
-	<div class="slot-grid">
+	<div class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,22rem),1fr))] items-start gap-4">
 		{#each filteredSlots as slot (slot.id)}
 			{#if isAdmin}
 				<AdminSlot slot={slot as AdminSlotGetAllResponse} {selectedDate} {adminContext} {onCreateBooking} {bookingHref} />
@@ -84,12 +110,3 @@
 		{/each}
 	</div>
 </div>
-
-<style>
-	.slot-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr));
-		align-items: start;
-		gap: 1rem;
-	}
-</style>

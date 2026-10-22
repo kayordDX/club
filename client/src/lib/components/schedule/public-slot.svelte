@@ -50,13 +50,17 @@
 	<Card.Content class="flex flex-wrap items-end justify-between gap-4 p-4">
 		<div class="flex w-full items-center justify-between gap-2">
 			<p class="text-muted-foreground text-xs">
-				{!slot.isEnabled
-					? "Slot unavailable"
-					: available === 0
-						? "Fully booked"
-						: !slot.isAvailable
-							? "Slot unavailable"
-							: `${available} of ${slot.total} available`}
+				{slot.total === 1
+					? isUnavailable
+						? "Unavailable"
+						: "Available"
+					: !slot.isEnabled
+						? "Slot unavailable"
+						: available === 0
+							? "Fully booked"
+							: !slot.isAvailable
+								? "Slot unavailable"
+								: `${available} of ${slot.total} available`}
 			</p>
 			{#if slot.total > 1}
 				<div class="flex flex-wrap items-center gap-1" aria-hidden="true">
@@ -106,9 +110,9 @@
 				</div>
 			</div>
 		{/if}
-		<div class="ml-auto flex flex-col items-center justify-center gap-2">
-			<div class="flex flex-col gap-1">
-				<div class="text-muted-foreground text-center text-xs">Price</div>
+		<div class="ml-auto flex items-center gap-2">
+			<div class="flex items-center gap-1">
+				<div class="text-muted-foreground text-xs">Price</div>
 				<Popover.Root bind:open={slotContractEnabled}>
 					<Popover.Trigger>
 						{#snippet child({ props })}
@@ -145,17 +149,12 @@
 					</Popover.Content>
 				</Popover.Root>
 			</div>
-		</div>
-		<div class="flex justify-end gap-2">
-			<div class="flex flex-col gap-1">
-				<div class="text-muted-foreground text-center text-xs">Booking</div>
-				<Button
-					onclick={() => onBook(slot.id, slotCount, selectedDate)}
-					disabled={isUnavailable || !Number.isInteger(slotCount) || slotCount < 1 || slotCount > available}
-				>
-					<ChevronRightIcon /> Book
-				</Button>
-			</div>
+			<Button
+				onclick={() => onBook(slot.id, slotCount, selectedDate)}
+				disabled={isUnavailable || !Number.isInteger(slotCount) || slotCount < 1 || slotCount > available}
+			>
+				<ChevronRightIcon /> Book
+			</Button>
 		</div>
 	</Card.Content>
 </Card.Root>
