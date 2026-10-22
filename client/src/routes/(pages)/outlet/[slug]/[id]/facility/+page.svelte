@@ -13,7 +13,7 @@
 	{@const f = await facilityGet(Number(page.params.id))}
 	{@const o = await outletGet(page.params.slug ?? "")}
 
-	<div class="flex flex-col gap-2 pt-4">
+	<div class="flex flex-col gap-2 p-2">
 		<Card.Root class="w-full">
 			<Card.Header class="flex items-center gap-4">
 				<Avatar.Root>
