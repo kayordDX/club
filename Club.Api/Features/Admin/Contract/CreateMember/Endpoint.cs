@@ -62,8 +62,7 @@ public class Endpoint(AppDbContext dbContext, UserManager<User> userManager, ICu
             return;
         }
 
-        // Create the new profile in Keycloak (sends the account-setup email so the member sets their
-        // own password), then mirror it locally and link it to the contract.
+        // Create the Keycloak profile, mirror it locally and link it to the contract.
         var userId = await _keycloakService.CreateUserAsync(email, req.FirstName.Trim(), req.LastName.Trim(), req.PhoneNumber?.Trim(), ct);
 
         var user = new User

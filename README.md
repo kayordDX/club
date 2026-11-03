@@ -102,6 +102,10 @@ dotnet steward squash Club.Api/Data/Migrations
 dotnet run --project Club.Api/Club.Api.csproj
 ```
 
+### Account setup emails
+
+`Keycloak:SendAccountSetupEmails` controls account setup emails for users created by an admin. It defaults to `false`; set `Keycloak__SendAccountSetupEmails=true` on the API to enable them for subsequently created users. This does not disable other Keycloak emails or send emails retroactively. Without a setup email, a new user needs another way to set a password before signing in.
+
 ### Secrets
 
 ```bash

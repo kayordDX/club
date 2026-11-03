@@ -18,8 +18,7 @@ public interface ICustomKeycloakService
     // match is found.
     Task<KeycloakUserResult?> FindUserAsync(string query, CancellationToken ct);
 
-    // Create a new Keycloak user and trigger the account-setup email so the new member sets their own
-    // password through Keycloak (the register flow). Returns the new user's id.
+    // Create a new Keycloak user and optionally send the account-setup email. Returns the new user's id.
     Task<Guid> CreateUserAsync(string email, string firstName, string lastName, string? phoneNumber, CancellationToken ct);
 
     // Fetch a single Keycloak user by id (used to mirror them into the local user table).
@@ -116,14 +115,15 @@ public class CustomKeycloakService(IKeycloakUserClient keycloakUserClient, IOpti
             }
         }
 
-        // Send the account-setup email: the new member sets their own password and verifies their
-        // email through Keycloak's hosted pages (the register flow).
-        await _keycloakUserClient.ExecuteActionsEmailAsync(
-            _config.Realm,
-            userId.ToString(),
-            new ExecuteActionsEmailRequest { Actions = ["UPDATE_PASSWORD", "VERIFY_EMAIL"] },
-            cancellationToken: ct
-        );
+        if (_config.SendAccountSetupEmails)
+        {
+            await _keycloakUserClient.ExecuteActionsEmailAsync(
+                _config.Realm,
+                userId.ToString(),
+                new ExecuteActionsEmailRequest { Actions = ["UPDATE_PASSWORD", "VERIFY_EMAIL"] },
+                cancellationToken: ct
+            );
+        }
 
         return userId;
     }
