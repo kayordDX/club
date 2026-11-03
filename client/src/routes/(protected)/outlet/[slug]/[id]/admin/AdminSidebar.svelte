@@ -17,6 +17,7 @@
 	const outletRulesHref = $derived(resolve(`outlet/${slug}/${id}/admin/outlet/rules`));
 	const facilityAdminHref = $derived(resolve(`outlet/${slug}/${id}/admin/facility`));
 	const facilityRulesHref = $derived(resolve(`outlet/${slug}/${id}/admin/facility/rules`));
+	const bulkUploadHref = $derived(resolve(`outlet/${slug}/${id}/admin/facility/bulk-upload`));
 	const facilityContractsHref = $derived(resolve(`outlet/${slug}/${id}/admin/contracts`));
 	const facilityVouchersHref = $derived(resolve(`outlet/${slug}/${id}/admin/vouchers`));
 
@@ -142,6 +143,13 @@
 											<a href={facilityVouchersHref} {...props}>
 												<span>Vouchers</span>
 											</a>
+										{/snippet}
+									</Sidebar.MenuSubButton>
+								</Sidebar.MenuSubItem>
+								<Sidebar.MenuSubItem>
+									<Sidebar.MenuSubButton isActive={within(bulkUploadHref)}>
+										{#snippet child({ props })}
+											<a href={bulkUploadHref} {...props}><span>Bulk Upload</span></a>
 										{/snippet}
 									</Sidebar.MenuSubButton>
 								</Sidebar.MenuSubItem>

@@ -9,6 +9,7 @@ public class KeycloakConfig
     public string PublicClientId { get; set; } = string.Empty;
     public string AdminClientId { get; set; } = string.Empty;
     public string AdminClientSecret { get; set; } = string.Empty;
+    public bool SendAccountSetupEmails { get; set; }
 
     public string Issuer { get; set; } = string.Empty;
     public string Audience { get; set; } = string.Empty;

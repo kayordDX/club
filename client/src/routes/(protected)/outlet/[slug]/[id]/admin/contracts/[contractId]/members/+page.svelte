@@ -153,7 +153,7 @@
 					endDate: toApiDate(addEndDate),
 				},
 			});
-			toast.success("Profile created and member added. They'll get an email to set their password.");
+			toast.success("Profile created and member added.");
 			addOpen = false;
 			void membersQuery.refresh();
 		} catch (error) {
@@ -366,7 +366,9 @@
 					<Field.Label for="create-phone">Cellphone (optional)</Field.Label>
 					<Input id="create-phone" bind:value={createPhone} />
 				</Field.Field>
-				<p class="text-muted-foreground text-xs">The new member receives an email to set their password and verify their account through Keycloak.</p>
+				<p class="text-muted-foreground text-xs">
+					Account setup emails are sent only when enabled on the server. Otherwise, the member needs another way to set their password.
+				</p>
 				<div class="flex justify-end gap-2">
 					<Button type="button" variant="outline" onclick={() => (showCreate = false)} disabled={isCreating}>Back</Button>
 
