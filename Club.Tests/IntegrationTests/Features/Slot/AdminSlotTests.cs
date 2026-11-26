@@ -1,3 +1,4 @@
+using System.Net.Http.Json;
 using Club.Common.Enums;
 using Club.Data;
 using Club.Entities;
@@ -146,6 +147,46 @@ public class AdminSlotTests(AppFixture app)
         // The cancelled booking is still visible on the admin bookings list for management.
         var active = await db.Booking.FirstAsync(b => b.Id == activeBooking.Id, app.Context.CancellationToken);
         active.BookingStatusId.ShouldBe((int)BookingStatusEnum.Pending);
+    }
+
+    [Fact]
+    public async Task PublicSchedule_OnlyShowsActivePlayerNamesToAuthenticatedUsers()
+    {
+        await using var scope = app.Server.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var (slot, contract, facilityId) = await CreateSlotSetup(db);
+        var (response, booking) = await app.Client.POSTAsync<BookingCreateEndpoint, BookingCreateRequest, BookingCreateResponse>(
+            new BookingCreateRequest
+            {
+                Bookings =
+                [
+                    new BookingRequest
+                    {
+                        SlotId = slot.Id,
+                        SlotContractId = contract.Id,
+                        Name = "Jane Smith",
+                        Email = "jane@example.com",
+                        Cellphone = "0842502311",
+                    },
+                ],
+            }
+        );
+        response.IsSuccessStatusCode.ShouldBeTrue();
+        var path = $"/slot?facilityId={facilityId}&date={slot.StartDatetime:O}";
+        var authenticated = await app.Client.GetFromJsonAsync<List<Club.Features.Slot.GetAll.SlotGetAllResponse>>(path, app.Context.CancellationToken);
+        authenticated!.Single().PlayerNames.ShouldBe(["Jane Smith"]);
+
+        using var anonymousRequest = new HttpRequestMessage(HttpMethod.Get, path);
+        anonymousRequest.Headers.Add("X-Test-Anonymous", "true");
+        using var anonymousResponse = await app.Client.SendAsync(anonymousRequest, app.Context.CancellationToken);
+        var anonymous = await anonymousResponse.Content.ReadFromJsonAsync<List<Club.Features.Slot.GetAll.SlotGetAllResponse>>(app.Context.CancellationToken);
+        anonymous!.Single().PlayerNames.ShouldBeEmpty();
+
+        var entity = await db.Booking.FirstAsync(b => b.Id == booking.Id, app.Context.CancellationToken);
+        entity.BookingStatusId = (int)BookingStatusEnum.Cancelled;
+        await db.SaveChangesAsync(app.Context.CancellationToken);
+        var cancelled = await app.Client.GetFromJsonAsync<List<Club.Features.Slot.GetAll.SlotGetAllResponse>>(path, app.Context.CancellationToken);
+        cancelled!.Single().PlayerNames.ShouldBeEmpty();
     }
 
     private static async Task AssignManagerRole(AppDbContext db, int facilityId)

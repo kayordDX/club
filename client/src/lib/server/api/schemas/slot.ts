@@ -38,6 +38,7 @@ export const SlotGetAllResponseItem = zod.object({
 	total: zod.int(),
 	isEnabled: zod.boolean(),
 	isAvailable: zod.boolean(),
+	playerNames: zod.array(zod.string()),
 });
 export const SlotGetAllResponse = zod.array(SlotGetAllResponseItem);
 

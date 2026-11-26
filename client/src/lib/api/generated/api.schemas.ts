@@ -113,6 +113,7 @@ export interface SlotGetAllResponse {
 	total: number;
 	isEnabled: boolean;
 	isAvailable: boolean;
+	playerNames: string[];
 }
 
 export interface AvailableSlotRequest {

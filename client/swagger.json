@@ -3930,7 +3930,7 @@
 			"SlotGetAllResponse": {
 				"type": "object",
 				"additionalProperties": false,
-				"required": ["id", "startDatetime", "booked", "total", "isEnabled", "isAvailable"],
+				"required": ["id", "startDatetime", "booked", "total", "isEnabled", "isAvailable", "playerNames"],
 				"properties": {
 					"id": {
 						"type": "string",
@@ -3972,6 +3972,10 @@
 					},
 					"isAvailable": {
 						"type": "boolean"
+					},
+					"playerNames": {
+						"type": "array",
+						"items": { "type": "string" }
 					}
 				}
 			},

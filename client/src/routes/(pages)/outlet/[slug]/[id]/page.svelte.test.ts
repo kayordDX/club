@@ -57,9 +57,10 @@ vi.mock("#lib/api/remote/slot.remote.js", () => ({
 					startDatetime: "2026-08-02T10:00:00Z",
 					endDatetime: "2026-08-02T11:00:00Z",
 					total: 4,
-					booked: 0,
+					booked: 1,
 					isAvailable: true,
 					isEnabled: true,
+					playerNames: ["Jane Smith", "John Doe"],
 				},
 			]),
 			{ loading: false, refresh: vi.fn() }
@@ -96,6 +97,12 @@ it("a manager's failed availability lookup shows a retryable error without navig
 	await expect.poll(() => mocks.error.mock.calls.length).toBe(1);
 	expect(mocks.goto).not.toHaveBeenCalled();
 	expect(mocks.error).toHaveBeenCalledWith("Unable to verify slot availability. Please try again.");
+});
+
+it("shows booked player full names to a customer", async () => {
+	mocks.isManager = false;
+	render(FacilityPage);
+	await expect.element(browserPage.getByText("Jane Smith, John Doe")).toBeVisible();
 });
 
 it("customer slot actions preserve the self-service creation route", async () => {

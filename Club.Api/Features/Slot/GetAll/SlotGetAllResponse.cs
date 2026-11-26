@@ -1,4 +1,4 @@
-using Club.Entities;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Club.Features.Slot.GetAll;
 
@@ -14,4 +14,7 @@ public class SlotGetAllResponse
     public int Total { get; set; }
     public bool IsEnabled { get; set; }
     public bool IsAvailable => Booked < Total;
+
+    [NotMapped]
+    public List<string> PlayerNames { get; set; } = [];
 }
