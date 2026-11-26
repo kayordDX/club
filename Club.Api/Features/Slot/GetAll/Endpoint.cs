@@ -1,5 +1,6 @@
 using Club.Common.Enums;
 using Club.Data;
+using Club.Features.Booking.Common;
 using Microsoft.EntityFrameworkCore;
 
 namespace Club.Features.Slot.GetAll;
@@ -64,6 +65,19 @@ public class Endpoint(AppDbContext dbContext) : Endpoint<SlotGetAllRequest, List
                 """
             )
             .ToListAsync(ct);
+
+        if (HttpContext.User.Identity?.IsAuthenticated == true)
+        {
+            var slotIds = result.Select(s => s.Id).ToList();
+            var players = await _dbContext
+                .SlotContractBooking.ActiveReservations(now)
+                .Where(scb => slotIds.Contains(scb.SlotContract.SlotId))
+                .Select(scb => new { scb.SlotContract.SlotId, scb.Name })
+                .ToListAsync(ct);
+
+            foreach (var slot in result)
+                slot.PlayerNames = players.Where(p => p.SlotId == slot.Id && !string.IsNullOrWhiteSpace(p.Name)).Select(p => p.Name!).ToList();
+        }
 
         await Send.OkAsync(result, ct);
     }

@@ -74,6 +74,13 @@
 			{/if}
 		</div>
 
+		{#if slot.playerNames?.length}
+			<div class="w-full text-sm">
+				<p class="text-muted-foreground text-xs">Booked players</p>
+				<p>{slot.playerNames.join(", ")}</p>
+			</div>
+		{/if}
+
 		{#if slot.total > 1}
 			<div class="flex flex-col gap-1">
 				<div class="text-muted-foreground text-xs">Players</div>

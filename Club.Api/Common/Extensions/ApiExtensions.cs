@@ -11,8 +11,8 @@ public static class ApiExtensions
 {
     public static void ConfigureApi(this IServiceCollection services, IConfiguration configuration)
     {
-        var keycloakConfig =
-            configuration.GetSection(KeycloakConfig.Key).Get<KeycloakConfig>() ?? throw new InvalidOperationException("Keycloak configuration is missing.");
+        var keycloakConfig = configuration.GetSection(KeycloakConfig.Key).Get<KeycloakConfig>()
+            ?? throw new InvalidOperationException("Keycloak configuration is missing.");
 
         services.AddResponseCompression(o =>
         {
@@ -57,24 +57,18 @@ public static class ApiExtensions
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-            options.AddPolicy(
-                "OnlyOnePerMinutePerUser",
-                context =>
-                {
-                    var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? context.Connection.RemoteIpAddress?.ToString() ?? "anonymous";
+            options.AddPolicy("OnlyOnePerMinutePerUser", context =>
+            {
+                var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? context.Connection.RemoteIpAddress?.ToString() ?? "anonymous";
 
-                    return RateLimitPartition.GetFixedWindowLimiter(
-                        partitionKey: userId,
-                        factory: _ => new FixedWindowRateLimiterOptions
-                        {
-                            PermitLimit = 1,
-                            Window = TimeSpan.FromMinutes(1),
-                            QueueLimit = 0,
-                            AutoReplenishment = true,
-                        }
-                    );
-                }
-            );
+                return RateLimitPartition.GetFixedWindowLimiter(partitionKey: userId, factory: _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 1,
+                    Window = TimeSpan.FromMinutes(1),
+                    QueueLimit = 0,
+                    AutoReplenishment = true,
+                });
+            });
         });
     }
 

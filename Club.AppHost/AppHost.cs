@@ -28,15 +28,12 @@ var mailpit = builder
 // Declared early so API can reference its endpoint for CORS
 var web = builder.AddViteApp("web", "../client").WithPnpm().WithEnvironment("BROWSER", "none");
 
-web.WithEndpoint(
-    "http",
-    e =>
-    {
-        e.Port = 5173;
-        e.TargetPort = 5173;
-        e.IsProxied = false;
-    }
-);
+web.WithEndpoint("http", e =>
+{
+    e.Port = 5173;
+    e.TargetPort = 5173;
+    e.IsProxied = false;
+});
 #pragma warning disable ASPIREBROWSERLOGS001
 web = web.WithBrowserLogs();
 #pragma warning restore ASPIREBROWSERLOGS001

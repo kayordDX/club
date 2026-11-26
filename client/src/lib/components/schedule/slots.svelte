@@ -105,7 +105,7 @@
 			{#if isAdmin}
 				<AdminSlot slot={slot as AdminSlotGetAllResponse} {selectedDate} {adminContext} {onCreateBooking} {bookingHref} />
 			{:else}
-				<Slot {slot} {selectedDate} onBook={onPublicBook} />
+				<Slot slot={slot as SlotGetAllResponse} {selectedDate} onBook={onPublicBook} />
 			{/if}
 		{/each}
 	</div>
