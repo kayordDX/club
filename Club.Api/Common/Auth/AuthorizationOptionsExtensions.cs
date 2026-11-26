@@ -9,14 +9,11 @@ public static class AuthorizationOptionsExtensions
         ArgumentNullException.ThrowIfNull(options);
         ArgumentException.ThrowIfNullOrWhiteSpace(roleName);
 
-        options.AddPolicy(
-            roleName,
-            policy =>
-            {
-                policy.RequireAuthenticatedUser();
-                policy.AddRequirements(new FacilityRoleRequirement(roleName));
-            }
-        );
+        options.AddPolicy(roleName, policy =>
+        {
+            policy.RequireAuthenticatedUser();
+            policy.AddRequirements(new FacilityRoleRequirement(roleName));
+        });
 
         return options;
     }

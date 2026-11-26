@@ -188,8 +188,7 @@ public class PeachProvider(IPaymentOptionsAccessor<PeachOptions> optionsAccessor
 
     private string BuildShopperResultUrl()
     {
-        var request =
-            _httpContextAccessor.HttpContext?.Request
+        var request = _httpContextAccessor.HttpContext?.Request
             ?? throw new InvalidOperationException("Unable to build Peach shopperResultUrl because there is no active HTTP request.");
 
         return UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase, $"/payment/result/{ProviderName}");

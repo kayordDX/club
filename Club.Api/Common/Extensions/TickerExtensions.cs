@@ -18,9 +18,8 @@ public static class TickerExtensions
                 o.UseTickerQDbContext<TickerQDbContext>(options =>
                 {
                     options.UseSnakeCaseNamingConvention();
-                    options.UseNpgsql(
-                        configuration.GetConnectionString("DefaultConnection"),
-                        b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)
+                    options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"), b =>
+                        b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)
                     );
                 });
             });

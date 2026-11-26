@@ -12,8 +12,8 @@ public static class AuthExtensions
 {
     public static IServiceCollection ConfigureAuth(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment env)
     {
-        var keycloakConfig =
-            configuration.GetSection(KeycloakConfig.Key).Get<KeycloakConfig>() ?? throw new InvalidOperationException("Keycloak configuration is missing.");
+        var keycloakConfig = configuration.GetSection(KeycloakConfig.Key).Get<KeycloakConfig>()
+            ?? throw new InvalidOperationException("Keycloak configuration is missing.");
 
         services
             .AddAuthentication(options =>
@@ -24,30 +24,27 @@ public static class AuthExtensions
                 options.DefaultForbidScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-            .AddJwtBearer(
-                JwtBearerDefaults.AuthenticationScheme,
-                options =>
+            .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+            {
+                options.Authority = keycloakConfig.Issuer;
+                options.Audience = keycloakConfig.Audience;
+                options.RequireHttpsMetadata = !env.IsDevelopment() && !env.IsEnvironment("Testing");
+                options.MetadataAddress = keycloakConfig.MetadataAddress;
+                options.Events = new JwtBearerEvents
                 {
-                    options.Authority = keycloakConfig.Issuer;
-                    options.Audience = keycloakConfig.Audience;
-                    options.RequireHttpsMetadata = !env.IsDevelopment() && !env.IsEnvironment("Testing");
-                    options.MetadataAddress = keycloakConfig.MetadataAddress;
-                    options.Events = new JwtBearerEvents
+                    OnChallenge = context =>
                     {
-                        OnChallenge = context =>
-                        {
-                            context.HandleResponse();
-                            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                            return Task.CompletedTask;
-                        },
-                        OnForbidden = context =>
-                        {
-                            context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                            return Task.CompletedTask;
-                        },
-                    };
-                }
-            );
+                        context.HandleResponse();
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        return Task.CompletedTask;
+                    },
+                    OnForbidden = context =>
+                    {
+                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        return Task.CompletedTask;
+                    },
+                };
+            });
 
         Keycloak.AuthServices.Sdk.KeycloakAdminClientOptions options = new()
         {
@@ -70,15 +67,12 @@ public static class AuthExtensions
         services.AddDistributedMemoryCache();
         services
             .AddClientCredentialsTokenManagement()
-            .AddClient(
-                tokenClientName,
-                client =>
-                {
-                    client.ClientId = ClientId.Parse(options.Resource);
-                    client.ClientSecret = ClientSecret.Parse(options.Credentials.Secret);
-                    client.TokenEndpoint = new Uri(options.KeycloakTokenEndpoint);
-                }
-            );
+            .AddClient(tokenClientName, client =>
+            {
+                client.ClientId = ClientId.Parse(options.Resource);
+                client.ClientSecret = ClientSecret.Parse(options.Credentials.Secret);
+                client.TokenEndpoint = new Uri(options.KeycloakTokenEndpoint);
+            });
 
         Keycloak.AuthServices.Sdk.ServiceCollectionExtensions.AddKeycloakAdminHttpClient(services, options).AddClientCredentialsTokenHandler(tokenClientName);
 

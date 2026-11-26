@@ -449,15 +449,12 @@ namespace Club.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey(
-                        "pk_user_token",
-                        x => new
-                        {
-                            x.user_id,
-                            x.login_provider,
-                            x.name,
-                        }
-                    );
+                    table.PrimaryKey("pk_user_token", x => new
+                    {
+                        x.user_id,
+                        x.login_provider,
+                        x.name,
+                    });
                     table.ForeignKey(
                         name: "fk_user_token_asp_net_users_user_id",
                         column: x => x.user_id,

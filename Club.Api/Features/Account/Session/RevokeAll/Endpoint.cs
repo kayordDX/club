@@ -42,12 +42,11 @@ public class Endpoint(KeycloakAdminApiClient keycloakAdminClient, IOptions<Keycl
             return;
         }
 
-        var sessions =
-            await keycloakAdminClient
-                .Admin.Realms[keycloakConfig.Realm]
-                .Users[userId.ToString()]
-                .OfflineSessions[client.Id.ToString()]
-                .GetAsync(cancellationToken: ct)
+        var sessions = await keycloakAdminClient
+            .Admin.Realms[keycloakConfig.Realm]
+            .Users[userId.ToString()]
+            .OfflineSessions[client.Id.ToString()]
+            .GetAsync(cancellationToken: ct)
             ?? [];
 
         foreach (var session in sessions)

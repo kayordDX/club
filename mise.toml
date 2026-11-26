@@ -34,5 +34,5 @@ flag "-c --context <context>" {
 run = "dotnet ef migrations remove --project Club.Api/Club.Api.csproj -c ${usage_context?}"
 
 [tools]
-"dotnet:csharpier" = "latest"
+"dotnet:csharpier" = "1.4.1"
 aspire = "latest"
